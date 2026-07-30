@@ -50,7 +50,7 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#4685F6', // Azul de Kiri
+    backgroundColor: '#4F8EF7', // Azul de Kiri
     justifyContent: 'center',
     alignItems: 'center',
   },
