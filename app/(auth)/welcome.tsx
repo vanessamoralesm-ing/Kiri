@@ -56,6 +56,11 @@ export default function WelcomeScreen() {
           que favorezcan tu bienestar.
         </Text>
 
+        {/*Texto de acompañamiento*/}
+        <Text style={styles.footerText}>
+          Nunca estarás <Text style={styles.greenText}>solo</Text> en este proceso.
+        </Text>
+
       </View>
     </ScrollView>
   );
@@ -120,7 +125,7 @@ const styles = StyleSheet.create({
   subtitle:{
     fontSize:25, //Tamaño de fuente
     color:'#4F8EF7', //Color azul de kiri
-    fontWeight: '600', //Ancho
+    fontWeight: '600', //negrita
     fontFamily: 'Nunito-SemiBold', //Tipografia Nunito Semibold
     textAlign: 'center', //centrad horizontal
     lineHeight: 30, //Interlineado para que el texto no se vea muy pegado
@@ -134,6 +139,21 @@ const styles = StyleSheet.create({
     color: '#2D3748',
     textAlign: 'center',
     lineHeight: 25,
-    marginBottom: 16,
+    marginBottom: 8,
+  },
+
+  /* Estilo texto de acompañamiento*/
+  footerText: {
+    fontSize:18, // Tamaño de lectura comodo
+    fontFamily: 'Nunito-Medium', // Tipografía suave
+    color: '#2D3748', //color base de kiri en parrafos
+    textAlign: 'center',
+    marginBottom: 28, // Espacio amplio antes de los botones
+  },
+
+  greenText: {
+    color: '#7BBF9A', //color verde relajante para hacer distintivo a la palabra
+    fontWeight: '700', //negrita para dar enfasis
+    fontFamily: 'Ninito-Medium',
   },
 });
