@@ -47,6 +47,9 @@ export default function WelcomeScreen() {
 
         {/*Agregando una linea decorativa debajo del titulo*/}
         <View style={styles.divider}></View>
+
+        {/*SUBTITULO--- */}
+        <Text style={styles.subtitle}>Cuidar de tu salud mental es un acto de fortaleza</Text>
       </View>
     </ScrollView>
   );
@@ -64,14 +67,14 @@ const styles = StyleSheet.create({
     flex: 1,                          // Toma todo el espacio dentro del scroll
     alignItems: 'center',             // Centra los elementos horizontalmente
     paddingHorizontal: 28,           // Margen interno a los lados (izq y der)
-    paddingTop: 50,                   // Margen superior para despegarlo de arriba
+    paddingTop: 35,                   // Margen superior para despegarlo de arriba
     paddingBottom: 30,                // Margen inferior
   },
   // Estilo especifico para el logo pequeñito de arriba
   logoTop: {
     width: 160,                       // Ancho en pixeles del logo
-    height: 100,                       // Alto en pixeles del logo
-    marginBottom: 20,                 // Separacion con el siguiente elemento
+    height: 90,                       // Alto en pixeles del logo
+    marginBottom: 5,                 // Separacion con el siguiente elemento
   },
   // Caza o caja contenedora para la imagen de la mascota
   imageContainer: {
@@ -105,5 +108,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#B8A8F8',     // Color morado pastel
     borderRadius: 5,                // Redondea las puntas de la linea
     marginVertical: 11,             // Margen arriba y abajo para dar aire
+  },
+
+  /* Estilo del Subtitulo*/
+  subtitle:{
+    fontSize:25, //Tamaño de fuente
+    color:'#4F8EF7', //Color azul de kiri
+    fontWeight: '600', //
+    fontFamily: 'Nunito-SemiBold', //Tipografia Nunito Semibold
+    textAlign: 'center', //centrad horizontal
+    lineHeight: 30, //Interlineado para que el texto no se vea muy pegado
+    marginBottom:16, //Margen inferior para el bloque proximo
   },
 });
