@@ -66,7 +66,7 @@ export default function AccessTypeScreen() {
         {/*Card Soy una institucion*/}
         <OptionCard
         title='Soy Institucion'
-        description='Quiero crear un panel para mi comunudad.'
+        description='Quiero crear un panel para mi comunidad.'
         imageSource={require('../../assets/images/institucion_user.png')} onPress={handleAdminInstitucion}>
         </OptionCard>
 
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   },
   //Estilo para el titulo
   title: {
-    fontSize: 40,
+    fontSize: 35,
     fontFamily: 'Nunito-Bold',
     fontWeight: '700',
     color: '#2C3E50',
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   },
   //Estilo para subtitulo
   subtitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontFamily: 'Nunito-Medium',
     fontWeight: '400',
     color: '#64748B',

@@ -14,7 +14,7 @@ interface OptionCardProps {
   title: string;                 // Título de la tarjeta
   description: string;           // Descripción corta
   imageSource: ImageSourcePropType; // Imagen de la bolita
-  onPress: () => void;           // Acción al tocar el botón
+  onPress: () => void;           // Accion al tocar el boton
 }
 
 export default function OptionCard({
@@ -26,7 +26,7 @@ export default function OptionCard({
   return (
     <View style={styles.cardContainer}>
       
-      {/* 1. BOLITA CIRCULAR CON LA IMAGEN */}
+      {/* Circulo de la imagen */}
       <View style={styles.avatarCircle}>
         <Image
           source={imageSource}
@@ -35,13 +35,13 @@ export default function OptionCard({
         />
       </View>
 
-      {/* 2. TÍTULO DE LA OPCIÓN */}
+      {/* Titulo de la opcion */}
       <Text style={styles.cardTitle}>{title}</Text>
 
-      {/* 3. DESCRIPCIÓN */}
+      {/* Descripcion*/}
       <Text style={styles.cardDescription}>{description}</Text>
 
-      {/* 4. BOTÓN CONTINUAR CON FLECHA */}
+      {/* Boton de continuar */}
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={onPress}
@@ -58,26 +58,26 @@ const styles = StyleSheet.create({
   // Contenedor principal de la tarjeta blanca con sombra suave
   cardContainer: {
     width: '100%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
     borderRadius: 20,
-    padding: 24,
+    padding: 10,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
     
     // Sombras para iOS
-    shadowColor: '#000',
+    shadowColor: '#2D3748',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 10,
     
     // Sombra para Android
-    elevation: 3,
+    elevation: 20, //Le das mas volumen a la sombra
   },
 
-  // Círculo gris de fondo para la imagen
+  // Circulo gris de fondo para la imagen
   avatarCircle: {
-    width: 110,
-    height: 110,
+    width: 120,//ancho
+    height: 120, //Alto
     borderRadius: 55,           // Hace que sea perfectamente circular
     backgroundColor: '#E2E8F0', // Color base gris neutro mientras carga o si la imagen tiene transparencias
     overflow: 'hidden',         // Recorta la imagen en forma circular
@@ -92,43 +92,43 @@ const styles = StyleSheet.create({
     height: '100%',
   },
 
-  // Título de la opción (Azul Kiri)
+  // Titulo de la opcion (Azul Kiri)
   cardTitle: {
-    fontSize: 20,
-    fontFamily: 'Nunito-Bold',
+    fontSize: 22,
+    fontFamily: 'Nunito-SemiBold',
     fontWeight: '700',
     color: '#4685F6',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 2,
   },
 
-  // Descripción gris
+  // Descripcion de cada tarjeta
   cardDescription: {
     fontSize: 15,
     fontFamily: 'Nunito-Medium',
-    fontWeight: '500',
-    color: '#64748B',
+    fontWeight: '400',//Negrita
+    color: '#2D3748',
     textAlign: 'center',
-    lineHeight: 21,
+    lineHeight: 20,
     paddingHorizontal: 8,
-    marginBottom: 20,
+    marginBottom: 16,
   },
 
-  // Botón con color azul degradado/sólido
+  // Boton con color azul degradado
   continueButton: {
-    width: '100%',
-    height: 48,
-    backgroundColor: '#6A9CFD', // Azul brillante relajante
+    width: '90%',
+    height: 50,
+    backgroundColor: '#B8A8F8', // Color morado degradado
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  // Texto del botón
+  // Texto del boton
   buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontFamily: 'Nunito-Bold',
-    fontWeight: '700',
+    color: '#F8FAFC',
+    fontSize: 18,
+    fontFamily: 'Nunito-SemiBold',
+    fontWeight: '600',
   },
 });
