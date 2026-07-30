@@ -7,10 +7,27 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter } from 'expo-router'; //Hook para navegar entre pantallas
+import OptionCard from '../../components/ui/OptionCard'; //Importamos nuestro componente reusable los card
+
 
 export default function AccessTypeScreen() {
   const router = useRouter();
+
+  //Funcion para continuar como Usuario Independiente e ir al registro
+  const handleIndependetUser = () => {
+    router.push('/(auth)/registro'); //Redirige al registro
+  };
+
+  //Funcion para continuar como usuario de una Institucion Educativa
+  const handleEducationalInstitution = () => {
+    router.push('/(auth)/institucion_codigo');//Redirige al flujo de codigo de la institucion
+  };
+
+  //Funcion para crear un panel administrativo para una comunidad
+  const handleAdminInstitucion = () => {
+    router.push('/(auth)/registro_institucion');
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -30,6 +47,29 @@ export default function AccessTypeScreen() {
         <Text style={styles.subtitle}>
           Selecciona una opción para comenzar.
         </Text>
+        
+        {/*Agregamos un card para el modo de elegir entrar en la app*/}
+        {/*Card de Usuario Independiente*/}
+        <OptionCard
+        title='Usuario Independiente'
+        description='Cuida tu bienestar emocional con herramientas personalizadas.'
+        imageSource={require('../../assets/images/usuario.png')} onPress={handleIndependetUser}>
+        </OptionCard>
+
+        {/*Card de el usuario pertenece a una Institucion*/}
+        <OptionCard
+        title='Institucion Educativa'
+        description='Accede con el código de tu colegio o universidad.'
+        imageSource={require('../../assets/images/institucion_user.png')} onPress={handleEducationalInstitution}>
+        </OptionCard>
+
+        {/*Card Soy una institucion*/}
+        <OptionCard
+        title='Soy Institucion'
+        description='Quiero crear un panel para mi comunudad.'
+        imageSource={require('../../assets/images/institucion_user.png')} onPress={handleAdminInstitucion}>
+        </OptionCard>
+
 
       </View>
     </ScrollView>
@@ -54,6 +94,7 @@ const styles = StyleSheet.create({
     height: 100,                       // Alto en pixeles del logo
     marginBottom: -11,                 // Separacion con el siguiente elemento
   },
+  //Estilo para el titulo
   title: {
     fontSize: 40,
     fontFamily: 'Nunito-Bold',
@@ -62,6 +103,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 8,
   },
+  //Estilo para subtitulo
   subtitle: {
     fontSize: 24,
     fontFamily: 'Nunito-Medium',

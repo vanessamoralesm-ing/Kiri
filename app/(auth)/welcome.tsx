@@ -85,7 +85,7 @@ export default function WelcomeScreen() {
           </Button>
         </View>
 
-        {/* ➖ SEPARADOR "O" ➖ */}
+        {/*SEPARADOR "O"*/}
           <View style={styles.dividerContainer}>
             <View style={styles.line} />
             <Text style={styles.dividerText}>o</Text>
