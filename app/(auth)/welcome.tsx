@@ -122,16 +122,16 @@ const styles = StyleSheet.create({
   // Estilo especifico para el logo pequeñito de arriba
   logoTop: {
     width: 160,                       // Ancho en pixeles del logo
-    height: 90,                       // Alto en pixeles del logo
-    marginBottom: 3,                 // Separacion con el siguiente elemento
+    height: 100,                       // Alto en pixeles del logo
+    marginBottom: -11,                 // Separacion con el siguiente elemento
   },
   // Caza o caja contenedora para la imagen de la mascota
   imageContainer: {
-    width: 240,                       // Ancho del contenedor
-    height: 220,                      // Alto del contenedor
+    width: 220,                       // Ancho del contenedor
+    height: 260,                      // Alto del contenedor
     justifyContent: 'center',         // Centra la imagen verticalmente adentro
     alignItems: 'center',             // Centra la imagen horizontalmente adentro
-    marginBottom: 10,                 // Separacion con el texto que le agregaremos abajo
+    marginBottom: 11,                 // Separacion con el texto que le agregaremos abajo
   },
   // Estilo de la imagen del avatar
   mascotImage: {
