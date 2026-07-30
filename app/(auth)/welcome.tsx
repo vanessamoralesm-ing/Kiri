@@ -38,6 +38,15 @@ export default function WelcomeScreen() {
             resizeMode="contain"
           />
         </View>
+
+        {/*TITULO PRINCIPAL DE BIENVENIDA --- */}
+        {/* Texto principal que contiene todo el titulo */}
+        <Text style={styles.title}>
+          Bienvenido a <Text style={styles.titleBlue}>Kiri</Text>
+        </Text>
+
+        {/*Agregando una linea decorativa debajo del titulo*/}
+        <View style={styles.divider}></View>
       </View>
     </ScrollView>
   );
@@ -76,5 +85,25 @@ const styles = StyleSheet.create({
   mascotImage: {
     width: '100%',                    // Toma todo el ancho de su caja (220px)
     height: '100%',                   // Toma todo el alto de su caja (220px)
+  },
+
+  /*Estilos del Titulo y Linea Decorativa */
+  title:{
+    fontSize:40,
+    fontWeight: '700',
+    fontFamily: 'Nunito-Bold', //Fuente principal que llevara kiri
+    color: '#2D3748', //Color para el texto de Bienvenida de Kiri
+    textAlign: 'center',
+  },
+
+  titleBlue: {
+    color: '#4F8EF7'//Color propio de la app kiri
+  },
+  divider: {
+    width: 40,                      // Ancho de la linea decorativa
+    height: 4,                      // Grosor de la linea
+    backgroundColor: '#B8A8F8',     // Color morado pastel
+    borderRadius: 5,                // Redondea las puntas de la linea
+    marginVertical: 11,             // Margen arriba y abajo para dar aire
   },
 });
