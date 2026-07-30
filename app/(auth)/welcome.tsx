@@ -14,9 +14,9 @@ export default function WelcomeScreen() {
 
   const router = useRouter(); //Inicializamos el hook de navegacion
 
-  //Funcion para redirigir al registro
+  //Funcion para redirigir al registro de como va acceder
   const handleStart = () => {
-    router.push('/(auth)/registro'); //Ajusta la ruta segun su estructura
+    router.push('/(auth)/modo_acceso'); //Ajusta la ruta segun su estructura
   };
 
   //Funcion para redirigir al inicio de sesion
