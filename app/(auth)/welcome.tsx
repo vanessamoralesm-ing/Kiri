@@ -7,8 +7,22 @@ import {
   StyleSheet, //Crear estilos visuales CSS
   ScrollView, //Permite que la pantalla tenga desplazamiento hacia abajo
 } from 'react-native';
+import { useRouter } from 'expo-router'; //Hook para navegar entre pantallas
+import Button from '../../components/ui/Button'; //Importamos nuestro componente reusable
 
 export default function WelcomeScreen() {
+
+  const router = useRouter(); //Inicializamos el hook de navegacion
+
+  //Funcion para redirigir al registro
+  const handleStart = () => {
+    router.push('/(auth)/registro'); //Ajusta la ruta segun su estructura
+  };
+
+  //Funcion para redirigir al inicio de sesion
+  const handleLogin = () => {
+    router.push('/(auth)/login'); //Ajusta la ruta al login
+  };
 
   return (
     //ScrollView nos ayuda a que el contenido no se corte en pantallas pequeñas
@@ -60,6 +74,30 @@ export default function WelcomeScreen() {
         <Text style={styles.footerText}>
           Nunca estarás <Text style={styles.greenText}>solo</Text> en este proceso.
         </Text>
+
+        {/*SECCION DE BOTONES*/}
+        <View style={styles.buttonContainer}>
+          {/*Boton principal Azul*/}
+          <Button
+          title='Comenzar'
+          variant='primary'
+          onPress={handleStart}>
+          </Button>
+        </View>
+
+        {/* ➖ SEPARADOR "O" ➖ */}
+          <View style={styles.dividerContainer}>
+            <View style={styles.line} />
+            <Text style={styles.dividerText}>o</Text>
+            <View style={styles.line} />
+          </View>
+
+        {/* Boton Secundario */}
+        <Button
+        title='¿Ya tienes una cuenta? Iniciar Sesión'
+        variant='secondary'
+        onPress={handleLogin}>
+        </Button>
 
       </View>
     </ScrollView>
@@ -145,15 +183,40 @@ const styles = StyleSheet.create({
   /* Estilo texto de acompañamiento*/
   footerText: {
     fontSize:18, // Tamaño de lectura comodo
-    fontFamily: 'Nunito-Medium', // Tipografía suave
+    fontFamily: 'Nunito-Medium', // Tipografia suave
     color: '#2D3748', //color base de kiri en parrafos
     textAlign: 'center',
-    marginBottom: 28, // Espacio amplio antes de los botones
+    marginBottom: 18, // Espacio amplio antes de los botones
   },
 
   greenText: {
     color: '#7BBF9A', //color verde relajante para hacer distintivo a la palabra
     fontWeight: '700', //negrita para dar enfasis
     fontFamily: 'Ninito-Medium',
+  },
+
+  /* Estilo para el contenedor de botones*/
+  buttonContainer:{
+    width: '100%', //Toma todo el ancho de la pantalla
+    marginTop: -10, //Margen superior para separlo del texto
+  },
+
+  /* --- ESTILOS DEL SEPARADOR "O" --- */
+  dividerContainer: {
+    flexDirection: 'row',          // Alinea las lineas y el texto en fila horizontal
+    alignItems: 'center',          // Centra verticalmente los elementos
+    marginVertical: 5,            // Espaciado arriba y abajo de la "o"
+    width: '100%',                 // Ocupa todo el ancho
+  },
+  line: {
+    flex: 1,                       // Hace que la linea se expanda para llenar el espacio disponible
+    height: 1,                     // Grosor delgado de 1px
+    backgroundColor: '#2D3748',    // Gris claro elegante
+  },
+  dividerText: {
+    marginHorizontal: 15,          // Espacio a los lados de la letra "o"
+    fontSize: 16,                  // Tamaño legible
+    fontFamily: 'Nunito-Medium',    // Tipografia
+    color: '#2D3748',              // Color gris suave para el texto
   },
 });
