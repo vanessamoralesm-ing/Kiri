@@ -50,6 +50,12 @@ export default function WelcomeScreen() {
 
         {/*SUBTITULO--- */}
         <Text style={styles.subtitle}>Cuidar de tu salud mental es un acto de fortaleza</Text>
+        {/*Parrafo descriptivo de la app--- */}
+        <Text style={styles.description}>
+          En Kiri encontrarás herramientas para conocerte mejor, comprender tus emociones y desarrollar hábitos
+          que favorezcan tu bienestar.
+        </Text>
+
       </View>
     </ScrollView>
   );
@@ -74,15 +80,15 @@ const styles = StyleSheet.create({
   logoTop: {
     width: 160,                       // Ancho en pixeles del logo
     height: 90,                       // Alto en pixeles del logo
-    marginBottom: 5,                 // Separacion con el siguiente elemento
+    marginBottom: 3,                 // Separacion con el siguiente elemento
   },
   // Caza o caja contenedora para la imagen de la mascota
   imageContainer: {
-    width: 220,                       // Ancho del contenedor
-    height: 240,                      // Alto del contenedor
+    width: 240,                       // Ancho del contenedor
+    height: 220,                      // Alto del contenedor
     justifyContent: 'center',         // Centra la imagen verticalmente adentro
     alignItems: 'center',             // Centra la imagen horizontalmente adentro
-    marginBottom: 15,                 // Separacion con el texto que le agregaremos abajo
+    marginBottom: 10,                 // Separacion con el texto que le agregaremos abajo
   },
   // Estilo de la imagen del avatar
   mascotImage: {
@@ -114,10 +120,20 @@ const styles = StyleSheet.create({
   subtitle:{
     fontSize:25, //Tamaño de fuente
     color:'#4F8EF7', //Color azul de kiri
-    fontWeight: '600', //
+    fontWeight: '600', //Ancho
     fontFamily: 'Nunito-SemiBold', //Tipografia Nunito Semibold
     textAlign: 'center', //centrad horizontal
     lineHeight: 30, //Interlineado para que el texto no se vea muy pegado
-    marginBottom:16, //Margen inferior para el bloque proximo
+    marginBottom:10, //Margen inferior para el bloque proximo
+  },
+  /* Estilo de la Descripcion de la app*/
+  description:{
+    fontSize:18,
+    fontWeight:'400',
+    fontFamily: 'Nunito-Medium',
+    color: '#2D3748',
+    textAlign: 'center',
+    lineHeight: 25,
+    marginBottom: 16,
   },
 });
