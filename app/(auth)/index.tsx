@@ -17,7 +17,7 @@ export default function SplashScreen() {
 
   useEffect(() => {
     // En esta parte se inicia la animacion del logo
-    logoOpacity.value = withTiming(1, { duration: 1000 });
+    logoOpacity.value = withTiming(1, { duration: 3000 });
     logoScale.value = withSpring(1);
 
     //Esperar 3 segundos e ir a la pantalla de Bienvenida
