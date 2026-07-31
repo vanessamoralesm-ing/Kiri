@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     fontSize: 35,
     fontFamily: 'Nunito-Bold',
     fontWeight: '700',
-    color: '#4685F6',               // Azul principal Kiri
+    color: '#4F8EF7',               // Azul principal Kiri
     textAlign: 'center',
     marginBottom: 8,//Despliegue del titulo y el parrafo
   },
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Nunito-SemiBold',
     fontWeight: '600',
-    color: '#4685F6',
+    color: '#4F8EF7',
   },
   loginBtn: {
     marginTop: 10,// Margin del espacio del button abajo
@@ -205,6 +205,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Nunito-SemiBold',
     fontWeight: '600',
-    color: '#4685F6',
+    color: '#4F8EF7',
   },
 });

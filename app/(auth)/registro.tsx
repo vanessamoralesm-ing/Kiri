@@ -18,7 +18,7 @@ export default function RegisterScreen() {
   const [correo, setCorreo] = useState('');
   const [contraseña, setContraseña] = useState('');
   const [confirmar, setConfirmar] = useState('');
-  const [aceptoCondi, setAceptoCondi] = useState('false');
+  const [aceptoCondi, setAceptoCondi] = useState(false);//Definimos que sera una variable booleana
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -42,7 +42,7 @@ export default function RegisterScreen() {
           {/*Nombre completo*/}
           <Input
             label="Nombre completo"
-            placeholder="EJ: Ana García"
+            placeholder="Ej: Maricarmen"
             value={nombre}
             onChangeText={setNombre}
             autoCapitalize="words"
@@ -75,8 +75,38 @@ export default function RegisterScreen() {
             onChangeText={setConfirmar}
             secureTextEntry
           />
-        </View>
 
+          {/* Checkbox de terminos y condiciones*/}
+          <View style={styles.checkboxContainer}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={[
+                styles.checkbox,
+                aceptoCondi && styles.checkboxActive,
+              ]}
+              onPress={() => setAceptoCondi(!aceptoCondi)}
+            >
+              {aceptoCondi && <Text style={styles.checkmark}>✓</Text>}
+            </TouchableOpacity>
+
+            <Text style={styles.termsText}>
+              Acepto los{' '}
+              <Text
+                style={styles.linkText}
+                onPress={() => console.log('Ver Términos')}
+              >
+                Términos y Condiciones
+              </Text>{' '}
+              y la{' '}
+              <Text
+                style={styles.linkText}
+                onPress={() => console.log('Ver Privacidad')}
+              >
+                Política de Privacidad
+              </Text>{' '} de Kiri.
+            </Text>
+          </View>
+        </View>
       </View>
     </ScrollView>
   );
@@ -98,15 +128,15 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     marginTop: -40,
-    marginBottom: -45,
+    marginBottom: -58,
   },
   title: {
     fontSize: 35,
     fontFamily: 'Nunito-Bold',
     fontWeight: '700',
-    color: '#4685F6',
+    color: '#4F8EF7',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 1,
   },
   subtitle: {
     fontSize: 18,
@@ -114,11 +144,51 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: '#2D3748',
     textAlign: 'center',
-    marginBottom: 25,
+    marginBottom: 20,
   },
 
   /* Estilo del contenedor formulario */
   formContainer: {
     width: '100%',
+  },
+
+  /* Estilo del checkbox de condiciones */
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+    marginTop: -5,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderWidth: 2,
+    borderColor: '#4F8EF7',
+    borderRadius: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+    marginTop: 2,
+    backgroundColor: '#F8FAFC',
+  },
+  checkboxActive: {
+    backgroundColor: '#4F8EF7',
+  },
+  checkmark: {
+    color: '#F8FAFC',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  termsText: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: 'Nunito-Medium',
+    color: '#2D3748',
+    lineHeight: 20,
+  },
+  linkText: {
+    color: '#4F8EF7',
+    fontFamily: 'Nunito-SemiBold',
+    fontWeight: '600',
   },
 });

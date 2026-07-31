@@ -59,14 +59,14 @@ const styles = StyleSheet.create({
   
   // Variante Principal (Boton Azul)
   primaryButton: {
-    backgroundColor: '#4685F6',    // Azul distintivo de Kiri
+    backgroundColor: '#4F8EF7',    // Azul distintivo de Kiri
   },
   
   // Variante Secundaria (Boton con Borde)
   secondaryButton: {
     backgroundColor: 'transparent', // Fondo transparente
     borderWidth: 2,                // Grosor del borde
-    borderColor: '#4685F6',        // Borde azul de Kiri
+    borderColor: '#4F8EF7',        // Borde azul de Kiri
   },
 
   // Estilo comun de texto
@@ -83,6 +83,6 @@ const styles = StyleSheet.create({
 
   // Color de texto para el botón secundario
   secondaryText: {
-    color: '#4685F6',              // Texto azul
+    color: '#4F8EF7',              // Texto azul
   },
 });
