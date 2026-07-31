@@ -9,11 +9,13 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router'; //Hook para navegar entre pantallas
 import OptionCard from '../../components/ui/OptionCard'; //Importamos nuestro componente reusable los card
+import Button from '../../components/ui/Button'; //Importamos nuestro componente reusable
 
 
 export default function AccessTypeScreen() {
   const router = useRouter();
 
+  //Acciones de las tarjetas
   //Funcion para continuar como Usuario Independiente e ir al registro
   const handleIndependetUser = () => {
     router.push('/(auth)/registro'); //Redirige al registro
@@ -27,6 +29,12 @@ export default function AccessTypeScreen() {
   //Funcion para crear un panel administrativo para una comunidad
   const handleAdminInstitucion = () => {
     router.push('/(auth)/registro_institucion');
+  };
+
+  //Accion para ir al login
+  //Funcion para redirigir al inicio de sesion
+  const handleLogin = () => {
+    router.push('/(auth)/login'); //Ajusta la ruta al login
   };
 
   return (
@@ -70,6 +78,12 @@ export default function AccessTypeScreen() {
         imageSource={require('../../assets/images/institucion.png')} onPress={handleAdminInstitucion}>
         </OptionCard>
 
+        {/*Reutilizamos el componente Button*/}
+        <Button
+        title='¿Ya tienes una cuenta? Iniciar Sesión'
+        variant='secondary'
+        onPress={handleLogin}>
+        </Button>
 
       </View>
     </ScrollView>
