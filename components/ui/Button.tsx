@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
   // Estilo común para todos los botones
   buttonBase: {
     width: '100%',                 // Ocupa todo el ancho disponible
-    height: 56,                    // Altura cómoda para tocar con el dedo
+    height: 56,                    // Altura comoda
     borderRadius: 18,              // Bordes completamente redondeados
     justifyContent: 'center',       // Centra el texto verticalmente
     alignItems: 'center',           // Centra el texto horizontalmente

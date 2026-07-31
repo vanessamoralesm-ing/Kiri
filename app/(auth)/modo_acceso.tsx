@@ -67,7 +67,7 @@ export default function AccessTypeScreen() {
         <OptionCard
         title='Soy Institucion'
         description='Quiero crear un panel para mi comunidad.'
-        imageSource={require('../../assets/images/institucion_user.png')} onPress={handleAdminInstitucion}>
+        imageSource={require('../../assets/images/institucion.png')} onPress={handleAdminInstitucion}>
         </OptionCard>
 
 
@@ -84,9 +84,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center', //se centra los elementos horizontal
-    paddingHorizontal: 24, // Margen interno a los lados (izq y der)
-    paddingTop: 50, // Margen superior para despegarlo de arriba
-    paddingBottom: 30, // Margen inferior para el siguiente elemento
+    paddingHorizontal: 28, // Margen interno a los lados (izq y der)
+    paddingTop: 30, // Margen superior para despegarlo de arriba
+    paddingBottom: 25, // Margen inferior para el siguiente elemento
   },
   // Estilo especifico para el logo pequeñito de arriba
   logoTop: {
