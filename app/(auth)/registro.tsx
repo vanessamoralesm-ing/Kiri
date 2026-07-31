@@ -1,15 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';//Importamos useState
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   Image,
+  TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import Input from '@/components/ui/Input';//Importamos el componente Input que se reutilizara en esta parte
 
 export default function RegisterScreen() {
   const router = useRouter();
+
+  //Estados que se guardaran los datos es decir las variables
+  const [nombre, setNombre] = useState('');
+  const [correo, setCorreo] = useState('');
+  const [contraseña, setContraseña] = useState('');
+  const [confirmar, setConfirmar] = useState('');
+  const [aceptoCondi, setAceptoCondi] = useState('false');
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -27,6 +36,46 @@ export default function RegisterScreen() {
         <Text style={styles.subtitle}>
           Tu refugio emocional comienza hoy
         </Text>
+        {/* CONTENEDOR DEL FORMULARIO */}
+        <View style={styles.formContainer}>
+          
+          {/*Nombre completo*/}
+          <Input
+            label="Nombre completo"
+            placeholder="EJ: Ana García"
+            value={nombre}
+            onChangeText={setNombre}
+            autoCapitalize="words"
+          />
+
+          {/*Correo Electronico*/}
+          <Input
+            label="Correo Electrónico"
+            placeholder="ejemplo@correo.com"
+            value={correo}
+            onChangeText={setCorreo}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+
+          {/*Contraseña*/}
+          <Input
+            label="Contraseña"
+            placeholder="********"
+            value={contraseña}
+            onChangeText={setContraseña}
+            secureTextEntry
+          />
+
+          {/*Confirmar Contraseña*/}
+          <Input
+            label="Confirmar Contraseña"
+            placeholder="********"
+            value={confirmar}
+            onChangeText={setConfirmar}
+            secureTextEntry
+          />
+        </View>
 
       </View>
     </ScrollView>
@@ -66,5 +115,10 @@ const styles = StyleSheet.create({
     color: '#2D3748',
     textAlign: 'center',
     marginBottom: 25,
+  },
+
+  /* Estilo del contenedor formulario */
+  formContainer: {
+    width: '100%',
   },
 });
