@@ -9,16 +9,34 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Input from '@/components/ui/Input';//Importamos el componente Input que se reutilizara en esta parte
+import Button from '@/components/ui/Button';//Importamos Button
+import GoogleButton from '@/components/ui/GoogleButton'; //Importamos el Boton de google
 
 export default function RegisterScreen() {
   const router = useRouter();
 
+  //Funcion para navegar al login
+  const irALogin = () => {
+    router.push('/(auth)/login');
+  };
   //Estados que se guardaran los datos es decir las variables
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [contraseña, setContraseña] = useState('');
   const [confirmar, setConfirmar] = useState('');
   const [aceptoCondi, setAceptoCondi] = useState(false);//Definimos que sera una variable booleana
+
+  //Funcion para crear la cuenta
+
+  const registrar =() =>{
+    if(!aceptoCondi){
+      alert('Debes de aceptar los Terminos y Condiciones de Kiri para continuar.');
+      return;
+    }
+    console.log('Datos de registro:',{nombre, correo, contraseña});
+    //Aqui se hara la conexion con la base de datos pero ya queda una pequeña funcion de guardado
+  };
+
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -106,6 +124,37 @@ export default function RegisterScreen() {
               </Text>{' '} de Kiri.
             </Text>
           </View>
+
+          {/* Boton crear cuenta */}
+          <Button
+            title="Crear Cuenta"
+            variant="primary"
+            onPress={registrar}
+            style={styles.registroBoton}
+          />
+
+          {/*Separador */}
+          <View style={styles.dividerContainer}>
+            <View style={styles.line} />
+            <Text style={styles.dividerText}>o regístrate con</Text>
+            <View style={styles.line} />
+          </View>
+
+          {/*Boton de google*/}
+          <GoogleButton
+            onPress={() => console.log('Registro con Google')}
+          />
+
+          {/*Enlace a iniciar sesion pie de pagina*/}
+        <View style={styles.pieContenedor}>
+          <Text style={styles.pieTexto}>
+            ¿Ya tienes una cuenta?{' '}
+          </Text>
+          <TouchableOpacity onPress={irALogin}>
+            <Text style={styles.enlaceIngreso}>Inicia Sesión</Text>
+          </TouchableOpacity>
+        </View>
+
         </View>
       </View>
     </ScrollView>
@@ -157,7 +206,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: 20,
-    marginTop: -5,
+    marginTop: -6,
   },
   checkbox: {
     width: 22,
@@ -184,11 +233,56 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Nunito-Medium',
     color: '#2D3748',
-    lineHeight: 20,
+    lineHeight: 16,
   },
   linkText: {
     color: '#4F8EF7',
     fontFamily: 'Nunito-SemiBold',
     fontWeight: '600',
   },
+
+  //Estilo de registrobuton crear cuenta
+  registroBoton: {
+    marginTop: -5,
+  },
+
+  /* Separador*/
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 10,
+    marginTop: 5,
+    width: '100%',
+  },
+  line: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#2D3748',
+  },
+  dividerText: {
+    marginHorizontal: 15,
+    fontSize: 16,
+    fontFamily: 'Nunito-Medium',
+    color: '#2D3748',
+  },
+
+  //Estilo de Pie de pagina para link de iniciar sesion
+  pieContenedor: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 15,
+  },
+  pieTexto: {
+    fontSize: 16,
+    fontFamily: 'Nunito-Medium',
+    color: '#2D3748',
+  },
+  enlaceIngreso: {
+    fontSize: 16,
+    fontFamily: 'Nunito-SemiBold',
+    fontWeight: '600',
+    color: '#4F8EF7',
+  },
+  
 });
