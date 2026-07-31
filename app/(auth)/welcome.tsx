@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     marginTop: -10, //Margen superior para separlo del texto
   },
 
-  /* --- ESTILOS DEL SEPARADOR "O" --- */
+  /*ESTILOS DEL SEPARADOR "O"*/
   dividerContainer: {
     flexDirection: 'row',          // Alinea las lineas y el texto en fila horizontal
     alignItems: 'center',          // Centra verticalmente los elementos
