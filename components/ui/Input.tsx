@@ -5,22 +5,26 @@ import {
   TextInput,
   StyleSheet,
   TextInputProps,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 
 // Definimos las propiedades que recibira nuestro Input
 interface InputProps extends TextInputProps {
   label: string;                // Texto de la etiqueta
   rightLabel?: React.ReactNode; // Enlace u opcion a la derecha
+  estiloContenedor?: StyleProp<ViewStyle>;
 }
 
 export default function Input({
   label,
   rightLabel,
+  estiloContenedor,//Recibimos la propiedad
   style,
   ...props                     
 }: InputProps) {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, estiloContenedor]}>
       {/*Encabezado del Input*/}
       <View style={styles.labelContainer}>
         <Text style={styles.label}>{label}</Text>
@@ -51,7 +55,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 18,
     fontFamily: 'Nunito-Bold',
-    fontWeight: '700',
+    fontWeight: '500',
     color: '#2D3748',          
   },
   input: {

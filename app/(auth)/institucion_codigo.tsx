@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,13 +8,15 @@ import {
   ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-//Importamos nuestros componentes
+//Importamos nuestros componentes reutilizables
 import Logo from '@/components/ui/Logo_izq';//Importamos componente logo izq
 import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 
 export default function InstitucionCodigoPantalla() {
   const router = useRouter();
-
+  //Declarando variable para el codigo
+  const [codigo, setCodigo] = useState('');
   // Funcion para cerrar y regresar
   const regresar = () => {
     router.back();
@@ -23,6 +25,16 @@ export default function InstitucionCodigoPantalla() {
   //Funcion para activar el escaneer QR
   const escanearQR = () => {
     console.log('Activar camara para encaneo QR');
+  };
+
+  //Funcion hecha ya para luego conectar con backend
+  const verificarCodigo = () => {
+    if (!codigo.trim()) {
+      alert('Por favor, ingrese el codigo de tu institucion.');
+      return;
+    }
+    console.log('Codigo a verificar:', codigo);
+    //Aqui se hara la validacion la base de datos que conectaremos
   };
 
   return (
@@ -60,6 +72,31 @@ export default function InstitucionCodigoPantalla() {
           </Text>
         </View>
 
+        {/*Separador*/}
+        <View style={styles.divisorContenedor}>
+          <View style={styles.linea} />
+          <Text style={styles.textoDivisor}>O INGRESA EL CÓDIGO</Text>
+          <View style={styles.linea} />
+        </View>
+
+        {/*texto*/}
+        <Input //input importado reutilizado
+          label="Código de Institución"
+          placeholder="EJ: KIRI-2026-EDU"
+          value={codigo}
+          onChangeText={setCodigo}
+          autoCapitalize="characters"
+          estiloContenedor={styles.bloqueInput}//Estilo del input
+        />
+
+        {/* Boton secundario verificar institucion*/}
+        <Button
+          title="Verificar Institución"
+          variant="primary"
+          onPress={verificarCodigo}
+          style={styles.botonVerificar}
+        />
+
       </View>
     </ScrollView>
   );
@@ -74,7 +111,7 @@ const styles = StyleSheet.create({
   contenedor: {
     flex: 1,
     paddingHorizontal: 10,
-    paddingTop: 20,
+    paddingTop: 5,
     paddingBottom: 30,
   },
 
@@ -83,13 +120,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: -10,
+    marginBottom: -25,
   },
   botonCerrar: {
-    fontSize: 22,
+    fontSize: 25,
     color: '#64748B',
     fontWeight: 'bold',
     padding: 5,
+    marginTop: 20,
   },
 
   /* Textos de encabezado */
@@ -99,7 +137,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#4F8EF7',
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: 5,
   },
   subtitulo: {
     fontSize: 18,
@@ -108,14 +146,14 @@ const styles = StyleSheet.create({
     color: '#2D3748',
     textAlign: 'center',
     lineHeight: 25,
-    marginBottom: 25,
+    marginBottom: 13,
   },
 
   /* Card de QR */
   tarjetaQR: {
     backgroundColor: '#f5f8fd',
     borderRadius: 40,
-    padding: 20,
+    padding: 5,
     alignItems: 'center',
     borderWidth: 10,
     borderColor: '#f2f6fa',
@@ -127,11 +165,11 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   cuadroCamara: {
-    width: '100%',
-    height: 280,
+    width: '90%',
+    height: 300,
     backgroundColor: '#dae0e7',
     borderRadius: 20,
-    marginBottom: 20,
+    marginBottom: 15,
   },
   botonEscanear: {
     width: '100%',
@@ -143,5 +181,34 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito-Medium',
     color: '#2D3748',
     textAlign: 'center',
+  },
+  /* SEPARADOR */
+  divisorContenedor: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+    marginTop:15,
+    width: '100%',
+  },
+  linea: {
+    flex: 1,
+    height: 1,//grosor
+    backgroundColor: '#2D3748',
+  },
+  textoDivisor: {
+    marginHorizontal: 15,
+    fontSize: 16,
+    fontFamily: 'Nunito-Medium',
+    color: '#2D3748',
+    letterSpacing: 0.5,//espacio entre las letras
+  },
+
+  /* Boton de verificacion*/
+  botonVerificar: {
+    marginTop: -10,
+    backgroundColor: '#7BBF9A', // Tono verde relajante acorde a Kiri
+  },
+  bloqueInput: {
+    marginTop: -15, //Ajusta este valor negativo para subirlo tanto como quieras
   },
 });
