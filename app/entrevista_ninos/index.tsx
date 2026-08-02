@@ -17,15 +17,10 @@ import { seccionesEntrevista } from "./preguntas";
 const opciones = ["Nunca", "A veces", "Frecuentemente", "Siempre"];
 
 // Cantidad de preguntas que se mostrarán en cada pantalla
-const PREGUNTAS_POR_PANTALLA = 2;
+const PREGUNTAS_POR_PANTALLA = 1;
 
 export default function EntrevistaNinos() {
-  // Sección actual:
-  // 0 = Conociendo
-  // 1 = Escuela
-  // 2 = Emociones
-  // 3 = Conductas
-  // 4 = Síntomas
+
   const [numeroSeccion, setNumeroSeccion] = useState(0);
 
   // Página actual dentro de cada sección
