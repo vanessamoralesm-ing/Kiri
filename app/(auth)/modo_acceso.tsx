@@ -33,7 +33,7 @@ export default function AccessTypeScreen() {
 
   //Accion para ir al login
   //Funcion para redirigir al inicio de sesion
-  const handleLogin = () => {
+  const irLogin = () => {
     router.push('/(auth)/login'); //Ajusta la ruta al login
   };
 
@@ -82,7 +82,7 @@ export default function AccessTypeScreen() {
         <Button
         title='¿Ya tienes una cuenta? Iniciar Sesión'
         variant='secondary'
-        onPress={handleLogin}>
+        onPress={irLogin}>
         </Button>
 
       </View>
