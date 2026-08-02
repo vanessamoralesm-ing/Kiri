@@ -2,6 +2,8 @@ import { useState } from "react";
 
 import {
   Alert,
+  Image,
+  ImageBackground,
   Pressable,
   SafeAreaView,
   StyleSheet,
@@ -13,123 +15,139 @@ import { router } from "expo-router";
 
 import { seccionesEntrevista } from "./preguntas";
 
-// Respuestas que aparecerán en cada pregunta
-const opciones = ["Nunca", "A veces", "Frecuentemente", "Siempre"];
+// Se mostrarán dos preguntas en cada pantalla.
+const PREGUNTAS_POR_PANTALLA = 2;
 
-// Cantidad de preguntas que se mostrarán en cada pantalla
-const PREGUNTAS_POR_PANTALLA = 1;
+// Opciones de respuesta.
+const opciones = [
+  {
+    texto: "Nunca",
+    emoji: "🙂",
+    tipo: "verde",
+  },
+  {
+    texto: "A veces",
+    emoji: "😐",
+    tipo: "azul",
+  },
+  {
+    texto: "Frecuentemente",
+    emoji: "🙁",
+    tipo: "amarillo",
+  },
+  {
+    texto: "Siempre",
+    emoji: "☹️",
+    tipo: "morado",
+  },
+];
 
 export default function EntrevistaNinos() {
-
+  // Sección actual:
+  // 0 = Conociendo
+  // 1 = Escuela
+  // 2 = Emociones
+  // 3 = Conductas
+  // 4 = Síntomas
   const [numeroSeccion, setNumeroSeccion] = useState(0);
 
-  // Página actual dentro de cada sección
+  // Página actual dentro de la sección.
   const [paginaActual, setPaginaActual] = useState(0);
 
-  // Aquí se guardarán las respuestas
+  // Respuestas seleccionadas.
   const [respuestas, setRespuestas] = useState<{
     [clave: string]: string;
   }>({});
 
-  // Obtenemos la sección actual
   const seccionActual = seccionesEntrevista[numeroSeccion];
 
-  // Índice donde comienza la página actual
+  // Calculamos cuáles preguntas se mostrarán.
   const indiceInicial =
     paginaActual * PREGUNTAS_POR_PANTALLA;
 
-  // Índice donde termina la página actual
   const indiceFinal =
     indiceInicial + PREGUNTAS_POR_PANTALLA;
 
-  // Solo toma dos preguntas de la sección
   const preguntasVisibles =
     seccionActual.preguntas.slice(
       indiceInicial,
       indiceFinal
     );
 
-  // Calcula cuántas páginas tiene la sección
+  // Cantidad de páginas de la sección actual.
   const totalPaginas = Math.ceil(
     seccionActual.preguntas.length /
       PREGUNTAS_POR_PANTALLA
   );
 
-  // Revisa si estamos en la última página
   const esUltimaPagina =
     paginaActual === totalPaginas - 1;
 
-  // Revisa si estamos en la última sección
   const esUltimaSeccion =
     numeroSeccion ===
     seccionesEntrevista.length - 1;
 
-  // Guarda una respuesta
   function seleccionarRespuesta(
     indicePregunta: number,
-    opcion: string
+    respuesta: string
   ) {
     const clave = `${numeroSeccion}-${indicePregunta}`;
 
     setRespuestas({
       ...respuestas,
-      [clave]: opcion,
+      [clave]: respuesta,
     });
   }
 
-  // Revisa si las dos preguntas visibles ya fueron respondidas
-  const preguntasVisiblesCompletas =
-    preguntasVisibles.every(
-      (pregunta, indiceLocal) => {
-        const indiceReal =
-          indiceInicial + indiceLocal;
+  // Revisamos si las preguntas visibles tienen respuesta.
+  const paginaCompleta = preguntasVisibles.every(
+    (pregunta, indiceLocal) => {
+      const indiceReal =
+        indiceInicial + indiceLocal;
 
-        const clave = `${numeroSeccion}-${indiceReal}`;
+      const clave = `${numeroSeccion}-${indiceReal}`;
 
-        return respuestas[clave] !== undefined;
-      }
-    );
+      return respuestas[clave] !== undefined;
+    }
+  );
 
-  // Cuenta todas las preguntas del cuestionario
+  // Total de preguntas de toda la entrevista.
   const totalPreguntas = seccionesEntrevista.reduce(
     (total, seccion) =>
       total + seccion.preguntas.length,
     0
   );
 
-  // Cuenta las respuestas guardadas
   const totalRespondidas =
     Object.keys(respuestas).length;
 
-  // Porcentaje general de la entrevista
   const porcentaje = Math.round(
     (totalRespondidas / totalPreguntas) * 100
   );
 
   function continuar() {
-    if (!preguntasVisiblesCompletas) {
+    if (!paginaCompleta) {
       Alert.alert(
         "Faltan respuestas",
-        "Debe responder las preguntas mostradas antes de continuar."
+        "Debe responder las preguntas antes de continuar."
       );
 
       return;
     }
 
-    // Si quedan más páginas en la misma sección
+    // Sigue en la misma sección.
     if (!esUltimaPagina) {
       setPaginaActual(paginaActual + 1);
       return;
     }
 
-    // Si termina la sección, pasa a la siguiente
+    // Pasa a la siguiente sección.
     if (!esUltimaSeccion) {
       setNumeroSeccion(numeroSeccion + 1);
       setPaginaActual(0);
       return;
     }
 
-    // Si terminó todas las secciones
     Alert.alert(
       "Entrevista completada",
       "Todas las preguntas fueron respondidas."
@@ -139,34 +157,51 @@ export default function EntrevistaNinos() {
   }
 
   function regresar() {
-    // Regresa a la página anterior de la misma sección
+    // Regresa a la página anterior.
     if (paginaActual > 0) {
       setPaginaActual(paginaActual - 1);
       return;
     }
 
-    // Regresa a la sección anterior
+    // Regresa a la sección anterior.
     if (numeroSeccion > 0) {
       const seccionAnterior =
         seccionesEntrevista[numeroSeccion - 1];
 
-      const paginasSeccionAnterior = Math.ceil(
+      const paginasAnteriores = Math.ceil(
         seccionAnterior.preguntas.length /
           PREGUNTAS_POR_PANTALLA
       );
 
       setNumeroSeccion(numeroSeccion - 1);
-      setPaginaActual(paginasSeccionAnterior - 1);
+      setPaginaActual(paginasAnteriores - 1);
 
       return;
     }
 
-    // Sale de la entrevista
     router.back();
   }
 
   return (
     <SafeAreaView style={styles.pantalla}>
+      {/*
+        CUANDO TENGAS TU IMAGEN DE FONDO:
+
+        Cambia este View:
+
+        <View style={styles.contenido}>
+
+        por:
+
+        <ImageBackground
+          source={require("../../assets/images/fondo-entrevista.png")}
+          style={styles.contenido}
+          resizeMode="cover"
+        >
+
+        Y al final cambia </View> por </ImageBackground>.
+      */}
+
       <View style={styles.contenido}>
         {/* ENCABEZADO FIJO */}
         <View style={styles.encabezado}>
@@ -177,13 +212,27 @@ export default function EntrevistaNinos() {
             <Text style={styles.flecha}>‹</Text>
           </Pressable>
 
-          <View style={styles.logoContenedor}>
-            <Text style={styles.corazon}>♡</Text>
-            <Text style={styles.logoTexto}>kiri</Text>
+          {/*
+            ESPACIO PARA EL LOGO.
+
+            Cuando tengas la imagen, reemplaza el View
+            que dice LOGO por:
+
+            <Image
+              source={require("../../assets/images/logo-kiri.png")}
+              style={styles.logoImagen}
+              resizeMode="contain"
+            />
+          */}
+
+          <View style={styles.logoEspacio}>
+            <Text style={styles.logoMarcador}>
+              LOGO
+            </Text>
           </View>
 
-          <View style={styles.avatar}>
-            <Text style={styles.avatarTexto}>P</Text>
+          <View style={styles.perfil}>
+            <Text style={styles.perfilTexto}>P</Text>
           </View>
         </View>
 
@@ -194,12 +243,11 @@ export default function EntrevistaNinos() {
             {seccionesEntrevista.length}
           </Text>
 
-          <Text style={styles.porcentaje}>
+          <Text style={styles.porcentajeTexto}>
             {porcentaje}% completado
           </Text>
         </View>
 
-        {/* BARRA FIJA */}
         <View style={styles.barraFondo}>
           <View
             style={[
@@ -211,20 +259,7 @@ export default function EntrevistaNinos() {
           />
         </View>
 
-        <Text style={styles.tituloSeccion}>
-          {seccionActual.titulo}
-        </Text>
-
-        <Text style={styles.numeroPagina}>
-          Preguntas {indiceInicial + 1} a{" "}
-          {Math.min(
-            indiceFinal,
-            seccionActual.preguntas.length
-          )}{" "}
-          de {seccionActual.preguntas.length}
-        </Text>
-
-        {/* SOLO SE MUEVE ESTA PARTE */}
+        {/* DOS PREGUNTAS */}
         <View style={styles.areaPreguntas}>
           {preguntasVisibles.map(
             (pregunta, indiceLocal) => {
@@ -239,36 +274,102 @@ export default function EntrevistaNinos() {
               return (
                 <View
                   key={clave}
-                  style={styles.bloquePregunta}
+                  style={styles.tarjetaPregunta}
                 >
-                  <Text style={styles.pregunta}>
-                    {indiceReal + 1}. {pregunta}
-                  </Text>
+                  {/* Número de la pregunta */}
+                  <View style={styles.numeroCirculo}>
+                    <Text style={styles.numeroTexto}>
+                      {indiceReal + 1}.
+                    </Text>
+                  </View>
 
-                  <Text style={styles.descripcion}>
-                    Seleccione una respuesta.
-                  </Text>
+                  {/* Texto y avatar */}
+                  <View style={styles.parteSuperior}>
+                    <View style={styles.textosPregunta}>
+                      <Text style={styles.pregunta}>
+                        {pregunta}
+                      </Text>
 
+                      <Text style={styles.descripcion}>
+                        Seleccione la opción que describa
+                        mejor el comportamiento de su
+                        hijo/a.
+                      </Text>
+                    </View>
+
+                    {/*
+                      ESPACIO PARA EL AVATAR.
+
+                      Cuando tengas la imagen, reemplaza:
+
+                      <View style={styles.avatarEspacio}>...</View>
+
+                      por:
+
+                      <Image
+                        source={require("../../assets/avatars/avatar-feliz.png")}
+                        style={styles.avatarImagen}
+                        resizeMode="contain"
+                      />
+
+                      Después podremos colocar un avatar
+                      diferente en cada pregunta.
+                    */}
+
+                    <View style={styles.avatarEspacio}>
+                      <Text style={styles.avatarMarcador}>
+                        AVATAR
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Opciones */}
                   <View style={styles.opciones}>
                     {opciones.map((opcion) => {
                       const seleccionada =
-                        respuestaActual === opcion;
+                        respuestaActual === opcion.texto;
 
                       return (
                         <Pressable
-                          key={opcion}
+                          key={opcion.texto}
                           onPress={() =>
                             seleccionarRespuesta(
                               indiceReal,
-                              opcion
+                              opcion.texto
                             )
                           }
                           style={[
                             styles.opcion,
+                            opcion.tipo === "verde" &&
+                              styles.opcionVerde,
+                            opcion.tipo === "azul" &&
+                              styles.opcionAzul,
+                            opcion.tipo === "amarillo" &&
+                              styles.opcionAmarilla,
+                            opcion.tipo === "morado" &&
+                              styles.opcionMorada,
                             seleccionada &&
                               styles.opcionSeleccionada,
                           ]}
                         >
+                          <View
+                            style={[
+                              styles.emojiCirculo,
+                              opcion.tipo === "verde" &&
+                                styles.emojiVerde,
+                              opcion.tipo === "azul" &&
+                                styles.emojiAzul,
+                              opcion.tipo === "amarillo" &&
+                                styles.emojiAmarillo,
+                              opcion.tipo === "morado" &&
+                                styles.emojiMorado,
+                            ]}
+                          >
+                            <Text style={styles.emoji}>
+                              {opcion.emoji}
+                            </Text>
+                          </View>
+
                           <Text
                             style={[
                               styles.textoOpcion,
@@ -276,17 +377,13 @@ export default function EntrevistaNinos() {
                                 styles.textoSeleccionado,
                             ]}
                           >
-                            {opcion}
+                            {opcion.texto}
                           </Text>
 
                           {seleccionada && (
-                            <View style={styles.check}>
-                              <Text
-                                style={styles.checkTexto}
-                              >
-                                ✓
-                              </Text>
-                            </View>
+                            <Text style={styles.check}>
+                              ✓
+                            </Text>
                           )}
                         </Pressable>
                       );
@@ -298,13 +395,13 @@ export default function EntrevistaNinos() {
           )}
         </View>
 
-        {/* BOTÓN FIJO ABAJO */}
+        {/* BOTÓN FIJO */}
         <View style={styles.zonaBoton}>
           <Pressable
             onPress={continuar}
             style={[
               styles.botonContinuar,
-              !preguntasVisiblesCompletas &&
+              !paginaCompleta &&
                 styles.botonDesactivado,
             ]}
           >
@@ -314,12 +411,6 @@ export default function EntrevistaNinos() {
                 : "Continuar"}
             </Text>
           </Pressable>
-
-          {!preguntasVisiblesCompletas && (
-            <Text style={styles.mensaje}>
-              Responda las preguntas para continuar.
-            </Text>
-          )}
         </View>
       </View>
     </SafeAreaView>
@@ -329,215 +420,294 @@ export default function EntrevistaNinos() {
 const styles = StyleSheet.create({
   pantalla: {
     flex: 1,
-    backgroundColor: "#F8FAFD",
+    backgroundColor: "#F7F8FC",
   },
 
   contenido: {
     flex: 1,
-    paddingHorizontal: 18,
-    paddingTop: 10,
-    paddingBottom: 12,
+    paddingHorizontal: 13,
+    paddingTop: 8,
+    paddingBottom: 10,
   },
 
   encabezado: {
+    minHeight: 42,
     flexDirection: "row",
     alignItems: "center",
-    minHeight: 45,
   },
 
   botonRegresar: {
-    width: 35,
-    height: 40,
+    width: 34,
+    height: 38,
     justifyContent: "center",
   },
 
   flecha: {
-    fontSize: 36,
-    color: "#7D8797",
-    lineHeight: 38,
+    fontSize: 33,
+    color: "#87909F",
+    lineHeight: 35,
   },
 
-  logoContenedor: {
+  logoEspacio: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
+    height: 34,
+    justifyContent: "center",
   },
 
-  corazon: {
-    fontSize: 27,
-    color: "#64C6CB",
-    marginRight: 3,
+  logoMarcador: {
+    fontSize: 12,
+    color: "#8992A2",
+    fontWeight: "600",
   },
 
-  logoTexto: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#31394D",
+  logoImagen: {
+    width: 80,
+    height: 35,
   },
 
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#D8DDE5",
+  perfil: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: "#E0E2E6",
     alignItems: "center",
     justifyContent: "center",
   },
 
-  avatarTexto: {
-    fontSize: 14,
+  perfilTexto: {
+    color: "#737C8B",
     fontWeight: "600",
-    color: "#677084",
   },
 
   progresoInformacion: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 10,
+    marginTop: 6,
   },
 
   numeroSeccion: {
-    fontSize: 11,
-    color: "#4C5568",
+    fontSize: 10,
+    color: "#4A5364",
   },
 
-  porcentaje: {
-    fontSize: 11,
-    color: "#4F96FF",
+  porcentajeTexto: {
+    fontSize: 10,
+    color: "#649BF7",
   },
 
   barraFondo: {
     height: 4,
-    backgroundColor: "#E1E6ED",
+    backgroundColor: "#E1E5EB",
     borderRadius: 5,
     overflow: "hidden",
-    marginTop: 8,
+    marginTop: 7,
+    marginBottom: 8,
   },
 
   barraProgreso: {
     height: "100%",
-    backgroundColor: "#4F96FF",
+    backgroundColor: "#7DA8F8",
     borderRadius: 5,
-  },
-
-  tituloSeccion: {
-    fontSize: 14,
-    color: "#4F96FF",
-    fontWeight: "600",
-    textAlign: "center",
-    marginTop: 12,
-  },
-
-  numeroPagina: {
-    fontSize: 10,
-    color: "#7A8495",
-    textAlign: "center",
-    marginTop: 3,
-    marginBottom: 6,
   },
 
   areaPreguntas: {
     flex: 1,
-    justifyContent: "space-evenly",
+    justifyContent: "space-between",
   },
 
-  bloquePregunta: {
-    marginVertical: 3,
+  tarjetaPregunta: {
+    flex: 1,
+    maxHeight: "48%",
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#EDF0F2",
+    paddingHorizontal: 15,
+    paddingTop: 14,
+    paddingBottom: 12,
+    marginVertical: 4,
+
+    shadowColor: "#88919F",
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.13,
+    shadowRadius: 6,
+
+    elevation: 3,
+  },
+
+  numeroCirculo: {
+    position: "absolute",
+    top: 12,
+    left: 14,
+    width: 37,
+    height: 37,
+    borderRadius: 19,
+    backgroundColor: "#EEE9FF",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 2,
+  },
+
+  numeroTexto: {
+    color: "#30394D",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+
+  parteSuperior: {
+    minHeight: 92,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingLeft: 44,
+  },
+
+  textosPregunta: {
+    flex: 1,
+    paddingRight: 5,
   },
 
   pregunta: {
     fontSize: 15,
-    lineHeight: 20,
-    fontWeight: "500",
-    color: "#31394D",
-    textAlign: "center",
-    paddingHorizontal: 4,
+    lineHeight: 21,
+    color: "#273448",
+    fontWeight: "700",
   },
 
   descripcion: {
-    fontSize: 10,
-    color: "#5C6473",
-    textAlign: "center",
-    marginTop: 5,
-    marginBottom: 7,
+    fontSize: 9,
+    lineHeight: 12,
+    color: "#788296",
+    marginTop: 7,
+  },
+
+  avatarEspacio: {
+    width: 83,
+    height: 90,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: "#CED4DD",
+  },
+
+  avatarMarcador: {
+    fontSize: 9,
+    color: "#98A0AC",
+  },
+
+  avatarImagen: {
+    width: 83,
+    height: 95,
   },
 
   opciones: {
-    gap: 5,
+    gap: 6,
+    marginTop: 6,
   },
 
   opcion: {
-    minHeight: 34,
+    minHeight: 38,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#687386",
-    borderRadius: 8,
-    backgroundColor: "#FAFBFD",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    justifyContent: "center",
+    paddingHorizontal: 10,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  opcionVerde: {
+    backgroundColor: "#FAFFFB",
+    borderColor: "#D6ECD9",
+  },
+
+  opcionAzul: {
+    backgroundColor: "#FAFCFF",
+    borderColor: "#D6E6FA",
+  },
+
+  opcionAmarilla: {
+    backgroundColor: "#FFFDF8",
+    borderColor: "#F7E6B8",
+  },
+
+  opcionMorada: {
+    backgroundColor: "#FCFAFF",
+    borderColor: "#E6DDF9",
   },
 
   opcionSeleccionada: {
     borderWidth: 2,
-    borderColor: "#4F96FF",
-    backgroundColor: "#EAF3FF",
-    flexDirection: "row",
+    borderColor: "#7B9FE8",
+  },
+
+  emojiCirculo: {
+    width: 27,
+    height: 27,
+    borderRadius: 14,
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "center",
+    marginRight: 10,
+  },
+
+  emojiVerde: {
+    backgroundColor: "#BEE3C2",
+  },
+
+  emojiAzul: {
+    backgroundColor: "#C9E0FC",
+  },
+
+  emojiAmarillo: {
+    backgroundColor: "#FFE39B",
+  },
+
+  emojiMorado: {
+    backgroundColor: "#D8CCFA",
+  },
+
+  emoji: {
+    fontSize: 15,
   },
 
   textoOpcion: {
+    flex: 1,
     fontSize: 11,
-    color: "#40495C",
+    color: "#354156",
   },
 
   textoSeleccionado: {
-    color: "#2876D2",
-    fontWeight: "600",
+    fontWeight: "700",
+    color: "#355FAD",
   },
 
   check: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: "#4F96FF",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  checkTexto: {
-    color: "#FFFFFF",
-    fontSize: 11,
-    fontWeight: "bold",
+    fontSize: 15,
+    color: "#5D8BDD",
+    fontWeight: "700",
   },
 
   zonaBoton: {
-    minHeight: 70,
-    justifyContent: "flex-end",
+    paddingTop: 8,
   },
 
   botonContinuar: {
-    minHeight: 46,
-    backgroundColor: "#4F96FF",
-    borderRadius: 11,
+    minHeight: 44,
+    borderRadius: 13,
+    backgroundColor: "#6697EB",
     alignItems: "center",
     justifyContent: "center",
   },
 
   botonDesactivado: {
-    backgroundColor: "#B8C0CC",
+    backgroundColor: "#BCC5D1",
   },
 
   textoBoton: {
-    color: "#FFFFFF",
     fontSize: 14,
-    fontWeight: "600",
-  },
-
-  mensaje: {
-    fontSize: 10,
-    color: "#737B89",
-    textAlign: "center",
-    marginTop: 4,
+    fontWeight: "700",
+    color: "#FFFFFF",
   },
 });
