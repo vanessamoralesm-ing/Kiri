@@ -8,7 +8,9 @@ import {
   ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+//Importamos nuestros componentes
 import Logo from '@/components/ui/Logo_izq';//Importamos componente logo izq
+import Button from '@/components/ui/Button';
 
 export default function InstitucionCodigoPantalla() {
   const router = useRouter();
@@ -16,6 +18,11 @@ export default function InstitucionCodigoPantalla() {
   // Funcion para cerrar y regresar
   const regresar = () => {
     router.back();
+  };
+
+  //Funcion para activar el escaneer QR
+  const escanearQR = () => {
+    console.log('Activar camara para encaneo QR');
   };
 
   return (
@@ -36,6 +43,22 @@ export default function InstitucionCodigoPantalla() {
         <Text style={styles.subtitulo}>
           Vincula tu cuenta con tu centro educativo para recibir ayuda personalizada
         </Text>
+
+        {/*Tarjeta de escaner QR*/}
+        <View style={styles.tarjetaQR}>
+          {/*Recuadro gris donde se vera la camara */}
+          <View style={styles.cuadroCamara}/>
+          {/*Boton para activar scaner */}
+          <Button
+          title='Escanear un Codigo QR'
+          variant='primary'
+          onPress={escanearQR}
+          style={styles.botonEscanear}/>
+
+          <Text style={styles.textoIndicacion}>
+            Coloca el código QR frente a tu cámara
+          </Text>
+        </View>
 
       </View>
     </ScrollView>
@@ -86,5 +109,39 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 25,
     marginBottom: 25,
+  },
+
+  /* Card de QR */
+  tarjetaQR: {
+    backgroundColor: '#f5f8fd',
+    borderRadius: 40,
+    padding: 20,
+    alignItems: 'center',
+    borderWidth: 10,
+    borderColor: '#f2f6fa',
+    // Sombra suave estilo tarjeta
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  cuadroCamara: {
+    width: '100%',
+    height: 280,
+    backgroundColor: '#dae0e7',
+    borderRadius: 20,
+    marginBottom: 20,
+  },
+  botonEscanear: {
+    width: '100%',
+    marginBottom: 15,
+  },
+  textoIndicacion: {
+    fontSize: 16,
+    fontWeight: '300',
+    fontFamily: 'Nunito-Medium',
+    color: '#2D3748',
+    textAlign: 'center',
   },
 });
