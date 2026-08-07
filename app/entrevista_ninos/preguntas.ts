@@ -1,12 +1,12 @@
 // app/(entrevista_ninos)
-
+// preguntas de modo prueba.
 export const seccionesEntrevista = [
   {
     titulo: "Conociendo al cliente",
     preguntas: [
       "¿Cómo se siente normalmente su hijo/a cuando está en casa?",
       "¿Cómo se siente normalmente su hijo/a cuando está en la escuela?",
-      "¿Hay algo que le preocupe o que le haga sentir mal últimamente?",
+      "¿Hay algo que le preocupe a su hijo/a o que le haga sentir mal últimamente?",
     ],
   },
 
