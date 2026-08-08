@@ -17,16 +17,16 @@ import Button from '../../components/ui/Button';
 export default function RegistroInstitucionPantalla() {
   const router = useRouter();
 
-  // ESTADO PARA CONTROLAR EL PASO ACTUAL (1 o 2)
+  // ESTADO PARA CONTROLAR EL PASO ACTUAL 1 o 2
   const [pasoActual, setPasoActual] = useState(1);
 
-  // ESTADOS DEL FORMULARIO - PASO 1 (INSTITUCIÓN)
+  // ESTADOS DEL FORMULARIO PASO 1 INSTITUCION
   const [nombreInstitucion, setNombreInstitucion] = useState('');
   const [codigoMined, setCodigoMined] = useState('');
   const [tipoInstitucion, setTipoInstitucion] = useState('');
   const [departamento, setDepartamento] = useState('');
 
-  // ESTADOS DEL FORMULARIO - PASO 2 (SOLICITANTE Y CONTACTO)
+  // ESTADOS DEL FORMULARIO PASO 2 SOLICITANTE Y CONTACTO
   const [nombreSolicitante, setNombreSolicitante] = useState('');
   const [cedula, setCedula] = useState('');
   const [cargo, setCargo] = useState('');
@@ -83,7 +83,7 @@ export default function RegistroInstitucionPantalla() {
           <Logo />
         </View>
 
-        {/* TÍTULO PRINCIPAL */}
+        {/* TITULO PRINCIPAL */}
         <Text style={styles.titulo}>Solicitud de Institución</Text>
          <Text style={styles.subtitulo}>
           Únete al ecosistema de Kiri y transforma el bienestar emocional de tu comunidad educativa.
