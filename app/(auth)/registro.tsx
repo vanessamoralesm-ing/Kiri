@@ -35,6 +35,8 @@ export default function RegisterScreen() {
     }
     console.log('Datos de registro:',{nombre, correo, contraseña});
     //Aqui se hara la conexion con la base de datos pero ya queda una pequeña funcion de guardado
+
+    router.replace('/(bienvenida)');//Lleva a la pantalla bienvenida despues del registro
   };
 
 

@@ -126,7 +126,8 @@ const styles = StyleSheet.create({
   },
   // Contenedor interno que alinea las cosas
   container: {
-    flex: 1,                          // Toma todo el espacio dentro del scroll
+    flex: 1,
+    width: '100%',                      // Toma todo el espacio dentro del scroll
     alignItems: 'center',             // Centra los elementos horizontalmente
     paddingHorizontal: 28,           // Margen interno a los lados (izq y der)
     paddingTop: 35,                   // Margen superior para despegarlo de arriba
