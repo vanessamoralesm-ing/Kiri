@@ -5,6 +5,7 @@ import {
   StyleSheet,       // Para los estilos
   ViewStyle,        // Tipo de TypeScript para validar estilos de contenedor
   TextStyle,        // Tipo de TypeScript para validar estilos de texto
+  StyleProp,        //Con este acepta un objeto de estilo ya no se queda solo con uno
 } from 'react-native';
 
 // Definimos las propiedades (props) que aceptara nuestro botón
@@ -12,7 +13,8 @@ interface ButtonProps {
   title: string;                   // El texto que mostrará el boton
   onPress: () => void;             // La funcion que se ejecuta al presionar
   variant?: 'primary' | 'secondary'; // Variante de diseño: relleno azul o solo borde
-  style?: ViewStyle;               // Permite pasar estilos extra desde fuera
+  style?: StyleProp<ViewStyle>;              // Permite objetos y arreglos de estilos
+  disabled?: boolean; //Permite deshabiliar el boton
 }
 
 export default function Button({
@@ -20,6 +22,7 @@ export default function Button({
   onPress,
   variant = 'primary',             // Por defecto será azul (primary)
   style,
+  disabled = false, //Por defecto lo ponemos en falso
 }: ButtonProps) {
   // Determinamos que estilos aplicar segun la variante recibida
   const isPrimary = variant === 'primary';
@@ -28,6 +31,7 @@ export default function Button({
     <TouchableOpacity
       activeOpacity={0.8} // Reduce suavemente la opacidad al tocar
       onPress={onPress}   // Ejecuta la accion asignada
+      disabled={disabled} //Evita click cuando esta deshabilitado
       style={[
         styles.buttonBase,                     // Estilo base (alto, ancho, bordes)
         isPrimary ? styles.primaryButton : styles.secondaryButton, // Color segun variante

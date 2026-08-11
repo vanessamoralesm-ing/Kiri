@@ -21,6 +21,7 @@ export default function BienvenidaLayout() {
         >
           {/* PANTALLA PRINCIPAL DE BIENVENIDA */}
           <Stack.Screen name="index" />
+          <Stack.Screen name="rango_edad" />
         </Stack>
       </View>
     </ImageBackground>

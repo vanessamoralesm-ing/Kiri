@@ -17,7 +17,7 @@ export default function BienvenidaPantalla() {
 
   // Funcion para avanzar a la pantalla rango edad
   const irARangoEdad = () => {
-    console.log('Navegando a rango edad');
+    router.push('/(bienvenida)/rango_edad');
   };
 
   return (
