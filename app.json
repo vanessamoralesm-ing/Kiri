@@ -21,6 +21,7 @@
       "package": "com.anonymous.app_kiri"
     },
     "web": {
+      "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
