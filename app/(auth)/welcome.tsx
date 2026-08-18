@@ -1,0 +1,236 @@
+import React from 'react';
+//importaremos componentes basicos de React Native que usaremos
+import {
+  View, //Este funciona como un div para agrupar elementos
+  Image, //Permite renderizar imagenes
+  Text, //Agregamos texto
+  StyleSheet, //Crear estilos visuales CSS
+  ScrollView, //Permite que la pantalla tenga desplazamiento hacia abajo
+  ImageBackground, //Para agregar una imagen de fondo
+} from 'react-native';
+import { useRouter } from 'expo-router'; //Hook para navegar entre pantallas
+import Button from '../../components/ui/Button'; //Importamos nuestro componente reusable
+
+export default function WelcomeScreen() {
+
+  const router = useRouter(); //Inicializamos el hook de navegacion
+
+  //Funcion para redirigir al registro de como va acceder
+  const irModoAcceso = () => {
+    router.push('/(auth)/modo_acceso'); //Ajusta la ruta segun su estructura
+  };
+
+  //Funcion para redirigir al inicio de sesion
+  const irLogin = () => {
+    router.push('/(auth)/login'); //Ajusta la ruta al login
+  };
+
+  return (
+
+    <ImageBackground
+      source={require('../../assets/images/fondo_kiri.png.jpeg')} // Ruta de tu imagen de fondo
+      style={styles.imagenFondo}
+      resizeMode="cover"
+    >
+      {/*ScrollView nos ayuda a que el contenido no se corte en pantallas pequeñas*/}
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+
+        {/*View principal que centramos y le daremos padding a todo el contenido*/}
+        <View style={styles.container}>
+          
+          {/*Codigo para el logo de la parte de superior de la pantalla */}
+          <Image
+            //Cargamos la imagen desde la carpeta de assets
+            source={require('../../assets/images/logo_secundario.png')}
+            //aplicamos el tamaño definido en los estilos
+            style={styles.logoTop}
+            //Ajustamos la imagen para que encaje sin deformarse
+            resizeMode="contain"
+          />
+
+          {/*Ilustracion del avatar de kiri, Ese contenedor estaran las dimensiones fijas del avatar*/}
+          <View style={styles.imageContainer}>
+            <Image
+            //cargamos la imagen de la mascota de la app
+              source={require('../../assets/images/mascota.png')} // Cambia al nombre de tu imagen
+              //Ocupa el 100% de su contenedor padre
+              style={styles.mascotImage}
+              //mantiene la proporcion de la imagen
+              resizeMode="contain"
+            />
+          </View>
+
+          {/*TITULO PRINCIPAL DE BIENVENIDA --- */}
+          {/* Texto principal que contiene todo el titulo */}
+          <Text style={styles.title}>
+            Bienvenido a <Text style={styles.titleBlue}>Kiri</Text>
+          </Text>
+
+          {/*Agregando una linea decorativa debajo del titulo*/}
+          <View style={styles.divider}></View>
+
+          {/*SUBTITULO--- */}
+          <Text style={styles.subtitle}>Cuidar de tu salud mental es un acto de fortaleza</Text>
+          {/*Parrafo descriptivo de la app--- */}
+          <Text style={styles.description}>
+            En Kiri encontrarás herramientas para conocerte mejor, comprender tus emociones y desarrollar hábitos
+            que favorezcan tu bienestar.
+          </Text>
+
+          {/*Texto de acompañamiento*/}
+          <Text style={styles.footerText}>
+            Nunca estarás <Text style={styles.greenText}>solo</Text> en este proceso.
+          </Text>
+
+          {/*SECCION DE BOTONES*/}
+          <View style={styles.buttonContainer}>
+            {/*Boton principal Azul*/}
+            <Button
+            title='Comenzar'
+            variant='primary'
+            onPress={irModoAcceso}>
+            </Button>
+          </View>
+
+          {/*SEPARADOR "O"*/}
+            <View style={styles.dividerContainer}>
+              <View style={styles.line} />
+              <Text style={styles.dividerText}>o</Text>
+              <View style={styles.line} />
+            </View>
+
+          {/* Boton Secundario */}
+          <Button
+          title='¿Ya tienes una cuenta? Iniciar Sesión'
+          variant='secondary'
+          onPress={irLogin}>
+          </Button>
+
+        </View>
+      </ScrollView>
+    </ImageBackground>
+  );
+}
+
+//Apartado de estilos para el logo y la mascota
+const styles = StyleSheet.create({
+
+  imagenFondo: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  // Estilo para el ScrollView: hace que ocupe todo el alto disponible
+  scrollContainer: {
+    flexGrow: 1,                      // Permite que se estire al maximo
+  },
+  // Contenedor interno que alinea las cosas
+  container: {
+    flex: 1,
+    width: '100%',                      // Toma todo el espacio dentro del scroll
+    alignItems: 'center',             // Centra los elementos horizontalmente
+    paddingHorizontal: 28,           // Margen interno a los lados (izq y der)
+    paddingTop: 35,                   // Margen superior para despegarlo de arriba
+    paddingBottom: 30,                // Margen inferior
+  },
+  // Estilo especifico para el logo pequeñito de arriba
+  logoTop: {
+    width: 160,                       // Ancho en pixeles del logo
+    height: 100,                       // Alto en pixeles del logo
+    marginBottom: -11,                 // Separacion con el siguiente elemento
+  },
+  // Caza o caja contenedora para la imagen de la mascota
+  imageContainer: {
+    width: 220,                       // Ancho del contenedor
+    height: 260,                      // Alto del contenedor
+    justifyContent: 'center',         // Centra la imagen verticalmente adentro
+    alignItems: 'center',             // Centra la imagen horizontalmente adentro
+    marginBottom: 11,                 // Separacion con el texto que le agregaremos abajo
+  },
+  // Estilo de la imagen del avatar
+  mascotImage: {
+    width: '100%',                    // Toma todo el ancho de su caja (220px)
+    height: '100%',                   // Toma todo el alto de su caja (220px)
+  },
+
+  /*Estilos del Titulo y Linea Decorativa */
+  title:{
+    fontSize:40,
+    fontWeight: '700',
+    fontFamily: 'Nunito-Bold', //Fuente principal que llevara kiri
+    color: '#2D3748', //Color para el texto de Bienvenida de Kiri
+    textAlign: 'center',
+  },
+
+  titleBlue: {
+    color: '#4F8EF7'//Color propio de la app kiri
+  },
+  divider: {
+    width: 40,                      // Ancho de la linea decorativa
+    height: 4,                      // Grosor de la linea
+    backgroundColor: '#B8A8F8',     // Color morado pastel
+    borderRadius: 5,                // Redondea las puntas de la linea
+    marginVertical: 11,             // Margen arriba y abajo para dar aire
+  },
+
+  /* Estilo del Subtitulo*/
+  subtitle:{
+    fontSize:25, //Tamaño de fuente
+    color:'#4F8EF7', //Color azul de kiri
+    fontWeight: '600', //negrita
+    fontFamily: 'Nunito-SemiBold', //Tipografia Nunito Semibold
+    textAlign: 'center', //centrad horizontal
+    lineHeight: 30, //Interlineado para que el texto no se vea muy pegado
+    marginBottom:10, //Margen inferior para el bloque proximo
+  },
+  /* Estilo de la Descripcion de la app*/
+  description:{
+    fontSize:18,
+    fontWeight:'400',
+    fontFamily: 'Nunito-Medium',
+    color: '#2D3748',
+    textAlign: 'center',
+    lineHeight: 25,
+    marginBottom: 8,
+  },
+
+  /* Estilo texto de acompañamiento*/
+  footerText: {
+    fontSize:18, // Tamaño de lectura comodo
+    fontFamily: 'Nunito-Medium', // Tipografia suave
+    color: '#2D3748', //color base de kiri en parrafos
+    textAlign: 'center',
+    marginBottom: 18, // Espacio amplio antes de los botones
+  },
+
+  greenText: {
+    color: '#7BBF9A', //color verde relajante para hacer distintivo a la palabra
+    fontWeight: '700', //negrita para dar enfasis
+    fontFamily: 'Ninito-Medium',
+  },
+
+  /* Estilo para el contenedor de botones*/
+  buttonContainer:{
+    width: '100%', //Toma todo el ancho de la pantalla
+    marginTop: -10, //Margen superior para separlo del texto
+  },
+
+  /*ESTILOS DEL SEPARADOR "O"*/
+  dividerContainer: {
+    flexDirection: 'row',          // Alinea las lineas y el texto en fila horizontal
+    alignItems: 'center',          // Centra verticalmente los elementos
+    marginVertical: 5,            // Espaciado arriba y abajo de la "o"
+    width: '100%',                 // Ocupa todo el ancho
+  },
+  line: {
+    flex: 1,                       // Hace que la linea se expanda para llenar el espacio disponible
+    height: 1,                     // Grosor delgado de 1px
+    backgroundColor: '#2D3748',    // Gris claro elegante
+  },
+  dividerText: {
+    marginHorizontal: 15,          // Espacio a los lados de la letra "o"
+    fontSize: 16,                  // Tamaño legible
+    fontFamily: 'Nunito-Medium',    // Tipografia
+    color: '#2D3748',              // Color gris suave para el texto
+  },
+});
