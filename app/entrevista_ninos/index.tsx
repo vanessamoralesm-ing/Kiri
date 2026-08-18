@@ -1,5 +1,5 @@
 import { useFonts } from "expo-font";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Alert,
@@ -8,59 +8,156 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+// IMPORTAMOS REACT NATIVE REANIMATED
+// Animated.View nos permite convertir un View normal
+// en un elemento que puede tener animaciones muy bonitas.
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
+
 import { seccionesEntrevista } from "./preguntas";
 
 // Mostramos solamente una pregunta en cada pantalla.
 const PREGUNTAS_POR_PANTALLA = 1;
 
-// Respuestas disponibles para cada pregunta.
-const opciones = [
-  {
-    texto: "Muy feliz y tranquilo/a",
-    emoji: "😊",
-    tipo: "verde",
-  },
-  {
-    texto: "A veces bien y a veces mal",
-    emoji: "😐",
-    tipo: "azul",
-  },
-  {
-    texto: "Muy triste o angustiado/a",
-    emoji: "🙁",
-    tipo: "amarillo",
-  },
-  {
-    texto: "No estoy seguro/a",
-    emoji: "🤔",
-    tipo: "morado",
-  },
-];
+// Estos colores e iconos se asignan dependiendo
+// de la posición de cada respuesta.
+const tiposOpciones = ["verde", "azul", "amarillo", "morado"];
+
+const emojisOpciones = ["😊", "🙂", "😐", "🤔"];
 
 export default function EntrevistaNinos() {
-  // Carga la fuente guardada en assets/fonts.
+  // Carga la fuentes guardadas en assets/fonts.
   const [fontsLoaded] = useFonts({
-    "Poppins-Regular": require("../../assets/fonts/Poppins-Regular.ttf"),
+    "Outfit-Regular": require("../../assets/fonts/Outfit-Regular.ttf"),
+    "Outfit-SemiBold": require("../../assets/fonts/Outfit-SemiBold.ttf"),
+    "Outfit-Bold": require("../../assets/fonts/Outfit-Bold.ttf"),
   });
 
   // Guarda el número de la sección actual:
-
   const [numeroSeccion, setNumeroSeccion] = useState(0);
 
   // Guarda la pregunta actual dentro de la sección.
   const [paginaActual, setPaginaActual] = useState(0);
 
   // Guarda todas las respuestas seleccionadas.
-
+  // Aquí se guardan tanto respuestas de botones
+  // como respuestas escritas.
   const [respuestas, setRespuestas] = useState<{
     [clave: string]: string;
   }>({});
+
+  // ANIMACIÓN DEL AVATAR CON REANIMATED.(movimiento del )
+  // useSharedValue guarda un valor que Reanimated
+  // puede modificar mientras se ejecuta la animación.
+  // El avatar comienza en la posición 0.
+  const movimientoAvatar = useSharedValue(0);
+
+  // Este valor controla el tamaño del avatar.
+  // Comienza en 1, que representa su tamaño normal.
+  const escalaAvatar = useSharedValue(1);
+
+  // useEffect inicia la animación cuando se abre
+  // esta pantalla de la entrevista inicial.
+  useEffect(() => {
+    movimientoAvatar.value = withRepeat(
+      // withSequence ejecuta las animaciones en orden.
+      withSequence(
+        // El avatar permanece quieto durante 2.0 segundos
+        // antes de comenzar su movimiento.
+        withDelay(
+          2000,
+          withTiming(-3, {
+            duration: 350,
+          }),
+        ),
+
+        // Después se inclina suavemente
+        // hacia el lado contrario.
+        withTiming(3, {
+          duration: 450,
+        }),
+
+        // Finalmente vuelve a su posición normal.
+        withTiming(0, {
+          duration: 350,
+        }),
+      ),
+
+      // -1 significa que la animación se repite
+      // indefinidamente.
+      -1,
+
+      // false evita invertir automáticamente
+      // la secuencia.
+      false,
+    );
+
+    // Esta segunda animación controla el tamaño.
+    // Se ejecuta al mismo tiempo que la inclinación.
+    escalaAvatar.value = withRepeat(
+      withSequence(
+        // Espera 2.0 segundos antes
+        // de cambiar ligeramente de tamaño.
+        withDelay(
+          2000,
+          withTiming(1.04, {
+            duration: 350,
+          }),
+        ),
+
+        // Crece solamente un poco más
+        // mientras realiza el movimiento.
+        withTiming(1.05, {
+          duration: 450,
+        }),
+
+        // Regresa a su tamaño normal.
+        withTiming(1, {
+          duration: 350,
+        }),
+      ),
+
+      // -1 significa que también se repite
+      // indefinidamente.
+      -1,
+
+      false,
+    );
+  }, [movimientoAvatar, escalaAvatar]);
+
+  // Este estilo recibe el valor animado y lo aplica
+  // al movimiento vertical del avatar.
+  const estiloAvatarAnimado = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          // En esta animación no movemos
+          // el avatar hacia arriba o hacia abajo.
+          // Solamente inclinamos la imagen.
+          rotate: `${movimientoAvatar.value}deg`,
+        },
+
+        {
+          // También hacemos que aumente ligeramente
+          // de tamaño durante el movimiento.
+          scale: escalaAvatar.value,
+        },
+      ],
+    };
+  });
 
   // No muestra la interfaz hasta que la fuente esté cargada.
   if (!fontsLoaded) {
@@ -98,7 +195,6 @@ export default function EntrevistaNinos() {
     // Creamos una clave combinando:
     // número de sección + número de pregunta.
     //
-    // Ejemplo:
     // "0-1" significa sección 0, pregunta 1.
     const clave = `${numeroSeccion}-${indicePregunta}`;
 
@@ -116,7 +212,11 @@ export default function EntrevistaNinos() {
 
     const clave = `${numeroSeccion}-${indiceReal}`;
 
-    return respuestas[clave] !== undefined;
+    const respuesta = respuestas[clave];
+
+    // También verifica que una respuesta abierta
+    // no esté vacía.
+    return respuesta !== undefined && respuesta.trim() !== "";
   });
 
   // Suma todas las preguntas de las cinco secciones.
@@ -125,8 +225,11 @@ export default function EntrevistaNinos() {
     0,
   );
 
-  // Cuenta cuántas respuestas se han guardado.
-  const totalRespondidas = Object.keys(respuestas).length;
+  // Cuenta cuántas respuestas se han guardado
+  // y que realmente tengan contenido.
+  const totalRespondidas = Object.values(respuestas).filter(
+    (respuesta) => respuesta.trim() !== "",
+  ).length;
 
   // Calcula el porcentaje general de la entrevista.
   const porcentaje = Math.round((totalRespondidas / totalPreguntas) * 100);
@@ -165,7 +268,7 @@ export default function EntrevistaNinos() {
     );
 
     // Por ahora las respuestas aparecen en la consola.
-    // Más adelante aquí se podrán enviar a la base de datos.
+    // Más adelante aquí se podrán enviar a la base de datos, mientras se construye.
     console.log("Respuestas:", respuestas);
   }
 
@@ -263,7 +366,7 @@ export default function EntrevistaNinos() {
             const clave = `${numeroSeccion}-${indiceReal}`;
 
             // Respuesta seleccionada para esta pregunta.
-            const respuestaActual = respuestas[clave];
+            const respuestaActual = respuestas[clave] || "";
 
             return (
               <View key={clave} style={styles.tarjetaPregunta}>
@@ -274,78 +377,111 @@ export default function EntrevistaNinos() {
 
                 {/* Texto principal de la pregunta */}
                 <View style={styles.contenidoPregunta}>
-                  <Text style={styles.pregunta}>{pregunta}</Text>
+                  <Text style={styles.pregunta}>{pregunta.texto}</Text>
 
                   <Text style={styles.descripcion}>
-                    Seleccione una opción que describa mejor el comportamiento
-                    de su hijo/a.
+                    {pregunta.tipoRespuesta === "abierta"
+                      ? "Escriba una respuesta según lo que ha observado en su hijo/a."
+                      : "Elija la opción que mejor describa el comportamiento de su hijo/a."}
                   </Text>
                 </View>
 
-                {/* OPCIONES DE RESPUESTA */}
+                {/* ========================= */}
+                {/* RESPUESTA ABIERTA */}
+                {/* ========================= */}
 
-                <View style={styles.opciones}>
-                  {opciones.map((opcion) => {
-                    // Comprueba si esta opción está seleccionada.
-                    const seleccionada = respuestaActual === opcion.texto;
+                {pregunta.tipoRespuesta === "abierta" ? (
+                  <View style={styles.contenedorRespuestaAbierta}>
+                    <TextInput
+                      style={styles.respuestaAbierta}
+                      placeholder="Escriba su respuesta aquí..."
+                      placeholderTextColor="#9BA4B4"
+                      value={respuestaActual}
+                      onChangeText={(texto) =>
+                        seleccionarRespuesta(indiceReal, texto)
+                      }
+                      multiline
+                      textAlignVertical="top"
+                    />
+                  </View>
+                ) : (
+                  <>
+                    {/* ========================= */}
+                    {/* OPCIONES DE RESPUESTA */}
+                    {/* ========================= */}
 
-                    return (
-                      <Pressable
-                        key={opcion.texto}
-                        onPress={() =>
-                          seleccionarRespuesta(indiceReal, opcion.texto)
-                        }
-                        style={[
-                          styles.opcion,
+                    <View style={styles.opciones}>
+                      {pregunta.opciones?.map((opcion, indiceOpcion) => {
+                        // Comprueba si esta opción está seleccionada.
+                        const seleccionada = respuestaActual === opcion;
 
-                          // Aplica un color diferente
-                          // dependiendo del tipo de respuesta.
-                          opcion.tipo === "verde" && styles.opcionVerde,
+                        // Elegimos un color según la posición.
+                        const tipo = tiposOpciones[indiceOpcion] || "azul";
 
-                          opcion.tipo === "azul" && styles.opcionAzul,
+                        // Elegimos un emoji según la posición.
+                        const emoji = emojisOpciones[indiceOpcion] || "🙂";
 
-                          opcion.tipo === "amarillo" && styles.opcionAmarilla,
+                        return (
+                          <Pressable
+                            key={opcion}
+                            onPress={() =>
+                              seleccionarRespuesta(indiceReal, opcion)
+                            }
+                            style={[
+                              styles.opcion,
 
-                          opcion.tipo === "morado" && styles.opcionMorada,
+                              // Aplica un color diferente
+                              // dependiendo del tipo de respuesta.
+                              tipo === "verde" && styles.opcionVerde,
 
-                          // Resalta la opción seleccionada.
-                          seleccionada && styles.opcionSeleccionada,
-                        ]}
-                      >
-                        {/* Círculo de color que contiene el emoji */}
-                        <View
-                          style={[
-                            styles.emojiCirculo,
+                              tipo === "azul" && styles.opcionAzul,
 
-                            opcion.tipo === "verde" && styles.emojiVerde,
+                              tipo === "amarillo" && styles.opcionAmarilla,
 
-                            opcion.tipo === "azul" && styles.emojiAzul,
+                              tipo === "morado" && styles.opcionMorada,
 
-                            opcion.tipo === "amarillo" && styles.emojiAmarillo,
+                              // Resalta la opción seleccionada.
+                              seleccionada && styles.opcionSeleccionada,
+                            ]}
+                          >
+                            {/* Círculo de color que contiene el emoji */}
+                            <View
+                              style={[
+                                styles.emojiCirculo,
 
-                            opcion.tipo === "morado" && styles.emojiMorado,
-                          ]}
-                        >
-                          <Text style={styles.emoji}>{opcion.emoji}</Text>
-                        </View>
+                                tipo === "verde" && styles.emojiVerde,
 
-                        {/* Texto de la respuesta */}
-                        <Text
-                          style={[
-                            styles.textoOpcion,
+                                tipo === "azul" && styles.emojiAzul,
 
-                            seleccionada && styles.textoSeleccionado,
-                          ]}
-                        >
-                          {opcion.texto}
-                        </Text>
+                                tipo === "amarillo" && styles.emojiAmarillo,
 
-                        {/* Marca que aparece al seleccionar */}
-                        {seleccionada && <Text style={styles.check}>✓</Text>}
-                      </Pressable>
-                    );
-                  })}
-                </View>
+                                tipo === "morado" && styles.emojiMorado,
+                              ]}
+                            >
+                              <Text style={styles.emoji}>{emoji}</Text>
+                            </View>
+
+                            {/* Texto de la respuesta */}
+                            <Text
+                              style={[
+                                styles.textoOpcion,
+
+                                seleccionada && styles.textoSeleccionado,
+                              ]}
+                            >
+                              {opcion}
+                            </Text>
+
+                            {/* Marca que aparece al seleccionar */}
+                            {seleccionada && (
+                              <Text style={styles.check}>✓</Text>
+                            )}
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  </>
+                )}
 
                 {/* AVATAR INFERIOR DERECHO */}
 
@@ -356,10 +492,19 @@ export default function EntrevistaNinos() {
                     Al usar position: "absolute", el avatar
                     no empuja ni modifica las respuestas.
                   */}
+
                 <View style={styles.avatarInferior}>
-                  <Image
+                  {/*
+                      Animamos solamente la imagen del avatar.
+
+                      De esta manera el contenedor se mantiene
+                      fijo en su posición y solamente el personaje
+                      sube y baja suavemente.
+                    */}
+
+                  <Animated.Image
                     source={require("../../assets/images_kids/avatar_pregunta.png")}
-                    style={styles.avatarImagen}
+                    style={[styles.avatarImagen, estiloAvatarAnimado]}
                     resizeMode="contain"
                   />
                 </View>
@@ -439,7 +584,7 @@ const styles = StyleSheet.create({
     fontSize: 36,
     lineHeight: 38,
     color: "#87909F",
-    fontFamily: "Poppins-Regular",
+    fontFamily: "Outfit-Regular",
   },
 
   logoImagen: {
@@ -450,8 +595,8 @@ const styles = StyleSheet.create({
   },
 
   perfil: {
-    width: 48,
-    height: 48,
+    width: 45,
+    height: 45,
     borderRadius: 24,
     backgroundColor: "#C7DAFF",
     alignItems: "center",
@@ -460,8 +605,8 @@ const styles = StyleSheet.create({
 
   perfilTexto: {
     color: "#4C72B4",
-    fontSize: 15,
-    fontFamily: "Poppins-Regular",
+    fontSize: 14,
+    fontFamily: "Outfit-SemiBold",
   },
 
   // PROGRESO
@@ -474,15 +619,15 @@ const styles = StyleSheet.create({
   },
 
   numeroSeccion: {
-    fontSize: 12,
-    color: "#4A5364",
-    fontFamily: "Poppins-Regular",
+    fontSize: 13,
+    color: "#135CE4",
+    fontFamily: "Outfit-SemiBold",
   },
 
   porcentajeTexto: {
-    fontSize: 12,
-    color: "#649BF7",
-    fontFamily: "Poppins-Regular",
+    fontSize: 13,
+    color: "#135CE4",
+    fontFamily: "Outfit-SemiBold",
   },
 
   barraFondo: {
@@ -537,8 +682,8 @@ const styles = StyleSheet.create({
 
   numeroCirculo: {
     position: "absolute",
-    top: 14,
-    left: 14,
+    top: 12,
+    left: 12,
 
     width: 38,
     height: 38,
@@ -554,41 +699,44 @@ const styles = StyleSheet.create({
 
   numeroTexto: {
     color: "#30394D",
-    fontSize: 15,
-    fontFamily: "Poppins-Regular",
+    fontSize: 16,
+    fontFamily: "Outfit-Bold",
   },
 
   // TEXTO DE LA PREGUNTA
 
   contenidoPregunta: {
-    paddingLeft: 48,
+    paddingLeft: 40,
     paddingRight: 5,
+    marginTop: -10,
 
-    minHeight: 125,
+    minHeight: 100,
 
     justifyContent: "center",
   },
 
   pregunta: {
-    fontSize: 17,
+    fontSize: 20,
     lineHeight: 24,
     color: "#273448",
-    fontFamily: "Poppins-Regular",
+    fontFamily: "Outfit-SemiBold",
+    letterSpacing: -0.2,
   },
 
   descripcion: {
-    fontSize: 11,
+    fontSize: 14,
     lineHeight: 17,
     color: "#788296",
     marginTop: 10,
-    fontFamily: "Poppins-Regular",
+    fontFamily: "Outfit-Regular",
   },
 
   // RESPUESTAS
 
   opciones: {
     gap: 10,
-    //baja las respuestas
+
+    // baja las respuestas
     marginTop: 30,
   },
 
@@ -661,25 +809,51 @@ const styles = StyleSheet.create({
     fontSize: 19,
   },
 
+  // texto de las opciones o respuestas
   textoOpcion: {
     flex: 1,
 
-    fontSize: 13,
+    fontSize: 14,
     lineHeight: 18,
 
     color: "#354156",
-    fontFamily: "Poppins-Regular",
+    fontFamily: "Outfit-SemiBold",
   },
 
   textoSeleccionado: {
     color: "#355FAD",
-    fontFamily: "Poppins-Regular",
+    fontFamily: "Outfit-SemiBold",
   },
 
   check: {
     fontSize: 18,
     color: "#5D8BDD",
-    fontFamily: "Poppins-Regular",
+    fontFamily: "Outfit-Regular",
+  },
+
+  // RESPUESTA ABIERTA
+
+  contenedorRespuestaAbierta: {
+    marginTop: 30,
+  },
+
+  respuestaAbierta: {
+    minHeight: 150,
+
+    borderWidth: 1,
+    borderColor: "#D6E0EF",
+    borderRadius: 18,
+
+    backgroundColor: "#FAFCFF",
+
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+
+    fontSize: 15,
+    lineHeight: 22,
+
+    color: "#354156",
+    fontFamily: "Outfit-Regular",
   },
 
   // AVATAR INFERIOR DE LAS PREGUNTAS
@@ -729,8 +903,8 @@ const styles = StyleSheet.create({
   },
 
   textoBoton: {
-    fontSize: 15,
+    fontSize: 17,
     color: "#FFFFFF",
-    fontFamily: "Poppins-Regular",
+    fontFamily: "Outfit-Bold",
   },
 });
