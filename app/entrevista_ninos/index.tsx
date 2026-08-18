@@ -1,5 +1,5 @@
 import { useFonts } from "expo-font";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import {
   Alert,
@@ -14,18 +14,6 @@ import {
 
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-// IMPORTAMOS REACT NATIVE REANIMATED
-// Animated.View nos permite convertir un View normal
-// en un elemento que puede tener animaciones muy bonitas.
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from "react-native-reanimated";
 
 import { seccionesEntrevista } from "./preguntas";
 
@@ -58,106 +46,6 @@ export default function EntrevistaNinos() {
   const [respuestas, setRespuestas] = useState<{
     [clave: string]: string;
   }>({});
-
-  // ANIMACIÓN DEL AVATAR CON REANIMATED.(movimiento del )
-  // useSharedValue guarda un valor que Reanimated
-  // puede modificar mientras se ejecuta la animación.
-  // El avatar comienza en la posición 0.
-  const movimientoAvatar = useSharedValue(0);
-
-  // Este valor controla el tamaño del avatar.
-  // Comienza en 1, que representa su tamaño normal.
-  const escalaAvatar = useSharedValue(1);
-
-  // useEffect inicia la animación cuando se abre
-  // esta pantalla de la entrevista inicial.
-  useEffect(() => {
-    movimientoAvatar.value = withRepeat(
-      // withSequence ejecuta las animaciones en orden.
-      withSequence(
-        // El avatar permanece quieto durante 2.0 segundos
-        // antes de comenzar su movimiento.
-        withDelay(
-          2000,
-          withTiming(-3, {
-            duration: 350,
-          }),
-        ),
-
-        // Después se inclina suavemente
-        // hacia el lado contrario.
-        withTiming(3, {
-          duration: 450,
-        }),
-
-        // Finalmente vuelve a su posición normal.
-        withTiming(0, {
-          duration: 350,
-        }),
-      ),
-
-      // -1 significa que la animación se repite
-      // indefinidamente.
-      -1,
-
-      // false evita invertir automáticamente
-      // la secuencia.
-      false,
-    );
-
-    // Esta segunda animación controla el tamaño.
-    // Se ejecuta al mismo tiempo que la inclinación.
-    escalaAvatar.value = withRepeat(
-      withSequence(
-        // Espera 2.0 segundos antes
-        // de cambiar ligeramente de tamaño.
-        withDelay(
-          2000,
-          withTiming(1.04, {
-            duration: 350,
-          }),
-        ),
-
-        // Crece solamente un poco más
-        // mientras realiza el movimiento.
-        withTiming(1.05, {
-          duration: 450,
-        }),
-
-        // Regresa a su tamaño normal.
-        withTiming(1, {
-          duration: 350,
-        }),
-      ),
-
-      // -1 significa que también se repite
-      // indefinidamente.
-      -1,
-
-      false,
-    );
-  }, [movimientoAvatar, escalaAvatar]);
-
-  // Este estilo recibe el valor animado y lo aplica
-  // al movimiento vertical del avatar.
-  const estiloAvatarAnimado = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          // En esta animación no movemos
-          // el avatar hacia arriba o hacia abajo.
-          // Solamente inclinamos la imagen.
-          rotate: `${movimientoAvatar.value}deg`,
-        },
-
-        {
-          // También hacemos que aumente ligeramente
-          // de tamaño durante el movimiento.
-          scale: escalaAvatar.value,
-        },
-      ],
-    };
-  });
 
   // No muestra la interfaz hasta que la fuente esté cargada.
   if (!fontsLoaded) {
@@ -268,7 +156,7 @@ export default function EntrevistaNinos() {
     );
 
     // Por ahora las respuestas aparecen en la consola.
-    // Más adelante aquí se podrán enviar a la base de datos, mientras se construye.
+    // Más adelante aquí se podrán enviar a la base de datos, mientras se construye//.
     console.log("Respuestas:", respuestas);
   }
 
@@ -348,14 +236,14 @@ export default function EntrevistaNinos() {
             style={[
               styles.barraProgreso,
               {
-                // El ancho cambia según el porcentaje.
+                // El ancho cambia segun el porcentaje.
                 width: `${porcentaje}%`,
               },
             ]}
           />
         </View>
 
-        {/* ÁREA DE LA PREGUNTA */}
+        {/* AREA DE LA PREGUNTA */}
 
         <View style={styles.areaPregunta}>
           {preguntasVisibles.map((pregunta, indiceLocal) => {
@@ -370,7 +258,7 @@ export default function EntrevistaNinos() {
 
             return (
               <View key={clave} style={styles.tarjetaPregunta}>
-                {/* Círculo con el número de la pregunta */}
+                {/* Circulo con el numero de la pregunta */}
                 <View style={styles.numeroCirculo}>
                   <Text style={styles.numeroTexto}>{indiceReal + 1}.</Text>
                 </View>
@@ -386,9 +274,7 @@ export default function EntrevistaNinos() {
                   </Text>
                 </View>
 
-                {/* ========================= */}
                 {/* RESPUESTA ABIERTA */}
-                {/* ========================= */}
 
                 {pregunta.tipoRespuesta === "abierta" ? (
                   <View style={styles.contenedorRespuestaAbierta}>
@@ -406,9 +292,7 @@ export default function EntrevistaNinos() {
                   </View>
                 ) : (
                   <>
-                    {/* ========================= */}
                     {/* OPCIONES DE RESPUESTA */}
-                    {/* ========================= */}
 
                     <View style={styles.opciones}>
                       {pregunta.opciones?.map((opcion, indiceOpcion) => {
@@ -494,17 +378,9 @@ export default function EntrevistaNinos() {
                   */}
 
                 <View style={styles.avatarInferior}>
-                  {/*
-                      Animamos solamente la imagen del avatar.
-
-                      De esta manera el contenedor se mantiene
-                      fijo en su posición y solamente el personaje
-                      sube y baja suavemente.
-                    */}
-
-                  <Animated.Image
+                  <Image
                     source={require("../../assets/images_kids/avatar_pregunta.png")}
-                    style={[styles.avatarImagen, estiloAvatarAnimado]}
+                    style={styles.avatarImagen}
                     resizeMode="contain"
                   />
                 </View>
