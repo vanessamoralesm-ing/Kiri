@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ActivityIndicator, Alert, Platform} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ActivityIndicator, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import GoogleButton from '@/components/ui/GoogleButton';
 import { useAuth } from '@/services/authProvider';
 import type { Genero } from '@/types/auth';
-import {
-  validateRegister,
-  EDAD_MINIMA,
-} from '@/utils/validations';
-import DateTimePicker, {DateTimePickerEvent,} from '@react-native-community/datetimepicker';
+import { validateRegister, EDAD_MINIMA } from '@/utils/validations';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -21,7 +18,6 @@ export default function RegisterScreen() {
   const [apellidos, setApellidos] = useState('');
   const [nombrePreferido, setNombrePreferido] = useState('');
   const [telefono, setTelefono] = useState('');
-
   const [fechaNacimiento, setFechaNacimiento] = useState('');
   const [mostrarCalendario, setMostrarCalendario] = useState(false);
   const [fechaSeleccionada, setFechaSeleccionada] = useState<Date | null>(null);
@@ -55,60 +51,41 @@ export default function RegisterScreen() {
   // IR AL LOGIN
   const irALogin = () => router.push('/(auth)/login');
 
+  // FORMATEAR FECHA
   const formatearFecha = (fecha: Date) => {
     const year = fecha.getFullYear();
-
-    const month = String(
-      fecha.getMonth() + 1
-    ).padStart(2, '0');
-
-    const day = String(
-      fecha.getDate()
-    ).padStart(2, '0');
-
+    const month = String(fecha.getMonth() + 1).padStart(2, '0');
+    const day = String(fecha.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
 
-  const handleFechaChange = (
-    event: DateTimePickerEvent,
-    selectedDate?: Date
-  ) => {
-
+  // CONTROLADOR DE FECHA
+  const handleFechaChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     // En Android se cierra después de seleccionar
     if (Platform.OS === 'android') {
       setMostrarCalendario(false);
     }
 
     // Usuario canceló
-    if (
-      event.type === 'dismissed' ||
-      !selectedDate
-    ) {
+    if (event.type === 'dismissed' || !selectedDate) {
       return;
     }
 
     setFechaSeleccionada(selectedDate);
-
-    setFechaNacimiento(
-      formatearFecha(selectedDate)
-    );
-
+    setFechaNacimiento(formatearFecha(selectedDate));
     limpiarError();
   };
 
-  // =====================================================
   // FECHA MÁXIMA PERMITIDA
-  // =====================================================
-
   const obtenerFechaMaxima = () => {
     const hoy = new Date();
-
     return new Date(
       hoy.getFullYear() - EDAD_MINIMA,
       hoy.getMonth(),
       hoy.getDate()
     );
   };
+
   // REGISTRAR
   const registrar = async () => {
     setError(null);
@@ -155,22 +132,13 @@ export default function RegisterScreen() {
       });
 
       // CONFIRMACIÓN DE CORREO ACTIVADA
-      if (
-        result.requiresEmailConfirmation
-      ) {
-
+      if (result.requiresEmailConfirmation) {
         router.replace({
-          pathname:
-            '/(auth)/registro_exitoso',
-
+          pathname: '/(auth)/registro_exitoso',
           params: {
-            email:
-              correo
-                .trim()
-                .toLowerCase(),
+            email: correo.trim().toLowerCase(),
           },
         });
-
         return;
       }
     } catch (err: any) {
@@ -266,192 +234,90 @@ export default function RegisterScreen() {
             placeholder="Ej: 88888888"
             value={telefono}
             onChangeText={(value) => {
-              // Elimina cualquier carácter
-              // que no sea un número.
-              const soloNumeros =
-                value.replace(/\D/g, '');
-              // Permite máximo 8 números.
-              const limitado =
-                soloNumeros.slice(0, 8);
+              const soloNumeros = value.replace(/\D/g, '');
+              const limitado = soloNumeros.slice(0, 8);
               setTelefono(limitado);
               limpiarError();
             }}
             keyboardType="number-pad"
             maxLength={8}
           />
-          {/* =================================================
-    FECHA DE NACIMIENTO
-================================================= */}
 
-<Text style={styles.fieldLabel}>
-  Fecha de nacimiento
-</Text>
+          {/* FECHA DE NACIMIENTO */}
+          <Text style={styles.fieldLabel}>Fecha de nacimiento</Text>
 
+          {/* CONTROL DE FECHA SEGÚN PLATAFORMA */}
+          {Platform.OS === 'web' ? (
+            <View style={styles.webDateContainer}>
+              <input
+                type="date"
+                value={fechaNacimiento}
+                min="1900-01-01"
+                max={formatearFecha(obtenerFechaMaxima())}
+                onChange={(event) => {
+                  const value = event.currentTarget.value;
+                  setFechaNacimiento(value);
 
-{/* =================================================
-    WEB
-================================================= */}
+                  if (value) {
+                    const [year, month, day] = value.split('-').map(Number);
+                    setFechaSeleccionada(new Date(year, month - 1, day));
+                  }
 
-{Platform.OS === 'web' ? (
+                  limpiarError();
+                }}
+                style={{
+                  width: '100%',
+                  height: 50,
+                  borderWidth: 0,
+                  borderStyle: 'none',
+                  outline: 'none',
+                  backgroundColor: 'transparent',
+                  fontSize: 16,
+                  color: '#2D3748',
+                  fontFamily: 'Nunito-Medium',
+                  cursor: 'pointer',
+                }}
+              />
+            </View>
+          ) : (
+            <>
+              <TouchableOpacity
+                style={styles.dateInput}
+                activeOpacity={0.8}
+                onPress={() => setMostrarCalendario(true)}
+              >
+                <Text
+                  style={[
+                    styles.dateText,
+                    !fechaNacimiento && styles.datePlaceholder,
+                  ]}
+                >
+                  {fechaNacimiento || 'Selecciona tu fecha de nacimiento'}
+                </Text>
+                <Text style={styles.calendarIcon}>📅</Text>
+              </TouchableOpacity>
 
-  <View style={styles.webDateContainer}>
+              {mostrarCalendario && (
+                <DateTimePicker
+                  value={fechaSeleccionada ?? new Date(2000, 0, 1)}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'calendar'}
+                  minimumDate={new Date(1900, 0, 1)}
+                  maximumDate={obtenerFechaMaxima()}
+                  onChange={handleFechaChange}
+                />
+              )}
 
-    <input
-      type="date"
-
-      value={fechaNacimiento}
-
-      min="1900-01-01"
-
-      max={
-        formatearFecha(
-          obtenerFechaMaxima()
-        )
-      }
-
-      onChange={(event) => {
-        const value =
-          event.currentTarget.value;
-
-        setFechaNacimiento(value);
-
-        if (value) {
-          const [
-            year,
-            month,
-            day,
-          ] = value
-            .split('-')
-            .map(Number);
-
-          setFechaSeleccionada(
-            new Date(
-              year,
-              month - 1,
-              day
-            )
-          );
-        }
-
-        limpiarError();
-      }}
-
-      style={{
-        width: '100%',
-        height: 50,
-        borderWidth: 0,
-        borderStyle: 'none',
-        outline: 'none',
-        backgroundColor: 'transparent',
-        fontSize: 16,
-        color: '#2D3748',
-        fontFamily: 'Nunito-Medium',
-        cursor: 'pointer',
-      }}
-    />
-
-  </View>
-
-) : (
-
-  <>
-    {/* ===============================================
-        ANDROID / IOS
-    =============================================== */}
-
-    <TouchableOpacity
-      style={styles.dateInput}
-      activeOpacity={0.8}
-
-      onPress={() =>
-        setMostrarCalendario(true)
-      }
-    >
-
-      <Text
-        style={[
-          styles.dateText,
-
-          !fechaNacimiento &&
-            styles.datePlaceholder,
-        ]}
-      >
-
-        {fechaNacimiento ||
-          'Selecciona tu fecha de nacimiento'}
-
-      </Text>
-
-
-      <Text style={styles.calendarIcon}>
-        📅
-      </Text>
-
-    </TouchableOpacity>
-
-
-    {mostrarCalendario && (
-
-      <DateTimePicker
-        value={
-          fechaSeleccionada ??
-          new Date(2000, 0, 1)
-        }
-
-        mode="date"
-
-        display={
-          Platform.OS === 'ios'
-            ? 'spinner'
-            : 'calendar'
-        }
-
-        minimumDate={
-          new Date(1900, 0, 1)
-        }
-
-        maximumDate={
-          obtenerFechaMaxima()
-        }
-
-        onChange={
-          handleFechaChange
-        }
-      />
-
-    )}
-
-
-    {/* iOS necesita cerrar manualmente */}
-
-    {Platform.OS === 'ios' &&
-      mostrarCalendario && (
-
-        <TouchableOpacity
-          style={
-            styles.closeDateButton
-          }
-
-          onPress={() =>
-            setMostrarCalendario(false)
-          }
-        >
-
-          <Text
-            style={
-              styles.closeDateText
-            }
-          >
-            Listo
-          </Text>
-
-        </TouchableOpacity>
-
-      )}
-
-  </>
-
-)}
+              {Platform.OS === 'ios' && mostrarCalendario && (
+                <TouchableOpacity
+                  style={styles.closeDateButton}
+                  onPress={() => setMostrarCalendario(false)}
+                >
+                  <Text style={styles.closeDateText}>Listo</Text>
+                </TouchableOpacity>
+              )}
+            </>
+          )}
 
           {/* GÉNERO */}
           <Text style={styles.fieldLabel}>Género</Text>
@@ -740,98 +606,56 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#4F8EF7',
   },
-
   dateInput: {
-  width: '100%',
-
-  minHeight: 52,
-
-  borderWidth: 1,
-
-  borderColor: '#CBD5E0',
-
-  borderRadius: 10,
-
-  paddingHorizontal: 15,
-
-  flexDirection: 'row',
-
-  alignItems: 'center',
-
-  justifyContent: 'space-between',
-
-  backgroundColor: '#FFFFFF',
-
-  marginBottom: 18,
-},
-
-
-dateText: {
-  flex: 1,
-
-  fontSize: 16,
-
-  fontFamily: 'Nunito-Medium',
-
-  color: '#2D3748',
-},
-
-
-datePlaceholder: {
-  color: '#A0AEC0',
-},
-
-
-calendarIcon: {
-  fontSize: 20,
-
-  marginLeft: 10,
-},
-
-
-closeDateButton: {
-  alignSelf: 'flex-end',
-
-  backgroundColor: '#4F8EF7',
-
-  paddingHorizontal: 18,
-
-  paddingVertical: 8,
-
-  borderRadius: 8,
-
-  marginTop: -8,
-
-  marginBottom: 18,
-},
-
-
-closeDateText: {
-  color: '#FFFFFF',
-
-  fontSize: 14,
-
-  fontFamily: 'Nunito-SemiBold',
-
-  fontWeight: '600',
-},
-webDateContainer: {
-  width: '100%',
-
-  minHeight: 52,
-
-  borderWidth: 1,
-
-  borderColor: '#CBD5E0',
-
-  borderRadius: 10,
-
-  paddingHorizontal: 15,
-
-  justifyContent: 'center',
-
-  backgroundColor: '#FFFFFF',
-
-  marginBottom: 18,
-},
+    width: '100%',
+    minHeight: 52,
+    borderWidth: 1,
+    borderColor: '#CBD5E0',
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    marginBottom: 18,
+  },
+  dateText: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: 'Nunito-Medium',
+    color: '#2D3748',
+  },
+  datePlaceholder: {
+    color: '#A0AEC0',
+  },
+  calendarIcon: {
+    fontSize: 20,
+    marginLeft: 10,
+  },
+  closeDateButton: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#4F8EF7',
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginTop: -8,
+    marginBottom: 18,
+  },
+  closeDateText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontFamily: 'Nunito-SemiBold',
+    fontWeight: '600',
+  },
+  webDateContainer: {
+    width: '100%',
+    minHeight: 52,
+    borderWidth: 1,
+    borderColor: '#CBD5E0',
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    marginBottom: 18,
+  },
 });
