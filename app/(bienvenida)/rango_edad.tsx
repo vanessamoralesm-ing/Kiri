@@ -47,7 +47,7 @@ export default function RangoEdadPantalla() {
   const manejarContinuar = () => {
     if (opcionSeleccionada) {
       console.log("Rango de edad seleccionado:", opcionSeleccionada);
-      router.push("/(bienvenida)");
+      router.push("/(bienvenida)/kids_entrv");
     }
   };
 
