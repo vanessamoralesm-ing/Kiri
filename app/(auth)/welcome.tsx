@@ -6,6 +6,7 @@ import {
   Text, //Agregamos texto
   StyleSheet, //Crear estilos visuales CSS
   ScrollView, //Permite que la pantalla tenga desplazamiento hacia abajo
+  ImageBackground, //Para agregar una imagen de fondo
 } from 'react-native';
 import { useRouter } from 'expo-router'; //Hook para navegar entre pantallas
 import Button from '../../components/ui/Button'; //Importamos nuestro componente reusable
@@ -14,106 +15,119 @@ export default function WelcomeScreen() {
 
   const router = useRouter(); //Inicializamos el hook de navegacion
 
-  //Funcion para redirigir al registro
-  const handleStart = () => {
-    router.push('/(auth)/registro'); //Ajusta la ruta segun su estructura
+  //Funcion para redirigir al registro de como va acceder
+  const irModoAcceso = () => {
+    router.push('/(auth)/modo_acceso'); //Ajusta la ruta segun su estructura
   };
 
   //Funcion para redirigir al inicio de sesion
-  const handleLogin = () => {
+  const irLogin = () => {
     router.push('/(auth)/login'); //Ajusta la ruta al login
   };
 
   return (
-    //ScrollView nos ayuda a que el contenido no se corte en pantallas pequeñas
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
 
-      {/*View principal que centramos y le daremos padding a todo el contenido*/}
-      <View style={styles.container}>
-        
-        {/*Codigo para el logo de la parte de superior de la pantalla */}
-        <Image
-          //Cargamos la imagen desde la carpeta de assets
-          source={require('../../assets/images/logo_secundario.png')}
-          //aplicamos el tamaño definido en los estilos
-          style={styles.logoTop}
-          //Ajustamos la imagen para que encaje sin deformarse
-          resizeMode="contain"
-        />
+    <ImageBackground
+      source={require('../../assets/images/fondo_kiri.png.jpeg')} // Ruta de tu imagen de fondo
+      style={styles.imagenFondo}
+      resizeMode="cover"
+    >
+      {/*ScrollView nos ayuda a que el contenido no se corte en pantallas pequeñas*/}
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
 
-        {/*Ilustracion del avatar de kiri, Ese contenedor estaran las dimensiones fijas del avatar*/}
-        <View style={styles.imageContainer}>
+        {/*View principal que centramos y le daremos padding a todo el contenido*/}
+        <View style={styles.container}>
+          
+          {/*Codigo para el logo de la parte de superior de la pantalla */}
           <Image
-           //cargamos la imagen de la mascota de la app
-            source={require('../../assets/images/mascota.png')} // Cambia al nombre de tu imagen
-            //Ocupa el 100% de su contenedor padre
-            style={styles.mascotImage}
-            //mantiene la proporcion de la imagen
+            //Cargamos la imagen desde la carpeta de assets
+            source={require('../../assets/images/logo_secundario.png')}
+            //aplicamos el tamaño definido en los estilos
+            style={styles.logoTop}
+            //Ajustamos la imagen para que encaje sin deformarse
             resizeMode="contain"
           />
-        </View>
 
-        {/*TITULO PRINCIPAL DE BIENVENIDA --- */}
-        {/* Texto principal que contiene todo el titulo */}
-        <Text style={styles.title}>
-          Bienvenido a <Text style={styles.titleBlue}>Kiri</Text>
-        </Text>
-
-        {/*Agregando una linea decorativa debajo del titulo*/}
-        <View style={styles.divider}></View>
-
-        {/*SUBTITULO--- */}
-        <Text style={styles.subtitle}>Cuidar de tu salud mental es un acto de fortaleza</Text>
-        {/*Parrafo descriptivo de la app--- */}
-        <Text style={styles.description}>
-          En Kiri encontrarás herramientas para conocerte mejor, comprender tus emociones y desarrollar hábitos
-          que favorezcan tu bienestar.
-        </Text>
-
-        {/*Texto de acompañamiento*/}
-        <Text style={styles.footerText}>
-          Nunca estarás <Text style={styles.greenText}>solo</Text> en este proceso.
-        </Text>
-
-        {/*SECCION DE BOTONES*/}
-        <View style={styles.buttonContainer}>
-          {/*Boton principal Azul*/}
-          <Button
-          title='Comenzar'
-          variant='primary'
-          onPress={handleStart}>
-          </Button>
-        </View>
-
-        {/* ➖ SEPARADOR "O" ➖ */}
-          <View style={styles.dividerContainer}>
-            <View style={styles.line} />
-            <Text style={styles.dividerText}>o</Text>
-            <View style={styles.line} />
+          {/*Ilustracion del avatar de kiri, Ese contenedor estaran las dimensiones fijas del avatar*/}
+          <View style={styles.imageContainer}>
+            <Image
+            //cargamos la imagen de la mascota de la app
+              source={require('../../assets/images/mascota.png')} // Cambia al nombre de tu imagen
+              //Ocupa el 100% de su contenedor padre
+              style={styles.mascotImage}
+              //mantiene la proporcion de la imagen
+              resizeMode="contain"
+            />
           </View>
 
-        {/* Boton Secundario */}
-        <Button
-        title='¿Ya tienes una cuenta? Iniciar Sesión'
-        variant='secondary'
-        onPress={handleLogin}>
-        </Button>
+          {/*TITULO PRINCIPAL DE BIENVENIDA --- */}
+          {/* Texto principal que contiene todo el titulo */}
+          <Text style={styles.title}>
+            Bienvenido a <Text style={styles.titleBlue}>Kiri</Text>
+          </Text>
 
-      </View>
-    </ScrollView>
+          {/*Agregando una linea decorativa debajo del titulo*/}
+          <View style={styles.divider}></View>
+
+          {/*SUBTITULO--- */}
+          <Text style={styles.subtitle}>Cuidar de tu salud mental es un acto de fortaleza</Text>
+          {/*Parrafo descriptivo de la app--- */}
+          <Text style={styles.description}>
+            En Kiri encontrarás herramientas para conocerte mejor, comprender tus emociones y desarrollar hábitos
+            que favorezcan tu bienestar.
+          </Text>
+
+          {/*Texto de acompañamiento*/}
+          <Text style={styles.footerText}>
+            Nunca estarás <Text style={styles.greenText}>solo</Text> en este proceso.
+          </Text>
+
+          {/*SECCION DE BOTONES*/}
+          <View style={styles.buttonContainer}>
+            {/*Boton principal Azul*/}
+            <Button
+            title='Comenzar'
+            variant='primary'
+            onPress={irModoAcceso}>
+            </Button>
+          </View>
+
+          {/*SEPARADOR "O"*/}
+            <View style={styles.dividerContainer}>
+              <View style={styles.line} />
+              <Text style={styles.dividerText}>o</Text>
+              <View style={styles.line} />
+            </View>
+
+          {/* Boton Secundario */}
+          <Button
+          title='¿Ya tienes una cuenta? Iniciar Sesión'
+          variant='secondary'
+          onPress={irLogin}>
+          </Button>
+
+        </View>
+      </ScrollView>
+    </ImageBackground>
   );
 }
 
 //Apartado de estilos para el logo y la mascota
 const styles = StyleSheet.create({
+
+  imagenFondo: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   // Estilo para el ScrollView: hace que ocupe todo el alto disponible
   scrollContainer: {
     flexGrow: 1,                      // Permite que se estire al maximo
-    backgroundColor: '#F8FAFC',      // Color de fondo claro para la pantalla
   },
   // Contenedor interno que alinea las cosas
   container: {
-    flex: 1,                          // Toma todo el espacio dentro del scroll
+    flex: 1,
+    width: '100%',                      // Toma todo el espacio dentro del scroll
     alignItems: 'center',             // Centra los elementos horizontalmente
     paddingHorizontal: 28,           // Margen interno a los lados (izq y der)
     paddingTop: 35,                   // Margen superior para despegarlo de arriba
@@ -201,7 +215,7 @@ const styles = StyleSheet.create({
     marginTop: -10, //Margen superior para separlo del texto
   },
 
-  /* --- ESTILOS DEL SEPARADOR "O" --- */
+  /*ESTILOS DEL SEPARADOR "O"*/
   dividerContainer: {
     flexDirection: 'row',          // Alinea las lineas y el texto en fila horizontal
     alignItems: 'center',          // Centra verticalmente los elementos

@@ -1,21 +1,22 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { useState } from "react";
 
 import {
-  Alert,
-  Image,
-  ImageBackground,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    Alert,
+    Image,
+    ImageBackground,
+    Pressable,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
 
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { seccionesEntrevista } from "./preguntas";
+import { seccionesEntrevista } from "./preguntas_kids";
 
 // Mostramos solamente una pregunta en cada pantalla.
 const PREGUNTAS_POR_PANTALLA = 1;
@@ -29,9 +30,9 @@ const emojisOpciones = ["😊", "🙂", "😐", "🤔"];
 export default function EntrevistaNinos() {
   // Carga la fuentes guardadas en assets/fonts.
   const [fontsLoaded] = useFonts({
-    "Outfit-Regular": require("../../assets/fonts/Outfit-Regular.ttf"),
-    "Outfit-SemiBold": require("../../assets/fonts/Outfit-SemiBold.ttf"),
-    "Outfit-Bold": require("../../assets/fonts/Outfit-Bold.ttf"),
+    "Nunito-Medium": require("../../assets/fonts/Nunito-Medium.ttf"),
+    "Nunito-SemiBold": require("../../assets/fonts/Nunito-SemiBold.ttf"),
+    "Nunito-Bold": require("../../assets/fonts/Nunito-Bold.ttf"),
   });
 
   // Guarda el número de la sección actual:
@@ -156,7 +157,7 @@ export default function EntrevistaNinos() {
     );
 
     // Por ahora las respuestas aparecen en la consola.
-    // Más adelante aquí se podrán enviar a la base de datos, mientras se construye//.
+    // Más adelante aquí se podrán enviar a la base de datos, mientras se construye.
     console.log("Respuestas:", respuestas);
   }
 
@@ -202,7 +203,7 @@ export default function EntrevistaNinos() {
         <View style={styles.encabezado}>
           {/* Botón para regresar */}
           <Pressable style={styles.botonRegresar} onPress={regresar}>
-            <Text style={styles.flecha}>‹</Text>
+            <Ionicons name="arrow-back" size={30} style={styles.flecha} />
           </Pressable>
 
           {/* Logo superior izquierdo */}
@@ -211,11 +212,6 @@ export default function EntrevistaNinos() {
             style={styles.logoImagen}
             resizeMode="contain"
           />
-
-          {/* Perfil superior derecho */}
-          <View style={styles.perfil}>
-            <Text style={styles.perfilTexto}>P</Text>
-          </View>
         </View>
 
         {/* INFORMACION DEL PROGRESO */}
@@ -231,19 +227,51 @@ export default function EntrevistaNinos() {
         </View>
 
         {/* Barra de progreso */}
-        <View style={styles.barraFondo}>
-          <View
-            style={[
-              styles.barraProgreso,
-              {
-                // El ancho cambia segun el porcentaje.
-                width: `${porcentaje}%`,
-              },
-            ]}
-          />
+
+        <View style={styles.barraPasos}>
+          {seccionesEntrevista.map((seccion, indice) => {
+            //Comprueba si este circulo corrsponde a la seccion
+            //en la que estamos actualmente.
+            const estaActivo = indice === numeroSeccion;
+
+            //Comprueba si esta seccion ya fue completada.
+            const estacompletado = indice < numeroSeccion;
+
+            return (
+              <View key={seccion.titulo} style={styles.contenedorPaso}>
+                {/*ciruclo de cada seccion*/}
+                <View
+                  style={[
+                    styles.circuloPaso,
+
+                    estaActivo && styles.circuloPasoActivo,
+
+                    estacompletado && styles.circuloPasoCompletado,
+                  ]}
+                >
+                  {/*Punto interior del circulo activo*/}
+                  {estaActivo && <View style={styles.puntoPasoActivo} />}
+
+                  {/*Check para secciones ya completadas*/}
+                  {estacompletado && <Text style={styles.checkPaso}>✓</Text>}
+                </View>
+
+                {/*Linea que conecta con el otro circulo*/}
+                {indice < seccionesEntrevista.length - 1 && (
+                  <View
+                    style={[
+                      styles.lineaPaso,
+
+                      estacompletado && styles.lineaPasoCompletada,
+                    ]}
+                  />
+                )}
+              </View>
+            );
+          })}
         </View>
 
-        {/* AREA DE LA PREGUNTA */}
+        {/* ÁREA DE LA PREGUNTA */}
 
         <View style={styles.areaPregunta}>
           {preguntasVisibles.map((pregunta, indiceLocal) => {
@@ -258,7 +286,7 @@ export default function EntrevistaNinos() {
 
             return (
               <View key={clave} style={styles.tarjetaPregunta}>
-                {/* Circulo con el numero de la pregunta */}
+                {/* Círculo con el número de la pregunta */}
                 <View style={styles.numeroCirculo}>
                   <Text style={styles.numeroTexto}>{indiceReal + 1}.</Text>
                 </View>
@@ -274,7 +302,7 @@ export default function EntrevistaNinos() {
                   </Text>
                 </View>
 
-                {/* RESPUESTA ABIERTA */}
+                {/* RESPUESTA ABIERTA DE PRUEBA*/}
 
                 {pregunta.tipoRespuesta === "abierta" ? (
                   <View style={styles.contenedorRespuestaAbierta}>
@@ -414,12 +442,12 @@ export default function EntrevistaNinos() {
   );
 }
 
+//ESTILOS//
 const styles = StyleSheet.create({
   // PANTALLA GENERAL
 
   pantalla: {
     flex: 1,
-    backgroundColor: "#F7F8FC",
   },
 
   contenido: {
@@ -434,7 +462,7 @@ const styles = StyleSheet.create({
   imagenFondo: {
     transform: [
       {
-        translateY: -25,
+        translateY: -3,
       },
       {
         scale: 1.06,
@@ -451,38 +479,24 @@ const styles = StyleSheet.create({
   },
 
   botonRegresar: {
-    width: 32,
+    width: 30,
     height: 44,
     justifyContent: "center",
   },
 
   flecha: {
-    fontSize: 36,
-    lineHeight: 38,
-    color: "#87909F",
-    fontFamily: "Outfit-Regular",
+    //estilos de la flecha
+    color: "#135cE4",
+    marginLeft: -5,
+    marginTop: -25,
   },
 
   logoImagen: {
     width: 105,
-    height: 43,
-    marginLeft: 0,
+    height: 105,
+    marginLeft: 15,
+    marginTop: -35,
     marginRight: "auto",
-  },
-
-  perfil: {
-    width: 45,
-    height: 45,
-    borderRadius: 24,
-    backgroundColor: "#C7DAFF",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  perfilTexto: {
-    color: "#4C72B4",
-    fontSize: 14,
-    fontFamily: "Outfit-SemiBold",
   },
 
   // PROGRESO
@@ -491,34 +505,100 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 2,
+    marginTop: -5,
   },
 
   numeroSeccion: {
     fontSize: 13,
-    color: "#135CE4",
-    fontFamily: "Outfit-SemiBold",
+    color: "#135cE4",
+    fontFamily: "Nunito-Bold",
   },
 
   porcentajeTexto: {
     fontSize: 13,
     color: "#135CE4",
-    fontFamily: "Outfit-SemiBold",
+    fontFamily: "Nunito-Bold",
   },
 
-  barraFondo: {
-    height: 8,
-    backgroundColor: "#E1E5EB",
-    borderRadius: 8,
-    overflow: "hidden",
-    marginTop: 8,
-    marginBottom: 12,
+  // Barra de progreso por secciones.
+  barraPasos: {
+    width: "110%",
+    flexDirection: "row",
+    alignItems: "center",
+
+    marginTop: 10,
+    marginBottom: 14,
+
+    paddingHorizontal: 2,
   },
 
-  barraProgreso: {
-    height: "100%",
-    backgroundColor: "#7DA8F8",
-    borderRadius: 8,
+  // Contiene cada círculo y la línea
+  // que lo conecta con el siguiente.
+  contenedorPaso: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  // Círculo que todavía no se ha alcanzado o completado.
+  circuloPaso: {
+    width: 24,
+    height: 24,
+
+    borderRadius: 12,
+
+    borderWidth: 3,
+    borderColor: "#E1E1E6",
+
+    backgroundColor: "#FFFFFF",
+
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  // Círculo correspondiente a la sección actual.
+  circuloPasoActivo: {
+    borderColor: "#A78BFA",
+    backgroundColor: "#FFFFFF",
+  },
+
+  // Pequeño círculo morado interior.
+  puntoPasoActivo: {
+    width: 10,
+    height: 10,
+
+    borderRadius: 5,
+
+    backgroundColor: "#A78BFA",
+  },
+
+  // Secciones que el usuario ya terminó.
+  circuloPasoCompletado: {
+    borderColor: "#A78BFA",
+    backgroundColor: "#A78BFA",
+  },
+
+  // Check que aparece en una sección terminada.
+  checkPaso: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontFamily: "Nunito-Bold",
+  },
+
+  // Línea entre los círculos.
+  lineaPaso: {
+    flex: 1,
+
+    height: 2,
+
+    backgroundColor: "#E1E1E6",
+
+    marginHorizontal: 7,
+  },
+
+  // Línea de una sección que ya fue completada.
+  lineaPasoCompletada: {
+    backgroundColor: "#A78BFA",
   },
 
   // ÁREA PRINCIPAL
@@ -528,7 +608,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 12,
   },
-
+  //card pregunta
   tarjetaPregunta: {
     flex: 1,
     backgroundColor: "rgba(255, 255, 255, 0.96)",
@@ -576,7 +656,7 @@ const styles = StyleSheet.create({
   numeroTexto: {
     color: "#30394D",
     fontSize: 16,
-    fontFamily: "Outfit-Bold",
+    fontFamily: "Nunito-Bold",
   },
 
   // TEXTO DE LA PREGUNTA
@@ -595,7 +675,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     lineHeight: 24,
     color: "#273448",
-    fontFamily: "Outfit-SemiBold",
+    fontFamily: "Nunito-SemiBold",
     letterSpacing: -0.2,
   },
 
@@ -604,7 +684,7 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     color: "#788296",
     marginTop: 10,
-    fontFamily: "Outfit-Regular",
+    fontFamily: "Nunito-Medium",
   },
 
   // RESPUESTAS
@@ -693,18 +773,18 @@ const styles = StyleSheet.create({
     lineHeight: 18,
 
     color: "#354156",
-    fontFamily: "Outfit-SemiBold",
+    fontFamily: "Nunito-SemiBold",
   },
 
   textoSeleccionado: {
     color: "#355FAD",
-    fontFamily: "Outfit-SemiBold",
+    fontFamily: "Nunito-SemiBold",
   },
 
   check: {
     fontSize: 18,
     color: "#5D8BDD",
-    fontFamily: "Outfit-Regular",
+    fontFamily: "Nunito-Medium",
   },
 
   // RESPUESTA ABIERTA
@@ -729,7 +809,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
 
     color: "#354156",
-    fontFamily: "Outfit-Regular",
+    fontFamily: "Nunito-Medium",
   },
 
   // AVATAR INFERIOR DE LAS PREGUNTAS
@@ -781,6 +861,6 @@ const styles = StyleSheet.create({
   textoBoton: {
     fontSize: 17,
     color: "#FFFFFF",
-    fontFamily: "Outfit-Bold",
+    fontFamily: "Nunito-Bold",
   },
 });
