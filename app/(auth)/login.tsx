@@ -1,176 +1,220 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import Button from '../../components/ui/Button'; // Importamos nuestro boton reutilizable
-import Input from '../../components/ui/Input';   // Importamos el input reutilizable
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 import GoogleButton from '@/components/ui/GoogleButton';
+import { useAuth } from '@/services/authProvider';
+import { validateLogin } from '@/utils/validations';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { signIn } = useAuth();
 
-  // Estados locales para guardar lo que escribe el usuario
+  // ESTADOS DEL FORMULARIO
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Funcion para manejar el inicio de sesion
-  const handleLogin = () => {
-    console.log('Iniciar sesión con:', email, password);
-    // Aqui conectaremos con el backend mas adelante
+  // ESTADOS DEL PROCESO
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // LIMPIAR ERROR
+  const limpiarError = () => {
+    if (error) setError(null);
   };
 
-  // Funcion para redirigir al registro
-  const handleGoToRegister = () => {
-    router.push('/(auth)/modo_acceso');//Lo lleva de vuelta a la pantalla modo acceso
+  // INICIAR SESIÓN
+  const handleLogin = async () => {
+    setError(null);
+
+    // VALIDACIONES
+    const validationErrors = validateLogin(email, password);
+    const firstError = Object.values(validationErrors).find(Boolean);
+    if (firstError) {
+      setError(firstError);
+      return;
+    }
+
+    // LOGIN SUPABASE
+    try {
+      setSubmitting(true);
+      await signIn(email.trim(), password);
+    } catch (err: any) {
+      console.error('Error iniciando sesión:', err);
+      const message = err?.message?.toLowerCase?.() ?? '';
+      if (message.includes('invalid login credentials')) {
+        setError('Correo o contraseña incorrectos.');
+      } else if (message.includes('email not confirmed')) {
+        setError('Debes confirmar tu correo electrónico antes de iniciar sesión.');
+      } else {
+        setError(err?.message ?? 'No se pudo iniciar sesión. Intenta de nuevo.');
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  // Funcion para recuperar contraseña
+  // IR AL REGISTRO
+  const handleGoToRegister = () => router.push('/(auth)/modo_acceso');
+
+  // RECUPERAR CONTRASEÑA
   const handleForgotPassword = () => {
+    // Pendiente: agregar resetPassword al AuthProvider y crear pantalla de recuperación
     console.log('Recuperar contraseña');
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <ScrollView
+      contentContainerStyle={styles.scrollContainer}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.container}>
-        
-        {/*Logo de la app*/}
+        {/* LOGO */}
         <Image
           source={require('../../assets/images/splash-icon.png')}
           style={styles.logoTop}
           resizeMode="contain"
         />
 
-        {/*Titulo de Bienvenida de inicio de sesion*/}
+        {/* TÍTULO */}
         <Text style={styles.title}>Bienvenido de nuevo</Text>
-        <Text style={styles.subtitle}>
-          Tu santuario emocional te espera.
-        </Text>
+        <Text style={styles.subtitle}>Tu santuario emocional te espera.</Text>
 
-        {/*Formulario*/}
+        {/* FORMULARIO */}
         <View style={styles.formContainer}>
-          
-          {/* Campo Correo Electronico */}
+          {/* CORREO */}
           <Input
             label="Correo Electrónico"
             placeholder="ejemplo@correo.com"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(value) => {
+              setEmail(value);
+              limpiarError();
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="email"
           />
 
-          {/* Campo Contraseña */}
+          {/* CONTRASEÑA */}
           <Input
             label="Contraseña"
             placeholder="********"
             value={password}
-            onChangeText={setPassword}
-            secureTextEntry // Oculta los caracteres de la contraseña
+            onChangeText={(value) => {
+              setPassword(value);
+              limpiarError();
+            }}
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="password"
             rightLabel={
               <TouchableOpacity onPress={handleForgotPassword}>
-                <Text style={styles.forgotPasswordText}>
-                  ¿Olvidaste tu contraseña?
-                </Text>
+                <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
               </TouchableOpacity>
             }
           />
 
-          {/* Boton Principal Reutilizado */}
+          {/* ERROR */}
+          {error && <Text style={styles.errorText}>{error}</Text>}
+
+          {/* BOTÓN LOGIN */}
           <Button
-            title="Iniciar Sesión"
+            title={submitting ? 'Ingresando...' : 'Iniciar Sesión'}
             variant="primary"
             onPress={handleLogin}
+            disabled={submitting}
             style={styles.loginBtn}
           />
 
-          {/* Separador visual */}
+          {submitting && <ActivityIndicator style={styles.spinner} color="#4F8EF7" />}
+
+          {/* SEPARADOR */}
           <View style={styles.dividerContainer}>
             <View style={styles.line} />
             <Text style={styles.dividerText}>o continúa con</Text>
             <View style={styles.line} />
           </View>
 
-          {/* Boton de Iniciar Sesion con Google */}
+          {/* GOOGLE */}
           <GoogleButton
-            onPress={() => console.log('Login con Google')}
+            onPress={() => console.log('Login con Google — pendiente de implementar')}
           />
-
         </View>
 
-        {/* Seccion para registrarse si aun no lo ha hecho */}
+        {/* REGISTRO */}
         <View style={styles.footerContainer}>
-          <Text style={styles.footerText}>
-            ¿Aún no tienes una cuenta?{' '}
-          </Text>
+          <Text style={styles.footerText}>¿Aún no tienes una cuenta? </Text>
           <TouchableOpacity onPress={handleGoToRegister}>
             <Text style={styles.registerLink}>Regístrate ahora</Text>
           </TouchableOpacity>
         </View>
-
       </View>
     </ScrollView>
   );
 }
 
+// ESTILOS
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
-    backgroundColor: '#F8FAFC',    // Mismo fondo claro suave de toda la app
+    backgroundColor: '#F8FAFC',
   },
   container: {
     flex: 1,
     alignItems: 'center',
-    paddingHorizontal: 28,//padding de ambos input
+    paddingHorizontal: 28,
     paddingTop: 20,
     paddingBottom: 30,
   },
   logoTop: {
     width: 200,
     height: 200,
-    marginTop: -40,//ELeva el logo hacia arriba
-    marginBottom: -40, //Reduce el espacio sobrante debajo del logo
+    marginTop: -40,
+    marginBottom: -40,
   },
   title: {
     fontSize: 35,
     fontFamily: 'Nunito-Bold',
     fontWeight: '700',
-    color: '#4F8EF7',               // Azul principal Kiri
+    color: '#4F8EF7',
     textAlign: 'center',
-    marginBottom: 8,//Despliegue del titulo y el parrafo
+    marginBottom: 8,
   },
-  //Estilo para pequeño parrafo despues de Bienvenido de nuevo
   subtitle: {
     fontSize: 18,
     fontFamily: 'Nunito-Medium',
     fontWeight: '400',
     color: '#2D3748',
     textAlign: 'center',
-    marginBottom: 35, //Espacio amplio antes del siguiente componente
+    marginBottom: 35,
   },
-
-  /*CONTENEDOR DEL FORMULARIO*/
-  //Los input correo y contrasenia
   formContainer: {
     width: '100%',
   },
-  //Letras de olvidaste tu contrasenia
   forgotPasswordText: {
     fontSize: 16,
     fontFamily: 'Nunito-SemiBold',
     fontWeight: '600',
     color: '#4F8EF7',
   },
-  loginBtn: {
-    marginTop: 10,// Margin del espacio del button abajo
+  errorText: {
+    color: '#E53E3E',
+    fontSize: 14,
+    fontFamily: 'Nunito-Medium',
+    marginBottom: 10,
+    textAlign: 'center',
   },
-
-  /*Estilo del separador*/
+  loginBtn: {
+    marginTop: 10,
+  },
+  spinner: {
+    marginTop: 12,
+  },
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -188,8 +232,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito-Medium',
     color: '#2D3748',
   },
-
-  /**/
   footerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
