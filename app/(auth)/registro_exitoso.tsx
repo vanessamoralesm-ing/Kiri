@@ -1,512 +1,187 @@
 import React from 'react';
-
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  ScrollView,
-} from 'react-native';
-
-import {
-  useLocalSearchParams,
-  useRouter,
-} from 'expo-router';
-
+import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import Button from '@/components/ui/Button';
 
-
 export default function RegistroExitosoScreen() {
-
   const router = useRouter();
 
-
-  // =====================================================
   // OBTENER CORREO DESDE registro.tsx
-  // =====================================================
+  const { email } = useLocalSearchParams<{ email?: string }>();
 
-  const { email } =
-    useLocalSearchParams<{
-      email?: string;
-    }>();
-
-
-  // =====================================================
   // IR AL LOGIN
-  // =====================================================
-
   const irALogin = () => {
-
-    router.replace(
-      '/(auth)/login'
-    );
-
+    router.replace('/(auth)/login');
   };
 
-
   return (
-
     <ScrollView
-      contentContainerStyle={
-        styles.scrollContainer
-      }
+      contentContainerStyle={styles.scrollContainer}
       showsVerticalScrollIndicator={false}
     >
-
       <View style={styles.container}>
-
-
-        {/* =================================================
-            LOGO
-        ================================================= */}
-
+        {/* LOGO */}
         <Image
-          source={require(
-            '../../assets/images/splash-icon.png'
-          )}
+          source={require('../../assets/images/splash-icon.png')}
           style={styles.logoTop}
           resizeMode="contain"
         />
 
-
-        {/* =================================================
-            ICONO CORREO
-        ================================================= */}
-
+        {/* ICONO CORREO */}
         <View style={styles.iconContainer}>
-
-          <Text style={styles.icon}>
-            ✉️
-          </Text>
-
+          <Text style={styles.icon}>✉️</Text>
         </View>
 
+        {/* TÍTULO */}
+        <Text style={styles.title}>¡Revisa tu correo!</Text>
 
-        {/* =================================================
-            TÍTULO
-        ================================================= */}
-
-        <Text style={styles.title}>
-          ¡Revisa tu correo!
-        </Text>
-
-
-        {/* =================================================
-            MENSAJE
-        ================================================= */}
-
+        {/* MENSAJE */}
         <Text style={styles.subtitle}>
           Hemos enviado un enlace de confirmación a:
         </Text>
 
-
         {/* CORREO DEL USUARIO */}
-
         {email && (
-
           <View style={styles.emailContainer}>
-
-            <Text style={styles.email}>
-              {email}
-            </Text>
-
+            <Text style={styles.email}>{email}</Text>
           </View>
-
         )}
 
-
-        {/* =================================================
-            INSTRUCCIONES
-        ================================================= */}
-
+        {/* INSTRUCCIONES */}
         <Text style={styles.description}>
-          Revisa tu bandeja de entrada y confirma tu cuenta
-          para continuar usando Kiri.
+          Revisa tu bandeja de entrada y confirma tu cuenta para continuar usando Kiri.
         </Text>
 
-
         {/* AVISO */}
-
         <View style={styles.infoContainer}>
-
-          <Text style={styles.infoIcon}>
-          </Text>
-
+          <Text style={styles.infoIcon}>💡</Text>
           <Text style={styles.infoText}>
-            Si no encuentras el mensaje, revisa también tu
-            carpeta de spam o correo no deseado.
+            Si no encuentras el mensaje, revisa también tu carpeta de spam o correo no deseado.
           </Text>
-
         </View>
 
-
-        {/* =================================================
-            BOTÓN LOGIN
-        ================================================= */}
-
+        {/* BOTÓN LOGIN */}
         <View style={styles.buttonContainer}>
-
           <Button
             title="Ir a iniciar sesión"
             variant="primary"
             onPress={irALogin}
           />
-
         </View>
 
-
-        {/* =================================================
-            MENSAJE FINAL
-        ================================================= */}
-
+        {/* MENSAJE FINAL */}
         <Text style={styles.footerText}>
-          Una vez confirmado tu correo podrás iniciar sesión
-          con tu cuenta.
+          Una vez confirmado tu correo podrás iniciar sesión con tu cuenta.
         </Text>
-
-
       </View>
-
     </ScrollView>
-
   );
 }
 
-
-// =======================================================
 // ESTILOS
-// =======================================================
-
 const styles = StyleSheet.create({
-
   scrollContainer: {
-
     flexGrow: 1,
-
-    backgroundColor:
-      '#F8FAFC',
-
+    backgroundColor: '#F8FAFC',
   },
-
-
   container: {
-
     flex: 1,
-
-    alignItems:
-      'center',
-
-    justifyContent:
-      'center',
-
-    paddingHorizontal:
-      28,
-
-    paddingTop:
-      20,
-
-    paddingBottom:
-      40,
-
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 28,
+    paddingTop: 20,
+    paddingBottom: 40,
   },
-
-
-  // =====================================================
-  // LOGO
-  // =====================================================
-
   logoTop: {
-
-    width:
-      190,
-
-    height:
-      190,
-
-    marginTop:
-      -45,
-
-    marginBottom:
-      -55,
-
+    width: 190,
+    height: 190,
+    marginTop: -45,
+    marginBottom: -55,
   },
-
-
-  // =====================================================
-  // ICONO
-  // =====================================================
-
   iconContainer: {
-
-    width:
-      90,
-
-    height:
-      90,
-
-    borderRadius:
-      45,
-
-    backgroundColor:
-      '#E8F1FF',
-
-    justifyContent:
-      'center',
-
-    alignItems:
-      'center',
-
-    marginBottom:
-      20,
-
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: '#E8F1FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
   },
-
-
   icon: {
-
-    fontSize:
-      42,
-
+    fontSize: 42,
   },
-
-
-  // =====================================================
-  // TÍTULO
-  // =====================================================
-
   title: {
-
-    fontSize:
-      32,
-
-    fontFamily:
-      'Nunito-Bold',
-
-    fontWeight:
-      '700',
-
-    color:
-      '#4F8EF7',
-
-    textAlign:
-      'center',
-
-    marginBottom:
-      12,
-
+    fontSize: 32,
+    fontFamily: 'Nunito-Bold',
+    fontWeight: '700',
+    color: '#4F8EF7',
+    textAlign: 'center',
+    marginBottom: 12,
   },
-
-
-  // =====================================================
-  // SUBTÍTULO
-  // =====================================================
-
   subtitle: {
-
-    fontSize:
-      17,
-
-    fontFamily:
-      'Nunito-Medium',
-
-    color:
-      '#2D3748',
-
-    textAlign:
-      'center',
-
-    lineHeight:
-      24,
-
-    marginBottom:
-      12,
-
+    fontSize: 17,
+    fontFamily: 'Nunito-Medium',
+    color: '#2D3748',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 12,
   },
-
-
-  // =====================================================
-  // CORREO
-  // =====================================================
-
   emailContainer: {
-
-    width:
-      '100%',
-
-    backgroundColor:
-      '#E8F1FF',
-
-    borderWidth:
-      1,
-
-    borderColor:
-      '#B9D4FF',
-
-    borderRadius:
-      12,
-
-    paddingVertical:
-      13,
-
-    paddingHorizontal:
-      15,
-
-    marginBottom:
-      22,
-
+    width: '100%',
+    backgroundColor: '#E8F1FF',
+    borderWidth: 1,
+    borderColor: '#B9D4FF',
+    borderRadius: 12,
+    paddingVertical: 13,
+    paddingHorizontal: 15,
+    marginBottom: 22,
   },
-
-
   email: {
-
-    fontSize:
-      16,
-
-    fontFamily:
-      'Nunito-SemiBold',
-
-    fontWeight:
-      '600',
-
-    color:
-      '#4F8EF7',
-
-    textAlign:
-      'center',
-
+    fontSize: 16,
+    fontFamily: 'Nunito-SemiBold',
+    fontWeight: '600',
+    color: '#4F8EF7',
+    textAlign: 'center',
   },
-
-
-  // =====================================================
-  // DESCRIPCIÓN
-  // =====================================================
-
   description: {
-
-    fontSize:
-      16,
-
-    fontFamily:
-      'Nunito-Medium',
-
-    color:
-      '#2D3748',
-
-    textAlign:
-      'center',
-
-    lineHeight:
-      23,
-
-    marginBottom:
-      22,
-
+    fontSize: 16,
+    fontFamily: 'Nunito-Medium',
+    color: '#2D3748',
+    textAlign: 'center',
+    lineHeight: 23,
+    marginBottom: 22,
   },
-
-
-  // =====================================================
-  // INFORMACIÓN
-  // =====================================================
-
   infoContainer: {
-
-    width:
-      '100%',
-
-    flexDirection:
-      'row',
-
-    alignItems:
-      'flex-start',
-
-    backgroundColor:
-      '#FFFFFF',
-
-    borderWidth:
-      1,
-
-    borderColor:
-      '#E2E8F0',
-
-    borderRadius:
-      12,
-
-    padding:
-      15,
-
-    marginBottom:
-      28,
-
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 28,
   },
-
-
   infoIcon: {
-
-    fontSize:
-      20,
-
-    marginRight:
-      10,
-
+    fontSize: 20,
+    marginRight: 10,
   },
-
-
   infoText: {
-
-    flex:
-      1,
-
-    fontSize:
-      14,
-
-    fontFamily:
-      'Nunito-Medium',
-
-    color:
-      '#718096',
-
-    lineHeight:
-      20,
-
+    flex: 1,
+    fontSize: 14,
+    fontFamily: 'Nunito-Medium',
+    color: '#718096',
+    lineHeight: 20,
   },
-
-
-  // =====================================================
-  // BOTÓN
-  // =====================================================
-
   buttonContainer: {
-
-    width:
-      '100%',
-
-    marginBottom:
-      20,
-
+    width: '100%',
+    marginBottom: 20,
   },
-
-
-  // =====================================================
-  // PIE
-  // =====================================================
-
   footerText: {
-
-    fontSize:
-      14,
-
-    fontFamily:
-      'Nunito-Medium',
-
-    color:
-      '#718096',
-
-    textAlign:
-      'center',
-
-    lineHeight:
-      20,
-
+    fontSize: 14,
+    fontFamily: 'Nunito-Medium',
+    color: '#718096',
+    textAlign: 'center',
+    lineHeight: 20,
   },
-
 });
