@@ -1,110 +1,524 @@
-import React, { useState } from 'react';//Importamos useState
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-} from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ActivityIndicator, Alert, Platform} from 'react-native';
 import { useRouter } from 'expo-router';
-import Input from '@/components/ui/Input';//Importamos el componente Input que se reutilizara en esta parte
-import Button from '@/components/ui/Button';//Importamos Button
-import GoogleButton from '@/components/ui/GoogleButton'; //Importamos el Boton de google
+import Input from '@/components/ui/Input';
+import Button from '@/components/ui/Button';
+import GoogleButton from '@/components/ui/GoogleButton';
+import { useAuth } from '@/services/authProvider';
+import type { Genero } from '@/types/auth';
+import {
+  validateRegister,
+  EDAD_MINIMA,
+} from '@/utils/validations';
+import DateTimePicker, {DateTimePickerEvent,} from '@react-native-community/datetimepicker';
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const { signUp } = useAuth();
 
-  //Funcion para navegar al login
-  const irALogin = () => {
-    router.push('/(auth)/login');
-  };
-  //Estados que se guardaran los datos es decir las variables
-  const [nombre, setNombre] = useState('');
+  // DATOS PERSONALES
+  const [nombres, setNombres] = useState('');
+  const [apellidos, setApellidos] = useState('');
+  const [nombrePreferido, setNombrePreferido] = useState('');
+  const [telefono, setTelefono] = useState('');
+
+  const [fechaNacimiento, setFechaNacimiento] = useState('');
+  const [mostrarCalendario, setMostrarCalendario] = useState(false);
+  const [fechaSeleccionada, setFechaSeleccionada] = useState<Date | null>(null);
+  const [genero, setGenero] = useState<Genero | ''>('');
+
+  // CREDENCIALES
   const [correo, setCorreo] = useState('');
   const [contraseña, setContraseña] = useState('');
   const [confirmar, setConfirmar] = useState('');
-  const [aceptoCondi, setAceptoCondi] = useState(false);//Definimos que sera una variable booleana
 
-  //Funcion para crear la cuenta
+  // TÉRMINOS
+  const [aceptoCondi, setAceptoCondi] = useState(false);
 
-  const registrar =() =>{
-    if(!aceptoCondi){
-      alert('Debes de aceptar los Terminos y Condiciones de Kiri para continuar.');
-      return;
-    }
-    console.log('Datos de registro:',{nombre, correo, contraseña});
-    //Aqui se hara la conexion con la base de datos pero ya queda una pequeña funcion de guardado
+  // ESTADOS DEL PROCESO
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    router.replace('/(bienvenida)');//Lleva a la pantalla bienvenida despues del registro
+  // OPCIONES DE GÉNERO
+  const opcionesGenero: { label: string; value: Genero }[] = [
+    { label: 'Femenino', value: 'femenino' },
+    { label: 'Masculino', value: 'masculino' },
+    { label: 'Otro', value: 'otro' },
+    { label: 'Prefiero no decir', value: 'prefiero_no_decir' },
+  ];
+
+  // LIMPIAR ERROR
+  const limpiarError = () => {
+    if (error) setError(null);
   };
 
+  // IR AL LOGIN
+  const irALogin = () => router.push('/(auth)/login');
+
+  const formatearFecha = (fecha: Date) => {
+    const year = fecha.getFullYear();
+
+    const month = String(
+      fecha.getMonth() + 1
+    ).padStart(2, '0');
+
+    const day = String(
+      fecha.getDate()
+    ).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleFechaChange = (
+    event: DateTimePickerEvent,
+    selectedDate?: Date
+  ) => {
+
+    // En Android se cierra después de seleccionar
+    if (Platform.OS === 'android') {
+      setMostrarCalendario(false);
+    }
+
+    // Usuario canceló
+    if (
+      event.type === 'dismissed' ||
+      !selectedDate
+    ) {
+      return;
+    }
+
+    setFechaSeleccionada(selectedDate);
+
+    setFechaNacimiento(
+      formatearFecha(selectedDate)
+    );
+
+    limpiarError();
+  };
+
+  // =====================================================
+  // FECHA MÁXIMA PERMITIDA
+  // =====================================================
+
+  const obtenerFechaMaxima = () => {
+    const hoy = new Date();
+
+    return new Date(
+      hoy.getFullYear() - EDAD_MINIMA,
+      hoy.getMonth(),
+      hoy.getDate()
+    );
+  };
+  // REGISTRAR
+  const registrar = async () => {
+    setError(null);
+
+    // VALIDAR GÉNERO ANTES DE CONSTRUIR SignUpInput
+    if (!genero) {
+      setError('Selecciona una opción de género.');
+      return;
+    }
+
+    // VALIDACIONES DEL FORMULARIO
+    const validationErrors = validateRegister({
+      email: correo,
+      password: contraseña,
+      nombres,
+      apellidos,
+      nombrePreferido,
+      telefono,
+      fechaNacimiento,
+      genero,
+      confirmPassword: confirmar,
+      aceptaTerminos: aceptoCondi,
+    });
+
+    // OBTENER EL PRIMER ERROR ENCONTRADO
+    const firstError = Object.values(validationErrors).find(Boolean);
+    if (firstError) {
+      setError(firstError);
+      return;
+    }
+
+    // REGISTRO EN SUPABASE
+    try {
+      setSubmitting(true);
+      const result = await signUp({
+        email: correo.trim().toLowerCase(),
+        password: contraseña,
+        nombres: nombres.trim(),
+        apellidos: apellidos.trim(),
+        nombrePreferido: nombrePreferido.trim(),
+        telefono: telefono.trim(),
+        fechaNacimiento: fechaNacimiento.trim(),
+        genero,
+      });
+
+      // CONFIRMACIÓN DE CORREO ACTIVADA
+      if (
+        result.requiresEmailConfirmation
+      ) {
+
+        router.replace({
+          pathname:
+            '/(auth)/registro_exitoso',
+
+          params: {
+            email:
+              correo
+                .trim()
+                .toLowerCase(),
+          },
+        });
+
+        return;
+      }
+    } catch (err: any) {
+      console.error('Error registrando usuario:', err);
+      const message = err?.message?.toLowerCase?.() ?? '';
+
+      if (message.includes('already registered') || message.includes('already exists')) {
+        setError('Ya existe una cuenta registrada con este correo.');
+      } else if (message.includes('password should be at least')) {
+        setError('La contraseña debe tener al menos 6 caracteres.');
+      } else {
+        setError(err?.message ?? 'No se pudo crear la cuenta. Intenta nuevamente.');
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <ScrollView
+      contentContainerStyle={styles.scrollContainer}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.container}>
-        
-        {/*Logo de la app*/}
+        {/* LOGO */}
         <Image
           source={require('../../assets/images/splash-icon.png')}
           style={styles.logoTop}
           resizeMode="contain"
         />
 
-        {/*Titulo y subtitulo de la pantalla registro*/}
+        {/* TÍTULO */}
         <Text style={styles.title}>Únete a Kiri</Text>
-        <Text style={styles.subtitle}>
-          Tu refugio emocional comienza hoy
-        </Text>
-        {/* CONTENEDOR DEL FORMULARIO */}
+        <Text style={styles.subtitle}>Tu refugio emocional comienza hoy</Text>
+
+        {/* FORMULARIO */}
         <View style={styles.formContainer}>
-          
-          {/*Nombre completo*/}
+          {/* NOMBRES */}
           <Input
-            label="Nombre completo"
-            placeholder="Ej: Maricarmen"
-            value={nombre}
-            onChangeText={setNombre}
+            label="Nombres"
+            placeholder="Ej: Auxiliadora Vanessa"
+            value={nombres}
+            onChangeText={(value) => {
+              setNombres(value);
+              limpiarError();
+            }}
             autoCapitalize="words"
           />
 
-          {/*Correo Electronico*/}
+          {/* APELLIDOS */}
+          <Input
+            label="Apellidos"
+            placeholder="Ej: Morales Moreno"
+            value={apellidos}
+            onChangeText={(value) => {
+              setApellidos(value);
+              limpiarError();
+            }}
+            autoCapitalize="words"
+          />
+
+          {/* NOMBRE PREFERIDO */}
+          <Input
+            label="¿Cómo prefieres que te llamemos?"
+            placeholder="Ej: Vanessa"
+            value={nombrePreferido}
+            onChangeText={(value) => {
+              setNombrePreferido(value);
+              limpiarError();
+            }}
+            autoCapitalize="words"
+          />
+
+          {/* CORREO */}
           <Input
             label="Correo Electrónico"
             placeholder="ejemplo@correo.com"
             value={correo}
-            onChangeText={setCorreo}
+            onChangeText={(value) => {
+              setCorreo(value);
+              limpiarError();
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="email"
           />
 
-          {/*Contraseña*/}
+          {/* TELÉFONO */}
+          <Input
+            label="Teléfono"
+            placeholder="Ej: 88888888"
+            value={telefono}
+            onChangeText={(value) => {
+              // Elimina cualquier carácter
+              // que no sea un número.
+              const soloNumeros =
+                value.replace(/\D/g, '');
+              // Permite máximo 8 números.
+              const limitado =
+                soloNumeros.slice(0, 8);
+              setTelefono(limitado);
+              limpiarError();
+            }}
+            keyboardType="number-pad"
+            maxLength={8}
+          />
+          {/* =================================================
+    FECHA DE NACIMIENTO
+================================================= */}
+
+<Text style={styles.fieldLabel}>
+  Fecha de nacimiento
+</Text>
+
+
+{/* =================================================
+    WEB
+================================================= */}
+
+{Platform.OS === 'web' ? (
+
+  <View style={styles.webDateContainer}>
+
+    <input
+      type="date"
+
+      value={fechaNacimiento}
+
+      min="1900-01-01"
+
+      max={
+        formatearFecha(
+          obtenerFechaMaxima()
+        )
+      }
+
+      onChange={(event) => {
+        const value =
+          event.currentTarget.value;
+
+        setFechaNacimiento(value);
+
+        if (value) {
+          const [
+            year,
+            month,
+            day,
+          ] = value
+            .split('-')
+            .map(Number);
+
+          setFechaSeleccionada(
+            new Date(
+              year,
+              month - 1,
+              day
+            )
+          );
+        }
+
+        limpiarError();
+      }}
+
+      style={{
+        width: '100%',
+        height: 50,
+        borderWidth: 0,
+        borderStyle: 'none',
+        outline: 'none',
+        backgroundColor: 'transparent',
+        fontSize: 16,
+        color: '#2D3748',
+        fontFamily: 'Nunito-Medium',
+        cursor: 'pointer',
+      }}
+    />
+
+  </View>
+
+) : (
+
+  <>
+    {/* ===============================================
+        ANDROID / IOS
+    =============================================== */}
+
+    <TouchableOpacity
+      style={styles.dateInput}
+      activeOpacity={0.8}
+
+      onPress={() =>
+        setMostrarCalendario(true)
+      }
+    >
+
+      <Text
+        style={[
+          styles.dateText,
+
+          !fechaNacimiento &&
+            styles.datePlaceholder,
+        ]}
+      >
+
+        {fechaNacimiento ||
+          'Selecciona tu fecha de nacimiento'}
+
+      </Text>
+
+
+      <Text style={styles.calendarIcon}>
+        📅
+      </Text>
+
+    </TouchableOpacity>
+
+
+    {mostrarCalendario && (
+
+      <DateTimePicker
+        value={
+          fechaSeleccionada ??
+          new Date(2000, 0, 1)
+        }
+
+        mode="date"
+
+        display={
+          Platform.OS === 'ios'
+            ? 'spinner'
+            : 'calendar'
+        }
+
+        minimumDate={
+          new Date(1900, 0, 1)
+        }
+
+        maximumDate={
+          obtenerFechaMaxima()
+        }
+
+        onChange={
+          handleFechaChange
+        }
+      />
+
+    )}
+
+
+    {/* iOS necesita cerrar manualmente */}
+
+    {Platform.OS === 'ios' &&
+      mostrarCalendario && (
+
+        <TouchableOpacity
+          style={
+            styles.closeDateButton
+          }
+
+          onPress={() =>
+            setMostrarCalendario(false)
+          }
+        >
+
+          <Text
+            style={
+              styles.closeDateText
+            }
+          >
+            Listo
+          </Text>
+
+        </TouchableOpacity>
+
+      )}
+
+  </>
+
+)}
+
+          {/* GÉNERO */}
+          <Text style={styles.fieldLabel}>Género</Text>
+          <View style={styles.genderContainer}>
+            {opcionesGenero.map((opcion) => (
+              <TouchableOpacity
+                key={opcion.value}
+                activeOpacity={0.8}
+                style={[
+                  styles.genderOption,
+                  genero === opcion.value && styles.genderOptionActive,
+                ]}
+                onPress={() => {
+                  setGenero(opcion.value);
+                  limpiarError();
+                }}
+              >
+                <Text
+                  style={[
+                    styles.genderText,
+                    genero === opcion.value && styles.genderTextActive,
+                  ]}
+                >
+                  {opcion.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* CONTRASEÑA */}
           <Input
             label="Contraseña"
             placeholder="********"
             value={contraseña}
-            onChangeText={setContraseña}
+            onChangeText={(value) => {
+              setContraseña(value);
+              limpiarError();
+            }}
             secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="new-password"
           />
 
-          {/*Confirmar Contraseña*/}
+          {/* CONFIRMAR CONTRASEÑA */}
           <Input
             label="Confirmar Contraseña"
             placeholder="********"
             value={confirmar}
-            onChangeText={setConfirmar}
+            onChangeText={(value) => {
+              setConfirmar(value);
+              limpiarError();
+            }}
             secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
           />
 
-          {/* Checkbox de terminos y condiciones*/}
+          {/* TÉRMINOS */}
           <View style={styles.checkboxContainer}>
             <TouchableOpacity
               activeOpacity={0.8}
-              style={[
-                styles.checkbox,
-                aceptoCondi && styles.checkboxActive,
-              ]}
-              onPress={() => setAceptoCondi(!aceptoCondi)}
+              style={[styles.checkbox, aceptoCondi && styles.checkboxActive]}
+              onPress={() => {
+                setAceptoCondi(!aceptoCondi);
+                limpiarError();
+              }}
             >
               {aceptoCondi && <Text style={styles.checkmark}>✓</Text>}
             </TouchableOpacity>
@@ -120,49 +534,54 @@ export default function RegisterScreen() {
               y la{' '}
               <Text
                 style={styles.linkText}
-                onPress={() => console.log('Ver Privacidad')}
+                onPress={() => console.log('Ver Política de Privacidad')}
               >
                 Política de Privacidad
-              </Text>{' '} de Kiri.
+              </Text>{' '}
+              de Kiri.
             </Text>
           </View>
 
-          {/* Boton crear cuenta */}
+          {/* ERROR */}
+          {error && <Text style={styles.errorText}>{error}</Text>}
+
+          {/* CREAR CUENTA */}
           <Button
-            title="Crear Cuenta"
+            title={submitting ? 'Creando cuenta...' : 'Crear Cuenta'}
             variant="primary"
             onPress={registrar}
+            disabled={submitting}
             style={styles.registroBoton}
           />
 
-          {/*Separador */}
+          {submitting && <ActivityIndicator style={styles.spinner} color="#4F8EF7" />}
+
+          {/* SEPARADOR */}
           <View style={styles.dividerContainer}>
             <View style={styles.line} />
             <Text style={styles.dividerText}>o regístrate con</Text>
             <View style={styles.line} />
           </View>
 
-          {/*Boton de google*/}
+          {/* GOOGLE */}
           <GoogleButton
-            onPress={() => console.log('Registro con Google')}
+            onPress={() => console.log('Registro con Google — pendiente de implementar')}
           />
 
-          {/*Enlace a iniciar sesion pie de pagina*/}
-        <View style={styles.pieContenedor}>
-          <Text style={styles.pieTexto}>
-            ¿Ya tienes una cuenta?{' '}
-          </Text>
-          <TouchableOpacity onPress={irALogin}>
-            <Text style={styles.enlaceIngreso}>Inicia Sesión</Text>
-          </TouchableOpacity>
-        </View>
-
+          {/* LOGIN */}
+          <View style={styles.pieContenedor}>
+            <Text style={styles.pieTexto}>¿Ya tienes una cuenta? </Text>
+            <TouchableOpacity onPress={irALogin}>
+              <Text style={styles.enlaceIngreso}>Inicia Sesión</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </ScrollView>
   );
 }
 
+// ESTILOS
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
@@ -197,13 +616,44 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
-
-  /* Estilo del contenedor formulario */
   formContainer: {
     width: '100%',
   },
-
-  /* Estilo del checkbox de condiciones */
+  fieldLabel: {
+    fontSize: 16,
+    fontFamily: 'Nunito-SemiBold',
+    fontWeight: '600',
+    color: '#2D3748',
+    marginBottom: 8,
+  },
+  genderContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 18,
+  },
+  genderOption: {
+    borderWidth: 1,
+    borderColor: '#CBD5E0',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    backgroundColor: '#F8FAFC',
+  },
+  genderOptionActive: {
+    borderColor: '#4F8EF7',
+    backgroundColor: '#E8F1FF',
+  },
+  genderText: {
+    fontSize: 14,
+    fontFamily: 'Nunito-Medium',
+    color: '#2D3748',
+  },
+  genderTextActive: {
+    color: '#4F8EF7',
+    fontFamily: 'Nunito-SemiBold',
+    fontWeight: '600',
+  },
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -235,20 +685,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Nunito-Medium',
     color: '#2D3748',
-    lineHeight: 16,
+    lineHeight: 18,
   },
   linkText: {
     color: '#4F8EF7',
     fontFamily: 'Nunito-SemiBold',
     fontWeight: '600',
   },
-
-  //Estilo de registrobuton crear cuenta
+  errorText: {
+    color: '#E53E3E',
+    fontSize: 14,
+    fontFamily: 'Nunito-Medium',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
   registroBoton: {
     marginTop: -5,
   },
-
-  /* Separador*/
+  spinner: {
+    marginTop: 12,
+  },
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -267,8 +723,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito-Medium',
     color: '#2D3748',
   },
-
-  //Estilo de Pie de pagina para link de iniciar sesion
   pieContenedor: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -286,5 +740,98 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#4F8EF7',
   },
-  
+
+  dateInput: {
+  width: '100%',
+
+  minHeight: 52,
+
+  borderWidth: 1,
+
+  borderColor: '#CBD5E0',
+
+  borderRadius: 10,
+
+  paddingHorizontal: 15,
+
+  flexDirection: 'row',
+
+  alignItems: 'center',
+
+  justifyContent: 'space-between',
+
+  backgroundColor: '#FFFFFF',
+
+  marginBottom: 18,
+},
+
+
+dateText: {
+  flex: 1,
+
+  fontSize: 16,
+
+  fontFamily: 'Nunito-Medium',
+
+  color: '#2D3748',
+},
+
+
+datePlaceholder: {
+  color: '#A0AEC0',
+},
+
+
+calendarIcon: {
+  fontSize: 20,
+
+  marginLeft: 10,
+},
+
+
+closeDateButton: {
+  alignSelf: 'flex-end',
+
+  backgroundColor: '#4F8EF7',
+
+  paddingHorizontal: 18,
+
+  paddingVertical: 8,
+
+  borderRadius: 8,
+
+  marginTop: -8,
+
+  marginBottom: 18,
+},
+
+
+closeDateText: {
+  color: '#FFFFFF',
+
+  fontSize: 14,
+
+  fontFamily: 'Nunito-SemiBold',
+
+  fontWeight: '600',
+},
+webDateContainer: {
+  width: '100%',
+
+  minHeight: 52,
+
+  borderWidth: 1,
+
+  borderColor: '#CBD5E0',
+
+  borderRadius: 10,
+
+  paddingHorizontal: 15,
+
+  justifyContent: 'center',
+
+  backgroundColor: '#FFFFFF',
+
+  marginBottom: 18,
+},
 });
