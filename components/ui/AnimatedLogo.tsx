@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -8,27 +7,22 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
-export default function SplashScreen() {
-  const router = useRouter();
-
-  // Animación basica para el logo esta aparece y luego crece
+/**
+ * Logo animado de Kiri: aparece con fade-in y luego crece
+ * con un efecto de resorte (spring).
+ *
+ * Reutilizable en cualquier pantalla que necesite mostrar
+ * el logo con esta animación (splash inicial, loaders, etc).
+ */
+export default function AnimatedLogo() {
   const logoOpacity = useSharedValue(0);
   const logoScale = useSharedValue(0.8);
 
   useEffect(() => {
-    // En esta parte se inicia la animacion del logo
-    logoOpacity.value = withTiming(1, { duration: 3000 });
+    logoOpacity.value = withTiming(1, { duration: 800 });
     logoScale.value = withSpring(1);
-
-    //Esperar 3 segundos e ir a la pantalla de Bienvenida
-    const timer = setTimeout(() => {
-      router.replace('/(auth)/welcome' as any);
-    }, 3000);
-
-    return () => clearTimeout(timer);
   }, []);
 
-  // Estilo animado del logo
   const animatedLogoStyle = useAnimatedStyle(() => ({
     opacity: logoOpacity.value,
     transform: [{ scale: logoScale.value }],
