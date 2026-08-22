@@ -1,29 +1,22 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Image,
-} from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter } from "expo-router";
+import React from "react";
+import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 
 // IMPORTAMOS COMPONENTES REUTILIZABLES
-import Logo from '@/components/ui/Logo_izq';
-import Button from '@/components/ui/Button';
+import Button from "@/components/ui/Button";
+import Logo from "@/components/ui/Logo_izq";
 
 export default function BienvenidaPantalla() {
   const router = useRouter();
 
   // Funcion para avanzar a la pantalla rango edad
   const irARangoEdad = () => {
-    router.push('/(bienvenida)/rango_edad');
+    router.push("/(bienvenida)/rango_edad");
   };
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContenedor}>
       <View style={styles.contenedor}>
-        
         {/* Cabezera con logo*/}
         <View style={styles.cabecera}>
           <Logo />
@@ -31,10 +24,9 @@ export default function BienvenidaPantalla() {
 
         {/* Tarjeta blanca donde esta el contenido */}
         <View style={styles.tarjetaBienvenida}>
-          
           {/*Avatar de kiri*/}
           <Image
-            source={require('@/assets/images/mascota.png')}
+            source={require("@/assets/images/mascota.png")}
             style={styles.imagenAvatar}
             resizeMode="contain"
           />
@@ -48,8 +40,8 @@ export default function BienvenidaPantalla() {
           <Text style={styles.parrafo}>
             Nos alegra que hayas decidido dedicar un momento para cuidar de ti.
             En Kiri encontrarás un espacio seguro donde podrás comprender mejor
-            tus emociones, fortalecer hábitos saludables y descubrir herramientas
-            que te acompañen en tu crecimiento personal.
+            tus emociones, fortalecer hábitos saludables y descubrir
+            herramientas que te acompañen en tu crecimiento personal.
           </Text>
 
           <Text style={styles.parrafo}>
@@ -63,7 +55,6 @@ export default function BienvenidaPantalla() {
             No buscamos juzgarte ni diagnosticarte; queremos acompañarte en el
             camino hacia un mayor bienestar.
           </Text>
-
         </View>
 
         {/*Boton de avanzar*/}
@@ -73,7 +64,6 @@ export default function BienvenidaPantalla() {
           onPress={irARangoEdad}
           style={styles.botonComenzar}
         />
-
       </View>
     </ScrollView>
   );
@@ -89,25 +79,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 15,
     paddingBottom: 30,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
 
   /*Cabezera del logo*/
   cabecera: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 5,
   },
 
   /* Tarjeta blanca*/
   tarjetaBienvenida: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 24,
     padding: 30,
     marginTop: 10,
     marginBottom: 20,
-    position: 'relative', // Permite posicionar el avatar arriba a la derecha
-    shadowColor: '#000',
+    position: "relative", // Permite posicionar el avatar arriba a la derecha
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
     shadowRadius: 10,
@@ -119,7 +109,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 200,
     marginTop: -80,
-    position: 'absolute',
+    position: "absolute",
     top: 15,
     right: 15,
   },
@@ -127,32 +117,32 @@ const styles = StyleSheet.create({
   /*Textos*/
   titulo: {
     fontSize: 28,
-    fontFamily: 'Nunito-Bold',
-    fontWeight: '700',
-    color: '#2D3748',
+    fontFamily: "Nunito-Bold",
+    fontWeight: "700",
+    color: "#2D3748",
     lineHeight: 28,
     marginBottom: 16,
     paddingRight: 55, // Espacio para no chocar con el avatar
   },
   parrafo: {
     fontSize: 18,
-    fontFamily: 'Nunito-Medium',
-    color: '#2D3748',
-    textAlign: 'justify',
+    fontFamily: "Nunito-Medium",
+    color: "#2D3748",
+    textAlign: "justify",
     lineHeight: 22,
     marginBottom: 14,
   },
   parrafoDestacado: {
     fontSize: 16,
-    fontFamily: 'Nunito-Medium',
-    color: '#2D3748',
-    textAlign: 'justify',
+    fontFamily: "Nunito-Medium",
+    color: "#2D3748",
+    textAlign: "justify",
     lineHeight: 22,
   },
   textoNegrita: {
-    fontFamily: 'Nunito-Bold',
-    fontWeight: '700',
-    color: '#1E293B',
+    fontFamily: "Nunito-Bold",
+    fontWeight: "700",
+    color: "#1E293B",
   },
 
   /*Boton*/
