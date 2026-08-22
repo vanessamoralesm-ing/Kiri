@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
-import { View, Image, StyleSheet } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import Animated, {
-  useSharedValue,
   useAnimatedStyle,
-  withTiming,
+  useSharedValue,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 
 /**
@@ -32,7 +32,7 @@ export default function AnimatedLogo() {
     <View style={styles.container}>
       <Animated.View style={[styles.logoContainer, animatedLogoStyle]}>
         <Image
-          source={require('../../assets/images/splash-icon.png')}
+          source={require('../../assets/images/splash-icon-ps.png')}
           style={styles.logo}
           resizeMode="contain"
         />
