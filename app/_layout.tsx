@@ -17,27 +17,33 @@ function RootNavigation() {
   const { loading, session } = useAuth();
   const router = useRouter();
 
-  // REDIRECCIÓN SEGÚN SESIÓN
-  useEffect(() => {
-    // Esperar a que AuthProvider termine authLoading y profileLoading
-    if (loading) return;
+  const [splashTerminado, setSplashTerminado] = React.useState(false);
 
-    // USUARIO AUTENTICADO
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSplashTerminado(true);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    // Esperamos autenticacion + tiempo minimo del splash
+    if (loading || !splashTerminado) return;
+
     if (session) {
       router.replace("/(tabs)/home");
       return;
     }
 
-    // USUARIO NO AUTENTICADO
     router.replace("/(auth)/welcome");
-  }, [loading, session, router]);
+  }, [loading, splashTerminado, session, router]);
 
-  // CARGANDO AUTENTICACIÓN
-  if (loading) {
+  // Mientras carga auth o no han pasado los 4 segundos
+  if (loading || !splashTerminado) {
     return <AnimatedLogo />;
   }
 
-  // NAVEGADOR
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
