@@ -1,15 +1,15 @@
 
+import { useRouter } from 'expo-router'; //Hook para navegar entre pantallas
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
   Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router'; //Hook para navegar entre pantallas
-import OptionCard from '../../components/ui/OptionCard'; //Importamos nuestro componente reusable los card
 import Button from '../../components/ui/Button'; //Importamos nuestro componente reusable
+import OptionCard from '../../components/ui/OptionCard'; //Importamos nuestro componente reusable los card
 
 
 export default function AccessTypeScreen() {
