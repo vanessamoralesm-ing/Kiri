@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,                // Redondea las puntas de la linea
     marginVertical: 11,             // Margen arriba y abajo para dar aire
   },
-
+  
   /* Estilo del Subtitulo*/
   subtitle:{
     fontSize:25, //Tamaño de fuente
