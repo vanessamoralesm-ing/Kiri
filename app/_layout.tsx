@@ -16,8 +16,19 @@ function RootNavigation() {
   const { loading, session } = useAuth();
   const router = useRouter();
 
+  const [splashTerminado, setSplashTerminado] = React.useState(false);
+
   useEffect(() => {
-    if (loading) return;
+    const timer = setTimeout(() => {
+      setSplashTerminado(true);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    // Esperamos autenticacion + tiempo minimo del splash
+    if (loading || !splashTerminado) return;
 
     if (session) {
       router.replace("/(entrevista)/bienvenida");
@@ -25,9 +36,10 @@ function RootNavigation() {
     }
 
     router.replace("/(auth)/welcome");
-  }, [loading, session, router]);
+  }, [loading, splashTerminado, session, router]);
 
-  if (loading) {
+  // Mientras carga auth o no han pasado los 4 segundos
+  if (loading || !splashTerminado) {
     return <AnimatedLogo />;
   }
 
