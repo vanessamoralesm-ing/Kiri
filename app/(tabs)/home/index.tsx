@@ -1,11 +1,11 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
+import { EncabezadoHome } from '@/components/ui/EncabezadoHome';
 import { TarjetaModulo } from '@/components/ui/TarjetaModulo';
 import { TarjetaRecomendacion } from '@/components/ui/TarjetaRecomendacion';
-import { EncabezadoHome } from '@/components/ui/EncabezadoHome';
 //import { useAuth } from '@/services/authProvider';
 
 export default function HomeScreen() {
@@ -102,7 +102,7 @@ export default function HomeScreen() {
           <TarjetaModulo
             titulo="Test y Cuestionarios"
             nombreIcono="document-text-outline"
-            onPress={() => console.log('Ir a Test')}
+            onPress={() => router.push('/(tabs)/cuestionarios')}
           />
 
           <TarjetaModulo
