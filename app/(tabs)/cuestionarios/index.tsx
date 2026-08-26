@@ -16,85 +16,90 @@ import SearchBar from "@/components/ui/SearchBar";
 // Categorías disponibles
 const categorias = [
     "Todos",
-    "Ansiedad",
-    "Depresión",
-    "Personalidad",
-    "Estrés",
+    "Asertividad",
+    "Autoestima",
+    "Fatiga",
+    "Social",
 ];
 
 // Configuración visual de las categorías
 const configuracionCategorias = {
-    Ansiedad: {
-        icono: "pulse-outline",
+    Asertividad: {
+        icono: "chatbubbles-outline",
         color: "#4F8EF7",
         fondo: "bg-blue-100",
     },
 
-    Depresión: {
-        icono: "cloud-outline",
+    Autoestima: {
+        icono: "heart-outline",
         color: "#B8A8F8",
         fondo: "bg-purple-100",
     },
 
-    Personalidad: {
-        icono: "person-outline",
+    Fatiga: {
+        icono: "battery-half-outline",
         color: "#7BBF9A",
         fondo: "bg-emerald-100",
     },
 
-    Estrés: {
-        icono: "flash-outline",
+    Social: {
+        icono: "people-outline",
         color: "#F59E0B",
         fondo: "bg-amber-100",
     },
 };
 
 // Datos temporales
-// Más adelante estos datos vendrán desde Supabase
+// Posteriormente vendrán desde Supabase.
 const cuestionarios = [
     {
-        id: "1",
-        titulo: "Test de Ansiedad",
-        categoria: "Ansiedad",
+        id: "rathus",
+        titulo: "Test de Asertividad de Rathus",
+        categoria: "Asertividad",
         descripcion:
-            "Explora señales relacionadas con preocupación, tensión y nerviosismo.",
-        duracion: "10 min",
+            "Explora conductas relacionadas con la expresión de opiniones, límites y derechos personales.",
+        duracion: "10 - 15 min",
+        preguntas: 30,
     },
 
     {
-        id: "2",
-        titulo: "Test de Depresión",
-        categoria: "Depresión",
+        id: "coopersmith-adultos",
+        titulo: "Autoestima de Coopersmith",
+        categoria: "Autoestima",
         descripcion:
-            "Reflexiona sobre aspectos relacionados con tu estado de ánimo y bienestar emocional.",
-        duracion: "10 min",
+            "Explora diferentes aspectos relacionados con la percepción y valoración personal.",
+        duracion: "15 - 20 min",
+        preguntas: 58,
     },
 
     {
-        id: "3",
-        titulo: "Test de Personalidad",
-        categoria: "Personalidad",
+        id: "coopersmith-ninos",
+        titulo: "Autoestima de Coopersmith para jóvenes",
+        categoria: "Autoestima",
         descripcion:
-            "Conoce características relacionadas con tu forma de pensar, sentir y actuar.",
-        duracion: "10 min",
+            "Cuestionario orientado a explorar la percepción personal en niños y adolescentes.",
+        duracion: "15 - 20 min",
+        preguntas: 58,
     },
 
     {
-        id: "4",
-        titulo: "Test de Estrés",
-        categoria: "Estrés",
+        id: "fss",
+        titulo: "Escala de Severidad de Fatiga",
+        categoria: "Fatiga",
         descripcion:
-            "Identifica señales relacionadas con el estrés y cómo pueden afectar tu bienestar.",
-        duracion: "10 min",
+            "Explora cómo la fatiga puede interferir en la motivación, las actividades y la vida cotidiana.",
+        duracion: "5 min",
+        preguntas: 9,
     },
 
     {
-        id: "5",
-        titulo: "Test de Ansiedad General",
-        categoria: "Ansiedad",
+        id: "sads",
+        titulo: "Evitación y Malestar Social",
+        categoria: "Social",
         descripcion:
-            "Evalúa de forma orientativa algunas señales frecuentes asociadas a la ansiedad.",
-        duracion: "8 min",
+            "Explora reacciones relacionadas con el malestar y la evitación en diferentes situaciones sociales.",
+        duracion: "8 - 10 min",
+        preguntas: 28,
     },
 ];
 
@@ -124,10 +129,10 @@ export default function CuestionariosPantalla() {
 
     // Ir al cuestionario seleccionado
     const irACuestionario = (id: string) => {
-        /*router.push({
+        router.push({
             pathname: "/cuestionarios/[id]",
             params: { id },
-        });*/
+        });
     };
 
     return (
@@ -137,7 +142,7 @@ export default function CuestionariosPantalla() {
                 contentContainerStyle={{
                     paddingHorizontal: 16,
                     paddingTop: 12,
-                    paddingBottom: 40,
+                    paddingBottom: 100,
                 }}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
@@ -166,8 +171,8 @@ export default function CuestionariosPantalla() {
                             marginTop: 8,
                         }}
                     >
-                        Evaluaciones validadas por profesionales para ayudarte a entender
-                        mejor tu salud mental en un entorno seguro y privado.
+                        Evaluaciones diseñadas para ayudarte a comprender mejor diferentes
+                        aspectos de tu bienestar emocional en un entorno seguro y privado.
                     </Text>
                 </View>
 
@@ -205,8 +210,8 @@ export default function CuestionariosPantalla() {
                                     setCategoriaSeleccionada(categoria)
                                 }
                                 className={`px-4 py-2 rounded-full ${seleccionada
-                                        ? "bg-blue-500"
-                                        : "bg-slate-200"
+                                    ? "bg-blue-500"
+                                    : "bg-slate-200"
                                     }`}
                             >
                                 <Text
@@ -297,14 +302,33 @@ export default function CuestionariosPantalla() {
                                         lineHeight: 20,
                                         color: "#64748B",
                                         marginTop: 5,
-                                        marginBottom: 16,
                                     }}
                                 >
                                     {cuestionario.descripcion}
                                 </Text>
 
+                                {/* Número de preguntas */}
+                                <View className="flex-row items-center mt-3">
+                                    <Ionicons
+                                        name="document-text-outline"
+                                        size={15}
+                                        color="#94A3B8"
+                                    />
+
+                                    <Text
+                                        style={{
+                                            fontFamily: "Nunito-Medium",
+                                            fontSize: 12,
+                                            color: "#64748B",
+                                            marginLeft: 5,
+                                        }}
+                                    >
+                                        {cuestionario.preguntas} preguntas
+                                    </Text>
+                                </View>
+
                                 {/* Parte inferior */}
-                                <View className="flex-row justify-between items-center">
+                                <View className="flex-row justify-between items-center mt-4">
                                     {/* Validación */}
                                     <View className="flex-row items-center bg-emerald-100 px-3 py-1.5 rounded-full">
                                         <Ionicons
@@ -321,7 +345,7 @@ export default function CuestionariosPantalla() {
                                                 marginLeft: 4,
                                             }}
                                         >
-                                            Clínicamente validado
+                                            Instrumento estandarizado
                                         </Text>
                                     </View>
 
