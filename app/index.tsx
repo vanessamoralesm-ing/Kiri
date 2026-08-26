@@ -7,8 +7,8 @@ import React from 'react';
 // y, cuando AuthProvider termina de comprobar la sesion,
 // redirige a welcome o home segun corresponda.
 export default function Index() {
-  //return <AnimatedLogo />;
+  return <AnimatedLogo />;
 
-  return <Redirect href="/cuestionarios" />; //Redireccionamiento temporal a la pantalla de cuestionarios para pruebas.
+  //return <Redirect href="/cuestionarios" />; //Redireccionamiento temporal a la pantalla de cuestionarios para pruebas.
 
 }
