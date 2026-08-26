@@ -31,9 +31,9 @@ const emojisOpciones = ["😊", "🙂", "😐", "🤔"];
 export default function EntrevistaNinos() {
   // Carga la fuentes guardadas en assets/fonts.
   const [fontsLoaded] = useFonts({
-    "Nunito-Medium": require("../../assets/fonts/Nunito-Medium.ttf"),
-    "Nunito-SemiBold": require("../../assets/fonts/Nunito-SemiBold.ttf"),
-    "Nunito-Bold": require("../../assets/fonts/Nunito-Bold.ttf"),
+    "Nunito-Medium": require("@/assets/fonts/Nunito-Medium.ttf"),
+    "Nunito-SemiBold": require("@/assets/fonts/Nunito-SemiBold.ttf"),
+    "Nunito-Bold": require("@/assets/fonts/Nunito-Bold.ttf"),
   });
 
   // Guarda el número de la sección actual:
@@ -194,7 +194,7 @@ export default function EntrevistaNinos() {
     <SafeAreaView style={styles.pantalla}>
       {/* Imagen que ocupa todo el fondo de la pantalla */}
       <ImageBackground
-        source={require("../../assets/images_kids/fondo_niños.png")}
+        source={require("@/assets/images_kids/fondo_niños.png")}
         style={styles.contenido}
         imageStyle={styles.imagenFondo}
         resizeMode="cover"
@@ -209,7 +209,7 @@ export default function EntrevistaNinos() {
 
           {/* Logo superior izquierdo */}
           <Image
-            source={require("../../assets/images_kids/logo_horizontal.png")}
+            source={require("@/assets/images_kids/logo_horizontal.png")}
             style={styles.logoImagen}
             resizeMode="contain"
           />
@@ -408,7 +408,7 @@ export default function EntrevistaNinos() {
 
                 <View style={styles.avatarInferior}>
                   <Image
-                    source={require("../../assets/images_kids/avatar_pregunta.png")}
+                    source={require("@/assets/images_kids/avatar_pregunta.png")}
                     style={styles.avatarImagen}
                     resizeMode="contain"
                   />

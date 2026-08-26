@@ -12,7 +12,6 @@ import { AuthProvider, useAuth } from "@/services/authProvider";
 
 SplashScreen.preventAutoHideAsync();
 
-// NAVEGACIÓN PRINCIPAL
 function RootNavigation() {
   const { loading, session } = useAuth();
   const router = useRouter();
@@ -32,7 +31,7 @@ function RootNavigation() {
     if (loading || !splashTerminado) return;
 
     if (session) {
-      router.replace("/(tabs)/home");
+      router.replace("/(entrevista)/bienvenida");
       return;
     }
 
@@ -49,40 +48,34 @@ function RootNavigation() {
       <Stack.Screen name="index" />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="(bienvenida)" />
+      <Stack.Screen name="(entrevista)" />
     </Stack>
   );
 }
 
-// ROOT LAYOUT
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
-  // FUENTES
   const [loaded, error] = useFonts({
     "Nunito-Medium": require("../assets/fonts/Nunito-Medium.ttf"),
     "Nunito-SemiBold": require("../assets/fonts/Nunito-SemiBold.ttf"),
     "Nunito-Bold": require("../assets/fonts/Nunito-Bold.ttf"),
   });
 
-  // ERROR DE FUENTES
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
-  // OCULTAR SPLASH NATIVO
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
 
-  // Mientras cargan las fuentes mantenemos el SplashScreen nativo
   if (!loaded) {
     return null;
   }
 
-  // APP
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <AuthProvider>
