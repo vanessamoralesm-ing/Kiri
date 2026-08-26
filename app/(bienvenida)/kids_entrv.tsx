@@ -1,3 +1,4 @@
+import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { useState } from "react";
