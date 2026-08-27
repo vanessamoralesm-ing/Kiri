@@ -1,47 +1,85 @@
 import "../global.css";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
+
 import AnimatedLogo from "@/components/ui/AnimatedLogo";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { AuthProvider, useAuth } from "@/services/authProvider";
+import { supabase } from "@/lib/supabase";
 
 SplashScreen.preventAutoHideAsync();
 
 function RootNavigation() {
   const { loading, session } = useAuth();
   const router = useRouter();
+  const segments = useSegments();
 
-  const [splashTerminado, setSplashTerminado] = React.useState(false);
+  const [splashTerminado, setSplashTerminado] = useState(false);
+  const resolviendoRuta = useRef(false);
+  const usuarioProcesado = useRef<string | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setSplashTerminado(true);
-    }, 4000);
-
+    const timer = setTimeout(() => setSplashTerminado(true), 4000);
     return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    // Esperamos autenticacion + tiempo minimo del splash
     if (loading || !splashTerminado) return;
+    const grupoActual = segments[0];
 
-    if (session) {
-      router.replace("/(entrevista)/bienvenida");
+    if (!session) {
+      resolviendoRuta.current = false;
+      usuarioProcesado.current = null;
+      if (grupoActual !== "(auth)") router.replace("/(auth)/welcome");
       return;
     }
 
-    router.replace("/(auth)/welcome");
-  }, [loading, splashTerminado, session, router]);
+    if (grupoActual === "(tabs)" || grupoActual === "(entrevista)") return;
 
-  // Mientras carga auth o no han pasado los 4 segundos
-  if (loading || !splashTerminado) {
-    return <AnimatedLogo />;
-  }
+    const idUsuario = session.user.id;
+    if (resolviendoRuta.current || usuarioProcesado.current === idUsuario) return;
+
+    resolviendoRuta.current = true;
+    let activo = true;
+
+    async function resolverRutaInicial() {
+      try {
+        const { data, error } = await supabase
+          .from("entrevista_realizada")
+          .select("id_entrevista")
+          .eq("id_usuario", idUsuario)
+          .limit(1);
+
+        if (error) throw error;
+        if (!activo) return;
+
+        usuarioProcesado.current = idUsuario;
+        const yaTieneEntrevistas = (data?.length ?? 0) > 0;
+        console.log("Usuario tiene entrevistas:", yaTieneEntrevistas);
+
+        if (!yaTieneEntrevistas) {
+          router.replace("/(entrevista)/bienvenida");
+          return;
+        }
+        router.replace("/(tabs)/home");
+      } catch (error) {
+        console.error("Error resolviendo ruta inicial:", error);
+        if (activo) router.replace("/(tabs)/home");
+      } finally {
+        resolviendoRuta.current = false;
+      }
+    }
+
+    resolverRutaInicial();
+    return () => { activo = false; };
+  }, [loading, splashTerminado, session?.user.id, segments, router]);
+
+  if (loading || !splashTerminado) return <AnimatedLogo />;
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
@@ -55,7 +93,6 @@ function RootNavigation() {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-
   const [loaded, error] = useFonts({
     "Nunito-Medium": require("../assets/fonts/Nunito-Medium.ttf"),
     "Nunito-SemiBold": require("../assets/fonts/Nunito-SemiBold.ttf"),
@@ -67,14 +104,10 @@ export default function RootLayout() {
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
+    if (loaded) SplashScreen.hideAsync();
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
+  if (!loaded) return null;
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
