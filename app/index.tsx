@@ -1,5 +1,5 @@
-import { Redirect } from "expo-router";
 //import AnimatedLogo from '@/components/ui/AnimatedLogo';
+import AnimatedLogo from '@/components/ui/AnimatedLogo';
 import React from 'react';
 
 // Pantalla inicial de Kiri.
