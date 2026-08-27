@@ -1,29 +1,63 @@
-import { Tabs } from "expo-router";
 import React from "react";
 
-import { HapticTab } from "@/components/haptic-tab";
-import { IconSymbol } from "@/components/ui/icon-symbol";
-import { Colors } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { Tabs } from "expo-router";
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+import { BarraNavegacionCurva } from "../../components/ui/BarraNavegacionCurva";
 
+import AppHeader from "@/components/layout/AppHeader";
+
+export default function LayoutPestanas() {
   return (
     <Tabs
+      tabBar={(props) => (
+        <BarraNavegacionCurva {...props} />
+      )}
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
+        headerShown: true,
+
+        header: () => <AppHeader />,
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
-          title: "Home",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
-          ),
+          title: "Inicio",
+        }}
+      />
+
+      <Tabs.Screen
+        name="diario/index"
+        options={{
+          title: "Diario",
+        }}
+      />
+
+      <Tabs.Screen
+        name="educacion/index"
+        options={{
+          title: "Educación",
+        }}
+      />
+
+      <Tabs.Screen
+        name="tecnicas/index"
+        options={{
+          title: "Técnicas",
+        }}
+      />
+
+      <Tabs.Screen
+        name="perfil/index"
+        options={{
+          title: "Perfil",
+        }}
+      />
+
+      
+      <Tabs.Screen
+        name="cuestionarios"
+        options={{
+          href: null,
         }}
       />
     </Tabs>

@@ -30,15 +30,15 @@ export default function AnalizandoPerfil() {
   // guardadas dentro de assets/fonts.
   const [fontsLoaded] = useFonts({
     "Nunito-Medium": require(
-      "../../assets/fonts/Nunito-Medium.ttf"
+      "@/assets/fonts/Nunito-Medium.ttf"
     ),
 
     "Nunito-SemiBold": require(
-      "../../assets/fonts/Nunito-SemiBold.ttf"
+      "@/assets/fonts/Nunito-SemiBold.ttf"
     ),
 
     "Nunito-Bold": require(
-      "../../assets/fonts/Nunito-Bold.ttf"
+      "@/assets/fonts/Nunito-Bold.ttf"
     ),
   });
 
@@ -360,7 +360,7 @@ export default function AnalizandoPerfil() {
           {/* Logo de Kiri */}
           <Image
             source={require(
-              "../../assets/images_kids/logo_horizontal.png"
+              "@/assets/images_kids/logo_horizontal.png"
             )}
             style={{
               width: 95,
@@ -413,7 +413,7 @@ export default function AnalizandoPerfil() {
                 items-center
                 justify-center
                 rounded-full
-                bg-[#E0F1FF]//color azulito clarito
+                bg-[#E0F1FF]
               "
             >
               {/* Círculo central animado */}
