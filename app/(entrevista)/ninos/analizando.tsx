@@ -1,5 +1,5 @@
 import { useFonts } from "expo-font";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   Image,
