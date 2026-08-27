@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import GoogleButton from '@/components/ui/GoogleButton';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/services/authProvider';
 import type { Genero } from '@/types/auth';
 import { validateRegister, EDAD_MINIMA } from '@/utils/validations';
@@ -27,6 +28,9 @@ export default function RegisterScreen() {
   const [correo, setCorreo] = useState('');
   const [contraseña, setContraseña] = useState('');
   const [confirmar, setConfirmar] = useState('');
+
+  const [mostrarContraseña, setMostrarContraseña] = useState(false);
+  const [mostrarConfirmar, setMostrarConfirmar] = useState(false);
 
   // TÉRMINOS
   const [aceptoCondi, setAceptoCondi] = useState(false);
@@ -356,12 +360,23 @@ export default function RegisterScreen() {
               setContraseña(value);
               limpiarError();
             }}
-            secureTextEntry
+            secureTextEntry={!mostrarContraseña}
             autoCapitalize="none"
             autoCorrect={false}
             autoComplete="new-password"
+            rightIcon={
+              <TouchableOpacity
+                onPress={() => setMostrarContraseña(!mostrarContraseña)}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name={mostrarContraseña ? 'eye-off' : 'eye'}
+                  size={22}
+                  color="#64748B"
+                />
+              </TouchableOpacity>
+            }
           />
-
           {/* CONFIRMAR CONTRASEÑA */}
           <Input
             label="Confirmar Contraseña"
@@ -371,9 +386,21 @@ export default function RegisterScreen() {
               setConfirmar(value);
               limpiarError();
             }}
-            secureTextEntry
+            secureTextEntry={!mostrarConfirmar}
             autoCapitalize="none"
             autoCorrect={false}
+            rightIcon={
+              <TouchableOpacity
+                onPress={() => setMostrarConfirmar(!mostrarConfirmar)}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name={mostrarConfirmar ? 'eye-off' : 'eye'}
+                  size={22}
+                  color="#64748B"
+                />
+              </TouchableOpacity>
+            }
           />
 
           {/* TÉRMINOS */}
