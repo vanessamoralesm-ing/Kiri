@@ -370,9 +370,9 @@ export default function RegisterScreen() {
                 activeOpacity={0.7}
               >
                 <Ionicons
-                  name={mostrarContraseña ? 'eye-off-outline' : 'eye-outline'}
+                  name={mostrarContraseña ? 'eye-off' : 'eye'}
                   size={22}
-                  color="#0a0a0a"
+                  color="#64748B"
                 />
               </TouchableOpacity>
             }
@@ -395,9 +395,9 @@ export default function RegisterScreen() {
                 activeOpacity={0.7}
               >
                 <Ionicons
-                  name={mostrarConfirmar ? 'eye-off-outline' : 'eye-outline'}
+                  name={mostrarConfirmar ? 'eye-off' : 'eye'}
                   size={22}
-                  color="#0a0a0a"
+                  color="#64748B"
                 />
               </TouchableOpacity>
             }
