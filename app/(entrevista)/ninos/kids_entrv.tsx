@@ -1,17 +1,16 @@
-import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
-import { useState } from "react";
+import React, { useRef, useState } from "react";
 
 import {
-    Alert,
-    Image,
-    ImageBackground,
-    Pressable,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Alert,
+  Image,
+  ImageBackground,
+  Pressable,
+  ScrollView,
+  Text,
+  useWindowDimensions,
+  View,
 } from "react-native";
 
 import { router } from "expo-router";
@@ -22,18 +21,49 @@ import { seccionesEntrevista } from "./preguntas_kids";
 // Mostramos solamente una pregunta en cada pantalla.
 const PREGUNTAS_POR_PANTALLA = 1;
 
-// Estos colores e iconos se asignan dependiendo
+// Estos colores se asignan dependiendo
 // de la posición de cada respuesta.
-const tiposOpciones = ["verde", "azul", "amarillo", "morado"];
+const tiposOpciones = [
+  "verde",
+  "azul",
+  "amarillo",
+  "morado",
+];
 
-const emojisOpciones = ["😊", "🙂", "😐", "🤔"];
+// Usamos el mismo emoji para todas las respuestas
+const emojiOpcion = "🤔";
 
 export default function EntrevistaNinos() {
+  // Obtiene el ancho actual de la pantalla.
+  // Esto nos permite adaptar únicamente algunos elementos cuando el teléfono tiene una pantalla más pequeña.
+  const { width } = useWindowDimensions();
+
+  // Detecta teléfonos con una pantalla más pequeña.
+  // Esto evita que elementos como el avatar se vean grandes en algunos dispositivos
+  const esTelefonoPequeno = width < 380;
+
+  const scrollEntrevistaRef = useRef<ScrollView>(null);
+
+  // Lleva inmediatamente el contenido desplazable al inicio de la pregunta actual.
+  // animated: false hace que la siguiente pregunta aparezca directamente arriba,
+  function volverAlInicioPregunta() {
+    scrollEntrevistaRef.current?.scrollTo({
+      y: 0,
+      animated: false,
+    });
+  }
+
   // Carga la fuentes guardadas en assets/fonts.
   const [fontsLoaded] = useFonts({
-    "Nunito-Medium": require("@/assets/fonts/Nunito-Medium.ttf"),
-    "Nunito-SemiBold": require("@/assets/fonts/Nunito-SemiBold.ttf"),
-    "Nunito-Bold": require("@/assets/fonts/Nunito-Bold.ttf"),
+    "Nunito-Medium": require(
+      "@/assets/fonts/Nunito-Bold.ttf"
+    ),
+    "Nunito-SemiBold": require(
+      "@/assets/fonts/Nunito-SemiBold.ttf"
+    ),
+    "Nunito-Bold": require(
+      "@/assets/fonts/Nunito-Bold.ttf"
+    ),
   });
 
   // Guarda el número de la sección actual:
@@ -42,9 +72,8 @@ export default function EntrevistaNinos() {
   // Guarda la pregunta actual dentro de la sección.
   const [paginaActual, setPaginaActual] = useState(0);
 
-  // Guarda todas las respuestas seleccionadas.
-  // Aquí se guardan tanto respuestas de botones
-  // como respuestas escritas.
+  // Guarda todas las respuestas seleccionadas
+  // en las opciones de cada pregunta.
   const [respuestas, setRespuestas] = useState<{
     [clave: string]: string;
   }>({});
@@ -53,40 +82,50 @@ export default function EntrevistaNinos() {
   if (!fontsLoaded) {
     return null;
   }
-
   // Obtiene la sección que se está mostrando actualmente.
-  const seccionActual = seccionesEntrevista[numeroSeccion];
+  const seccionActual =
+    seccionesEntrevista[numeroSeccion];
 
   // Como mostramos una pregunta por pantalla,
   // este índice corresponde a la pregunta actual.
-  const indiceInicial = paginaActual * PREGUNTAS_POR_PANTALLA;
+  const indiceInicial =
+    paginaActual * PREGUNTAS_POR_PANTALLA;
 
-  const indiceFinal = indiceInicial + PREGUNTAS_POR_PANTALLA;
+  const indiceFinal =
+    indiceInicial + PREGUNTAS_POR_PANTALLA;
 
   // Extrae solamente la pregunta que debe aparecer.
-  const preguntasVisibles = seccionActual.preguntas.slice(
-    indiceInicial,
-    indiceFinal,
-  );
+  const preguntasVisibles =
+    seccionActual.preguntas.slice(
+      indiceInicial,
+      indiceFinal
+    );
 
   // Calcula cuántas pantallas tiene la sección actual.
   const totalPaginas = Math.ceil(
-    seccionActual.preguntas.length / PREGUNTAS_POR_PANTALLA,
+    seccionActual.preguntas.length /
+      PREGUNTAS_POR_PANTALLA
   );
 
   // Indica si estamos en la última pregunta de la sección.
-  const esUltimaPagina = paginaActual === totalPaginas - 1;
+  const esUltimaPagina =
+    paginaActual === totalPaginas - 1;
 
   // Indica si estamos en la última sección.
-  const esUltimaSeccion = numeroSeccion === seccionesEntrevista.length - 1;
+  const esUltimaSeccion =
+    numeroSeccion ===
+    seccionesEntrevista.length - 1;
 
   // Guarda la respuesta seleccionada.
-  function seleccionarRespuesta(indicePregunta: number, respuesta: string) {
+  function seleccionarRespuesta(
+    indicePregunta: number,
+    respuesta: string
+  ) {
     // Creamos una clave combinando:
     // número de sección + número de pregunta.
-    //
-    // "0-1" significa sección 0, pregunta 1.
-    const clave = `${numeroSeccion}-${indicePregunta}`;
+    //significa sección 0, pregunta 1.
+    const clave =
+      `${numeroSeccion}-${indicePregunta}`;
 
     // Conservamos las respuestas anteriores
     // y agregamos o cambiamos la respuesta actual.
@@ -97,69 +136,90 @@ export default function EntrevistaNinos() {
   }
 
   // Verifica si la pregunta actual tiene respuesta.
-  const paginaCompleta = preguntasVisibles.every((pregunta, indiceLocal) => {
-    const indiceReal = indiceInicial + indiceLocal;
+  const paginaCompleta =
+    preguntasVisibles.every(
+      (pregunta, indiceLocal) => {
+        const indiceReal =
+          indiceInicial + indiceLocal;
 
-    const clave = `${numeroSeccion}-${indiceReal}`;
+        const clave =
+          `${numeroSeccion}-${indiceReal}`;
 
-    const respuesta = respuestas[clave];
+        const respuesta = respuestas[clave];
 
-    // También verifica que una respuesta abierta
-    // no esté vacía.
-    return respuesta !== undefined && respuesta.trim() !== "";
-  });
+        return (
+          respuesta !== undefined &&
+          respuesta.trim() !== ""
+        );
+      }
+    );
 
   // Suma todas las preguntas de las cinco secciones.
-  const totalPreguntas = seccionesEntrevista.reduce(
-    (total, seccion) => total + seccion.preguntas.length,
-    0,
-  );
+  const totalPreguntas =
+    seccionesEntrevista.reduce(
+      (total, seccion) =>
+        total + seccion.preguntas.length,
+      0
+    );
 
   // Cuenta cuántas respuestas se han guardado
   // y que realmente tengan contenido.
-  const totalRespondidas = Object.values(respuestas).filter(
-    (respuesta) => respuesta.trim() !== "",
-  ).length;
+  const totalRespondidas =
+    Object.values(respuestas).filter(
+      (respuesta) => respuesta.trim() !== ""
+    ).length;
 
   // Calcula el porcentaje general de la entrevista.
-  const porcentaje = Math.round((totalRespondidas / totalPreguntas) * 100);
+  const porcentaje = Math.round(
+    (totalRespondidas / totalPreguntas) * 100
+  );
 
   // Avanza a la siguiente pregunta o sección.
   function continuar() {
-    // No permite continuar sin responder.
+    // Verifica que la pregunta que aparece actualmente
+    // tenga una respuesta antes de permitir avanzar.
     if (!paginaCompleta) {
       Alert.alert(
         "Falta una respuesta",
-        "Debe responder la pregunta antes de continuar.",
+        "Debe responder la pregunta antes de continuar."
       );
 
+      // Detiene la función para que el usuario
+      // permanezca en la misma pregunta.
       return;
     }
 
-    // Avanza a la siguiente pregunta
-    // dentro de la misma sección.
+    // Si todavía existen más preguntas dentro
+    // de la sección actual, avanza a la siguiente.
     if (!esUltimaPagina) {
+      // Antes de mostrar la siguiente pregunta,
+      // regresamos el ScrollView hasta arriba. Así, aunque el usuario haya bajado hasta
+      // el botón Continuar, la nueva pregunta aparecerá inmediatamente desde el inicio.
+      volverAlInicioPregunta();
+
       setPaginaActual(paginaActual + 1);
       return;
     }
 
-    // Cuando termina una sección,
-    // comienza la siguiente desde su primera pregunta.
     if (!esUltimaSeccion) {
+      // También regresamos el ScrollView arriba
+      // cuando comienza una sección nueva.
+      volverAlInicioPregunta();
+
+      // Cambia a la siguiente sección.
       setNumeroSeccion(numeroSeccion + 1);
+
+      // Comienza desde la primera pregunta
+      // de la nueva sección.
       setPaginaActual(0);
+
       return;
     }
-
-    // Mensaje que aparece al terminar toda la entrevista.
-    Alert.alert(
-      "Entrevista completada",
-      "Todas las preguntas fueron respondidas.",
-    );
-
-    // Por ahora las respuestas aparecen en la consola.
-    // Más adelante aquí se podrán enviar a la base de datos, mientras se construye.
+    
     console.log("Respuestas:", respuestas);
+
+    // Al terminar toda la entrevista, aparecera analizando...
+    router.replace("/ninos/analizando");
   }
 
   // Regresa a la pregunta anterior.
@@ -173,10 +233,12 @@ export default function EntrevistaNinos() {
     // Regresa a la última pregunta
     // de la sección anterior.
     if (numeroSeccion > 0) {
-      const seccionAnterior = seccionesEntrevista[numeroSeccion - 1];
+      const seccionAnterior =
+        seccionesEntrevista[numeroSeccion - 1];
 
       const paginasAnteriores = Math.ceil(
-        seccionAnterior.preguntas.length / PREGUNTAS_POR_PANTALLA,
+        seccionAnterior.preguntas.length /
+          PREGUNTAS_POR_PANTALLA
       );
 
       setNumeroSeccion(numeroSeccion - 1);
@@ -184,684 +246,533 @@ export default function EntrevistaNinos() {
 
       return;
     }
-
     // Si estamos en la primera pregunta,
     // regresa a la pantalla anterior de la aplicación.
     router.back();
   }
 
   return (
-    <SafeAreaView style={styles.pantalla}>
+    <SafeAreaView className="flex-1 bg-[#F7F8FC]">
       {/* Imagen que ocupa todo el fondo de la pantalla */}
       <ImageBackground
-        source={require("@/assets/images_kids/fondo_niños.png")}
-        style={styles.contenido}
-        imageStyle={styles.imagenFondo}
+        source={require(
+          "@/assets/images_kids/fondo_niños.png"
+        )}
+        className="flex-1 w-full bg-[#FAFBFD]"
+        // Conservamos este style porque imageStyle controla
+        // directamente la imagen interna del ImageBackground.
+        imageStyle={{
+          transform: [
+            {
+              translateY: -3,
+            },
+            {
+              scale: 1.06,
+            },
+          ],
+        }}
         resizeMode="cover"
       >
-        {/* ENCABEZADO FIJO */}
+        {/*
+          ZONA SUPERIOR FIJA.
 
-        <View style={styles.encabezado}>
-          {/* Botón para regresar */}
-          <Pressable style={styles.botonRegresar} onPress={regresar}>
-            <Ionicons name="arrow-back" size={30} style={styles.flecha} />
-          </Pressable>
+        */}
+        <View className="w-full px-[18px] pt-1">
+            {/* ENCABEZADO */}
 
-          {/* Logo superior izquierdo */}
-          <Image
-            source={require("@/assets/images_kids/logo_horizontal.png")}
-            style={styles.logoImagen}
-            resizeMode="contain"
-          />
-        </View>
+            <View className="h-16 flex-row items-center">
+              {/* Botón para regresar */}
+              <Pressable
+                className="h-11 w-[30px] justify-center"
+                onPress={regresar}
+              >
+                <Ionicons
+                  name="arrow-back"
+                  size={30}
+                  // Mantenemos style en el icono porque Ionicons
+                  // recibe directamente color y márgenes desde React Native.
+                  style={{
+                    color: "#135CE4",
+                    marginLeft: -5,
+                    marginTop: -14,
+                  }}
+                />
+              </Pressable>
 
-        {/* INFORMACION DEL PROGRESO */}
+              {/* Logo superior izquierdo */}
 
-        <View style={styles.progresoInformacion}>
-          {/* Sección actual de cinco secciones */}
-          <Text style={styles.numeroSeccion}>
-            {numeroSeccion + 1} de {seccionesEntrevista.length}
-          </Text>
-
-          {/* Porcentaje general completado */}
-          <Text style={styles.porcentajeTexto}>{porcentaje}% completado</Text>
-        </View>
-
-        {/* Barra de progreso */}
-
-        <View style={styles.barraPasos}>
-          {seccionesEntrevista.map((seccion, indice) => {
-            //Comprueba si este circulo corrsponde a la seccion
-            //en la que estamos actualmente.
-            const estaActivo = indice === numeroSeccion;
-
-            //Comprueba si esta seccion ya fue completada.
-            const estacompletado = indice < numeroSeccion;
-
-            return (
-              <View key={seccion.titulo} style={styles.contenedorPaso}>
-                {/*ciruclo de cada seccion*/}
-                <View
-                  style={[
-                    styles.circuloPaso,
-
-                    estaActivo && styles.circuloPasoActivo,
-
-                    estacompletado && styles.circuloPasoCompletado,
-                  ]}
-                >
-                  {/*Punto interior del circulo activo*/}
-                  {estaActivo && <View style={styles.puntoPasoActivo} />}
-
-                  {/*Check para secciones ya completadas*/}
-                  {estacompletado && <Text style={styles.checkPaso}>✓</Text>}
-                </View>
-
-                {/*Linea que conecta con el otro circulo*/}
-                {indice < seccionesEntrevista.length - 1 && (
-                  <View
-                    style={[
-                      styles.lineaPaso,
-
-                      estacompletado && styles.lineaPasoCompletada,
-                    ]}
-                  />
+              {/*
+                Aquí usamos style para fijar el tamaño del logo.
+               
+              */}
+              <Image
+                source={require(
+                  "@/assets/images_kids/logo_horizontal.png"
                 )}
-              </View>
-            );
-          })}
-        </View>
+                style={{
+                  width: 105,
+                  height: 105,
+                  marginLeft: 12,
+                  marginTop: -15,
+                }}
+                resizeMode="contain"
+              />
+            </View>
 
-        {/* ÁREA DE LA PREGUNTA */}
+            {/* INFORMACION DEL PROGRESO */}
 
-        <View style={styles.areaPregunta}>
-          {preguntasVisibles.map((pregunta, indiceLocal) => {
-            // Número real de la pregunta dentro de la sección.
-            const indiceReal = indiceInicial + indiceLocal;
+            <View className="mt-[-5px] flex-row items-center justify-between">
+              {/* Sección actual de cinco secciones */}
+              <Text
+                maxFontSizeMultiplier={1}
+                className="text-[13px] text-[#135CE4]"
+                // Conservamos fontFamily en style porque
+                // las fuentes Nunito se cargan con useFonts.
+                style={{
+                  fontFamily: "Nunito-Bold",
+                }}
+              >
+                {numeroSeccion + 1} de{" "}
+                {seccionesEntrevista.length}
+              </Text>
 
-            // Clave que identifica la respuesta.
-            const clave = `${numeroSeccion}-${indiceReal}`;
+              {/* Porcentaje general completado */}
+              <Text
+                maxFontSizeMultiplier={1}
+                className="text-[13px] text-[#135CE4]"
+                style={{
+                  fontFamily: "Nunito-Bold",
+                }}
+              >
+                {porcentaje}% completado
+              </Text>
+            </View>
 
-            // Respuesta seleccionada para esta pregunta.
-            const respuestaActual = respuestas[clave] || "";
+            {/* Barra de progreso */}
+            {/* w-[115%] hace que la barra se extienda mas hacia la derecha */}
+            <View
+              className={`
+                mt-[10px]
+                mb-[5px]
+                w-[115%] 
+                flex-row
+                items-center
+                px-0.5
+              `}
+            >
+              {seccionesEntrevista.map(
+                (seccion, indice) => {
+                  //Comprueba si este circulo corresponde a la seccion en la que estamos actualmente.
+                  const estaActivo =
+                    indice === numeroSeccion;
 
-            return (
-              <View key={clave} style={styles.tarjetaPregunta}>
-                {/* Círculo con el número de la pregunta */}
-                <View style={styles.numeroCirculo}>
-                  <Text style={styles.numeroTexto}>{indiceReal + 1}.</Text>
-                </View>
+                  //Comprueba si esta seccion ya fue completada.
+                  const estacompletado =
+                    indice < numeroSeccion;
 
-                {/* Texto principal de la pregunta */}
-                <View style={styles.contenidoPregunta}>
-                  <Text style={styles.pregunta}>{pregunta.texto}</Text>
+                  return (
+                    <View
+                      key={seccion.titulo}
+                      className="flex-1 flex-row items-center"
+                    >
+                      {/*ciruclo de cada seccion*/}
+                      <View
+                        className={`
+                          h-6 w-6
+                          items-center justify-center
+                          rounded-full
+                          border-[3px]
+                          ${
+                            estacompletado
+                              ? "border-[#A78BFA] bg-[#A78BFA]"
+                              : estaActivo
+                                ? "border-[#A78BFA] bg-white"
+                                : "border-[#E1E1E6] bg-white"
+                          }
+                        `}
+                      >
+                        {/*Punto interior del circulo activo*/}
+                        {estaActivo && !estacompletado && (
+                          <View className="h-[10px] w-[10px] rounded-full bg-[#A78BFA]" />
+                        )}
 
-                  <Text style={styles.descripcion}>
-                    {pregunta.tipoRespuesta === "abierta"
-                      ? "Escriba una respuesta según lo que ha observado en su hijo/a."
-                      : "Elija la opción que mejor describa el comportamiento de su hijo/a."}
-                  </Text>
-                </View>
+                        {/*Check para secciones ya completadas*/}
+                        {estacompletado && (
+                          <Ionicons
+                            name="checkmark"
+                            size={16}
+                            color="#FFFFFF"
+                          />
+                        )}
+                      </View>
 
-                {/* RESPUESTA ABIERTA DE PRUEBA*/}
-
-                {pregunta.tipoRespuesta === "abierta" ? (
-                  <View style={styles.contenedorRespuestaAbierta}>
-                    <TextInput
-                      style={styles.respuestaAbierta}
-                      placeholder="Escriba su respuesta aquí..."
-                      placeholderTextColor="#9BA4B4"
-                      value={respuestaActual}
-                      onChangeText={(texto) =>
-                        seleccionarRespuesta(indiceReal, texto)
-                      }
-                      multiline
-                      textAlignVertical="top"
-                    />
-                  </View>
-                ) : (
-                  <>
-                    {/* OPCIONES DE RESPUESTA */}
-
-                    <View style={styles.opciones}>
-                      {pregunta.opciones?.map((opcion, indiceOpcion) => {
-                        // Comprueba si esta opción está seleccionada.
-                        const seleccionada = respuestaActual === opcion;
-
-                        // Elegimos un color según la posición.
-                        const tipo = tiposOpciones[indiceOpcion] || "azul";
-
-                        // Elegimos un emoji según la posición.
-                        const emoji = emojisOpciones[indiceOpcion] || "🙂";
-
-                        return (
-                          <Pressable
-                            key={opcion}
-                            onPress={() =>
-                              seleccionarRespuesta(indiceReal, opcion)
+                      {/*Linea que conecta con el otro circulo*/}
+                      {indice <
+                        seccionesEntrevista.length -
+                          1 && (
+                        <View
+                          className={`
+                            mx-[7px]
+                            h-0.5
+                            flex-1
+                            ${
+                              estacompletado
+                                ? "bg-[#A78BFA]"
+                                : "bg-[#E1E1E6]"
                             }
-                            style={[
-                              styles.opcion,
-
-                              // Aplica un color diferente
-                              // dependiendo del tipo de respuesta.
-                              tipo === "verde" && styles.opcionVerde,
-
-                              tipo === "azul" && styles.opcionAzul,
-
-                              tipo === "amarillo" && styles.opcionAmarilla,
-
-                              tipo === "morado" && styles.opcionMorada,
-
-                              // Resalta la opción seleccionada.
-                              seleccionada && styles.opcionSeleccionada,
-                            ]}
-                          >
-                            {/* Círculo de color que contiene el emoji */}
-                            <View
-                              style={[
-                                styles.emojiCirculo,
-
-                                tipo === "verde" && styles.emojiVerde,
-
-                                tipo === "azul" && styles.emojiAzul,
-
-                                tipo === "amarillo" && styles.emojiAmarillo,
-
-                                tipo === "morado" && styles.emojiMorado,
-                              ]}
-                            >
-                              <Text style={styles.emoji}>{emoji}</Text>
-                            </View>
-
-                            {/* Texto de la respuesta */}
-                            <Text
-                              style={[
-                                styles.textoOpcion,
-
-                                seleccionada && styles.textoSeleccionado,
-                              ]}
-                            >
-                              {opcion}
-                            </Text>
-
-                            {/* Marca que aparece al seleccionar */}
-                            {seleccionada && (
-                              <Text style={styles.check}>✓</Text>
-                            )}
-                          </Pressable>
-                        );
-                      })}
+                          `}
+                        />
+                      )}
                     </View>
-                  </>
-                )}
+                  );
+                }
+              )}
+            </View>
 
-                {/* AVATAR INFERIOR DERECHO */}
-
-                {/*
-                    Este View mantiene el avatar en la parte
-                    inferior derecha de la tarjeta.
-
-                    Al usar position: "absolute", el avatar
-                    no empuja ni modifica las respuestas.
-                  */}
-
-                <View style={styles.avatarInferior}>
-                  <Image
-                    source={require("@/assets/images_kids/avatar_pregunta.png")}
-                    style={styles.avatarImagen}
-                    resizeMode="contain"
-                  />
-                </View>
-              </View>
-            );
-          })}
         </View>
 
-        {/* BOTÓN INFERIOR */}
+        {/*
+          //ZONA DESPLAZABLE//
 
-        <View style={styles.zonaBoton}>
-          <Pressable
-            onPress={continuar}
-            style={[
-              styles.botonContinuar,
+          style={{ flex: 1 }} hace que el ScrollView use
+          todo el espacio restante debajo de la zona fija.
+        */}
+        <ScrollView
+          // Esta referencia permite que la función volverAlInicioPregunta controle el scroll
+          // cuando el usuario presiona Continuar.
+          ref={scrollEntrevistaRef}
 
-              // Cambia el color cuando todavía
-              // no se ha seleccionado una respuesta.
-              !paginaCompleta && styles.botonDesactivado,
-            ]}
-          >
-            <Text style={styles.textoBoton}>
-              {esUltimaPagina && esUltimaSeccion
-                ? "Finalizar entrevista"
-                : "Continuar"}
-            </Text>
-          </Pressable>
-        </View>
+          style={{
+            flex: 1,
+            width: "100%",
+          }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingHorizontal: 18,
+            paddingBottom: 20,
+          }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+            {/* ÁREA DE LA PREGUNTA */}
+
+            {/*
+              Esta área tampoco usa flex-1. De esta manera la tarjeta puede crecer
+              naturalmente y ScrollView puede calcular correctamente la altura total.
+            */}
+            <View className="w-full pt-[10px] pb-3">
+              {preguntasVisibles.map(
+                (pregunta, indiceLocal) => {
+                  // Número real de la pregunta dentro de la sección.
+                  const indiceReal =
+                    indiceInicial + indiceLocal;
+
+                  // Clave que identifica la respuesta.
+                  const clave =
+                    `${numeroSeccion}-${indiceReal}`;
+
+                  // Respuesta seleccionada para esta pregunta.
+                  const respuestaActual =
+                    respuestas[clave] || "";
+
+                  return (
+                    <View
+                      key={clave}
+                      className="
+                        relative
+                        min-h-[590px]
+                        w-full
+                        rounded-[26px]
+                        border
+                        border-[#EDF0F2]
+                        bg-white/95
+                        px-5
+                        pt-[22px]
+                        pb-[125px]
+                        shadow-md
+                      "
+                    >
+                      {/* Círculo con el número de la pregunta */}
+                      <View
+                        className="
+                          absolute
+                          left-3
+                          top-3
+                          z-10
+                          h-[38px]
+                          w-[38px]
+                          items-center
+                          justify-center
+                          rounded-full
+                          bg-[#EEE9FF]
+                        "
+                      >
+                        <Text
+                          maxFontSizeMultiplier={1}
+                          className="text-[16px] text-[#30394D]"
+                          style={{
+                            fontFamily: "Nunito-Bold",
+                          }}
+                        >
+                          {indiceReal + 1}.
+                        </Text>
+                      </View>
+
+                      {/* Texto principal de la pregunta */}
+                      <View className="mt-[-10px] min-h-[100px] justify-center pl-10 pr-[5px]">
+                        <Text
+                          maxFontSizeMultiplier={1}
+                          className="text-[20px] leading-6 tracking-[-0.2px] text-[#273448]"
+                          style={{
+                            fontFamily: "Nunito-SemiBold",
+                          }}
+                        >
+                          {pregunta.texto}
+                        </Text>
+
+                        <Text
+                          maxFontSizeMultiplier={1}
+                          className="mt-[10px] text-[14px] leading-[17px] text-[#788296]"
+                          style={{
+                            fontFamily: "Nunito-Medium",
+                          }}
+                        >
+                          Elija la opción que mejor se ajuste al proceder de su hijo/a.
+                        </Text>
+                      </View>
+
+                      {/* OPCIONES DE RESPUESTA */}
+
+                      <View className="mt-[10px] w-full gap-[10px]">
+                        {pregunta.opciones?.map(
+                          (
+                            opcion,
+                            indiceOpcion
+                          ) => {
+                            // Comprueba si esta opción está seleccionada.
+                            const seleccionada =
+                              respuestaActual ===
+                              opcion;
+
+                            // Elegimos un color según la posición.
+                            const tipo =
+                              tiposOpciones[
+                                indiceOpcion
+                              ] || "azul";
+
+                            // Usamos el mismo emoji en todas las opciones
+                            // para evitar sugerir si una respuesta es buena o mala.
+                            const emoji = emojiOpcion;
+
+                            const claseColor =
+                              tipo === "verde"
+                                ? "border-[#D6ECD9] bg-[#FAFFFB]"
+                                : tipo === "azul"
+                                  ? "border-[#D6E6FA] bg-[#FAFCFF]"
+                                  : tipo === "amarillo"
+                                    ? "border-[#F7E6B8] bg-[#FFFDF8]"
+                                    : "border-[#E6DDF9] bg-[#FCFAFF]";
+
+                            // Estas clases cambian el fondo del círculo
+                            // que contiene el emoji según la opción.
+                            const claseEmoji =
+                              tipo === "verde"
+                                ? "bg-[#BEE3C2]"
+                                : tipo === "azul"
+                                  ? "bg-[#C9E0FC]"
+                                  : tipo === "amarillo"
+                                    ? "bg-[#FFE39B]"
+                                    : "bg-[#D8CCFA]";
+
+                            return (
+                              <Pressable
+                                key={opcion}
+
+                                // onPressIn responde desde el momento
+                                // en que el dedo toca la opción.
+                                onPressIn={() =>
+                                  seleccionarRespuesta(
+                                    indiceReal,
+                                    opcion
+                                  )
+                                }
+
+                                // Amplía ligeramente el área táctil
+                                // sin cambiar el tamaño visual del botón.
+                                hitSlop={4}
+
+                                className={`
+                                  min-h-[52px]
+                                  w-full
+                                  flex-row
+                                  items-center
+                                  rounded-[15px]
+                                  border
+                                  px-[13px]
+                                  ${claseColor}
+                                  ${
+                                    seleccionada
+                                      ? "border-2 border-[#7B9FE8]"
+                                      : ""
+                                  }
+                                `}
+                              >
+                                {/* Círculo de color que contiene el emoji */}
+                                <View
+                                  className={`
+                                    mr-3
+                                    h-[37px]
+                                    w-[37px]
+                                    items-center
+                                    justify-center
+                                    rounded-full
+                                    ${claseEmoji}
+                                  `}
+                                >
+                                  <Text
+                                    maxFontSizeMultiplier={1}
+                                    className="text-[22px]"
+                                  >
+                                    {emoji}
+                                  </Text>
+                                </View>
+
+                                {/* Texto de la respuesta */}
+                                <Text
+                                  maxFontSizeMultiplier={1}
+                                  className={`
+                                    flex-1
+                                    text-[15px]
+                                    leading-[18px]
+                                    ${
+                                      seleccionada
+                                        ? "text-[#355FAD]"
+                                        : "text-[#354156]"
+                                    }
+                                  `}
+                                  style={{
+                                    fontFamily:
+                                      "Nunito-SemiBold",
+                                  }}
+                                >
+                                  {opcion}
+                                </Text>
+
+                                {/* Marca que aparece al seleccionar */}
+                                {seleccionada && (
+                      
+                                  <Ionicons
+                                    name="checkmark"
+                                    size={21}
+                                    color="#5D8BDD"
+                                  />
+                                )}
+                              </Pressable>
+                            );
+                          }
+                        )}
+                      </View>
+
+                      {/* AVATAR INFERIOR DERECHO */}
+
+                      {/*
+                        Este View mantiene el avatar en la parte
+                        inferior derecha de la tarjeta.
+
+                        Al usar position: "absolute", el avatar
+                        no empuja ni modifica las respuestas.
+                      */}
+
+                      <View
+                        style={{
+                          position: "absolute",
+
+                          // En teléfonos pequeños reducimos el tamanio del avatar
+                          right: esTelefonoPequeno
+                            ? -22
+                            : -40,
+
+                          bottom: esTelefonoPequeno
+                            ? -10
+                            : -20,
+
+                          width: esTelefonoPequeno
+                            ? 190
+                            : 250,
+
+                          height: esTelefonoPequeno
+                            ? 160
+                            : 200,
+
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Image
+                          source={require(
+                            "@/assets/gifs/kiri_pensando.gif"
+                          )}
+
+                          style={{
+                            width: esTelefonoPequeno
+                              ? "125%"  //telefono pequeno
+                              : "135%", //telefono grande
+
+                            height: esTelefonoPequeno
+                              ? "115%" //telefono pequeno
+                              : "130%", //telefono grande
+
+                            marginTop:
+                              esTelefonoPequeno
+                                ? -10 //telefono pequeno
+                                : -20, //telefono grande
+                          }}
+                          resizeMode="contain"
+                        />
+                      </View>
+                    </View>
+                  );
+                }
+              )}
+            </View>
+
+            {/* BOTÓN INFERIOR */}
+
+            {/*
+              El botón permanece dentro del ScrollView.
+            */}
+            <View className="mt-3 w-full pb-3">
+              <Pressable
+                onPress={continuar}
+                className={`
+                  min-h-[52px]
+                  w-full
+                  items-center
+                  justify-center
+                  rounded-[15px]
+                  ${
+                    paginaCompleta
+                      ? "bg-[#6697EB]"
+                      : "bg-[#BCC5D1]"
+                  }
+                `}
+              >
+                <Text
+                  maxFontSizeMultiplier={1}
+                  className="text-[17px] text-white"
+                  style={{
+                    fontFamily: "Nunito-Bold",
+                  }}
+                >
+                  {esUltimaPagina &&
+                  esUltimaSeccion
+                    ? "Finalizar entrevista"
+                    : "Continuar"}
+                </Text>
+              </Pressable>
+            </View>
+        </ScrollView>
       </ImageBackground>
     </SafeAreaView>
   );
 }
-
-//ESTILOS//
-const styles = StyleSheet.create({
-  // PANTALLA GENERAL
-
-  pantalla: {
-    flex: 1,
-  },
-
-  contenido: {
-    flex: 1,
-    paddingHorizontal: 18,
-    paddingTop: 4,
-    paddingBottom: 12,
-  },
-
-  // Mueve la imagen de fondo ligeramente hacia arriba
-  // y la aumenta un poco para evitar espacios vacíos.
-  imagenFondo: {
-    transform: [
-      {
-        translateY: -3,
-      },
-      {
-        scale: 1.06,
-      },
-    ],
-  },
-
-  // ENCABEZADO
-
-  encabezado: {
-    height: 64,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  botonRegresar: {
-    width: 30,
-    height: 44,
-    justifyContent: "center",
-  },
-
-  flecha: {
-    //estilos de la flecha
-    color: "#135cE4",
-    marginLeft: -5,
-    marginTop: -25,
-  },
-
-  logoImagen: {
-    width: 105,
-    height: 105,
-    marginLeft: 15,
-    marginTop: -35,
-    marginRight: "auto",
-  },
-
-  // PROGRESO
-
-  progresoInformacion: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: -5,
-  },
-
-  numeroSeccion: {
-    fontSize: 13,
-    color: "#135cE4",
-    fontFamily: "Nunito-Bold",
-  },
-
-  porcentajeTexto: {
-    fontSize: 13,
-    color: "#135CE4",
-    fontFamily: "Nunito-Bold",
-  },
-
-  // Barra de progreso por secciones.
-  barraPasos: {
-    width: "110%",
-    flexDirection: "row",
-    alignItems: "center",
-
-    marginTop: 10,
-    marginBottom: 14,
-
-    paddingHorizontal: 2,
-  },
-
-  // Contiene cada círculo y la línea
-  // que lo conecta con el siguiente.
-  contenedorPaso: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  // Círculo que todavía no se ha alcanzado o completado.
-  circuloPaso: {
-    width: 24,
-    height: 24,
-
-    borderRadius: 12,
-
-    borderWidth: 3,
-    borderColor: "#E1E1E6",
-
-    backgroundColor: "#FFFFFF",
-
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  // Círculo correspondiente a la sección actual.
-  circuloPasoActivo: {
-    borderColor: "#A78BFA",
-    backgroundColor: "#FFFFFF",
-  },
-
-  // Pequeño círculo morado interior.
-  puntoPasoActivo: {
-    width: 10,
-    height: 10,
-
-    borderRadius: 5,
-
-    backgroundColor: "#A78BFA",
-  },
-
-  // Secciones que el usuario ya terminó.
-  circuloPasoCompletado: {
-    borderColor: "#A78BFA",
-    backgroundColor: "#A78BFA",
-  },
-
-  // Check que aparece en una sección terminada.
-  checkPaso: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontFamily: "Nunito-Bold",
-  },
-
-  // Línea entre los círculos.
-  lineaPaso: {
-    flex: 1,
-
-    height: 2,
-
-    backgroundColor: "#E1E1E6",
-
-    marginHorizontal: 7,
-  },
-
-  // Línea de una sección que ya fue completada.
-  lineaPasoCompletada: {
-    backgroundColor: "#A78BFA",
-  },
-
-  // ÁREA PRINCIPAL
-
-  areaPregunta: {
-    flex: 1,
-    paddingTop: 10,
-    paddingBottom: 12,
-  },
-  //card pregunta
-  tarjetaPregunta: {
-    flex: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.96)",
-
-    borderRadius: 26,
-    borderWidth: 1,
-    borderColor: "#EDF0F2",
-
-    paddingHorizontal: 20,
-    paddingTop: 22,
-
-    //
-    paddingBottom: 125,
-
-    shadowColor: "#88919F",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.14,
-    shadowRadius: 7,
-
-    elevation: 4,
-  },
-
-  // NÚMERO DE PREGUNTA
-
-  numeroCirculo: {
-    position: "absolute",
-    top: 12,
-    left: 12,
-
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-
-    backgroundColor: "#EEE9FF",
-
-    alignItems: "center",
-    justifyContent: "center",
-
-    zIndex: 2,
-  },
-
-  numeroTexto: {
-    color: "#30394D",
-    fontSize: 16,
-    fontFamily: "Nunito-Bold",
-  },
-
-  // TEXTO DE LA PREGUNTA
-
-  contenidoPregunta: {
-    paddingLeft: 40,
-    paddingRight: 5,
-    marginTop: -10,
-
-    minHeight: 100,
-
-    justifyContent: "center",
-  },
-
-  pregunta: {
-    fontSize: 20,
-    lineHeight: 24,
-    color: "#273448",
-    fontFamily: "Nunito-SemiBold",
-    letterSpacing: -0.2,
-  },
-
-  descripcion: {
-    fontSize: 14,
-    lineHeight: 17,
-    color: "#788296",
-    marginTop: 10,
-    fontFamily: "Nunito-Medium",
-  },
-
-  // RESPUESTAS
-
-  opciones: {
-    gap: 10,
-
-    // baja las respuestas
-    marginTop: 30,
-  },
-
-  opcion: {
-    minHeight: 52,
-
-    borderRadius: 15,
-    borderWidth: 1,
-
-    paddingHorizontal: 13,
-
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  opcionVerde: {
-    backgroundColor: "#FAFFFB",
-    borderColor: "#D6ECD9",
-  },
-
-  opcionAzul: {
-    backgroundColor: "#FAFCFF",
-    borderColor: "#D6E6FA",
-  },
-
-  opcionAmarilla: {
-    backgroundColor: "#FFFDF8",
-    borderColor: "#F7E6B8",
-  },
-
-  opcionMorada: {
-    backgroundColor: "#FCFAFF",
-    borderColor: "#E6DDF9",
-  },
-
-  // Estilo que se activa al seleccionar una respuesta.
-  opcionSeleccionada: {
-    borderWidth: 2,
-    borderColor: "#7B9FE8",
-  },
-
-  emojiCirculo: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-
-    alignItems: "center",
-    justifyContent: "center",
-
-    marginRight: 12,
-  },
-
-  emojiVerde: {
-    backgroundColor: "#BEE3C2",
-  },
-
-  emojiAzul: {
-    backgroundColor: "#C9E0FC",
-  },
-
-  emojiAmarillo: {
-    backgroundColor: "#FFE39B",
-  },
-
-  emojiMorado: {
-    backgroundColor: "#D8CCFA",
-  },
-
-  emoji: {
-    fontSize: 19,
-  },
-
-  // texto de las opciones o respuestas
-  textoOpcion: {
-    flex: 1,
-
-    fontSize: 14,
-    lineHeight: 18,
-
-    color: "#354156",
-    fontFamily: "Nunito-SemiBold",
-  },
-
-  textoSeleccionado: {
-    color: "#355FAD",
-    fontFamily: "Nunito-SemiBold",
-  },
-
-  check: {
-    fontSize: 18,
-    color: "#5D8BDD",
-    fontFamily: "Nunito-Medium",
-  },
-
-  // RESPUESTA ABIERTA
-
-  contenedorRespuestaAbierta: {
-    marginTop: 30,
-  },
-
-  respuestaAbierta: {
-    minHeight: 150,
-
-    borderWidth: 1,
-    borderColor: "#D6E0EF",
-    borderRadius: 18,
-
-    backgroundColor: "#FAFCFF",
-
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-
-    fontSize: 15,
-    lineHeight: 22,
-
-    color: "#354156",
-    fontFamily: "Nunito-Medium",
-  },
-
-  // AVATAR INFERIOR DE LAS PREGUNTAS
-
-  avatarInferior: {
-    // position absolute permite moverlo
-    // dentro de la tarjeta sin empujar los demás elementos.
-    position: "absolute",
-
-    // Distancia desde el lado derecho.
-    right: -40,
-
-    // Distancia desde la parte inferior.
-    bottom: -20,
-
-    width: 250,
-    height: 200,
-
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  avatarImagen: {
-    width: "130%",
-    height: "130%",
-  },
-
-  // BOTÓN CONTINUAR
-
-  zonaBoton: {
-    paddingTop: 2,
-  },
-
-  botonContinuar: {
-    minHeight: 52,
-    borderRadius: 15,
-
-    backgroundColor: "#6697EB",
-
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  // Color del botón cuando falta responder.
-  botonDesactivado: {
-    backgroundColor: "#BCC5D1",
-  },
-
-  textoBoton: {
-    fontSize: 17,
-    color: "#FFFFFF",
-    fontFamily: "Nunito-Bold",
-  },
-});
