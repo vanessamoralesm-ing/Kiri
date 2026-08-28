@@ -15,209 +15,382 @@ export type PlanBienestar = {
   estado:string;
 };
 
-type ResultadoBase = {
-  codigo:string;
-  nombre:string;
-  porcentaje:number;
-  nivel:string;
+type ResultadoParaPlan = {
+  codigo?:string;
+  porcentaje?:number;
+  modulo?:{codigo?:string};
+  modulo_entrevista?:{codigo?:string};
 };
+
+/* =========================================================
+   CATÁLOGO DE ACTIVIDADES
+========================================================= */
 
 const ACTIVIDADES:Record<string,ActividadPlan[]> = {
   SOMATICO:[
-    {codigo:"RESPIRACION",titulo:"Respiración consciente",descripcion:"Dedica unos minutos a respirar lentamente y observar cómo responde tu cuerpo.",icono:"leaf-outline"},
-    {codigo:"PAUSA_CORPORAL",titulo:"Pausa corporal",descripcion:"Haz una pausa breve para identificar tensión y relajar hombros, cuello y mandíbula.",icono:"body-outline"},
-    {codigo:"MOVIMIENTO",titulo:"Movimiento suave",descripcion:"Integra una caminata o actividad física ligera dentro de tu rutina.",icono:"walk-outline"},
+    {
+      codigo:"RESPIRACION_CONSCIENTE",
+      titulo:"Respiración consciente",
+      descripcion:"Dedica unos minutos a realizar respiraciones lentas y profundas.",
+      icono:"body-outline",
+    },
+    {
+      codigo:"PAUSA_CORPORAL",
+      titulo:"Pausa corporal",
+      descripcion:"Haz una pausa breve para identificar y liberar tensión física.",
+      icono:"fitness-outline",
+    },
+    {
+      codigo:"MOVIMIENTO_SUAVE",
+      titulo:"Movimiento suave",
+      descripcion:"Integra caminatas o movimientos suaves durante tu día.",
+      icono:"walk-outline",
+    },
   ],
 
   ANSIEDAD_INSOMNIO:[
-    {codigo:"RESPIRACION",titulo:"Respiración consciente",descripcion:"Utiliza una respiración lenta para disminuir la activación antes de continuar con tus actividades.",icono:"leaf-outline"},
-    {codigo:"REGISTRO_PENSAMIENTOS",titulo:"Registro de pensamientos",descripcion:"Anota lo que te preocupa y diferencia aquello que puedes atender de lo que está fuera de tu control.",icono:"create-outline"},
-    {codigo:"PAUSA_MENTAL",titulo:"Pausa mental",descripcion:"Reserva unos minutos sin estímulos para recuperar calma y organizar tus pensamientos.",icono:"cloud-outline"},
+    {
+      codigo:"RESPIRACION_478",
+      titulo:"Respiración relajante",
+      descripcion:"Practica una respiración lenta antes de dormir o cuando notes tensión.",
+      icono:"leaf-outline",
+    },
+    {
+      codigo:"RUTINA_NOCTURNA",
+      titulo:"Rutina para descansar",
+      descripcion:"Crea una rutina sencilla que prepare tu mente y cuerpo para dormir.",
+      icono:"moon-outline",
+    },
+    {
+      codigo:"PAUSA_MENTAL",
+      titulo:"Pausa mental",
+      descripcion:"Tómate unos minutos para reducir estímulos y recuperar calma.",
+      icono:"cloud-outline",
+    },
   ],
 
   SUENO:[
-    {codigo:"RUTINA_SUENO",titulo:"Rutina de sueño",descripcion:"Intenta mantener horarios similares para dormir y despertar durante la semana.",icono:"moon-outline"},
-    {codigo:"DESCANSO_PANTALLAS",titulo:"Preparar el descanso",descripcion:"Reduce pantallas y actividades estimulantes antes de acostarte.",icono:"phone-portrait-outline"},
-    {codigo:"RELAJACION",titulo:"Relajación antes de dormir",descripcion:"Realiza respiración o relajación muscular durante algunos minutos antes de acostarte.",icono:"bed-outline"},
+    {
+      codigo:"HORARIO_SUENO",
+      titulo:"Horario de descanso",
+      descripcion:"Intenta mantener horarios similares para dormir y despertar.",
+      icono:"time-outline",
+    },
+    {
+      codigo:"DESCONECTAR_PANTALLAS",
+      titulo:"Desconexión antes de dormir",
+      descripcion:"Reduce el uso de pantallas antes de acostarte.",
+      icono:"phone-portrait-outline",
+    },
   ],
 
   APOYO_SOCIAL:[
-    {codigo:"CONTACTO_CONFIANZA",titulo:"Conectar con alguien",descripcion:"Busca un momento para conversar con una persona de confianza sobre cómo te has sentido.",icono:"people-outline"},
-    {codigo:"ESPACIO_SOCIAL",titulo:"Crear un espacio de conexión",descripcion:"Planifica una actividad sencilla con alguien con quien te sientas cómodo.",icono:"chatbubbles-outline"},
-    {codigo:"PEDIR_APOYO",titulo:"Practicar pedir apoyo",descripcion:"Identifica una situación concreta en la que otra persona podría ayudarte esta semana.",icono:"hand-left-outline"},
+    {
+      codigo:"CONECTAR_PERSONA",
+      titulo:"Conecta con alguien",
+      descripcion:"Busca un momento para conversar con una persona de confianza.",
+      icono:"people-outline",
+    },
+    {
+      codigo:"PEDIR_APOYO",
+      titulo:"Practica pedir apoyo",
+      descripcion:"Identifica una situación en la que puedas pedir acompañamiento.",
+      icono:"chatbubbles-outline",
+    },
   ],
 
   VIDA_DIARIA:[
-    {codigo:"TAREA_PEQUENA",titulo:"Una tarea a la vez",descripcion:"Divide tus responsabilidades en pasos pequeños y comienza por uno que puedas completar hoy.",icono:"checkmark-circle-outline"},
-    {codigo:"RUTINA",titulo:"Organizar tu día",descripcion:"Define tres actividades importantes y deja espacios breves para descansar.",icono:"calendar-outline"},
-    {codigo:"PAUSAS",titulo:"Pausas intencionales",descripcion:"Incluye descansos cortos entre actividades para evitar acumular tensión.",icono:"time-outline"},
+    {
+      codigo:"TAREA_PEQUENA",
+      titulo:"Una tarea a la vez",
+      descripcion:"Divide tus actividades en pasos pequeños y alcanzables.",
+      icono:"checkmark-circle-outline",
+    },
+    {
+      codigo:"PAUSA_ACTIVA",
+      titulo:"Pausa activa",
+      descripcion:"Incluye descansos breves entre tus responsabilidades.",
+      icono:"pause-circle-outline",
+    },
   ],
 
   ESTADO_EMOCIONAL:[
-    {codigo:"DIARIO_EMOCIONAL",titulo:"Diario emocional",descripcion:"Registra qué ocurrió, qué pensaste, qué emoción apareció y cómo respondiste.",icono:"book-outline"},
-    {codigo:"ACTIVIDAD_SIGNIFICATIVA",titulo:"Actividad significativa",descripcion:"Realiza una actividad pequeña que normalmente disfrutas o consideras importante.",icono:"heart-outline"},
-    {codigo:"AUTOCUIDADO",titulo:"Momento de autocuidado",descripcion:"Reserva un espacio breve para una actividad tranquila que favorezca tu bienestar.",icono:"sparkles-outline"},
+    {
+      codigo:"REGISTRO_EMOCIONAL",
+      titulo:"Registro emocional",
+      descripcion:"Anota cómo te sentiste y qué situaciones influyeron en tu día.",
+      icono:"book-outline",
+    },
+    {
+      codigo:"AUTOCUIDADO",
+      titulo:"Momento de autocuidado",
+      descripcion:"Reserva un pequeño espacio del día para una actividad que disfrutes.",
+      icono:"heart-outline",
+    },
+    {
+      codigo:"PENSAMIENTO_EMOCION",
+      titulo:"Observa tus pensamientos",
+      descripcion:"Identifica pensamientos frecuentes y cómo influyen en tus emociones.",
+      icono:"bulb-outline",
+    },
   ],
 };
 
-function obtenerObjetivo(prioridades:ResultadoBase[]) {
-  const codigos = prioridades.map((p) => p.codigo);
+/* =========================================================
+   OBJETIVO DEL PLAN
+========================================================= */
 
-  if (codigos.includes("SOMATICO") && codigos.includes("ANSIEDAD_INSOMNIO"))
-    return "Reducir la tensión física y emocional mediante estrategias sencillas de regulación y autocuidado.";
-
-  if (codigos.includes("ANSIEDAD_INSOMNIO") && codigos.includes("SUENO"))
-    return "Favorecer un estado de mayor calma y fortalecer hábitos que faciliten un descanso adecuado.";
-
-  if (codigos.includes("ESTADO_EMOCIONAL") && codigos.includes("APOYO_SOCIAL"))
-    return "Fortalecer el bienestar emocional y aumentar los espacios de conexión y apoyo.";
+function obtenerObjetivo(prioridades:string[]) {
+  if (!prioridades.length)
+    return "Mantener y fortalecer tus hábitos actuales de bienestar.";
 
   if (prioridades.length > 1)
-    return "Fortalecer las áreas que actualmente requieren mayor atención mediante acciones pequeñas y sostenibles.";
+    return "Fortalecer las áreas de bienestar que actualmente necesitan mayor atención mediante pequeñas acciones cotidianas.";
 
-  switch (prioridades[0]?.codigo) {
+  switch(prioridades[0]) {
     case "SOMATICO":
-      return "Favorecer el bienestar físico y reducir la tensión corporal durante las actividades diarias.";
+      return "Reducir la tensión física y fortalecer hábitos de cuidado corporal.";
 
     case "ANSIEDAD_INSOMNIO":
-      return "Desarrollar estrategias sencillas para manejar la tensión y recuperar momentos de calma.";
+      return "Promover momentos de calma y mejorar los hábitos relacionados con el descanso.";
 
     case "SUENO":
-      return "Fortalecer hábitos que favorezcan un descanso más estable y reparador.";
+      return "Fortalecer hábitos que favorezcan un descanso más regular y reparador.";
 
     case "APOYO_SOCIAL":
-      return "Fortalecer los vínculos y aumentar los espacios de apoyo y comunicación.";
+      return "Fortalecer tus redes de apoyo y conexión con otras personas.";
 
     case "VIDA_DIARIA":
-      return "Recuperar organización y equilibrio en las actividades cotidianas mediante pasos pequeños.";
+      return "Organizar tus actividades cotidianas de una forma más equilibrada.";
 
     case "ESTADO_EMOCIONAL":
-      return "Fortalecer el reconocimiento y manejo cotidiano de las emociones.";
+      return "Fortalecer el reconocimiento y manejo cotidiano de tus emociones.";
 
     default:
-      return "Mantener y fortalecer hábitos que favorezcan tu bienestar diario.";
+      return "Fortalecer hábitos que contribuyan a tu bienestar emocional.";
   }
 }
 
-function obtenerActividades(prioridades:ResultadoBase[]) {
-  const mapa = new Map<string,ActividadPlan>();
+/* =========================================================
+   ACTIVIDADES DEL PLAN
+========================================================= */
 
-  prioridades.forEach((prioridad) => {
-    (ACTIVIDADES[prioridad.codigo] ?? []).forEach((actividad) => {
-      if (!mapa.has(actividad.codigo)) {
-        mapa.set(actividad.codigo,actividad);
-      }
-    });
+function obtenerActividades(prioridades:string[]) {
+  const seleccionadas = prioridades.flatMap(
+    codigo => ACTIVIDADES[codigo] ?? []
+  );
+
+  const unicas = new Map<string,ActividadPlan>();
+
+  seleccionadas.forEach(actividad => {
+    if (!unicas.has(actividad.codigo))
+      unicas.set(actividad.codigo,actividad);
   });
 
-  return Array.from(mapa.values()).slice(0,5);
+  return Array.from(unicas.values()).slice(0,5);
 }
 
-export async function generarPlanBienestar(
-  idEntrevista:string,
-  resultados:ResultadoBase[]
-):Promise<PlanBienestar> {
+/* =========================================================
+   LEER PLAN EXISTENTE
 
-  if (!idEntrevista) {
+   SOLO REALIZA SELECT.
+   NO INSERTA.
+   NO ACTUALIZA.
+   NO REGENERA.
+========================================================= */
+
+export async function obtenerPlanBienestar(
+  idEntrevista:string
+):Promise<PlanBienestar|null> {
+
+  if (!idEntrevista)
     throw new Error("No se recibió la entrevista.");
-  }
 
-  const {data:{user},error:userError} = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    console.error("Error obteniendo usuario:",userError);
-    throw new Error("No se pudo identificar al usuario.");
-  }
-
-  let objetivo = "";
-  let actividades:ActividadPlan[] = [];
-
-  if (!resultados.length) {
-    objetivo = "Mantener los hábitos y recursos personales que actualmente favorecen tu bienestar.";
-
-    actividades = [
-      {codigo:"DIARIO_EMOCIONAL",titulo:"Registrar cómo te sientes",descripcion:"Dedica unos minutos a reconocer y registrar tus emociones durante la semana.",icono:"book-outline"},
-      {codigo:"RUTINA",titulo:"Mantener una rutina equilibrada",descripcion:"Conserva espacios para descanso, responsabilidades y actividades que disfrutas.",icono:"calendar-outline"},
-      {codigo:"CONEXION",titulo:"Cuidar tus vínculos",descripcion:"Mantén contacto con personas que forman parte de tu red de apoyo.",icono:"people-outline"},
-    ];
-  } else {
-    const mayor = Math.max(...resultados.map((r) => r.porcentaje));
-
-    const prioridades = resultados.filter(
-      (r) => Math.abs(r.porcentaje - mayor) < 0.01
-    );
-
-    objetivo = obtenerObjetivo(prioridades);
-    actividades = obtenerActividades(prioridades);
-  }
-
-  const ahora = new Date().toISOString();
-
-  // Revisar si ya existe un plan para esta entrevista
-  const {data:planExistente,error:errorConsulta} = await supabase
+  const {data,error} = await supabase
     .from("plan_bienestar")
-    .select("id_plan")
+    .select(`
+      id_plan,
+      id_entrevista,
+      objetivo_principal,
+      actividades_recomendadas,
+      estado
+    `)
     .eq("id_entrevista",idEntrevista)
     .maybeSingle();
 
-  if (errorConsulta) {
-    console.error("Error consultando plan existente:",errorConsulta);
-    throw new Error("No se pudo consultar el plan de bienestar.");
+  if (error) {
+    console.error("Error obteniendo plan:",error);
+    throw new Error("No se pudo obtener el plan de bienestar.");
   }
 
-  let data:any;
-  let error:any;
+  if (!data)
+    return null;
 
-  // Si existe, lo actualizamos
-  if (planExistente) {
-    const respuesta = await supabase
-      .from("plan_bienestar")
-      .update({
-        objetivo_principal:objetivo,
-        actividades_recomendadas:actividades,
-        estado:"activo",
-        fecha_actualizacion:ahora,
-      })
-      .eq("id_entrevista",idEntrevista)
-      .select()
-      .single();
+  return {
+    id_plan:data.id_plan,
+    id_entrevista:data.id_entrevista,
+    objetivo_principal:data.objetivo_principal,
+    actividades_recomendadas:Array.isArray(data.actividades_recomendadas)
+      ? data.actividades_recomendadas as ActividadPlan[]
+      : [],
+    estado:data.estado,
+  };
+}
 
-    data = respuesta.data;
-    error = respuesta.error;
+/* =========================================================
+   GENERAR PLAN
+
+   ESTA FUNCIÓN:
+   1. Comprueba si ya existe.
+   2. Si existe, lo devuelve SIN modificarlo.
+   3. Si no existe, genera uno nuevo.
+   4. Solo realiza INSERT.
+========================================================= */
+
+export async function generarPlanBienestar(
+  idEntrevista:string,
+  resultados:ResultadoParaPlan[]
+):Promise<PlanBienestar> {
+
+  if (!idEntrevista)
+    throw new Error("No se recibió la entrevista.");
+
+  /* ---------------------------------------------------------
+     1. COMPROBAR SI EL PLAN YA EXISTE
+  --------------------------------------------------------- */
+
+  const existente = await obtenerPlanBienestar(idEntrevista);
+
+  if (existente) {
+    console.log("PLAN EXISTENTE RECUPERADO:",existente.id_plan);
+    return existente;
   }
 
-  // Si no existe, lo creamos
-  else {
-    const respuesta = await supabase
-      .from("plan_bienestar")
-      .insert({
-        id_entrevista:idEntrevista,
-        id_usuario:user.id,
-        objetivo_principal:objetivo,
-        actividades_recomendadas:actividades,
-        estado:"activo",
-        fecha_creacion:ahora,
-        fecha_actualizacion:ahora,
-      })
-      .select()
-      .single();
+  /* ---------------------------------------------------------
+     2. OBTENER USUARIO
+  --------------------------------------------------------- */
 
-    data = respuesta.data;
-    error = respuesta.error;
+  const {
+    data:{user},
+    error:userError
+  } = await supabase.auth.getUser();
+
+  if (userError || !user)
+    throw new Error("No se pudo identificar al usuario.");
+
+  /* ---------------------------------------------------------
+     3. DETERMINAR PRIORIDADES
+  --------------------------------------------------------- */
+
+  let prioridades:string[] = [];
+  let objetivo:string;
+  let actividades:ActividadPlan[];
+
+  if (!resultados?.length) {
+
+    objetivo =
+      "Mantener y fortalecer tus hábitos actuales de bienestar.";
+
+    actividades = [
+      ...(ACTIVIDADES.ESTADO_EMOCIONAL ?? []),
+      ...(ACTIVIDADES.SOMATICO ?? []),
+    ].slice(0,3);
+
+  } else {
+
+    const mayor = Math.max(
+      ...resultados.map(
+        resultado => Number(resultado.porcentaje ?? 0)
+      )
+    );
+
+    prioridades = resultados
+      .filter(
+        resultado =>
+          Math.abs(
+            Number(resultado.porcentaje ?? 0) - mayor
+          ) < .01
+      )
+      .map(
+        resultado =>
+          resultado.codigo ??
+          resultado.modulo?.codigo ??
+          resultado.modulo_entrevista?.codigo
+      )
+      .filter(
+        (codigo):codigo is string =>
+          Boolean(codigo)
+      );
+    objetivo=obtenerObjetivo(prioridades);
+    actividades=obtenerActividades(prioridades);
+
+    if(!actividades.length){
+      objetivo="Mantener y fortalecer tus hábitos actuales de bienestar.";
+      actividades=[
+        ...(ACTIVIDADES.ESTADO_EMOCIONAL??[]),
+        ...(ACTIVIDADES.SOMATICO??[])
+      ].slice(0,3);
+    }
   }
+
+  /* ---------------------------------------------------------
+     4. GUARDAR NUEVO PLAN
+  --------------------------------------------------------- */
+
+  const ahora = new Date().toISOString();
+
+  const {data,error} = await supabase
+    .from("plan_bienestar")
+    .insert({
+      id_entrevista:idEntrevista,
+      id_usuario:user.id,
+      objetivo_principal:objetivo,
+      actividades_recomendadas:actividades,
+      estado:"activo",
+      fecha_creacion:ahora,
+      fecha_actualizacion:ahora,
+    })
+    .select(`
+      id_plan,
+      id_entrevista,
+      objetivo_principal,
+      actividades_recomendadas,
+      estado
+    `)
+    .single();
+
+  /*
+     Protección adicional:
+     si por alguna razón dos procesos intentaran crear el mismo
+     plan al mismo tiempo, id_entrevista es UNIQUE.
+
+     En ese caso volvemos a leer el plan ya creado.
+  */
 
   if (error) {
+    if (error.code === "23505") {
+      const planCreado = await obtenerPlanBienestar(idEntrevista);
+
+      if (planCreado)
+        return planCreado;
+    }
+
     console.error("Error guardando plan:",error);
-    throw new Error("No se pudo guardar tu plan de bienestar.");
+
+    throw new Error(
+      "No se pudo guardar el plan de bienestar."
+    );
   }
 
   console.log("PLAN DE BIENESTAR GUARDADO:",data);
 
   return {
     id_plan:data.id_plan,
-    id_entrevista:idEntrevista,
-    objetivo_principal:objetivo,
-    actividades_recomendadas:actividades,
-    estado:data.estado ?? "activo",
+    id_entrevista:data.id_entrevista,
+    objetivo_principal:data.objetivo_principal,
+    actividades_recomendadas:Array.isArray(data.actividades_recomendadas)
+      ? data.actividades_recomendadas as ActividadPlan[]
+      : [],
+    estado:data.estado,
   };
 }

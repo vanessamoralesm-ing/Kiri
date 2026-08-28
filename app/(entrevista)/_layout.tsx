@@ -1,16 +1,17 @@
 import React from "react";
-import { Stack } from "expo-router";
+import {Platform} from "react-native";
+import {Stack} from "expo-router";
 
-export default function EntrevistaLayout() {
-  return (
+export default function EntrevistaLayout(){
+  return(
     <Stack
       screenOptions={{
-        headerShown: false,
-        animation: "slide_from_right",
-        contentStyle: {
-          backgroundColor: "transparent",
+        headerShown:false,
+        animation:Platform.OS==="web"?"none":"slide_from_right",
+        contentStyle:{
+          backgroundColor:"transparent",
         },
       }}
     />
   );
-}   
+}
