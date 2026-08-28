@@ -1,32 +1,153 @@
-import React from 'react';
-import { TouchableOpacity, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Importamos Ionicons desde Expo
+import React from "react";
 
-// Definimos los datos que recibira cada tarjeta
+import {
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+import {
+  Ionicons,
+} from "@expo/vector-icons";
+
+import {
+  useThemeColor,
+} from "@/hooks/use-theme-color";
+
 interface TarjetaModuloProps {
   titulo: string;
-  nombreIcono: keyof typeof Ionicons.glyphMap; // Tipo TypeScript estricto para nombres de Ionicons
+
+  nombreIcono:
+    keyof typeof Ionicons.glyphMap;
+
   onPress: () => void;
 }
 
-export const TarjetaModulo = ({ titulo, nombreIcono, onPress }: TarjetaModuloProps) => {
+export const TarjetaModulo = ({
+  titulo,
+  nombreIcono,
+  onPress,
+}: TarjetaModuloProps) => {
+
+  const surfaceColor =
+    useThemeColor(
+      {},
+      "surface"
+    );
+
+  const borderColor =
+    useThemeColor(
+      {},
+      "border"
+    );
+
+  const textColor =
+    useThemeColor(
+      {},
+      "text"
+    );
+
+  const primaryColor =
+    useThemeColor(
+      {},
+      "primary"
+    );
+
+  const primarySoftColor =
+    useThemeColor(
+      {},
+      "primarySoft"
+    );
+
   return (
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
-      // w-[48%]: Para crear la cuadricula de 2 columnas
-      // Se agrego clases de sombra personalizadas para un efecto mas "negrito" y definido
-      className="w-[48%] bg-white p-4 rounded-3xl shadow-sm shadow-[0_2px_8px_rgba(0,0,0,0.15)] border border-slate-100 items-center justify-center my-2"
+
+      className="
+        w-[48%]
+        p-4
+        rounded-3xl
+        items-center
+        justify-center
+        my-2
+      "
+
+      style={{
+        backgroundColor:
+          surfaceColor,
+
+        borderWidth: 1,
+
+        borderColor:
+          borderColor,
+
+        shadowColor:
+          "#000000",
+
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+
+        shadowOpacity:
+          0.12,
+
+        shadowRadius:
+          5,
+
+        elevation:
+          3,
+      }}
     >
-      {/* Fondo azul claro para el contenedor del icono */}
-      <View className="bg-blue-50 p-4 rounded-2xl mb-3">
-        <Ionicons name={nombreIcono} size={30} color="#4F8EF7" />
+
+      {/* Fondo del icono */}
+
+      <View
+        className="
+          p-4
+          rounded-2xl
+          mb-3
+        "
+
+        style={{
+          backgroundColor:
+            primarySoftColor,
+        }}
+      >
+
+        <Ionicons
+          name={nombreIcono}
+          size={30}
+          color={primaryColor}
+        />
+
       </View>
 
-      {/* Titulo de la tarjeta con fuente Nunito SemiBold */}
-      <Text className="text-slate-700 text-center font-nunito-semibold text-s leading-tight">
+
+      {/* Título */}
+
+      <Text
+        style={{
+          fontFamily:
+            "Nunito-SemiBold",
+
+          fontSize:
+            13,
+
+          lineHeight:
+            17,
+
+          textAlign:
+            "center",
+
+          color:
+            textColor,
+        }}
+      >
         {titulo}
       </Text>
+
     </TouchableOpacity>
   );
 };

@@ -1,10 +1,48 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import React from "react";
+
+import {
+  Text,
+  View,
+} from "react-native";
+
+import {
+  useThemeColor,
+} from "@/hooks/use-theme-color";
+
 
 export default function EducacionScreen() {
+
+  const backgroundColor =
+    useThemeColor(
+      {},
+      "background"
+    );
+
+  const textColor =
+    useThemeColor(
+      {},
+      "text"
+    );
+
+
   return (
-    <View className="flex-1 justify-center items-center bg-slate-50">
-      <Text className="text-slate-800 font-bold text-lg">Modulo Educacion</Text>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor,
+      }}
+    >
+      <Text
+        style={{
+          fontFamily: "Nunito-Bold",
+          fontSize: 18,
+          color: textColor,
+        }}
+      >
+        Modulo Educacion
+      </Text>
     </View>
   );
 }
