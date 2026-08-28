@@ -4,12 +4,16 @@ import React, {
 } from "react";
 
 import {
-    Pressable,
-    SafeAreaView,
     ScrollView,
     Text,
+    TouchableOpacity,
     View,
 } from "react-native";
+
+import {
+    SafeAreaView,
+    useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import {
     Ionicons,
@@ -19,13 +23,13 @@ import {
     useRouter,
 } from "expo-router";
 
-import {
-    useTheme,
-} from "@react-navigation/native";
-
 import FiltroEmociones from "@/components/foro/FiltroEmociones";
 import PreguntaSemana from "@/components/foro/PreguntaSemana";
 import PublicacionCard from "@/components/foro/PublicacionCard";
+
+import {
+    useThemeColor,
+} from "@/hooks/use-theme-color";
 
 import type {
     PublicacionForo,
@@ -37,222 +41,226 @@ import type {
 // ==========================================================
 
 const PUBLICACIONES_DEMO: PublicacionForo[] = [
-    {
-        id_publicacion: "1",
+  {
+    id_publicacion:
+      "1",
 
-        id_usuario: "usuario-demo-1",
+    id_usuario:
+      "usuario-demo-1",
 
-        titulo:
-            "Aprendiendo a bajar el ritmo",
+    titulo:
+      "Aprendiendo a bajar el ritmo",
 
-        contenido:
-            "Esta semana me di cuenta de que cuando comienzo a sentirme muy cansado y pierdo concentración necesito detenerme un momento. Estoy intentando escuchar más estas señales y darme pequeños espacios para descansar.",
+    contenido:
+      "Esta semana me di cuenta de que cuando comienzo a sentirme muy cansado y pierdo concentración necesito detenerme un momento. Estoy intentando escuchar más estas señales y darme pequeños espacios para descansar.",
 
-        fecha_publicacion:
-            new Date().toISOString(),
+    fecha_publicacion:
+      new Date().toISOString(),
 
-        fecha_actualizacion:
-            new Date().toISOString(),
+    fecha_actualizacion:
+      new Date().toISOString(),
 
-        estado: "activa",
+    estado:
+      "activa",
 
-        editada: false,
+    editada:
+      false,
 
-        usuario: {
-            id_usuario:
-                "usuario-demo-1",
+    usuario: {
+      id_usuario:
+        "usuario-demo-1",
 
-            nombres:
-                "Usuario 1",
+      nombres:
+        "Usuario 1",
 
-            nombre_preferido:
-                "Usuario 1",
+      nombre_preferido:
+        "Usuario 1",
 
-            foto_perfil:
-                null,
-        },
-
-        emociones: [
-            {
-                id_emocion_foro:
-                    "emocion-calma",
-
-                nombre:
-                    "Calma",
-
-                descripcion:
-                    null,
-
-                estado:
-                    true,
-
-                fecha_registro:
-                    new Date().toISOString(),
-            },
-
-            {
-                id_emocion_foro:
-                    "emocion-esperanza",
-
-                nombre:
-                    "Esperanza",
-
-                descripcion:
-                    null,
-
-                estado:
-                    true,
-
-                fecha_registro:
-                    new Date().toISOString(),
-            },
-        ],
-
-        total_reacciones:
-            10,
-
-        total_comentarios:
-            4,
-
-        reaccion_usuario:
-            null,
+      foto_perfil:
+        null,
     },
 
-    {
-        id_publicacion:
-            "2",
+    emociones: [
+      {
+        id_emocion_foro:
+          "emocion-calma",
 
-        id_usuario:
-            "usuario-demo-2",
+        nombre:
+          "Calma",
 
-        titulo:
-            "Un pequeño logro",
-
-        contenido:
-            "Hoy pude terminar algo que había estado posponiendo durante varios días. Puede parecer pequeño, pero para mí representa un avance y quería compartirlo con la comunidad.",
-
-        fecha_publicacion:
-            new Date().toISOString(),
-
-        fecha_actualizacion:
-            new Date().toISOString(),
+        descripcion:
+          null,
 
         estado:
-            "activa",
+          true,
 
-        editada:
-            false,
+        fecha_registro:
+          new Date().toISOString(),
+      },
 
-        usuario: {
-            id_usuario:
-                "usuario-demo-2",
+      {
+        id_emocion_foro:
+          "emocion-esperanza",
 
-            nombres:
-                "Usuario 2",
+        nombre:
+          "Esperanza",
 
-            nombre_preferido:
-                "Usuario 2",
-
-            foto_perfil:
-                null,
-        },
-
-        emociones: [
-            {
-                id_emocion_foro:
-                    "emocion-alegria",
-
-                nombre:
-                    "Alegría",
-
-                descripcion:
-                    null,
-
-                estado:
-                    true,
-
-                fecha_registro:
-                    new Date().toISOString(),
-            },
-        ],
-
-        total_reacciones:
-            3,
-
-        total_comentarios:
-            2,
-
-        reaccion_usuario:
-            null,
-    },
-
-    {
-        id_publicacion:
-            "3",
-
-        id_usuario:
-            "usuario-demo-3",
-
-        titulo:
-            "Día complicado",
-
-        contenido:
-            "Tuve un día difícil y me sentí bastante frustrado. Escribir sobre lo que pasó me ayudó a organizar un poco mis pensamientos y entender mejor cómo me estaba sintiendo.",
-
-        fecha_publicacion:
-            new Date().toISOString(),
-
-        fecha_actualizacion:
-            new Date().toISOString(),
+        descripcion:
+          null,
 
         estado:
-            "activa",
+          true,
 
-        editada:
-            false,
+        fecha_registro:
+          new Date().toISOString(),
+      },
+    ],
 
-        usuario: {
-            id_usuario:
-                "usuario-demo-3",
+    total_reacciones:
+      10,
 
-            nombres:
-                "Usuario 3",
+    total_comentarios:
+      4,
 
-            nombre_preferido:
-                "Usuario 3",
+    reaccion_usuario:
+      null,
+  },
 
-            foto_perfil:
-                null,
-        },
+  {
+    id_publicacion:
+      "2",
 
-        emociones: [
-            {
-                id_emocion_foro:
-                    "emocion-frustracion",
+    id_usuario:
+      "usuario-demo-2",
 
-                nombre:
-                    "Frustración",
+    titulo:
+      "Un pequeño logro",
 
-                descripcion:
-                    null,
+    contenido:
+      "Hoy pude terminar algo que había estado posponiendo durante varios días. Puede parecer pequeño, pero para mí representa un avance y quería compartirlo con la comunidad.",
 
-                estado:
-                    true,
+    fecha_publicacion:
+      new Date().toISOString(),
 
-                fecha_registro:
-                    new Date().toISOString(),
-            },
-        ],
+    fecha_actualizacion:
+      new Date().toISOString(),
 
-        total_reacciones:
-            20,
+    estado:
+      "activa",
 
-        total_comentarios:
-            7,
+    editada:
+      false,
 
-        reaccion_usuario:
-            null,
+    usuario: {
+      id_usuario:
+        "usuario-demo-2",
+
+      nombres:
+        "Usuario 2",
+
+      nombre_preferido:
+        "Usuario 2",
+
+      foto_perfil:
+        null,
     },
+
+    emociones: [
+      {
+        id_emocion_foro:
+          "emocion-alegria",
+
+        nombre:
+          "Alegría",
+
+        descripcion:
+          null,
+
+        estado:
+          true,
+
+        fecha_registro:
+          new Date().toISOString(),
+      },
+    ],
+
+    total_reacciones:
+      3,
+
+    total_comentarios:
+      2,
+
+    reaccion_usuario:
+      null,
+  },
+
+  {
+    id_publicacion:
+      "3",
+
+    id_usuario:
+      "usuario-demo-3",
+
+    titulo:
+      "Día complicado",
+
+    contenido:
+      "Tuve un día difícil y me sentí bastante frustrado. Escribir sobre lo que pasó me ayudó a organizar un poco mis pensamientos y entender mejor cómo me estaba sintiendo.",
+
+    fecha_publicacion:
+      new Date().toISOString(),
+
+    fecha_actualizacion:
+      new Date().toISOString(),
+
+    estado:
+      "activa",
+
+    editada:
+      false,
+
+    usuario: {
+      id_usuario:
+        "usuario-demo-3",
+
+      nombres:
+        "Usuario 3",
+
+      nombre_preferido:
+        "Usuario 3",
+
+      foto_perfil:
+        null,
+    },
+
+    emociones: [
+      {
+        id_emocion_foro:
+          "emocion-frustracion",
+
+        nombre:
+          "Frustración",
+
+        descripcion:
+          null,
+
+        estado:
+          true,
+
+        fecha_registro:
+          new Date().toISOString(),
+      },
+    ],
+
+    total_reacciones:
+      20,
+
+    total_comentarios:
+      7,
+
+    reaccion_usuario:
+      null,
+  },
 ];
 
 
@@ -262,465 +270,547 @@ const PUBLICACIONES_DEMO: PublicacionForo[] = [
 
 export default function ForoScreen() {
 
-    const router =
-        useRouter();
+  const router =
+    useRouter();
 
 
-    const {
-        colors,
-        dark,
-    } =
-        useTheme();
+  const insets =
+    useSafeAreaInsets();
 
 
-    const [
+  // ========================================================
+  // COLORES DEL TEMA
+  // ========================================================
+
+  const backgroundColor =
+    useThemeColor(
+      {},
+      "background"
+    );
+
+
+  const surfaceSecondaryColor =
+    useThemeColor(
+      {},
+      "surfaceSecondary"
+    );
+
+
+  const textColor =
+    useThemeColor(
+      {},
+      "text"
+    );
+
+
+  const textSecondaryColor =
+    useThemeColor(
+      {},
+      "textSecondary"
+    );
+
+
+  const textMutedColor =
+    useThemeColor(
+      {},
+      "textMuted"
+    );
+
+
+  const primaryColor =
+    useThemeColor(
+      {},
+      "primary"
+    );
+
+
+  // ========================================================
+  // FILTRO
+  // ========================================================
+
+  const [
+    filtroActivo,
+    setFiltroActivo,
+  ] =
+    useState(
+      "Todo"
+    );
+
+
+  // ========================================================
+  // FILTRADO VISUAL
+  // ========================================================
+
+  const publicacionesFiltradas =
+    useMemo(
+      () => {
+
+        if (
+          filtroActivo ===
+          "Todo"
+        ) {
+
+          return PUBLICACIONES_DEMO;
+
+        }
+
+
+        return PUBLICACIONES_DEMO.filter(
+          publicacion =>
+            publicacion.emociones?.some(
+              emocion =>
+                emocion.nombre ===
+                filtroActivo
+            )
+        );
+
+      },
+      [
         filtroActivo,
-        setFiltroActivo,
-    ] =
-        useState("Todo");
+      ]
+    );
 
 
-    // ========================================================
-    // FILTRADO VISUAL
-    // ========================================================
+  // ========================================================
+  // ESPACIOS PARA NAVBAR Y FAB
+  // ========================================================
 
-    const publicacionesFiltradas =
-        useMemo(() => {
-
-            if (
-                filtroActivo ===
-                "Todo"
-            ) {
-
-                return PUBLICACIONES_DEMO;
-
-            }
+  const posicionBoton =
+    Math.max(
+      insets.bottom + 72,
+      92
+    );
 
 
-            return PUBLICACIONES_DEMO.filter(
-                (publicacion) =>
-                    publicacion.emociones?.some(
-                        (emocion) =>
-                            emocion.nombre ===
-                            filtroActivo
-                    )
-            );
-
-        }, [
-            filtroActivo,
-        ]);
+  const espacioInferiorScroll =
+    Math.max(
+      posicionBoton + 120,
+      220
+    );
 
 
-    // ========================================================
-    // UI
-    // ========================================================
+  // ========================================================
+  // UI
+  // ========================================================
 
-    return (
+  return (
 
-        <SafeAreaView
-            style={{
-                flex: 1,
+    <SafeAreaView
+      edges={[
+        "top",
+      ]}
 
-                backgroundColor:
-                    colors.background,
-            }}
-        >
+      style={{
+        flex: 1,
+        backgroundColor,
+      }}
+    >
 
-            <View
-                style={{
-                    flex: 1,
+      <View
+        style={{
+          flex: 1,
+          backgroundColor,
+        }}
+      >
 
-                    backgroundColor:
-                        colors.background,
-                }}
-            >
-
-                {/* =================================================
+        {/* =================================================
             CONTENIDO DESPLAZABLE
         ================================================= */}
 
-                <ScrollView
-                    style={{
-                        flex: 1,
+        <ScrollView
+          style={{
+            flex: 1,
+            backgroundColor,
+          }}
 
-                        backgroundColor:
-                            colors.background,
-                    }}
+          contentContainerStyle={{
+            paddingHorizontal:
+              20,
 
-                    contentContainerStyle={{
-                        paddingHorizontal:
-                            20,
+            paddingTop:
+              24,
 
-                        paddingTop:
-                            24,
+            paddingBottom:
+              espacioInferiorScroll,
 
-                        paddingBottom:
-                            180,
+            flexGrow:
+              1,
+          }}
 
-                        flexGrow:
-                            1,
-                    }}
+          showsVerticalScrollIndicator={
+            false
+          }
 
-                    showsVerticalScrollIndicator={
-                        false
-                    }
+          keyboardShouldPersistTaps="handled"
+        >
 
-                    keyboardShouldPersistTaps="handled"
-                >
-
-                    {/* ===============================================
+          {/* ===============================================
               PREGUNTA DE LA SEMANA
           =============================================== */}
 
-                    <PreguntaSemana />
+          <PreguntaSemana />
 
 
-                    {/* ===============================================
+          {/* ===============================================
               ENCABEZADO DE PUBLICACIONES
           =============================================== */}
 
-                    <Text
-                        style={{
-                            marginTop:
-                                32,
+          <Text
+            style={{
+              marginTop:
+                32,
 
-                            marginBottom:
-                                20,
+              marginBottom:
+                20,
 
-                            fontFamily:
-                                "Nunito-Bold",
+              fontFamily:
+                "Nunito-Bold",
 
-                            fontSize:
-                                24,
+              fontSize:
+                24,
 
-                            color:
-                                colors.text,
-                        }}
-                    >
-
-                        Lo que otros comparten
-
-                    </Text>
+              color:
+                textColor,
+            }}
+          >
+            Lo que otros comparten
+          </Text>
 
 
-                    {/* ===============================================
+          {/* ===============================================
               FILTROS
           =============================================== */}
 
-                    <FiltroEmociones
-                        seleccionada={
-                            filtroActivo
-                        }
+          <FiltroEmociones
+            seleccionada={
+              filtroActivo
+            }
 
-                        onSeleccionar={
-                            setFiltroActivo
-                        }
-                    />
+            onSeleccionar={
+              setFiltroActivo
+            }
+          />
 
 
-                    {/* ===============================================
+          {/* ===============================================
               CONTADOR
           =============================================== */}
 
-                    <View
-                        style={{
-                            marginTop:
-                                28,
+          <View
+            style={{
+              marginTop:
+                28,
 
-                            marginBottom:
-                                24,
+              marginBottom:
+                24,
 
-                            flexDirection:
-                                "row",
+              flexDirection:
+                "row",
 
-                            alignItems:
-                                "center",
-                        }}
-                    >
+              alignItems:
+                "center",
+            }}
+          >
 
-                        {/* Avatares ilustrativos */}
+            {/* Avatares ilustrativos */}
 
-                        <View
-                            style={{
-                                marginRight:
-                                    14,
+            <View
+              style={{
+                marginRight:
+                  14,
 
-                                flexDirection:
-                                    "row",
-                            }}
-                        >
+                flexDirection:
+                  "row",
+              }}
+            >
 
-                            <View
-                                style={{
-                                    width:
-                                        34,
+              <View
+                style={{
+                  width:
+                    34,
 
-                                    height:
-                                        34,
+                  height:
+                    34,
 
-                                    borderRadius:
-                                        17,
+                  borderRadius:
+                    17,
 
-                                    borderWidth:
-                                        1,
+                  borderWidth:
+                    1,
 
-                                    borderColor:
-                                        "#4F8EF7",
+                  borderColor:
+                    primaryColor,
 
-                                    backgroundColor:
-                                        dark
-                                            ? "#334155"
-                                            : "#E2E8F0",
-                                }}
-                            />
+                  backgroundColor:
+                    surfaceSecondaryColor,
+                }}
+              />
 
 
-                            <View
-                                style={{
-                                    width:
-                                        34,
+              <View
+                style={{
+                  width:
+                    34,
 
-                                    height:
-                                        34,
+                  height:
+                    34,
 
-                                    borderRadius:
-                                        17,
+                  borderRadius:
+                    17,
 
-                                    marginLeft:
-                                        -8,
+                  marginLeft:
+                    -8,
 
-                                    borderWidth:
-                                        1,
+                  borderWidth:
+                    1,
 
-                                    borderColor:
-                                        "#4F8EF7",
+                  borderColor:
+                    primaryColor,
 
-                                    backgroundColor:
-                                        dark
-                                            ? "#334155"
-                                            : "#E2E8F0",
-                                }}
-                            />
+                  backgroundColor:
+                    surfaceSecondaryColor,
+                }}
+              />
 
 
-                            <View
-                                style={{
-                                    width:
-                                        34,
+              <View
+                style={{
+                  width:
+                    34,
 
-                                    height:
-                                        34,
+                  height:
+                    34,
 
-                                    borderRadius:
-                                        17,
+                  borderRadius:
+                    17,
 
-                                    marginLeft:
-                                        -8,
+                  marginLeft:
+                    -8,
 
-                                    borderWidth:
-                                        1,
+                  borderWidth:
+                    1,
 
-                                    borderColor:
-                                        "#4F8EF7",
+                  borderColor:
+                    primaryColor,
 
-                                    backgroundColor:
-                                        dark
-                                            ? "#334155"
-                                            : "#E2E8F0",
-                                }}
-                            />
-
-                        </View>
-
-
-                        <Text
-                            style={{
-                                fontFamily:
-                                    "Nunito-Medium",
-
-                                fontSize:
-                                    15,
-
-                                color:
-                                    dark
-                                        ? "#CBD5E1"
-                                        : "#475569",
-                            }}
-                        >
-
-                            {
-                                publicacionesFiltradas.length
-                            }{" "}
-                            publicaciones
-
-                        </Text>
-
-                    </View>
-
-
-                    {/* ===============================================
-              PUBLICACIONES
-          =============================================== */}
-
-                    {
-                        publicacionesFiltradas.length >
-                            0 ? (
-
-                            publicacionesFiltradas.map(
-                                (
-                                    publicacion
-                                ) => (
-
-                                    <PublicacionCard
-
-                                        key={
-                                            publicacion
-                                                .id_publicacion
-                                        }
-
-                                        publicacion={
-                                            publicacion
-                                        }
-
-                                    />
-
-                                )
-                            )
-
-                        ) : (
-
-                            <View
-                                style={{
-                                    alignItems:
-                                        "center",
-
-                                    paddingVertical:
-                                        48,
-                                }}
-                            >
-
-                                <Ionicons
-
-                                    name="chatbubbles-outline"
-
-                                    size={
-                                        44
-                                    }
-
-                                    color={
-                                        dark
-                                            ? "#64748B"
-                                            : "#94A3B8"
-                                    }
-
-                                />
-
-
-                                <Text
-                                    style={{
-                                        marginTop:
-                                            12,
-
-                                        maxWidth:
-                                            280,
-
-                                        textAlign:
-                                            "center",
-
-                                        fontFamily:
-                                            "Nunito-Medium",
-
-                                        fontSize:
-                                            16,
-
-                                        lineHeight:
-                                            22,
-
-                                        color:
-                                            dark
-                                                ? "#CBD5E1"
-                                                : "#64748B",
-                                    }}
-                                >
-
-                                    Aún no hay publicaciones
-                                    relacionadas con esta
-                                    emoción.
-
-                                </Text>
-
-                            </View>
-
-                        )
-                    }
-
-                </ScrollView>
-
-
-                {/* =================================================
-            BOTÓN FLOTANTE
-        ================================================= */}
-
-                <Pressable
-
-                    onPress={() =>
-                        router.push(
-                            "/(tabs)/foro/crear"
-                        )
-                    }
-
-                    style={({ pressed }) => ({
-
-                        position:
-                            "absolute",
-
-                        right:
-                            22,
-
-                        bottom:
-                            96,
-
-                        width:
-                            62,
-
-                        height:
-                            62,
-
-                        borderRadius:
-                            31,
-
-                        alignItems:
-                            "center",
-
-                        justifyContent:
-                            "center",
-
-                        backgroundColor:
-                            "#B8A8F8",
-
-                        opacity:
-                            pressed
-                                ? 0.8
-                                : 1,
-
-                        elevation:
-                            6,
-
-                    })}
-                >
-
-                    <Ionicons
-                        name="add"
-                        size={34}
-                        color="#FFFFFF"
-                    />
-
-                </Pressable>
+                  backgroundColor:
+                    surfaceSecondaryColor,
+                }}
+              />
 
             </View>
 
-        </SafeAreaView>
 
-    );
+            <Text
+              style={{
+                fontFamily:
+                  "Nunito-Medium",
+
+                fontSize:
+                  15,
+
+                color:
+                  textSecondaryColor,
+              }}
+            >
+              {
+                publicacionesFiltradas.length
+              }{" "}
+              publicaciones
+            </Text>
+
+          </View>
+
+
+          {/* ===============================================
+              PUBLICACIONES
+          =============================================== */}
+
+          {
+            publicacionesFiltradas.length >
+              0
+
+              ? (
+
+                publicacionesFiltradas.map(
+                  publicacion => (
+
+                    <PublicacionCard
+                      key={
+                        publicacion.id_publicacion
+                      }
+
+                      publicacion={
+                        publicacion
+                      }
+                    />
+
+                  )
+                )
+
+              )
+
+              : (
+
+                <View
+                  style={{
+                    alignItems:
+                      "center",
+
+                    paddingVertical:
+                      48,
+                  }}
+                >
+
+                  <Ionicons
+                    name="chatbubbles-outline"
+
+                    size={
+                      44
+                    }
+
+                    color={
+                      textMutedColor
+                    }
+                  />
+
+
+                  <Text
+                    style={{
+                      marginTop:
+                        12,
+
+                      maxWidth:
+                        280,
+
+                      textAlign:
+                        "center",
+
+                      fontFamily:
+                        "Nunito-Medium",
+
+                      fontSize:
+                        16,
+
+                      lineHeight:
+                        22,
+
+                      color:
+                        textSecondaryColor,
+                    }}
+                  >
+                    Aún no hay publicaciones relacionadas con esta emoción.
+                  </Text>
+
+                </View>
+
+              )
+          }
+
+        </ScrollView>
+
+
+        {/* =================================================
+            BOTÓN FLOTANTE
+        ================================================= */}
+
+        <TouchableOpacity
+          activeOpacity={
+            0.78
+          }
+
+          accessibilityRole="button"
+
+          accessibilityLabel="Crear nueva publicación"
+
+          accessibilityHint="Abre la pantalla para crear una nueva publicación en el foro"
+
+          onPress={() =>
+            router.push(
+              "/(tabs)/foro/crear"
+            )
+          }
+
+          style={{
+            position:
+              "absolute",
+
+            right:
+              24,
+
+            bottom:
+              posicionBoton,
+
+            width:
+              78,
+
+            height:
+              78,
+
+            borderRadius:
+              39,
+
+            /*
+             * Lavanda oficial de Kiri.
+             * Se mantiene visible tanto en modo
+             * claro como en modo oscuro.
+             */
+            backgroundColor:
+              "#B8A8F8",
+
+            alignItems:
+              "center",
+
+            justifyContent:
+              "center",
+
+            /*
+             * Sombra para iOS / Web.
+             */
+            shadowColor:
+              "#000000",
+
+            shadowOffset: {
+              width:
+                0,
+
+              height:
+                6,
+            },
+
+            shadowOpacity:
+              0.28,
+
+            shadowRadius:
+              9,
+
+            /*
+             * Sombra Android.
+             */
+            elevation:
+              18,
+
+            /*
+             * Mantiene el FAB por encima
+             * del ScrollView.
+             */
+            zIndex:
+              9999,
+          }}
+        >
+
+          <Ionicons
+            name="add"
+            size={42}
+            color="#FFFFFF"
+          />
+
+        </TouchableOpacity>
+
+      </View>
+
+    </SafeAreaView>
+
+  );
 
 }
