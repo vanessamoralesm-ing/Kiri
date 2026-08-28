@@ -1,23 +1,52 @@
 import React from "react";
 
-import { Tabs } from "expo-router";
+import {
+  Tabs,
+} from "expo-router";
 
-import { BarraNavegacionCurva } from "../../components/ui/BarraNavegacionCurva";
+import {
+  useThemeColor,
+} from "@/hooks/use-theme-color";
+
+import {
+  BarraNavegacionCurva,
+} from "../../components/ui/BarraNavegacionCurva";
 
 import AppHeader from "@/components/layout/AppHeader";
 
+
 export default function LayoutPestanas() {
+
+  const backgroundColor =
+    useThemeColor(
+      {},
+      "background"
+    );
+
+
   return (
+
     <Tabs
       tabBar={(props) => (
-        <BarraNavegacionCurva {...props} />
+        <BarraNavegacionCurva
+          {...props}
+        />
       )}
-      screenOptions={{
-        headerShown: true,
 
-        header: () => <AppHeader />,
+      screenOptions={{
+        headerShown:
+          true,
+
+        header: () => (
+          <AppHeader />
+        ),
+
+        sceneStyle: {
+          backgroundColor,
+        },
       }}
     >
+
       <Tabs.Screen
         name="home"
         options={{
@@ -53,13 +82,21 @@ export default function LayoutPestanas() {
         }}
       />
 
-      
       <Tabs.Screen
         name="cuestionarios"
         options={{
           href: null,
         }}
       />
+
+      <Tabs.Screen
+        name="foro"
+        options={{
+          href: null,
+        }}
+      />
+
     </Tabs>
+
   );
 }

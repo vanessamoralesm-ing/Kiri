@@ -32,6 +32,10 @@ import {
   Ionicons,
 } from "@expo/vector-icons";
 
+import {
+  useThemeColor,
+} from "@/hooks/use-theme-color";
+
 
 // ==========================================================
 // ICONOS
@@ -48,45 +52,49 @@ const MAPA_ICONOS: Record<
     }
 > = {
 
-    home: {
-        inactivo:
-            "home-outline",
+  home: {
+    inactivo:
+      "home-outline",
 
-        activo:
-            "home",
-    },
+    activo:
+      "home",
+  },
 
-    diario: {
-        inactivo:
-            "book-outline",
 
-        activo:
-            "book",
-    },
+  diario: {
+    inactivo:
+      "book-outline",
 
-    educacion: {
-        inactivo:
-            "school-outline",
+    activo:
+      "book",
+  },
 
-        activo:
-            "school",
-    },
 
-    tecnicas: {
-        inactivo:
-            "heart-outline",
+  educacion: {
+    inactivo:
+      "school-outline",
 
-        activo:
-            "heart",
-    },
+    activo:
+      "school",
+  },
 
-    perfil: {
-        inactivo:
-            "person-outline",
 
-        activo:
-            "person",
-    },
+  tecnicas: {
+    inactivo:
+      "heart-outline",
+
+    activo:
+      "heart",
+  },
+
+
+  perfil: {
+    inactivo:
+      "person-outline",
+
+    activo:
+      "person",
+  },
 
 };
 
@@ -114,625 +122,825 @@ export function BarraNavegacionCurva({
     navigation,
 }: BottomTabBarProps) {
 
-    // ======================================================
-    // HOOKS
-    // ======================================================
+  // ========================================================
+  // HOOKS
+  // ========================================================
 
-    const {
-        width,
-    } = useWindowDimensions();
-
-
-    const pathname =
-        usePathname();
+  const {
+    width,
+  } =
+    useWindowDimensions();
 
 
-    /*
-     * IMPORTANTE:
-     *
-     * Este hook debe ejecutarse SIEMPRE,
-     * incluso cuando luego ocultemos
-     * la barra.
-     */
-    const translateX =
-        useSharedValue(0);
+  const pathname =
+    usePathname();
 
 
-    // ======================================================
-    // DETERMINAR SI SE DEBE OCULTAR
-    // ======================================================
-
-    const segmentosRuta =
-        pathname
-            .split("/")
-            .filter(Boolean);
+  const translateX =
+    useSharedValue(0);
 
 
-    /*
-     * Visible:
-     *
-     * /cuestionarios
-     *
-     * Oculta:
-     *
-     * /cuestionarios/CDSS
-     * /cuestionarios/RATHUS
-     * /cuestionarios/CDSS/resultado
-     * etc.
-     */
-    const ocultarBarra =
-        segmentosRuta[0] ===
-            "cuestionarios" &&
-        segmentosRuta.length >= 2;
+  // ========================================================
+  // COLORES DEL TEMA
+  // ========================================================
 
-
-    // ======================================================
-    // RUTAS VISIBLES
-    // ======================================================
-
-    const rutasVisibles =
-        state.routes.filter(
-            route =>
-                RUTAS_VISIBLES.includes(
-                    route.name
-                )
-        );
-
-
-    const cantidadTabs =
-        rutasVisibles.length;
-
-
-    const anchoTab =
-        cantidadTabs > 0
-
-            ? width /
-              cantidadTabs
-
-            : width / 5;
-
-
-    // ======================================================
-    // RUTA ACTUAL
-    // ======================================================
-
-    const rutaActiva =
-        state.routes[
-            state.index
-        ];
-
-
-    let indiceVisibleActivo =
-        rutasVisibles.findIndex(
-            route =>
-                route.key ===
-                rutaActiva?.key
-        );
-
-
-    // ======================================================
-    // CUESTIONARIOS PERTENECE VISUALMENTE A INICIO
-    // ======================================================
-
-    const esListaCuestionarios =
-        pathname ===
-            "/cuestionarios" ||
-        pathname ===
-            "/cuestionarios/";
-
-
-    if (
-        indiceVisibleActivo === -1
-    ) {
-
-        indiceVisibleActivo =
-            0;
-
-    }
-
-
-    // ======================================================
-    // ANIMACIÓN
-    // ======================================================
-
-    useEffect(
-        () => {
-
-            translateX.value =
-                withSpring(
-                    indiceVisibleActivo *
-                        anchoTab,
-                    {
-                        damping:
-                            18,
-
-                        stiffness:
-                            150,
-                    }
-                );
-
-        },
-        [
-            indiceVisibleActivo,
-            anchoTab,
-            translateX,
-        ]
+  const tabBarColor =
+    useThemeColor(
+      {},
+      "tabBar"
     );
 
 
-    /*
-     * También debe ejecutarse
-     * siempre antes de cualquier
-     * return condicional.
-     */
-    const estiloCirculoFlotante =
-        useAnimatedStyle(
-            () => ({
+  const borderColor =
+    useThemeColor(
+      {},
+      "border"
+    );
 
-                transform: [
-                    {
-                        translateX:
-                            translateX.value,
-                    },
-                ],
 
-            })
+  const tabIconDefault =
+    useThemeColor(
+      {},
+      "tabIconDefault"
+    );
+
+
+  const textColor =
+    useThemeColor(
+      {},
+      "text"
+    );
+
+
+  const textSecondaryColor =
+    useThemeColor(
+      {},
+      "textSecondary"
+    );
+
+
+  const primaryColor =
+    useThemeColor(
+      {},
+      "primary"
+    );
+
+
+  // ========================================================
+  // SEGMENTOS DE LA URL
+  // ========================================================
+
+  const segmentosRuta =
+    pathname
+      .split("/")
+      .filter(Boolean);
+
+
+  // ========================================================
+  // RUTAS SECUNDARIAS DE INICIO
+  // ========================================================
+  //
+  // En estas pantallas la barra permanece visible,
+  // pero NINGÚN tab se muestra como activo.
+  //
+  // Esto permite que "Inicio" pueda pulsarse normalmente
+  // para regresar al Home.
+  // ========================================================
+
+  const esListaCuestionarios =
+    pathname ===
+    "/cuestionarios" ||
+    pathname ===
+    "/cuestionarios/";
+
+
+  const esForoPrincipal =
+    pathname ===
+    "/foro" ||
+    pathname ===
+    "/foro/";
+
+
+  const esEntrevistaNinosPrincipal =
+    pathname ===
+    "/ninos" ||
+    pathname ===
+    "/ninos/";
+
+
+  const esEntrevistaAdultosPrincipal =
+    pathname ===
+    "/adultos" ||
+    pathname ===
+    "/adultos/";
+
+
+  const esRutaSecundariaDeInicio =
+    esListaCuestionarios ||
+    esForoPrincipal ||
+    esEntrevistaNinosPrincipal ||
+    esEntrevistaAdultosPrincipal;
+
+
+  // ========================================================
+  // RUTAS EN LAS QUE LA BARRA DEBE OCULTARSE
+  // ========================================================
+
+  const estaDentroDeCuestionario =
+    segmentosRuta[0] ===
+    "cuestionarios" &&
+    segmentosRuta.length >=
+    2;
+
+
+  const estaDentroDeForo =
+    segmentosRuta[0] ===
+    "foro" &&
+    segmentosRuta.length >=
+    2;
+
+
+  const estaDentroEntrevistaNinos =
+    segmentosRuta[0] ===
+    "ninos" &&
+    segmentosRuta.length >=
+    2;
+
+
+  const estaDentroEntrevistaAdultos =
+    segmentosRuta[0] ===
+    "adultos" &&
+    segmentosRuta.length >=
+    2;
+
+
+  const ocultarBarra =
+    estaDentroDeCuestionario ||
+    estaDentroDeForo ||
+    estaDentroEntrevistaNinos ||
+    estaDentroEntrevistaAdultos;
+
+
+  // ========================================================
+  // RUTAS VISIBLES DE LA BARRA
+  // ========================================================
+
+  const rutasVisibles =
+    state.routes.filter(
+      route =>
+        RUTAS_VISIBLES.includes(
+          route.name
+        )
+    );
+
+
+  const cantidadTabs =
+    rutasVisibles.length;
+
+
+  const anchoTab =
+    cantidadTabs >
+      0
+
+      ? width /
+      cantidadTabs
+
+      : width /
+      5;
+
+
+  // ========================================================
+  // RUTA ACTIVA REAL
+  // ========================================================
+
+  const rutaActiva =
+    state.routes[
+    state.index
+    ];
+
+
+  let indiceVisibleActivo =
+    rutasVisibles.findIndex(
+      route =>
+        route.key ===
+        rutaActiva?.key
+    );
+
+
+  // ========================================================
+  // ¿HAY UN TAB ACTIVO?
+  // ========================================================
+  //
+  // En Foro, Cuestionarios y las pantallas principales
+  // de Entrevista no queremos mostrar Inicio como activo.
+  // ========================================================
+
+  const hayTabActivo =
+    !esRutaSecundariaDeInicio &&
+    indiceVisibleActivo !==
+    -1;
+
+
+  // Se conserva un índice válido internamente para evitar
+  // errores en cálculos y animaciones.
+  //
+  // IMPORTANTE:
+  // esto NO significa que Inicio estará visualmente activo.
+
+  if (
+    indiceVisibleActivo ===
+    -1
+  ) {
+
+    indiceVisibleActivo =
+      0;
+
+  }
+
+
+  // ========================================================
+  // ANIMACIÓN
+  // ========================================================
+
+  useEffect(
+    () => {
+
+      if (
+        !hayTabActivo
+      ) {
+        return;
+      }
+
+
+      translateX.value =
+        withSpring(
+          indiceVisibleActivo *
+          anchoTab,
+          {
+            damping:
+              18,
+
+            stiffness:
+              150,
+          }
         );
 
-
-    // ======================================================
-    // SVG
-    // ======================================================
-
-    const crearCaminoSVG =
-        () => {
-
-            const centroTab =
-                anchoTab / 2;
+    },
+    [
+      indiceVisibleActivo,
+      anchoTab,
+      hayTabActivo,
+      translateX,
+    ]
+  );
 
 
-            const centroActivo =
-                indiceVisibleActivo *
-                    anchoTab +
-                centroTab;
+  const estiloCirculoFlotante =
+    useAnimatedStyle(
+      () => ({
+        transform: [
+          {
+            translateX:
+              translateX.value,
+          },
+        ],
+      })
+    );
 
 
-            return `
-                M 0 0
+  // ========================================================
+  // SVG
+  // ========================================================
 
-                H ${centroActivo - 30}
+  const crearCaminoSVG =
+    () => {
 
-                C
-                ${centroActivo - 30} 0,
-                ${centroActivo - 30} 35,
-                ${centroActivo} 35
+      // ====================================================
+      // SIN TAB ACTIVO
+      // ====================================================
+      //
+      // Cuando estamos en Foro, Cuestionarios o Entrevistas
+      // principales, dibujamos una barra completamente recta,
+      // sin la curva del botón activo.
+      // ====================================================
 
-                C
-                ${centroActivo + 30} 35,
-                ${centroActivo + 30} 0,
-                ${centroActivo + 60} 0
+      if (
+        !hayTabActivo
+      ) {
 
-                H ${width}
+        return `
+          M 0 0
 
-                V 75
+          H ${width}
 
-                H 0
+          V 75
 
-                Z
-            `;
+          H 0
 
-        };
+          Z
+        `;
 
-
-    // ======================================================
-    // ICONO ACTIVO
-    // ======================================================
-
-    const rutaParaIcono =
-        rutasVisibles[
-            indiceVisibleActivo
-        ]?.name ??
-        "home";
+      }
 
 
-    const rutaActivaLimpia =
-        rutaParaIcono
+      // ====================================================
+      // CON TAB ACTIVO
+      // ====================================================
 
-            .replace(
-                "/index",
-                ""
-            )
-
-            .split("/")[0];
+      const centroTab =
+        anchoTab /
+        2;
 
 
-    // ======================================================
-    // AHORA SÍ PODEMOS RETORNAR NULL
-    // ======================================================
-
-    /*
-     * Todos los hooks ya se ejecutaron.
-     *
-     * Esto evita:
-     *
-     * "Rendered fewer hooks than expected"
-     */
-    if (
-        ocultarBarra
-    ) {
-
-        return null;
-
-    }
+      const centroActivo =
+        indiceVisibleActivo *
+        anchoTab +
+        centroTab;
 
 
-    // ======================================================
-    // UI
-    // ======================================================
+      return `
+        M 0 0
 
-    return (
+        H ${centroActivo - 30}
 
-        <View
+        C
+        ${centroActivo - 30} 0,
+        ${centroActivo - 30} 35,
+        ${centroActivo} 35
+
+        C
+        ${centroActivo + 30} 35,
+        ${centroActivo + 30} 0,
+        ${centroActivo + 60} 0
+
+        H ${width}
+
+        V 75
+
+        H 0
+
+        Z
+      `;
+
+    };
+
+
+  // ========================================================
+  // ICONO ACTIVO
+  // ========================================================
+
+  const rutaParaIcono =
+    rutasVisibles[
+      indiceVisibleActivo
+    ]?.name ??
+    "home";
+
+
+  const rutaActivaLimpia =
+    rutaParaIcono
+      .replace(
+        "/index",
+        ""
+      )
+      .split(
+        "/"
+      )[0];
+
+
+  // ========================================================
+  // RETORNO CONDICIONAL
+  // ========================================================
+
+  if (
+    ocultarBarra
+  ) {
+
+    return null;
+
+  }
+
+
+  // ========================================================
+  // UI
+  // ========================================================
+
+  return (
+
+    <View
+      style={[
+        styles.container,
+
+        {
+          width,
+        },
+      ]}
+    >
+
+      {/* ====================================================
+          FONDO
+      ==================================================== */}
+
+      <Svg
+        width={
+          width
+        }
+
+        height={
+          75
+        }
+
+        style={
+          StyleSheet.absoluteFill
+        }
+      >
+
+        <Path
+          d={
+            crearCaminoSVG()
+          }
+
+          fill={
+            tabBarColor
+          }
+
+          stroke={
+            borderColor
+          }
+
+          strokeWidth={
+            1
+          }
+        />
+
+      </Svg>
+
+
+      {/* ====================================================
+          CÍRCULO FLOTANTE
+      ==================================================== */}
+
+      {
+        hayTabActivo && (
+
+          <Animated.View
             style={[
-                styles.container,
-                {
-                    width,
-                },
+              styles.circuloFlotante,
+
+              {
+                width:
+                  anchoTab,
+              },
+
+              estiloCirculoFlotante,
             ]}
-        >
-
-            {/* Fondo */}
-
-            <Svg
-
-                width={
-                    width
-                }
-
-                height={
-                    75
-                }
-
-                style={
-                    StyleSheet.absoluteFill
-                }
-
-            >
-
-                <Path
-
-                    d={
-                        crearCaminoSVG()
-                    }
-
-                    fill="#FFFFFF"
-
-                    stroke="#9FA2A7"
-
-                    strokeWidth={
-                        1
-                    }
-
-                />
-
-            </Svg>
-
-
-            {/* Círculo flotante */}
-
-            <Animated.View
-
-                style={[
-                    styles.circuloFlotante,
-
-                    {
-                        width:
-                            anchoTab,
-                    },
-
-                    estiloCirculoFlotante,
-                ]}
-
-            >
-
-                <View
-                    style={
-                        styles.interiorCirculo
-                    }
-                >
-
-                    <Ionicons
-
-                        name={
-                            MAPA_ICONOS[
-                                rutaActivaLimpia
-                            ]?.activo ??
-                            "home"
-                        }
-
-                        size={
-                            25
-                        }
-
-                        color="#FFFFFF"
-
-                    />
-
-                </View>
-
-            </Animated.View>
-
-
-            {/* Tabs */}
+          >
 
             <View
-                style={[
-                    styles.contenedorTabs,
-                    {
-                        width,
-                    },
-                ]}
-            >
+              style={[
+                styles.interiorCirculo,
 
                 {
-                    rutasVisibles.map(
-                        (
-                            route
-                        ) => {
-
-                            const indiceRutaOriginal =
-                                state.routes.findIndex(
-                                    item =>
-                                        item.key ===
-                                        route.key
-                                );
-
-
-                            const tieneFocusReal =
-                                state.index ===
-                                indiceRutaOriginal;
-
-
-                            const esInicio =
-                                route.name ===
-                                "home";
-
-
-                            /*
-                             * En /cuestionarios,
-                             * Inicio se considera
-                             * visualmente activo.
-                             */
-                            const isFocused =
-                                tieneFocusReal ||
-                                (
-                                    esListaCuestionarios &&
-                                    esInicio
-                                );
-
-
-                            const {
-                                options,
-                            } =
-                                descriptors[
-                                    route.key
-                                ];
-
-
-                            const onPress =
-                                () => {
-
-                                    const event =
-                                        navigation.emit(
-                                            {
-                                                type:
-                                                    "tabPress",
-
-                                                target:
-                                                    route.key,
-
-                                                canPreventDefault:
-                                                    true,
-                                            }
-                                        );
-
-
-                                    /*
-                                     * Si estamos en cuestionarios
-                                     * y tocamos Inicio,
-                                     * debe volver realmente a Home.
-                                     */
-                                    if (
-                                        esListaCuestionarios &&
-                                        esInicio
-                                    ) {
-
-                                        if (
-                                            !event.defaultPrevented
-                                        ) {
-
-                                            navigation.navigate(
-                                                route.name
-                                            );
-
-                                        }
-
-                                        return;
-
-                                    }
-
-
-                                    if (
-                                        !tieneFocusReal &&
-                                        !event.defaultPrevented
-                                    ) {
-
-                                        navigation.navigate(
-                                            route.name
-                                        );
-
-                                    }
-
-                                };
-
-
-                            const nombreLimpio =
-                                route.name
-
-                                    .replace(
-                                        "/index",
-                                        ""
-                                    )
-
-                                    .split(
-                                        "/"
-                                    )[0];
-
-
-                            const configuracionIcono =
-                                MAPA_ICONOS[
-                                    nombreLimpio
-                                ] ?? {
-
-                                    inactivo:
-                                        "ellipse-outline",
-
-                                    activo:
-                                        "ellipse",
-
-                                };
-
-
-                            const tituloTab =
-                                options.title ??
-                                nombreLimpio;
-
-
-                            return (
-
-                                <TouchableOpacity
-
-                                    key={
-                                        route.key
-                                    }
-
-                                    accessibilityRole="button"
-
-                                    accessibilityState={
-                                        isFocused
-
-                                            ? {
-                                                selected:
-                                                    true,
-                                            }
-
-                                            : {}
-                                    }
-
-                                    accessibilityLabel={
-                                        options
-                                            .tabBarAccessibilityLabel
-                                    }
-
-                                    onPress={
-                                        onPress
-                                    }
-
-                                    style={[
-                                        styles.tabButton,
-                                        {
-                                            width:
-                                                anchoTab,
-                                        },
-                                    ]}
-
-                                    activeOpacity={
-                                        0.7
-                                    }
-
-                                >
-
-                                    {
-                                        !isFocused && (
-
-                                            <>
-
-                                                <Ionicons
-
-                                                    name={
-                                                        configuracionIcono.inactivo
-                                                    }
-
-                                                    size={
-                                                        25
-                                                    }
-
-                                                    color="#5A6677"
-
-                                                />
-
-
-                                                <Text
-
-                                                    style={
-                                                        styles.textoInactivo
-                                                    }
-
-                                                    numberOfLines={
-                                                        1
-                                                    }
-
-                                                >
-
-                                                    {
-                                                        tituloTab
-                                                    }
-
-                                                </Text>
-
-                                            </>
-
-                                        )
-                                    }
-
-
-                                    {
-                                        isFocused && (
-
-                                            <Text
-
-                                                style={
-                                                    styles.textoActivo
-                                                }
-
-                                                numberOfLines={
-                                                    1
-                                                }
-
-                                            >
-
-                                                {
-                                                    tituloTab
-                                                }
-
-                                            </Text>
-
-                                        )
-                                    }
-
-                                </TouchableOpacity>
-
-                            );
-
-                        }
-                    )
+                  backgroundColor:
+                    primaryColor,
+
+                  shadowColor:
+                    primaryColor,
+                },
+              ]}
+            >
+
+              <Ionicons
+                name={
+                  MAPA_ICONOS[
+                    rutaActivaLimpia
+                  ]?.activo ??
+                  "home"
                 }
+
+                size={
+                  25
+                }
+
+                color="#FFFFFF"
+              />
 
             </View>
 
-        </View>
+          </Animated.View>
 
-    );
+        )
+      }
+
+
+      {/* ====================================================
+          TABS
+      ==================================================== */}
+
+      <View
+        style={[
+          styles.contenedorTabs,
+
+          {
+            width,
+          },
+        ]}
+      >
+
+        {
+          rutasVisibles.map(
+            route => {
+
+              // ==============================================
+              // ÍNDICE REAL
+              // ==============================================
+
+              const indiceRutaOriginal =
+                state.routes.findIndex(
+                  item =>
+                    item.key ===
+                    route.key
+                );
+
+
+              const tieneFocusReal =
+                state.index ===
+                indiceRutaOriginal;
+
+
+              const esInicio =
+                route.name ===
+                "home";
+
+
+              // ==============================================
+              // ESTADO VISUAL
+              // ==============================================
+              //
+              // Si estamos en una ruta secundaria:
+              //
+              // /foro
+              // /cuestionarios
+              // /ninos
+              // /adultos
+              //
+              // ningún botón aparece seleccionado.
+              // ==============================================
+
+              const isFocused =
+                hayTabActivo &&
+                tieneFocusReal;
+
+
+              const {
+                options,
+              } =
+                descriptors[
+                route.key
+                ];
+
+
+              // ==============================================
+              // PRESS
+              // ==============================================
+
+              const onPress =
+                () => {
+
+                  const event =
+                    navigation.emit({
+                      type:
+                        "tabPress",
+
+                      target:
+                        route.key,
+
+                      canPreventDefault:
+                        true,
+                    });
+
+
+                  if (
+                    event.defaultPrevented
+                  ) {
+
+                    return;
+
+                  }
+
+
+                  // ==========================================
+                  // REGRESAR A HOME DESDE RUTAS SECUNDARIAS
+                  // ==========================================
+                  //
+                  // Aunque React Navigation pueda considerar
+                  // Home como tab activo internamente,
+                  // permitimos navegar explícitamente a Home.
+                  // ==========================================
+
+                  if (
+                    esRutaSecundariaDeInicio &&
+                    esInicio
+                  ) {
+
+                    navigation.navigate(
+                      route.name
+                    );
+
+                    return;
+
+                  }
+
+
+                  // ==========================================
+                  // NAVEGACIÓN NORMAL
+                  // ==========================================
+
+                  if (
+                    !tieneFocusReal
+                  ) {
+
+                    navigation.navigate(
+                      route.name
+                    );
+
+                  }
+
+                };
+
+
+              // ==============================================
+              // CONFIGURACIÓN DEL ICONO
+              // ==============================================
+
+              const nombreLimpio =
+                route.name
+                  .replace(
+                    "/index",
+                    ""
+                  )
+                  .split(
+                    "/"
+                  )[0];
+
+
+              const configuracionIcono =
+                MAPA_ICONOS[
+                nombreLimpio
+                ] ?? {
+
+                  inactivo:
+                    "ellipse-outline",
+
+                  activo:
+                    "ellipse",
+
+                };
+
+
+              const tituloTab =
+                options.title ??
+                nombreLimpio;
+
+
+              // ==============================================
+              // TAB
+              // ==============================================
+
+              return (
+
+                <TouchableOpacity
+                  key={
+                    route.key
+                  }
+
+                  accessibilityRole="button"
+
+                  accessibilityState={
+                    isFocused
+
+                      ? {
+                        selected:
+                          true,
+                      }
+
+                      : {}
+                  }
+
+                  accessibilityLabel={
+                    options
+                      .tabBarAccessibilityLabel
+                  }
+
+                  onPress={
+                    onPress
+                  }
+
+                  style={[
+                    styles.tabButton,
+
+                    {
+                      width:
+                        anchoTab,
+                    },
+                  ]}
+
+                  activeOpacity={
+                    0.7
+                  }
+                >
+
+                  {/* ==========================================
+                      ESTADO INACTIVO
+                  ========================================== */}
+
+                  {
+                    !isFocused && (
+
+                      <>
+
+                        <Ionicons
+                          name={
+                            configuracionIcono
+                              .inactivo
+                          }
+
+                          size={
+                            25
+                          }
+
+                          color={
+                            tabIconDefault
+                          }
+                        />
+
+
+                        <Text
+                          style={[
+                            styles.textoInactivo,
+
+                            {
+                              color:
+                                textSecondaryColor,
+                            },
+                          ]}
+
+                          numberOfLines={
+                            1
+                          }
+                        >
+                          {
+                            tituloTab
+                          }
+                        </Text>
+
+                      </>
+
+                    )
+                  }
+
+
+                  {/* ==========================================
+                      ESTADO ACTIVO
+                  ========================================== */}
+
+                  {
+                    isFocused && (
+
+                      <Text
+                        style={[
+                          styles.textoActivo,
+
+                          {
+                            color:
+                              textColor,
+                          },
+                        ]}
+
+                        numberOfLines={
+                          1
+                        }
+                      >
+                        {
+                          tituloTab
+                        }
+                      </Text>
+
+                    )
+                  }
+
+                </TouchableOpacity>
+
+              );
+
+            }
+          )
+        }
+
+      </View>
+
+    </View>
+
+  );
 
 }
 
@@ -742,170 +950,158 @@ export function BarraNavegacionCurva({
 // ==========================================================
 
 const styles =
-    StyleSheet.create({
+  StyleSheet.create({
 
-        container: {
+    container: {
 
-            position:
-                "absolute",
+      position:
+        "absolute",
 
-            bottom:
-                0,
+      bottom:
+        0,
 
-            height:
-                75,
+      height:
+        75,
 
-            backgroundColor:
-                "transparent",
+      backgroundColor:
+        "transparent",
 
-            elevation:
-                8,
+      elevation:
+        8,
 
-            shadowColor:
-                "#000",
+      shadowColor:
+        "#000000",
 
-            shadowOffset: {
-                width:
-                    0,
+      shadowOffset: {
+        width:
+          0,
 
-                height:
-                    -2,
-            },
+        height:
+          -2,
+      },
 
-            shadowOpacity:
-                0.1,
+      shadowOpacity:
+        0.1,
 
-            shadowRadius:
-                4,
+      shadowRadius:
+        4,
 
-        },
-
-
-        contenedorTabs: {
-
-            flexDirection:
-                "row",
-
-            height:
-                75,
-
-        },
+    },
 
 
-        tabButton: {
+    contenedorTabs: {
 
-            height:
-                75,
+      flexDirection:
+        "row",
 
-            justifyContent:
-                "center",
+      height:
+        75,
 
-            alignItems:
-                "center",
-
-            paddingTop:
-                10,
-
-        },
+    },
 
 
-        circuloFlotante: {
+    tabButton: {
 
-            position:
-                "absolute",
+      height:
+        75,
 
-            top:
-                -20,
+      justifyContent:
+        "center",
 
-            alignItems:
-                "center",
+      alignItems:
+        "center",
 
-            zIndex:
-                10,
+      paddingTop:
+        10,
 
-        },
-
-
-        interiorCirculo: {
-
-            width:
-                46,
-
-            height:
-                46,
-
-            borderRadius:
-                23,
-
-            backgroundColor:
-                "#4F8EF7",
-
-            justifyContent:
-                "center",
-
-            alignItems:
-                "center",
-
-            shadowColor:
-                "#4F8EF7",
-
-            shadowOffset: {
-                width:
-                    0,
-
-                height:
-                    4,
-            },
-
-            shadowOpacity:
-                0.3,
-
-            shadowRadius:
-                6,
-
-            elevation:
-                6,
-
-        },
+    },
 
 
-        textoInactivo: {
+    circuloFlotante: {
 
-            fontFamily:
-                "Nunito-Medium",
+      position:
+        "absolute",
 
-            fontSize:
-                11,
+      top:
+        -20,
 
-            color:
-                "#5A6677",
+      alignItems:
+        "center",
 
-            marginTop:
-                3,
+      zIndex:
+        10,
 
-            textAlign:
-                "center",
-
-        },
+    },
 
 
-        textoActivo: {
+    interiorCirculo: {
 
-            fontFamily:
-                "Nunito-SemiBold",
+      width:
+        46,
 
-            fontSize:
-                11,
+      height:
+        46,
 
-            color:
-                "#2D3748",
+      borderRadius:
+        23,
 
-            marginTop:
-                28,
+      justifyContent:
+        "center",
 
-            textAlign:
-                "center",
+      alignItems:
+        "center",
 
-        },
+      shadowOffset: {
+        width:
+          0,
 
-    });
+        height:
+          4,
+      },
+
+      shadowOpacity:
+        0.3,
+
+      shadowRadius:
+        6,
+
+      elevation:
+        6,
+
+    },
+
+
+    textoInactivo: {
+
+      fontFamily:
+        "Nunito-Medium",
+
+      fontSize:
+        11,
+
+      marginTop:
+        3,
+
+      textAlign:
+        "center",
+
+    },
+
+
+    textoActivo: {
+
+      fontFamily:
+        "Nunito-SemiBold",
+
+      fontSize:
+        11,
+
+      marginTop:
+        28,
+
+      textAlign:
+        "center",
+
+    },
+
+  });
