@@ -42,11 +42,14 @@ import {
 // ==========================================================
 
 const MAPA_ICONOS: Record<
-  string,
-  {
-    inactivo: keyof typeof Ionicons.glyphMap;
-    activo: keyof typeof Ionicons.glyphMap;
-  }
+    string,
+    {
+        inactivo:
+            keyof typeof Ionicons.glyphMap;
+
+        activo:
+            keyof typeof Ionicons.glyphMap;
+    }
 > = {
 
   home: {
@@ -101,11 +104,11 @@ const MAPA_ICONOS: Record<
 // ==========================================================
 
 const RUTAS_VISIBLES = [
-  "home",
-  "diario/index",
-  "educacion/index",
-  "tecnicas/index",
-  "perfil/index",
+    "home",
+    "diario/index",
+    "educacion/index",
+    "tecnicas/index",
+    "perfil/index",
 ];
 
 
@@ -114,9 +117,9 @@ const RUTAS_VISIBLES = [
 // ==========================================================
 
 export function BarraNavegacionCurva({
-  state,
-  descriptors,
-  navigation,
+    state,
+    descriptors,
+    navigation,
 }: BottomTabBarProps) {
 
   // ========================================================
