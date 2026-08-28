@@ -1,35 +1,73 @@
 import "../global.css";
+
 import React, { useEffect } from "react";
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { Stack, useRouter } from "expo-router";
+
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+
+import {
+  Stack,
+  useRouter,
+} from "expo-router";
+
 import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
+
 import * as SplashScreen from "expo-splash-screen";
+
 import "react-native-reanimated";
+
 import AnimatedLogo from "@/components/ui/AnimatedLogo";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { AuthProvider, useAuth } from "@/services/authProvider";
+import {
+  AuthProvider,
+  useAuth,
+} from "@/services/authProvider";
 
 SplashScreen.preventAutoHideAsync();
 
-// NAVEGACIÓN PRINCIPAL
 function RootNavigation() {
   const { loading, session } = useAuth();
   const router = useRouter();
 
-  const [splashTerminado, setSplashTerminado] = React.useState(false);
+  // Controla el tiempo mínimo del splash
+  const [splashTerminado, setSplashTerminado] =
+    React.useState(false);
 
+  // Indica que el arranque inicial ya terminó
+  const [inicioListo, setInicioListo] =
+    React.useState(false);
+
+  // 1. Tiempo mínimo del splash inicial
   useEffect(() => {
     const timer = setTimeout(() => {
       setSplashTerminado(true);
-    }, 4000);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, []);
 
+  // 2. El arranque termina cuando:
+  // - ya pasaron los 3 segundos
+  // - AuthProvider terminó de cargar
   useEffect(() => {
-    // Esperamos autenticacion + tiempo minimo del splash
-    if (loading || !splashTerminado) return;
+    if (inicioListo) return;
+
+    if (!splashTerminado || loading) return;
+
+    setInicioListo(true);
+  }, [
+    splashTerminado,
+    loading,
+    inicioListo,
+  ]);
+
+  // 3. Navegación según autenticación
+  useEffect(() => {
+    if (!inicioListo) return;
 
     if (session) {
       router.replace("/(tabs)/home");
@@ -37,57 +75,76 @@ function RootNavigation() {
     }
 
     router.replace("/(auth)/welcome");
-  }, [loading, splashTerminado, session, router]);
+  }, [
+    inicioListo,
+    !!session,
+    router,
+  ]);
 
-  // Mientras carga auth o no han pasado los 4 segundos
-  if (loading || !splashTerminado) {
+  // 4. Splash SOLO durante el arranque inicial
+  if (!inicioListo) {
     return <AnimatedLogo />;
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
       <Stack.Screen name="index" />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="(bienvenida)" />
+      <Stack.Screen name="(entrevista)" />
     </Stack>
   );
 }
 
-// ROOT LAYOUT
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
-  // FUENTES
   const [loaded, error] = useFonts({
-    "Nunito-Medium": require("../assets/fonts/Nunito-Medium.ttf"),
-    "Nunito-SemiBold": require("../assets/fonts/Nunito-SemiBold.ttf"),
-    "Nunito-Bold": require("../assets/fonts/Nunito-Bold.ttf"),
+    "Nunito-Medium": require(
+      "../assets/fonts/Nunito-Medium.ttf"
+    ),
+
+    "Nunito-SemiBold": require(
+      "../assets/fonts/Nunito-SemiBold.ttf"
+    ),
+
+    "Nunito-Bold": require(
+      "../assets/fonts/Nunito-Bold.ttf"
+    ),
   });
 
-  // ERROR DE FUENTES
   useEffect(() => {
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
   }, [error]);
 
-  // OCULTAR SPLASH NATIVO
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
 
-  // Mientras cargan las fuentes mantenemos el SplashScreen nativo
   if (!loaded) {
     return null;
   }
 
-  // APP
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <ThemeProvider
+      value={
+        colorScheme === "dark"
+          ? DarkTheme
+          : DefaultTheme
+      }
+    >
       <AuthProvider>
         <RootNavigation />
       </AuthProvider>
+
       <StatusBar style="auto" />
     </ThemeProvider>
   );

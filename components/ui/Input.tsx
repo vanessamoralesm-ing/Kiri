@@ -13,15 +13,17 @@ import {
 interface InputProps extends TextInputProps {
   label: string;                // Texto de la etiqueta
   rightLabel?: React.ReactNode; // Enlace u opcion a la derecha
+  rightIcon?: React.ReactNode;  // Icono dentro del input a la derecha
   estiloContenedor?: StyleProp<ViewStyle>;
 }
 
 export default function Input({
   label,
   rightLabel,
+  rightIcon,
   estiloContenedor,//Recibimos la propiedad
   style,
-  ...props                     
+  ...props
 }: InputProps) {
   return (
     <View style={[styles.container, estiloContenedor]}>
@@ -32,11 +34,24 @@ export default function Input({
       </View>
 
       {/* Campo de texto de entrada */}
-      <TextInput
-        style={[styles.input, style]}
-        placeholderTextColor="#8491a3" // Color gris suave para el placeholder
-        {...props}
-      />
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={[
+            styles.input,
+            rightIcon ? styles.inputConIcono : undefined,
+            style,
+          ]}
+          placeholderTextColor="#8491a3"
+          {...props}
+        />
+
+        {/* Icono dentro del input */}
+        {rightIcon && (
+          <View style={styles.rightIcon}>
+            {rightIcon}
+          </View>
+        )}
+      </View>
     </View>
   );
 }
@@ -56,16 +71,31 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'Nunito-Bold',
     fontWeight: '500',
-    color: '#2D3748',          
+    color: '#2D3748',
+  },
+  inputContainer: {
+    width: '100%',
+    position: 'relative',
   },
   input: {
     width: '100%',
-    height: 52,                    // Altura ideal para escribir cómodamente
+    height: 52,                    // Altura ideal para escribir cmodamente
     backgroundColor: '#e0e6fc',    // Fondo lila
     borderRadius: 14,              // Bordes suaves
     paddingHorizontal: 16,         // Espacio interno a los lados
     fontSize: 16,
     fontFamily: 'Nunito-Medium',
     color: '#2D3748',
+  },
+  inputConIcono: {
+    paddingRight: 52,              // Evita que el texto choque con el icono
+  },
+  rightIcon: {
+    position: 'absolute',
+    right: 14,
+    top: 0,
+    height: 52,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

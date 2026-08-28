@@ -1,38 +1,47 @@
-import React, { useEffect } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import React, { useEffect } from "react";
+import { Image, StyleSheet, View } from "react-native";
+
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
-} from 'react-native-reanimated';
+} from "react-native-reanimated";
 
-/**
- * Logo animado de Kiri: aparece con fade-in y luego crece
- * con un efecto de resorte (spring).
- *
- * Reutilizable en cualquier pantalla que necesite mostrar
- * el logo con esta animación (splash inicial, loaders, etc).
- */
 export default function AnimatedLogo() {
   const logoOpacity = useSharedValue(0);
-  const logoScale = useSharedValue(0.8);
+  const logoScale = useSharedValue(0.85);
 
   useEffect(() => {
-    logoOpacity.value = withTiming(1, { duration: 800 });
-    logoScale.value = withSpring(1);
+    logoOpacity.value = withTiming(1, {
+      duration: 800,
+    });
+
+    logoScale.value = withSpring(1, {
+      damping: 12,
+      stiffness: 90,
+    });
   }, []);
 
   const animatedLogoStyle = useAnimatedStyle(() => ({
     opacity: logoOpacity.value,
-    transform: [{ scale: logoScale.value }],
+    transform: [
+      {
+        scale: logoScale.value,
+      },
+    ],
   }));
 
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.logoContainer, animatedLogoStyle]}>
+      <Animated.View
+        style={[
+          styles.logoContainer,
+          animatedLogoStyle,
+        ]}
+      >
         <Image
-          source={require('../../assets/images/splash-icon-ps.png')}
+          source={require("../../assets/images/splash-icon-ps.png")}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -44,16 +53,20 @@ export default function AnimatedLogo() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#4F8EF7', // Azul de Kiri
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#4F8EF7",
+    justifyContent: "center",
+    alignItems: "center",
   },
+
   logoContainer: {
-    width: '95%',
-    alignItems: 'center',
+    width: "80%",
+    maxWidth: 380,
+    alignItems: "center",
+    justifyContent: "center",
   },
+
   logo: {
-    width: '100%',
-    height: 360,
+    width: "100%",
+    height: 240,
   },
 });

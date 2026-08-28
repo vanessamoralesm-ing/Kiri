@@ -11,7 +11,7 @@ export default function BienvenidaPantalla() {
 
   // Funcion para avanzar a la pantalla rango edad
   const irARangoEdad = () => {
-    router.push("/(bienvenida)/rango_edad");
+    router.push("/(entrevista)/rango_edad");
   };
 
   return (
