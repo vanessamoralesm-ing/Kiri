@@ -1,26 +1,30 @@
 import React, {
-    useMemo,
-    useState,
+  useCallback,
+  useMemo,
+  useState,
 } from "react";
 
 import {
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import {
-    SafeAreaView,
-    useSafeAreaInsets,
+  SafeAreaView,
+  useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
 import {
-    Ionicons,
+  Ionicons,
 } from "@expo/vector-icons";
 
 import {
-    useRouter,
+  useFocusEffect,
+  useRouter,
 } from "expo-router";
 
 import FiltroEmociones from "@/components/foro/FiltroEmociones";
@@ -28,240 +32,20 @@ import PreguntaSemana from "@/components/foro/PreguntaSemana";
 import PublicacionCard from "@/components/foro/PublicacionCard";
 
 import {
-    useThemeColor,
+  useThemeColor,
 } from "@/hooks/use-theme-color";
 
+import {
+  useAuth,
+} from "@/services/authProvider";
+
+import {
+  obtenerPublicaciones,
+} from "@/services/foro/foroService";
+
 import type {
-    PublicacionForo,
+  PublicacionForo,
 } from "@/types/foro";
-
-
-// ==========================================================
-// PUBLICACIONES TEMPORALES PARA MAQUETACIÓN
-// ==========================================================
-
-const PUBLICACIONES_DEMO: PublicacionForo[] = [
-  {
-    id_publicacion:
-      "1",
-
-    id_usuario:
-      "usuario-demo-1",
-
-    titulo:
-      "Aprendiendo a bajar el ritmo",
-
-    contenido:
-      "Esta semana me di cuenta de que cuando comienzo a sentirme muy cansado y pierdo concentración necesito detenerme un momento. Estoy intentando escuchar más estas señales y darme pequeños espacios para descansar.",
-
-    fecha_publicacion:
-      new Date().toISOString(),
-
-    fecha_actualizacion:
-      new Date().toISOString(),
-
-    estado:
-      "activa",
-
-    editada:
-      false,
-
-    usuario: {
-      id_usuario:
-        "usuario-demo-1",
-
-      nombres:
-        "Usuario 1",
-
-      nombre_preferido:
-        "Usuario 1",
-
-      foto_perfil:
-        null,
-    },
-
-    emociones: [
-      {
-        id_emocion_foro:
-          "emocion-calma",
-
-        nombre:
-          "Calma",
-
-        descripcion:
-          null,
-
-        estado:
-          true,
-
-        fecha_registro:
-          new Date().toISOString(),
-      },
-
-      {
-        id_emocion_foro:
-          "emocion-esperanza",
-
-        nombre:
-          "Esperanza",
-
-        descripcion:
-          null,
-
-        estado:
-          true,
-
-        fecha_registro:
-          new Date().toISOString(),
-      },
-    ],
-
-    total_reacciones:
-      10,
-
-    total_comentarios:
-      4,
-
-    reaccion_usuario:
-      null,
-  },
-
-  {
-    id_publicacion:
-      "2",
-
-    id_usuario:
-      "usuario-demo-2",
-
-    titulo:
-      "Un pequeño logro",
-
-    contenido:
-      "Hoy pude terminar algo que había estado posponiendo durante varios días. Puede parecer pequeño, pero para mí representa un avance y quería compartirlo con la comunidad.",
-
-    fecha_publicacion:
-      new Date().toISOString(),
-
-    fecha_actualizacion:
-      new Date().toISOString(),
-
-    estado:
-      "activa",
-
-    editada:
-      false,
-
-    usuario: {
-      id_usuario:
-        "usuario-demo-2",
-
-      nombres:
-        "Usuario 2",
-
-      nombre_preferido:
-        "Usuario 2",
-
-      foto_perfil:
-        null,
-    },
-
-    emociones: [
-      {
-        id_emocion_foro:
-          "emocion-alegria",
-
-        nombre:
-          "Alegría",
-
-        descripcion:
-          null,
-
-        estado:
-          true,
-
-        fecha_registro:
-          new Date().toISOString(),
-      },
-    ],
-
-    total_reacciones:
-      3,
-
-    total_comentarios:
-      2,
-
-    reaccion_usuario:
-      null,
-  },
-
-  {
-    id_publicacion:
-      "3",
-
-    id_usuario:
-      "usuario-demo-3",
-
-    titulo:
-      "Día complicado",
-
-    contenido:
-      "Tuve un día difícil y me sentí bastante frustrado. Escribir sobre lo que pasó me ayudó a organizar un poco mis pensamientos y entender mejor cómo me estaba sintiendo.",
-
-    fecha_publicacion:
-      new Date().toISOString(),
-
-    fecha_actualizacion:
-      new Date().toISOString(),
-
-    estado:
-      "activa",
-
-    editada:
-      false,
-
-    usuario: {
-      id_usuario:
-        "usuario-demo-3",
-
-      nombres:
-        "Usuario 3",
-
-      nombre_preferido:
-        "Usuario 3",
-
-      foto_perfil:
-        null,
-    },
-
-    emociones: [
-      {
-        id_emocion_foro:
-          "emocion-frustracion",
-
-        nombre:
-          "Frustración",
-
-        descripcion:
-          null,
-
-        estado:
-          true,
-
-        fecha_registro:
-          new Date().toISOString(),
-      },
-    ],
-
-    total_reacciones:
-      20,
-
-    total_comentarios:
-      7,
-
-    reaccion_usuario:
-      null,
-  },
-];
 
 
 // ==========================================================
@@ -278,6 +62,65 @@ export default function ForoScreen() {
     useSafeAreaInsets();
 
 
+  const {
+    profile,
+    loading:
+      authLoading,
+  } =
+    useAuth();
+
+
+  // ========================================================
+  // ESTADOS
+  // ========================================================
+
+  const [
+    publicaciones,
+    setPublicaciones,
+  ] =
+    useState<
+      PublicacionForo[]
+    >([]);
+
+
+  const [
+    cargando,
+    setCargando,
+  ] =
+    useState(
+      true
+    );
+
+
+  const [
+    refrescando,
+    setRefrescando,
+  ] =
+    useState(
+      false
+    );
+
+
+  const [
+    error,
+    setError,
+  ] =
+    useState<
+      string | null
+    >(
+      null
+    );
+
+
+  const [
+    filtroActivo,
+    setFiltroActivo,
+  ] =
+    useState(
+      "Todo"
+    );
+
+
   // ========================================================
   // COLORES DEL TEMA
   // ========================================================
@@ -289,10 +132,24 @@ export default function ForoScreen() {
     );
 
 
+  const surfaceColor =
+    useThemeColor(
+      {},
+      "surface"
+    );
+
+
   const surfaceSecondaryColor =
     useThemeColor(
       {},
       "surfaceSecondary"
+    );
+
+
+  const borderColor =
+    useThemeColor(
+      {},
+      "border"
     );
 
 
@@ -325,15 +182,149 @@ export default function ForoScreen() {
 
 
   // ========================================================
-  // FILTRO
+  // CARGAR PUBLICACIONES
   // ========================================================
 
-  const [
-    filtroActivo,
-    setFiltroActivo,
-  ] =
-    useState(
-      "Todo"
+  const cargarPublicaciones =
+    useCallback(
+      async (
+        mostrarCargaPrincipal =
+          true
+      ) => {
+
+        if (
+          authLoading
+        ) {
+          return;
+        }
+
+
+        try {
+
+          if (
+            mostrarCargaPrincipal
+          ) {
+
+            setCargando(
+              true
+            );
+
+          }
+
+
+          setError(
+            null
+          );
+
+
+          const data =
+            await obtenerPublicaciones(
+              profile?.id_usuario
+            );
+
+
+          setPublicaciones(
+            data
+          );
+
+
+        } catch (
+          e
+        ) {
+
+          console.error(
+            "Error cargando publicaciones del foro:",
+            e
+          );
+
+
+          setError(
+            e instanceof Error
+              ? e.message
+              : "No se pudieron cargar las publicaciones."
+          );
+
+
+        } finally {
+
+          if (
+            mostrarCargaPrincipal
+          ) {
+
+            setCargando(
+              false
+            );
+
+          }
+
+        }
+
+      },
+      [
+        authLoading,
+        profile?.id_usuario,
+      ]
+    );
+
+
+  // ========================================================
+  // RECARGAR AL ENTRAR / VOLVER AL FORO
+  // ========================================================
+
+  useFocusEffect(
+    useCallback(
+      () => {
+
+        if (
+          authLoading
+        ) {
+          return;
+        }
+
+
+        cargarPublicaciones();
+
+      },
+      [
+        authLoading,
+        cargarPublicaciones,
+      ]
+    )
+  );
+
+
+  // ========================================================
+  // PULL TO REFRESH
+  // ========================================================
+
+  const refrescar =
+    useCallback(
+      async () => {
+
+        try {
+
+          setRefrescando(
+            true
+          );
+
+
+          await cargarPublicaciones(
+            false
+          );
+
+
+        } finally {
+
+          setRefrescando(
+            false
+          );
+
+        }
+
+      },
+      [
+        cargarPublicaciones,
+      ]
     );
 
 
@@ -350,12 +341,12 @@ export default function ForoScreen() {
           "Todo"
         ) {
 
-          return PUBLICACIONES_DEMO;
+          return publicaciones;
 
         }
 
 
-        return PUBLICACIONES_DEMO.filter(
+        return publicaciones.filter(
           publicacion =>
             publicacion.emociones?.some(
               emocion =>
@@ -367,6 +358,7 @@ export default function ForoScreen() {
       },
       [
         filtroActivo,
+        publicaciones,
       ]
     );
 
@@ -387,6 +379,135 @@ export default function ForoScreen() {
       posicionBoton + 120,
       220
     );
+
+
+  // ========================================================
+  // CARGANDO
+  // ========================================================
+
+  if (
+    cargando
+  ) {
+
+    return (
+
+      <SafeAreaView
+        edges={[
+          "top",
+        ]}
+
+        style={{
+          flex: 1,
+          backgroundColor,
+        }}
+      >
+
+        <View
+          style={{
+            flex: 1,
+
+            alignItems:
+              "center",
+
+            justifyContent:
+              "center",
+
+            paddingHorizontal:
+              32,
+          }}
+        >
+
+          <View
+            style={{
+              width:
+                72,
+
+              height:
+                72,
+
+              borderRadius:
+                36,
+
+              alignItems:
+                "center",
+
+              justifyContent:
+                "center",
+
+              backgroundColor:
+                surfaceSecondaryColor,
+
+              borderWidth:
+                1,
+
+              borderColor,
+            }}
+          >
+
+            <ActivityIndicator
+              size="large"
+
+              color={
+                primaryColor
+              }
+            />
+
+          </View>
+
+
+          <Text
+            style={{
+              marginTop:
+                18,
+
+              fontFamily:
+                "Nunito-Bold",
+
+              fontSize:
+                18,
+
+              color:
+                textColor,
+            }}
+          >
+            Cargando comunidad
+          </Text>
+
+
+          <Text
+            style={{
+              marginTop:
+                7,
+
+              maxWidth:
+                290,
+
+              textAlign:
+                "center",
+
+              fontFamily:
+                "Nunito-Medium",
+
+              fontSize:
+                14,
+
+              lineHeight:
+                20,
+
+              color:
+                textSecondaryColor,
+            }}
+          >
+            Estamos preparando las publicaciones del foro.
+          </Text>
+
+        </View>
+
+      </SafeAreaView>
+
+    );
+
+  }
 
 
   // ========================================================
@@ -442,6 +563,26 @@ export default function ForoScreen() {
           }
 
           keyboardShouldPersistTaps="handled"
+
+          refreshControl={
+            <RefreshControl
+              refreshing={
+                refrescando
+              }
+
+              onRefresh={
+                refrescar
+              }
+
+              tintColor={
+                primaryColor
+              }
+
+              colors={[
+                primaryColor,
+              ]}
+            />
+          }
         >
 
           {/* ===============================================
@@ -493,6 +634,105 @@ export default function ForoScreen() {
 
 
           {/* ===============================================
+              ERROR
+          =============================================== */}
+
+          {
+            error && (
+
+              <View
+                style={{
+                  marginTop:
+                    22,
+
+                  paddingHorizontal:
+                    16,
+
+                  paddingVertical:
+                    14,
+
+                  borderRadius:
+                    16,
+
+                  borderWidth:
+                    1,
+
+                  borderColor,
+
+                  backgroundColor:
+                    surfaceColor,
+
+                  flexDirection:
+                    "row",
+
+                  alignItems:
+                    "center",
+                }}
+              >
+
+                <Ionicons
+                  name="alert-circle-outline"
+                  size={22}
+
+                  color={
+                    primaryColor
+                  }
+                />
+
+
+                <Text
+                  style={{
+                    flex:
+                      1,
+
+                    marginLeft:
+                      10,
+
+                    fontFamily:
+                      "Nunito-Medium",
+
+                    fontSize:
+                      14,
+
+                    lineHeight:
+                      20,
+
+                    color:
+                      textSecondaryColor,
+                  }}
+                >
+                  {error}
+                </Text>
+
+
+                <TouchableOpacity
+                  activeOpacity={
+                    0.75
+                  }
+
+                  onPress={() =>
+                    cargarPublicaciones()
+                  }
+                >
+
+                  <Ionicons
+                    name="refresh-outline"
+                    size={23}
+
+                    color={
+                      primaryColor
+                    }
+                  />
+
+                </TouchableOpacity>
+
+              </View>
+
+            )
+          }
+
+
+          {/* ===============================================
               CONTADOR
           =============================================== */}
 
@@ -511,8 +751,6 @@ export default function ForoScreen() {
                 "center",
             }}
           >
-
-            {/* Avatares ilustrativos */}
 
             <View
               style={{
@@ -616,7 +854,12 @@ export default function ForoScreen() {
               {
                 publicacionesFiltradas.length
               }{" "}
-              publicaciones
+              {
+                publicacionesFiltradas.length ===
+                1
+                  ? "publicación"
+                  : "publicaciones"
+              }
             </Text>
 
           </View>
@@ -663,7 +906,12 @@ export default function ForoScreen() {
                 >
 
                   <Ionicons
-                    name="chatbubbles-outline"
+                    name={
+                      filtroActivo ===
+                      "Todo"
+                        ? "chatbubbles-outline"
+                        : "filter-outline"
+                    }
 
                     size={
                       44
@@ -681,7 +929,37 @@ export default function ForoScreen() {
                         12,
 
                       maxWidth:
-                        280,
+                        290,
+
+                      textAlign:
+                        "center",
+
+                      fontFamily:
+                        "Nunito-Bold",
+
+                      fontSize:
+                        17,
+
+                      color:
+                        textColor,
+                    }}
+                  >
+                    {
+                      filtroActivo ===
+                      "Todo"
+                        ? "Todavía no hay publicaciones"
+                        : "No hay publicaciones con esta emoción"
+                    }
+                  </Text>
+
+
+                  <Text
+                    style={{
+                      marginTop:
+                        7,
+
+                      maxWidth:
+                        290,
 
                       textAlign:
                         "center",
@@ -690,16 +968,23 @@ export default function ForoScreen() {
                         "Nunito-Medium",
 
                       fontSize:
-                        16,
+                        14,
 
                       lineHeight:
-                        22,
+                        21,
 
                       color:
                         textSecondaryColor,
                     }}
                   >
-                    Aún no hay publicaciones relacionadas con esta emoción.
+                    {
+                      filtroActivo ===
+                      "Todo"
+
+                        ? "Puedes ser la primera persona en compartir algo con la comunidad."
+
+                        : "Prueba seleccionando otra emoción o vuelve a mostrar todas las publicaciones."
+                    }
                   </Text>
 
                 </View>
@@ -750,11 +1035,6 @@ export default function ForoScreen() {
             borderRadius:
               39,
 
-            /*
-             * Lavanda oficial de Kiri.
-             * Se mantiene visible tanto en modo
-             * claro como en modo oscuro.
-             */
             backgroundColor:
               "#B8A8F8",
 
@@ -764,9 +1044,6 @@ export default function ForoScreen() {
             justifyContent:
               "center",
 
-            /*
-             * Sombra para iOS / Web.
-             */
             shadowColor:
               "#000000",
 
@@ -784,16 +1061,9 @@ export default function ForoScreen() {
             shadowRadius:
               9,
 
-            /*
-             * Sombra Android.
-             */
             elevation:
               18,
 
-            /*
-             * Mantiene el FAB por encima
-             * del ScrollView.
-             */
             zIndex:
               9999,
           }}
