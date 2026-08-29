@@ -7,18 +7,26 @@ import {
 } from "expo-router";
 
 import React, {
+    useEffect,
+    useMemo,
     useState,
 } from "react";
 
 import {
+    ActivityIndicator,
     Alert,
+    Image,
     Pressable,
-    SafeAreaView,
     ScrollView,
     Text,
     TextInput,
+    TouchableOpacity,
     View,
 } from "react-native";
+
+import {
+    SafeAreaView,
+} from "react-native-safe-area-context";
 
 import ReglasForo from "@/components/foro/ReglasForo";
 
@@ -26,21 +34,18 @@ import {
     useThemeColor,
 } from "@/hooks/use-theme-color";
 
+import {
+    useAuth,
+} from "@/services/authProvider";
 
-// ==========================================================
-// EMOCIONES
-// ==========================================================
+import {
+    crearPublicacion,
+    obtenerEmocionesActivas,
+} from "@/services/foro/foroService";
 
-const EMOCIONES = [
-    "Frustración",
-    "Miedo",
-    "Ansiedad",
-    "Alegría",
-    "Esperanza",
-    "Calma",
-    "Enojo",
-    "Tristeza",
-];
+import type {
+    EmocionForo,
+} from "@/types/foro";
 
 
 // ==========================================================
@@ -53,26 +58,71 @@ export default function CrearPublicacionScreen() {
         useRouter();
 
 
+    const {
+        profile,
+        loading:
+        authLoading,
+    } =
+        useAuth();
+
+
+    // ========================================================
+    // ESTADOS
+    // ========================================================
+
     const [
         titulo,
         setTitulo,
     ] =
-        useState("");
+        useState(
+            ""
+        );
 
 
     const [
         contenido,
         setContenido,
     ] =
-        useState("");
+        useState(
+            ""
+        );
 
 
     const [
-        emocionSeleccionada,
-        setEmocionSeleccionada,
+        emociones,
+        setEmociones,
     ] =
-        useState<string | null>(
+        useState<
+            EmocionForo[]
+        >([]);
+
+
+    const [
+        idEmocionSeleccionada,
+        setIdEmocionSeleccionada,
+    ] =
+        useState<
+            string | null
+        >(
             null
+        );
+
+
+    const [
+        cargandoEmociones,
+        setCargandoEmociones,
+    ] =
+        useState(
+            true
+        );
+
+
+    const [
+        publicando,
+        setPublicando,
+    ] =
+        useState(
+            false
         );
 
 
@@ -86,11 +136,13 @@ export default function CrearPublicacionScreen() {
             "background"
         );
 
+
     const surfaceColor =
         useThemeColor(
             {},
             "surface"
         );
+
 
     const surfaceSecondaryColor =
         useThemeColor(
@@ -98,11 +150,13 @@ export default function CrearPublicacionScreen() {
             "surfaceSecondary"
         );
 
+
     const borderColor =
         useThemeColor(
             {},
             "border"
         );
+
 
     const textColor =
         useThemeColor(
@@ -110,11 +164,13 @@ export default function CrearPublicacionScreen() {
             "text"
         );
 
+
     const textSecondaryColor =
         useThemeColor(
             {},
             "textSecondary"
         );
+
 
     const textMutedColor =
         useThemeColor(
@@ -122,11 +178,13 @@ export default function CrearPublicacionScreen() {
             "textMuted"
         );
 
+
     const placeholderColor =
         useThemeColor(
             {},
             "placeholder"
         );
+
 
     const iconColor =
         useThemeColor(
@@ -134,11 +192,20 @@ export default function CrearPublicacionScreen() {
             "icon"
         );
 
+
     const primaryColor =
         useThemeColor(
             {},
             "primary"
         );
+
+
+    const primarySoftColor =
+        useThemeColor(
+            {},
+            "primarySoft"
+        );
+
 
     const secondaryColor =
         useThemeColor(
@@ -147,11 +214,227 @@ export default function CrearPublicacionScreen() {
         );
 
 
+    const dangerColor =
+        useThemeColor(
+            {},
+            "danger"
+        );
+
+
+    // ========================================================
+    // DATOS DERIVADOS
+    // ========================================================
+
+    const emocionSeleccionada =
+        useMemo(
+            () => {
+
+                return (
+                    emociones.find(
+                        emocion =>
+                            emocion.id_emocion_foro ===
+                            idEmocionSeleccionada
+                    ) ??
+                    null
+                );
+
+            },
+            [
+                emociones,
+                idEmocionSeleccionada,
+            ]
+        );
+
+
+    const nombreUsuario =
+        useMemo(
+            () => {
+
+                return (
+                    profile
+                        ?.nombre_preferido
+                        ?.trim() ||
+
+                    profile
+                        ?.nombres
+                        ?.trim() ||
+
+                    "Usuario"
+                );
+
+            },
+            [
+                profile?.nombre_preferido,
+                profile?.nombres,
+            ]
+        );
+
+
+    const formularioValido =
+        Boolean(
+            titulo.trim() &&
+            contenido.trim() &&
+            idEmocionSeleccionada &&
+            profile?.id_usuario
+        );
+
+
+    // ========================================================
+    // CARGAR EMOCIONES
+    // ========================================================
+
+    useEffect(
+        () => {
+
+            let activo =
+                true;
+
+
+            async function cargarEmociones() {
+
+                try {
+
+                    setCargandoEmociones(
+                        true
+                    );
+
+
+                    const data =
+                        await obtenerEmocionesActivas();
+
+
+                    if (
+                        activo
+                    ) {
+
+                        setEmociones(
+                            data
+                        );
+
+                    }
+
+
+                } catch (
+                error
+                ) {
+
+                    console.error(
+                        "Error cargando emociones:",
+                        error
+                    );
+
+
+                    if (
+                        activo
+                    ) {
+
+                        Alert.alert(
+                            "No se pudieron cargar las emociones",
+                            error instanceof Error
+                                ? error.message
+                                : "Ocurrió un error al cargar las emociones."
+                        );
+
+                    }
+
+
+                } finally {
+
+                    if (
+                        activo
+                    ) {
+
+                        setCargandoEmociones(
+                            false
+                        );
+
+                    }
+
+                }
+
+            }
+
+
+            cargarEmociones();
+
+
+            return () => {
+
+                activo =
+                    false;
+
+            };
+
+        },
+        []
+    );
+
+
+    // ========================================================
+    // SELECCIONAR EMOCIÓN
+    // ========================================================
+
+    function seleccionarEmocion(
+        idEmocion: string
+    ) {
+
+        if (
+            publicando
+        ) {
+            return;
+        }
+
+
+        setIdEmocionSeleccionada(
+            actual =>
+                actual === idEmocion
+                    ? null
+                    : idEmocion
+        );
+
+    }
+
+
     // ========================================================
     // PUBLICAR
     // ========================================================
 
-    function manejarPublicar() {
+    async function manejarPublicar() {
+
+        if (
+            publicando
+        ) {
+            return;
+        }
+
+
+        if (
+            authLoading
+        ) {
+
+            Alert.alert(
+                "Espera un momento",
+                "Estamos verificando tu sesión."
+            );
+
+            return;
+
+        }
+
+
+        if (
+            !profile?.id_usuario
+        ) {
+
+            Alert.alert(
+                "Sesión no disponible",
+                "No pudimos identificar tu usuario."
+            );
+
+            return;
+
+        }
+
 
         if (
             !titulo.trim()
@@ -182,7 +465,7 @@ export default function CrearPublicacionScreen() {
 
 
         if (
-            !emocionSeleccionada
+            !idEmocionSeleccionada
         ) {
 
             Alert.alert(
@@ -195,17 +478,68 @@ export default function CrearPublicacionScreen() {
         }
 
 
-        console.log({
-            titulo,
-            contenido,
-            emocionSeleccionada,
-        });
+        try {
+
+            setPublicando(
+                true
+            );
 
 
-        Alert.alert(
-            "Publicación preparada",
-            "En el siguiente paso conectaremos esta pantalla con Supabase."
-        );
+            await crearPublicacion({
+                idUsuario:
+                    profile.id_usuario,
+
+                titulo,
+
+                contenido,
+
+                emociones: [
+                    idEmocionSeleccionada,
+                ],
+            });
+
+
+            Alert.alert(
+                "Publicación creada",
+                "Tu publicación ya está disponible para la comunidad.",
+                [
+                    {
+                        text:
+                            "Aceptar",
+
+                        onPress:
+                            () =>
+                                router.back(),
+                    },
+                ]
+            );
+
+
+        } catch (
+        error
+        ) {
+
+            console.error(
+                "Error creando publicación:",
+                error
+            );
+
+
+            Alert.alert(
+                "No se pudo publicar",
+                error instanceof Error
+                    ? error.message
+                    : "Ocurrió un error al crear la publicación."
+            );
+
+
+        } finally {
+
+            setPublicando(
+                false
+            );
+
+        }
 
     }
 
@@ -217,8 +551,15 @@ export default function CrearPublicacionScreen() {
     return (
 
         <SafeAreaView
+            edges={[
+                "top",
+                "bottom",
+            ]}
+
             style={{
-                flex: 1,
+                flex:
+                    1,
+
                 backgroundColor,
             }}
         >
@@ -228,6 +569,8 @@ export default function CrearPublicacionScreen() {
                     false
                 }
 
+                keyboardShouldPersistTaps="handled"
+
                 contentContainerStyle={{
                     paddingHorizontal:
                         24,
@@ -236,7 +579,7 @@ export default function CrearPublicacionScreen() {
                         18,
 
                     paddingBottom:
-                        50,
+                        60,
                 }}
             >
 
@@ -244,19 +587,50 @@ export default function CrearPublicacionScreen() {
             HEADER
         ================================================= */}
 
-                <View className="mb-8 flex-row items-center justify-between">
+                <View
+                    style={{
+                        marginBottom:
+                            28,
+
+                        flexDirection:
+                            "row",
+
+                        alignItems:
+                            "center",
+
+                        justifyContent:
+                            "space-between",
+                    }}
+                >
 
                     <Pressable
+                        disabled={
+                            publicando
+                        }
+
                         onPress={() =>
                             router.back()
                         }
 
-                        className="h-11 w-11 items-center justify-center"
+                        style={{
+                            width:
+                                44,
+
+                            height:
+                                44,
+
+                            alignItems:
+                                "center",
+
+                            justifyContent:
+                                "center",
+                        }}
                     >
 
                         <Ionicons
                             name="arrow-back"
                             size={27}
+
                             color={
                                 iconColor
                             }
@@ -277,31 +651,88 @@ export default function CrearPublicacionScreen() {
                                 textColor,
                         }}
                     >
-                        Foro
+                        Nueva publicación
                     </Text>
 
 
-                    <View
-                        style={{
-                            height:
-                                48,
+                    {
+                        profile?.foto_perfil
 
-                            width:
-                                48,
+                            ? (
 
-                            borderRadius:
-                                24,
+                                <Image
+                                    source={{
+                                        uri:
+                                            profile.foto_perfil,
+                                    }}
 
-                            backgroundColor:
-                                surfaceSecondaryColor,
-                        }}
-                    />
+                                    style={{
+                                        width:
+                                            44,
+
+                                        height:
+                                            44,
+
+                                        borderRadius:
+                                            22,
+
+                                        borderWidth:
+                                            1,
+
+                                        borderColor,
+                                    }}
+                                />
+
+                            )
+
+                            : (
+
+                                <View
+                                    style={{
+                                        width:
+                                            44,
+
+                                        height:
+                                            44,
+
+                                        borderRadius:
+                                            22,
+
+                                        alignItems:
+                                            "center",
+
+                                        justifyContent:
+                                            "center",
+
+                                        borderWidth:
+                                            1,
+
+                                        borderColor,
+
+                                        backgroundColor:
+                                            surfaceSecondaryColor,
+                                    }}
+                                >
+
+                                    <Ionicons
+                                        name="person-outline"
+                                        size={21}
+
+                                        color={
+                                            iconColor
+                                        }
+                                    />
+
+                                </View>
+
+                            )
+                    }
 
                 </View>
 
 
                 {/* =================================================
-            TARJETA DE PUBLICACIÓN
+            TARJETA
         ================================================= */}
 
                 <View
@@ -322,28 +753,106 @@ export default function CrearPublicacionScreen() {
                     }}
                 >
 
-                    {/* Usuario */}
+                    {/* =================================================
+              USUARIO
+          ================================================= */}
 
-                    <View className="mb-5 flex-row items-center">
+                    <View
+                        style={{
+                            marginBottom:
+                                20,
+
+                            flexDirection:
+                                "row",
+
+                            alignItems:
+                                "center",
+                        }}
+                    >
+
+                        {
+                            profile?.foto_perfil
+
+                                ? (
+
+                                    <Image
+                                        source={{
+                                            uri:
+                                                profile.foto_perfil,
+                                        }}
+
+                                        style={{
+                                            width:
+                                                56,
+
+                                            height:
+                                                56,
+
+                                            borderRadius:
+                                                28,
+
+                                            borderWidth:
+                                                1,
+
+                                            borderColor,
+                                        }}
+                                    />
+
+                                )
+
+                                : (
+
+                                    <View
+                                        style={{
+                                            width:
+                                                56,
+
+                                            height:
+                                                56,
+
+                                            borderRadius:
+                                                28,
+
+                                            borderWidth:
+                                                1,
+
+                                            borderColor,
+
+                                            alignItems:
+                                                "center",
+
+                                            justifyContent:
+                                                "center",
+
+                                            backgroundColor:
+                                                surfaceSecondaryColor,
+                                        }}
+                                    >
+
+                                        <Ionicons
+                                            name="person-outline"
+                                            size={26}
+
+                                            color={
+                                                iconColor
+                                            }
+                                        />
+
+                                    </View>
+
+                                )
+                        }
+
 
                         <View
                             style={{
-                                height:
-                                    70,
+                                flex:
+                                    1,
 
-                                width:
-                                    70,
-
-                                borderRadius:
-                                    35,
-
-                                backgroundColor:
-                                    surfaceSecondaryColor,
+                                marginLeft:
+                                    14,
                             }}
-                        />
-
-
-                        <View className="ml-4">
+                        >
 
                             <Text
                                 style={{
@@ -351,38 +860,78 @@ export default function CrearPublicacionScreen() {
                                         "Nunito-Bold",
 
                                     fontSize:
-                                        21,
+                                        18,
 
                                     color:
                                         textColor,
                                 }}
                             >
-                                Usuario
+                                {nombreUsuario}
                             </Text>
 
 
                             {
                                 emocionSeleccionada && (
 
-                                    <Text
+                                    <View
                                         style={{
+                                            alignSelf:
+                                                "flex-start",
+
                                             marginTop:
+                                                6,
+
+                                            paddingHorizontal:
+                                                10,
+
+                                            paddingVertical:
                                                 4,
 
-                                            fontFamily:
-                                                "Nunito-SemiBold",
+                                            borderRadius:
+                                                999,
 
-                                            fontSize:
-                                                17,
+                                            flexDirection:
+                                                "row",
 
-                                            color:
-                                                secondaryColor,
+                                            alignItems:
+                                                "center",
+
+                                            backgroundColor:
+                                                primarySoftColor,
                                         }}
                                     >
-                                        {
-                                            emocionSeleccionada
-                                        }
-                                    </Text>
+
+                                        <Ionicons
+                                            name="checkmark-circle"
+                                            size={15}
+
+                                            color={
+                                                primaryColor
+                                            }
+                                        />
+
+
+                                        <Text
+                                            style={{
+                                                marginLeft:
+                                                    5,
+
+                                                fontFamily:
+                                                    "Nunito-SemiBold",
+
+                                                fontSize:
+                                                    13,
+
+                                                color:
+                                                    primaryColor,
+                                            }}
+                                        >
+                                            {
+                                                emocionSeleccionada.nombre
+                                            }
+                                        </Text>
+
+                                    </View>
 
                                 )
                             }
@@ -405,6 +954,10 @@ export default function CrearPublicacionScreen() {
                             setTitulo
                         }
 
+                        editable={
+                            !publicando
+                        }
+
                         placeholder="Título de tu publicación"
 
                         placeholderTextColor={
@@ -421,10 +974,13 @@ export default function CrearPublicacionScreen() {
 
                         style={{
                             marginBottom:
-                                12,
+                                14,
+
+                            paddingHorizontal:
+                                4,
 
                             paddingBottom:
-                                12,
+                                13,
 
                             borderBottomWidth:
                                 1,
@@ -457,6 +1013,10 @@ export default function CrearPublicacionScreen() {
                             setContenido
                         }
 
+                        editable={
+                            !publicando
+                        }
+
                         placeholder="¿Qué quieres compartir con la comunidad?"
 
                         placeholderTextColor={
@@ -471,26 +1031,31 @@ export default function CrearPublicacionScreen() {
 
                         textAlignVertical="top"
 
+                        maxLength={
+                            3000
+                        }
+
                         style={{
                             minHeight:
-                                250,
+                                230,
+
+                            paddingHorizontal:
+                                4,
 
                             fontFamily:
                                 "Nunito-Medium",
 
                             fontSize:
-                                17,
+                                16,
 
                             lineHeight:
                                 24,
 
                             color:
-                                textSecondaryColor,
+                                textColor,
                         }}
                     />
 
-
-                    {/* Contador */}
 
                     <Text
                         style={{
@@ -510,7 +1075,7 @@ export default function CrearPublicacionScreen() {
                                 textMutedColor,
                         }}
                     >
-                        {contenido.length} caracteres
+                        {contenido.length}/3000 caracteres
                     </Text>
 
                 </View>
@@ -522,11 +1087,11 @@ export default function CrearPublicacionScreen() {
 
                 <Text
                     style={{
+                        marginTop:
+                            30,
+
                         marginBottom:
                             16,
-
-                        marginTop:
-                            32,
 
                         fontFamily:
                             "Nunito-SemiBold",
@@ -545,80 +1110,273 @@ export default function CrearPublicacionScreen() {
                 </Text>
 
 
-                <View className="flex-row flex-wrap gap-3">
+                {
+                    cargandoEmociones
 
-                    {
-                        EMOCIONES.map(
-                            emocion => {
+                        ? (
 
-                                const seleccionada =
-                                    emocionSeleccionada ===
-                                    emocion;
+                            <View
+                                style={{
+                                    minHeight:
+                                        80,
+
+                                    flexDirection:
+                                        "row",
+
+                                    alignItems:
+                                        "center",
+
+                                    justifyContent:
+                                        "center",
+                                }}
+                            >
+
+                                <ActivityIndicator
+                                    size="small"
+
+                                    color={
+                                        primaryColor
+                                    }
+                                />
 
 
-                                return (
+                                <Text
+                                    style={{
+                                        marginLeft:
+                                            10,
 
-                                    <Pressable
-                                        key={
-                                            emocion
+                                        fontFamily:
+                                            "Nunito-Medium",
+
+                                        color:
+                                            textSecondaryColor,
+                                    }}
+                                >
+                                    Cargando emociones...
+                                </Text>
+
+                            </View>
+
+                        )
+
+                        : emociones.length >
+                            0
+
+                            ? (
+
+                                <View
+                                    style={{
+                                        flexDirection:
+                                            "row",
+
+                                        flexWrap:
+                                            "wrap",
+
+                                        gap:
+                                            10,
+                                    }}
+                                >
+
+                                    {
+                                        emociones.map(
+                                            emocion => {
+
+                                                const seleccionada =
+                                                    emocion.id_emocion_foro ===
+                                                    idEmocionSeleccionada;
+
+
+                                                return (
+
+                                                    <TouchableOpacity
+                                                        key={
+                                                            emocion.id_emocion_foro
+                                                        }
+
+                                                        activeOpacity={
+                                                            0.8
+                                                        }
+
+                                                        disabled={
+                                                            publicando
+                                                        }
+
+                                                        onPress={() =>
+                                                            seleccionarEmocion(
+                                                                emocion.id_emocion_foro
+                                                            )
+                                                        }
+
+                                                        style={{
+                                                            minHeight:
+                                                                44,
+
+                                                            paddingHorizontal:
+                                                                16,
+
+                                                            paddingVertical:
+                                                                10,
+
+                                                            borderRadius:
+                                                                999,
+
+                                                            borderWidth:
+                                                                seleccionada
+                                                                    ? 2
+                                                                    : 1,
+
+                                                            borderColor:
+                                                                seleccionada
+                                                                    ? primaryColor
+                                                                    : borderColor,
+
+                                                            flexDirection:
+                                                                "row",
+
+                                                            alignItems:
+                                                                "center",
+
+                                                            justifyContent:
+                                                                "center",
+
+                                                            backgroundColor:
+                                                                seleccionada
+                                                                    ? primaryColor
+                                                                    : surfaceSecondaryColor,
+
+                                                            elevation:
+                                                                seleccionada
+                                                                    ? 4
+                                                                    : 0,
+
+                                                            shadowColor:
+                                                                "#000000",
+
+                                                            shadowOffset: {
+                                                                width:
+                                                                    0,
+
+                                                                height:
+                                                                    2,
+                                                            },
+
+                                                            shadowOpacity:
+                                                                seleccionada
+                                                                    ? 0.16
+                                                                    : 0,
+
+                                                            shadowRadius:
+                                                                4,
+                                                        }}
+                                                    >
+
+                                                        {
+                                                            seleccionada && (
+
+                                                                <Ionicons
+                                                                    name="checkmark-circle"
+                                                                    size={18}
+                                                                    color="#FFFFFF"
+                                                                />
+
+                                                            )
+                                                        }
+
+
+                                                        <Text
+                                                            style={{
+                                                                marginLeft:
+                                                                    seleccionada
+                                                                        ? 7
+                                                                        : 0,
+
+                                                                fontFamily:
+                                                                    seleccionada
+                                                                        ? "Nunito-Bold"
+                                                                        : "Nunito-Medium",
+
+                                                                fontSize:
+                                                                    15,
+
+                                                                color:
+                                                                    seleccionada
+                                                                        ? "#FFFFFF"
+                                                                        : textSecondaryColor,
+                                                            }}
+                                                        >
+                                                            {emocion.nombre}
+                                                        </Text>
+
+                                                    </TouchableOpacity>
+
+                                                );
+
+                                            }
+                                        )
+                                    }
+
+                                </View>
+
+                            )
+
+                            : (
+
+                                <View
+                                    style={{
+                                        padding:
+                                            16,
+
+                                        borderRadius:
+                                            16,
+
+                                        borderWidth:
+                                            1,
+
+                                        borderColor,
+
+                                        backgroundColor:
+                                            surfaceSecondaryColor,
+
+                                        flexDirection:
+                                            "row",
+
+                                        alignItems:
+                                            "center",
+                                    }}
+                                >
+
+                                    <Ionicons
+                                        name="alert-circle-outline"
+                                        size={22}
+
+                                        color={
+                                            dangerColor
                                         }
+                                    />
 
-                                        onPress={() =>
-                                            setEmocionSeleccionada(
-                                                emocion
-                                            )
-                                        }
 
+                                    <Text
                                         style={{
-                                            borderRadius:
-                                                999,
-
-                                            borderWidth:
+                                            flex:
                                                 1,
 
-                                            paddingHorizontal:
-                                                20,
+                                            marginLeft:
+                                                10,
 
-                                            paddingVertical:
-                                                12,
+                                            fontFamily:
+                                                "Nunito-Medium",
 
-                                            borderColor:
-                                                seleccionada
-                                                    ? primaryColor
-                                                    : borderColor,
-
-                                            backgroundColor:
-                                                seleccionada
-                                                    ? primaryColor
-                                                    : surfaceSecondaryColor,
+                                            color:
+                                                textSecondaryColor,
                                         }}
                                     >
+                                        No hay emociones disponibles.
+                                    </Text>
 
-                                        <Text
-                                            style={{
-                                                fontFamily:
-                                                    seleccionada
-                                                        ? "Nunito-SemiBold"
-                                                        : "Nunito-Medium",
+                                </View>
 
-                                                color:
-                                                    seleccionada
-                                                        ? "#FFFFFF"
-                                                        : textSecondaryColor,
-                                            }}
-                                        >
-                                            {emocion}
-                                        </Text>
-
-                                    </Pressable>
-
-                                );
-
-                            }
-                        )
-                    }
-
-                </View>
+                            )
+                }
 
 
                 {/* =================================================
@@ -629,23 +1387,45 @@ export default function CrearPublicacionScreen() {
 
 
                 {/* =================================================
-            PUBLICAR
+            BOTÓN PUBLICAR
         ================================================= */}
 
-                <Pressable
+                <TouchableOpacity
+                    activeOpacity={
+                        0.82
+                    }
+
                     onPress={
                         manejarPublicar
                     }
 
+                    disabled={
+                        publicando ||
+                        authLoading ||
+                        cargandoEmociones ||
+                        !formularioValido
+                    }
+
                     style={{
-                        marginTop:
-                            40,
+                        width:
+                            "100%",
 
                         minHeight:
                             58,
 
-                        flexDirection:
-                            "row",
+                        marginTop:
+                            34,
+
+                        borderRadius:
+                            18,
+
+                        borderWidth:
+                            1,
+
+                        borderColor:
+                            formularioValido
+                                ? primaryColor
+                                : borderColor,
 
                         alignItems:
                             "center",
@@ -653,40 +1433,138 @@ export default function CrearPublicacionScreen() {
                         justifyContent:
                             "center",
 
-                        borderRadius:
-                            20,
-
                         backgroundColor:
-                            primaryColor,
+                            formularioValido
+                                ? primaryColor
+                                : surfaceSecondaryColor,
+
+                        opacity:
+                            publicando
+                                ? 0.7
+                                : 1,
+
+                        elevation:
+                            formularioValido
+                                ? 4
+                                : 0,
+
+                        shadowColor:
+                            "#000000",
+
+                        shadowOffset: {
+                            width:
+                                0,
+
+                            height:
+                                3,
+                        },
+
+                        shadowOpacity:
+                            formularioValido
+                                ? 0.16
+                                : 0,
+
+                        shadowRadius:
+                            5,
                     }}
                 >
 
-                    <Text
+                    {/* Contenedor horizontal explícito para Android */}
+
+                    <View
                         style={{
-                            marginRight:
-                                16,
+                            flexDirection:
+                                "row",
 
-                            fontFamily:
-                                "Nunito-SemiBold",
+                            alignItems:
+                                "center",
 
-                            fontSize:
-                                20,
-
-                            color:
-                                "#FFFFFF",
+                            justifyContent:
+                                "center",
                         }}
                     >
-                        Publicar
-                    </Text>
+
+                        {
+                            publicando
+
+                                ? (
+
+                                    <>
+
+                                        <ActivityIndicator
+                                            size="small"
+                                            color="#FFFFFF"
+                                        />
 
 
-                    <Ionicons
-                        name="send"
-                        size={25}
-                        color="#FFFFFF"
-                    />
+                                        <Text
+                                            style={{
+                                                marginLeft:
+                                                    10,
 
-                </Pressable>
+                                                fontFamily:
+                                                    "Nunito-Bold",
+
+                                                fontSize:
+                                                    17,
+
+                                                color:
+                                                    "#FFFFFF",
+                                            }}
+                                        >
+                                            Publicando...
+                                        </Text>
+
+                                    </>
+
+                                )
+
+                                : (
+
+                                    <>
+
+                                        <Text
+                                            style={{
+                                                fontFamily:
+                                                    "Nunito-Bold",
+
+                                                fontSize:
+                                                    18,
+
+                                                color:
+                                                    formularioValido
+                                                        ? "#FFFFFF"
+                                                        : textMutedColor,
+                                            }}
+                                        >
+                                            Publicar
+                                        </Text>
+
+
+                                        <Ionicons
+                                            name="send"
+                                            size={21}
+
+                                            color={
+                                                formularioValido
+                                                    ? "#FFFFFF"
+                                                    : textMutedColor
+                                            }
+
+                                            style={{
+                                                marginLeft:
+                                                    10,
+                                            }}
+                                        />
+
+                                    </>
+
+                                )
+                        }
+
+                    </View>
+
+                </TouchableOpacity>
 
             </ScrollView>
 
