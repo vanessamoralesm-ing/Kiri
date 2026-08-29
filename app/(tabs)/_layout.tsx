@@ -55,7 +55,7 @@ export default function LayoutPestanas() {
       />
 
       <Tabs.Screen
-        name="diario/index"
+        name="diario"
         options={{
           title: "Diario",
         }}

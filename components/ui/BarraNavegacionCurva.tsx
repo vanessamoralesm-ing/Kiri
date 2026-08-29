@@ -105,7 +105,7 @@ const MAPA_ICONOS: Record<
 
 const RUTAS_VISIBLES = [
     "home",
-    "diario/index",
+    "diario",
     "educacion/index",
     "tecnicas/index",
     "perfil/index",
