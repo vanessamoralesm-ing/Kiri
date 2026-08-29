@@ -12,7 +12,7 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 
-// Define los datos que recibirá cada tarjeta de categoría.
+// Define los datos que necesita cada tarjeta de categoría.
 type CategoriaCardProps = {
   titulo: string;
   imagen?: ImageSourcePropType;
@@ -24,10 +24,9 @@ export default function CategoriaCard({
   imagen,
   onPress,
 }: CategoriaCardProps) {
-  // Guarda el tamaño de la tarjeta para realizar la animación al presionarla.
+  // Controla la escala de la tarjeta al presionarla.
   const escala = useSharedValue(1);
 
-  // Aplica el cambio de escala a la tarjeta.
   const estiloAnimado = useAnimatedStyle(() => {
     return {
       transform: [{ scale: escala.value }],
@@ -35,24 +34,21 @@ export default function CategoriaCard({
   });
 
   return (
-    // Ocupa todo el ancho que le proporciona el contenedor del index.
     <Animated.View
       style={estiloAnimado}
       className="w-full"
     >
       <Pressable
         onPress={onPress}
-        // Reduce ligeramente la tarjeta mientras el usuario la presiona.
         onPressIn={() => {
           escala.value = withSpring(0.96);
         }}
-        // Devuelve la tarjeta a su tamaño normal al dejar de presionarla.
         onPressOut={() => {
           escala.value = withSpring(1);
         }}
         className="h-[145px] items-center justify-center rounded-2xl bg-white px-4 shadow-md"
       >
-        {/* Espacio circular donde después colocaremos la imagen de la categoría. */}
+        {/* Espacio reservado para la imagen de cada categoría. */}
         <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-gray-200">
           {imagen && (
             <Image
@@ -63,8 +59,12 @@ export default function CategoriaCard({
           )}
         </View>
 
-        {/* Nombre de la categoría. */}
-        <Text className="text-center text-[15px] font-medium text-slate-700">
+        <Text
+          className="text-center text-[15px] text-slate-700"
+          style={{
+            fontFamily: "Nunito-SemiBold",
+          }}
+        >
           {titulo}
         </Text>
       </Pressable>
