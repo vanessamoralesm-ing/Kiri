@@ -15,26 +15,32 @@ const categorias = [
   {
     id: "Ansiedad",
     titulo: "Ansiedad",
+    imagen: require("../../../assets/images_educacion/ansiedad_kiri.png"),
   },
   {
     id: "Autoestima",
     titulo: "Autoestima",
+    imagen: require("../../../assets/images_educacion/autoestima_kiri.png"),
   },
   {
     id: "Estres",
     titulo: "Estrés",
+    imagen: require("../../../assets/images_educacion/kiri_estres.png"),
   },
   {
     id: "Procrastinacion",
     titulo: "Procrastinación",
+    imagen: require("../../../assets/images_educacion/procrastinacion_kiri.png"),
   },
   {
     id: "Soledad",
     titulo: "Soledad",
+    imagen: require("../../../assets/images_educacion/sole_kiri.png"),
   },
   {
     id: "Depresion",
     titulo: "Depresión",
+    imagen: require("../../../assets/images_educacion/depre_kiri.png"),
   },
 ];
 
@@ -124,6 +130,7 @@ export default function EducacionScreen() {
             >
               <CategoriaCard
                 titulo={categoria.titulo}
+                imagen={categoria.imagen}
                 onPress={() => abrirCategoria(categoria.id)}
               />
             </View>
