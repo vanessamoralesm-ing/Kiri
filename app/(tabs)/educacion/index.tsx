@@ -2,17 +2,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React from "react";
 import {
-  Pressable,
   ScrollView,
   Text,
   TextInput,
   View,
 } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
 
 import CategoriaCard from "../../../components/educacion/CategoriaCard";
-import LecturaRecomendadaCard from "../../../components/educacion/LecturaRecomendadaCard";
-import MitoRealidadCard from "../../../components/educacion/MitoRealidadCard";
 
 // Categorías que después podrán obtenerse desde Supabase.
 const categorias = [
@@ -36,6 +32,10 @@ const categorias = [
     id: "Soledad",
     titulo: "Soledad",
   },
+  {
+    id: "Depresion",
+    titulo: "Depresión",
+  },
 ];
 
 export default function EducacionScreen() {
@@ -55,7 +55,7 @@ export default function EducacionScreen() {
       <View className="px-6 pt-12">
 
         {/* Encabezado principal de Psicoeducación. */}
-        <Animated.View entering={FadeInDown.duration(500)}>
+        <View>
           <Text
             className="text-[24px] text-blue-500"
             style={{
@@ -74,13 +74,10 @@ export default function EducacionScreen() {
             Explora herramientas y conocimientos diseñados para acompañarte en
             tu camino hacia una mejor salud mental.
           </Text>
-        </Animated.View>
+        </View>
 
-        {/* Buscador de contenido de Psicoeducación. */}
-        <Animated.View
-          entering={FadeInDown.delay(100).duration(500)}
-          className="mt-7 flex-row items-center rounded-2xl bg-white px-4 shadow-md"
-        >
+        {/* Buscador de contenido. */}
+        <View className="mt-7 flex-row items-center rounded-2xl bg-white px-4 shadow-md">
           <Ionicons
             name="search-outline"
             size={27}
@@ -95,123 +92,82 @@ export default function EducacionScreen() {
               fontFamily: "Nunito-Medium",
             }}
           />
-        </Animated.View>
+        </View>
 
-        {/* Título de la sección de categorías. */}
-        <Animated.View
-          entering={FadeInDown.delay(200).duration(500)}
-          className="mb-5 mt-8 flex-row items-center justify-between"
-        >
+        {/* Título de las categorías. */}
+        <View className="mb-5 mt-8">
           <Text
             className="text-[20px] text-slate-800"
+            style={{
+              fontFamily: "Nunito-Bold",
+            }}
+          >
+            Explora por categoría
+          </Text>
+
+          <Text
+            className="mt-1 text-[15px] text-slate-400"
             style={{
               fontFamily: "Nunito-SemiBold",
             }}
           >
-            Categorías
+            Selecciona el tema sobre el que quieras aprender.
           </Text>
+        </View>
 
-          <Pressable>
-            <Text
-              className="text-[13px] text-blue-500"
-              style={{
-                fontFamily: "Nunito-SemiBold",
-              }}
-            >
-              Ver más
-            </Text>
-          </Pressable>
-        </Animated.View>
-
-        {/* Tarjetas de las categorías principales. */}
+        {/* Tarjetas de categorías. */}
         <View className="flex-row flex-wrap justify-between gap-y-7">
-          {categorias.map((categoria, index) => (
-            <Animated.View
+          {categorias.map((categoria) => (
+            <View
               key={categoria.id}
-              entering={FadeInDown
-                .delay(250 + index * 80)
-                .duration(450)}
               className="w-[48%]"
             >
               <CategoriaCard
                 titulo={categoria.titulo}
                 onPress={() => abrirCategoria(categoria.id)}
               />
-            </Animated.View>
+            </View>
           ))}
         </View>
 
-        {/* Sección de Mitos y Realidades. */}
-        <Animated.View
-          entering={FadeInDown.delay(400).duration(500)}
-          className="mb-5 mt-10"
-        >
-          <View className="mb-5 flex-row items-center justify-between">
-            <Text
-              className="text-[20px] text-slate-800"
-              style={{
-                fontFamily: "Nunito-SemiBold",
-              }}
-            >
-              Mitos y Realidades
-            </Text>
+        {/* Mensaje final de orientación. */}
+        <View className="mt-10 rounded-[22px] bg-white p-5 shadow-sm">
+          <View className="flex-row items-start">
 
-            <Pressable>
+            <View className="h-11 w-11 items-center justify-center rounded-full bg-blue-50">
+              <Ionicons
+                name="leaf-outline"
+                size={22}
+                color="#4F8CFF"
+              />
+            </View>
+
+            <View className="ml-4 flex-1">
               <Text
-                className="text-[13px] text-blue-500"
+                className="text-[18px] text-slate-800"
                 style={{
-                  fontFamily: "Nunito-SemiBold",
+                  fontFamily: "Nunito-Bold",
                 }}
               >
-                Ver más
+                Explora a tu ritmo
               </Text>
-            </Pressable>
-          </View>
 
-          <MitoRealidadCard />
-        </Animated.View>
-
-        {/* Sección de lecturas recomendadas. */}
-        <Animated.View
-          entering={FadeInDown.delay(500).duration(500)}
-          className="mt-6"
-        >
-          <View className="mb-5 flex-row items-center justify-between">
-            <Text
-              className="text-[20px] text-slate-800"
-              style={{
-                fontFamily: "Nunito-SemiBold",
-              }}
-            >
-              Lecturas recomendadas
-            </Text>
-
-            <Pressable>
               <Text
-                className="text-[13px] text-blue-500"
+                className="mt-1 text-[16px] leading-5 text-slate-500"
                 style={{
-                  fontFamily: "Nunito-SemiBold",
+                  fontFamily: "Nunito-Medium",
+                  textAlign: "justify",
                 }}
               >
-                Ver todas
+                Cada categoría contiene información, mitos, realidades y
+                lecturas relacionadas para ayudarte a comprender mejor cada
+                tema.
               </Text>
-            </Pressable>
+            </View>
+
           </View>
+        </View>
 
-          <LecturaRecomendadaCard
-            categoria="Emociones"
-            tiempo="8 min de lectura"
-            titulo="Inteligencia Emocional"
-            descripcion="Aprende a reconocer, comprender y gestionar tus emociones para mejorar tu bienestar y tus relaciones."
-          />
-
-          <LecturaRecomendadaCard
-            categoria="Bienestar"
-            tiempo="6 min de lectura"
-            titulo="Aprender a cuidar de ti"
-            descripcion="Descubre pequeñas acciones que puedes incorporar en tu día a día para cuidar de tu bienestar emocional."
-          />
-        </Animated.View>
       </View>
     </ScrollView>
   );
