@@ -1,3 +1,12 @@
+import type {
+    BaremoTest,
+    EjecucionTest,
+    RangoBaremo,
+    ResultadoSubescala,
+    ResultadoTest,
+    Test,
+} from "@/types/cuestionarios";
+
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -19,174 +28,6 @@ import {
     Text,
     View,
 } from "react-native";
-
-
-// ==========================================================
-// TIPOS
-// ==========================================================
-
-interface Test {
-    id_test: string;
-    codigo: string;
-    nombre: string;
-    descripcion: string | null;
-    poblacion_objetivo: string | null;
-
-    tipo_aplicacion:
-        | "autoadministrado"
-        | "profesional";
-
-    tiene_subescalas: boolean;
-
-    version: string | null;
-}
-
-
-interface EjecucionTest {
-    id_ejecucion: string;
-    id_usuario: string;
-    id_test: string;
-
-    estado:
-        | "en_progreso"
-        | "completado"
-        | "abandonado";
-
-    fecha_inicio: string;
-    fecha_fin: string | null;
-}
-
-
-interface BaremoTest {
-    id_baremo: string;
-    codigo: string;
-    nombre: string;
-
-    descripcion:
-        string | null;
-
-    poblacion:
-        string | null;
-
-    sexo_aplicable:
-        string | null;
-
-    edad_minima:
-        number | null;
-
-    edad_maxima:
-        number | null;
-
-    tipo_valor:
-        | "puntaje_directo"
-        | "puntaje_total"
-        | "percentil"
-        | "puntaje_t"
-        | "eneatipo";
-
-    version:
-        string | null;
-
-    fuente:
-        string | null;
-}
-
-
-interface RangoBaremo {
-    id_rango: string;
-    id_baremo: string;
-
-    id_subescala:
-        string | null;
-
-    nivel: string;
-
-    valor_minimo:
-        number | string | null;
-
-    valor_maximo:
-        number | string | null;
-
-    interpretacion:
-        string | null;
-
-    orden: number;
-}
-
-
-interface ResultadoTest {
-    id_resultado: string;
-    id_ejecucion: string;
-
-    puntaje_directo:
-        number | string | null;
-
-    puntaje_total:
-        number | string | null;
-
-    nivel_cualitativo:
-        string | null;
-
-    interpretacion_texto:
-        string | null;
-
-    es_valido:
-        boolean;
-
-    observaciones:
-        string | null;
-
-    fecha_generacion:
-        string;
-
-    id_baremo:
-        string | null;
-
-    id_rango_baremo:
-        string | null;
-
-    tipo_finalizacion:
-        | "completa"
-        | "regla_instrumento";
-}
-
-
-interface SubescalaRelacion {
-    codigo: string;
-    nombre: string;
-
-    descripcion:
-        string | null;
-
-    orden: number;
-}
-
-
-interface ResultadoSubescala {
-    id_resultado_subescala:
-        string;
-
-    id_resultado:
-        string;
-
-    id_subescala:
-        string;
-
-    puntaje_directo:
-        number | string | null;
-
-    puntaje_transformado:
-        number | string | null;
-
-    nivel_cualitativo:
-        string | null;
-
-    interpretacion_texto:
-        string | null;
-
-    subescala:
-        SubescalaRelacion | null;
-}
 
 
 // ==========================================================
@@ -292,6 +133,7 @@ export default function ResultadoCuestionario() {
             setCargando(false);
 
             return;
+
         }
 
 
@@ -299,6 +141,10 @@ export default function ResultadoCuestionario() {
 
     }, [idResultado]);
 
+
+    // ======================================================
+    // CARGAR INFORMACIÓN COMPLETA
+    // ======================================================
 
     const cargarResultado =
         async () => {
@@ -311,7 +157,7 @@ export default function ResultadoCuestionario() {
 
 
                 // ==================================================
-                // 1. RESULTADO TEST
+                // 1. RESULTADO PRINCIPAL
                 // ==================================================
 
                 const {
@@ -320,6 +166,7 @@ export default function ResultadoCuestionario() {
 
                     error:
                         resultadoError,
+
                 } = await supabase
 
                     .from(
@@ -336,6 +183,7 @@ export default function ResultadoCuestionario() {
                         es_valido,
                         observaciones,
                         fecha_generacion,
+                        fecha_actualizacion,
                         id_baremo,
                         id_rango_baremo,
                         tipo_finalizacion
@@ -349,12 +197,16 @@ export default function ResultadoCuestionario() {
                     .maybeSingle();
 
 
-                if (resultadoError) {
+                if (
+                    resultadoError
+                ) {
                     throw resultadoError;
                 }
 
 
-                if (!resultadoData) {
+                if (
+                    !resultadoData
+                ) {
 
                     throw new Error(
                         "No se encontró el resultado solicitado."
@@ -382,6 +234,7 @@ export default function ResultadoCuestionario() {
 
                     error:
                         ejecucionError,
+
                 } = await supabase
 
                     .from(
@@ -394,7 +247,8 @@ export default function ResultadoCuestionario() {
                         id_test,
                         estado,
                         fecha_inicio,
-                        fecha_fin
+                        fecha_fin,
+                        fecha_actualizacion
                     `)
 
                     .eq(
@@ -405,12 +259,16 @@ export default function ResultadoCuestionario() {
                     .maybeSingle();
 
 
-                if (ejecucionError) {
+                if (
+                    ejecucionError
+                ) {
                     throw ejecucionError;
                 }
 
 
-                if (!ejecucionData) {
+                if (
+                    !ejecucionData
+                ) {
 
                     throw new Error(
                         "No se encontró la ejecución asociada al resultado."
@@ -433,6 +291,7 @@ export default function ResultadoCuestionario() {
 
                     error:
                         testError,
+
                 } = await supabase
 
                     .from("test")
@@ -442,10 +301,14 @@ export default function ResultadoCuestionario() {
                         codigo,
                         nombre,
                         descripcion,
+                        instrucciones,
                         poblacion_objetivo,
                         tipo_aplicacion,
                         tiene_subescalas,
-                        version
+                        version,
+                        estado,
+                        fecha_creacion,
+                        fecha_actualizacion
                     `)
 
                     .eq(
@@ -456,12 +319,16 @@ export default function ResultadoCuestionario() {
                     .maybeSingle();
 
 
-                if (testError) {
+                if (
+                    testError
+                ) {
                     throw testError;
                 }
 
 
-                if (!testData) {
+                if (
+                    !testData
+                ) {
 
                     throw new Error(
                         "No se encontró la información del cuestionario."
@@ -489,6 +356,7 @@ export default function ResultadoCuestionario() {
 
                         error:
                             baremoError,
+
                     } = await supabase
 
                         .from(
@@ -497,6 +365,7 @@ export default function ResultadoCuestionario() {
 
                         .select(`
                             id_baremo,
+                            id_test,
                             codigo,
                             nombre,
                             descripcion,
@@ -506,7 +375,10 @@ export default function ResultadoCuestionario() {
                             edad_maxima,
                             tipo_valor,
                             version,
-                            fuente
+                            fuente,
+                            estado,
+                            fecha_creacion,
+                            fecha_actualizacion
                         `)
 
                         .eq(
@@ -517,21 +389,25 @@ export default function ResultadoCuestionario() {
                         .maybeSingle();
 
 
-                    if (baremoError) {
+                    if (
+                        baremoError
+                    ) {
                         throw baremoError;
                     }
 
 
-                    if (baremoData) {
+                    if (
+                        baremoData
+                    ) {
 
                         setBaremo(
                             baremoData as BaremoTest
                         );
 
 
-                        // ==================================================
+                        // ==========================================
                         // RANGOS GLOBALES
-                        // ==================================================
+                        // ==========================================
 
                         const {
                             data:
@@ -539,6 +415,7 @@ export default function ResultadoCuestionario() {
 
                             error:
                                 rangosError,
+
                         } = await supabase
 
                             .from(
@@ -553,7 +430,10 @@ export default function ResultadoCuestionario() {
                                 valor_minimo,
                                 valor_maximo,
                                 interpretacion,
-                                orden
+                                orden,
+                                estado,
+                                fecha_creacion,
+                                fecha_actualizacion
                             `)
 
                             .eq(
@@ -580,7 +460,9 @@ export default function ResultadoCuestionario() {
                             );
 
 
-                        if (rangosError) {
+                        if (
+                            rangosError
+                        ) {
                             throw rangosError;
                         }
 
@@ -611,6 +493,7 @@ export default function ResultadoCuestionario() {
 
                         error:
                             rangoError,
+
                     } = await supabase
 
                         .from(
@@ -625,7 +508,10 @@ export default function ResultadoCuestionario() {
                             valor_minimo,
                             valor_maximo,
                             interpretacion,
-                            orden
+                            orden,
+                            estado,
+                            fecha_creacion,
+                            fecha_actualizacion
                         `)
 
                         .eq(
@@ -636,12 +522,16 @@ export default function ResultadoCuestionario() {
                         .maybeSingle();
 
 
-                    if (rangoError) {
+                    if (
+                        rangoError
+                    ) {
                         throw rangoError;
                     }
 
 
-                    if (rangoData) {
+                    if (
+                        rangoData
+                    ) {
 
                         setRangoAplicado(
                             rangoData as RangoBaremo
@@ -653,7 +543,7 @@ export default function ResultadoCuestionario() {
 
 
                 // ==================================================
-                // 6. RESULTADOS POR SUBESCALA
+                // 6. RESULTADOS DE SUBESCALAS
                 // ==================================================
 
                 const {
@@ -662,6 +552,7 @@ export default function ResultadoCuestionario() {
 
                     error:
                         subescalasError,
+
                 } = await supabase
 
                     .from(
@@ -691,7 +582,9 @@ export default function ResultadoCuestionario() {
                     );
 
 
-                if (subescalasError) {
+                if (
+                    subescalasError
+                ) {
                     throw subescalasError;
                 }
 
@@ -708,11 +601,13 @@ export default function ResultadoCuestionario() {
                         a,
                         b
                     ) =>
+
                         (
                             a.subescala
                                 ?.orden ??
                             0
                         ) -
+
                         (
                             b.subescala
                                 ?.orden ??
@@ -726,7 +621,9 @@ export default function ResultadoCuestionario() {
                 );
 
 
-            } catch (error) {
+            } catch (
+                error
+            ) {
 
                 console.error(
                     "Error cargando resultado:",
@@ -747,7 +644,9 @@ export default function ResultadoCuestionario() {
 
             } finally {
 
-                setCargando(false);
+                setCargando(
+                    false
+                );
 
             }
 
@@ -780,169 +679,212 @@ export default function ResultadoCuestionario() {
     // RANGO TEÓRICO / VISUAL
     // ======================================================
 
-    /*
-     * Esta lógica permite trabajar con escalas cuyo
-     * mínimo no necesariamente sea cero.
-     *
-     * Ejemplos:
-     *
-     * Calgary:
-     * 0 ---- 27
-     *
-     * FSS:
-     * 9 ---- 63
-     *
-     * Rathus:
-     * -90 ---- 0 ---- +90
-     */
-
     const rangoVisual =
-        useMemo(() => {
+        useMemo(
+            () => {
 
-            if (
-                rangosGlobales.length ===
-                0
-            ) {
-
-                return {
-
-                    minimo:
-                        null as number | null,
-
-                    maximo:
-                        null as number | null,
-
-                    porcentaje:
-                        null as number | null,
-
-                    tieneRangoNegativo:
-                        false,
-
-                };
-
-            }
-
-
-            const limitesInferiores =
-                rangosGlobales
-
-                    .map(
-                        rango => {
-
-                            if (
-                                rango.valor_minimo ===
-                                null
-                            ) {
-                                return null;
-                            }
-
-
-                            const valor =
-                                Number(
-                                    rango.valor_minimo
-                                );
-
-
-                            return Number.isNaN(
-                                valor
-                            )
-                                ? null
-                                : valor;
-
-                        }
-                    )
-
-                    .filter(
-                        (
-                            valor
-                        ): valor is number =>
-                            valor !== null
-                    );
-
-
-            const limitesSuperiores =
-                rangosGlobales
-
-                    .map(
-                        rango => {
-
-                            if (
-                                rango.valor_maximo ===
-                                null
-                            ) {
-                                return null;
-                            }
-
-
-                            const valor =
-                                Number(
-                                    rango.valor_maximo
-                                );
-
-
-                            return Number.isNaN(
-                                valor
-                            )
-                                ? null
-                                : valor;
-
-                        }
-                    )
-
-                    .filter(
-                        (
-                            valor
-                        ): valor is number =>
-                            valor !== null
-                    );
-
-
-            if (
-                limitesInferiores.length ===
-                    0 ||
-                limitesSuperiores.length ===
+                if (
+                    rangosGlobales.length ===
                     0
-            ) {
+                ) {
 
-                return {
+                    return {
 
-                    minimo:
-                        null,
+                        minimo:
+                            null as number | null,
 
-                    maximo:
-                        null,
+                        maximo:
+                            null as number | null,
 
-                    porcentaje:
-                        null,
+                        porcentaje:
+                            null as number | null,
 
-                    tieneRangoNegativo:
-                        false,
+                        tieneRangoNegativo:
+                            false,
 
-                };
+                    };
 
-            }
-
-
-            const minimo =
-                Math.min(
-                    ...limitesInferiores
-                );
+                }
 
 
-            const maximo =
-                Math.max(
-                    ...limitesSuperiores
-                );
+                // ==============================================
+                // LÍMITES INFERIORES
+                // ==============================================
+
+                const limitesInferiores =
+                    rangosGlobales
+
+                        .map(
+                            rango => {
+
+                                if (
+                                    rango.valor_minimo ===
+                                    null
+                                ) {
+                                    return null;
+                                }
 
 
-            const tieneRangoNegativo =
-                minimo < 0;
+                                const valor =
+                                    Number(
+                                        rango.valor_minimo
+                                    );
 
 
-            if (
-                maximo <=
-                minimo
-            ) {
+                                return Number.isNaN(
+                                    valor
+                                )
+
+                                    ? null
+
+                                    : valor;
+
+                            }
+                        )
+
+                        .filter(
+                            (
+                                valor
+                            ): valor is number =>
+                                valor !== null
+                        );
+
+
+                // ==============================================
+                // LÍMITES SUPERIORES
+                // ==============================================
+
+                const limitesSuperiores =
+                    rangosGlobales
+
+                        .map(
+                            rango => {
+
+                                if (
+                                    rango.valor_maximo ===
+                                    null
+                                ) {
+                                    return null;
+                                }
+
+
+                                const valor =
+                                    Number(
+                                        rango.valor_maximo
+                                    );
+
+
+                                return Number.isNaN(
+                                    valor
+                                )
+
+                                    ? null
+
+                                    : valor;
+
+                            }
+                        )
+
+                        .filter(
+                            (
+                                valor
+                            ): valor is number =>
+                                valor !== null
+                        );
+
+
+                if (
+                    limitesInferiores.length ===
+                        0 ||
+                    limitesSuperiores.length ===
+                        0
+                ) {
+
+                    return {
+
+                        minimo:
+                            null,
+
+                        maximo:
+                            null,
+
+                        porcentaje:
+                            null,
+
+                        tieneRangoNegativo:
+                            false,
+
+                    };
+
+                }
+
+
+                const minimo =
+                    Math.min(
+                        ...limitesInferiores
+                    );
+
+
+                const maximo =
+                    Math.max(
+                        ...limitesSuperiores
+                    );
+
+
+                const tieneRangoNegativo =
+                    minimo < 0;
+
+
+                if (
+                    maximo <=
+                    minimo
+                ) {
+
+                    return {
+
+                        minimo,
+
+                        maximo,
+
+                        porcentaje:
+                            null,
+
+                        tieneRangoNegativo,
+
+                    };
+
+                }
+
+
+                // ==============================================
+                // NORMALIZACIÓN
+                // ==============================================
+
+                const posicion =
+                    (
+                        puntajeTotal -
+                        minimo
+                    ) /
+                    (
+                        maximo -
+                        minimo
+                    );
+
+
+                const porcentaje =
+                    Math.round(
+
+                        Math.max(
+                            0,
+
+                            Math.min(
+                                1,
+                                posicion
+                            )
+                        ) *
+                        100
+                    );
+
 
                 return {
 
@@ -950,83 +892,23 @@ export default function ResultadoCuestionario() {
 
                     maximo,
 
-                    porcentaje:
-                        null,
+                    porcentaje,
 
                     tieneRangoNegativo,
 
                 };
 
-            }
-
-
-            /*
-             * Posición normalizada del puntaje
-             * dentro del rango.
-             *
-             * Rathus:
-             *
-             * -90 = 0 %
-             *   0 = 50 %
-             * +90 = 100 %
-             */
-
-            const posicion =
-                (
-                    puntajeTotal -
-                    minimo
-                ) /
-                (
-                    maximo -
-                    minimo
-                );
-
-
-            const porcentaje =
-                Math.round(
-                    Math.max(
-                        0,
-                        Math.min(
-                            1,
-                            posicion
-                        )
-                    ) *
-                    100
-                );
-
-
-            return {
-
-                minimo,
-
-                maximo,
-
-                porcentaje,
-
-                tieneRangoNegativo,
-
-            };
-
-        }, [
-            rangosGlobales,
-            puntajeTotal,
-        ]);
+            },
+            [
+                rangosGlobales,
+                puntajeTotal,
+            ]
+        );
 
 
     // ======================================================
     // FORMATEAR PUNTAJE
     // ======================================================
-
-    /*
-     * Para instrumentos con rango negativo,
-     * mostramos el signo + en valores positivos.
-     *
-     * Ejemplo Rathus:
-     *
-     * -45
-     * 0
-     * +45
-     */
 
     const formatearPuntaje =
         (
@@ -1039,12 +921,16 @@ export default function ResultadoCuestionario() {
                 valor > 0
             ) {
 
-                return `+${valor}`;
+                return (
+                    `+${valor}`
+                );
 
             }
 
 
-            return valor.toString();
+            return (
+                valor.toString()
+            );
 
         };
 
@@ -1054,74 +940,78 @@ export default function ResultadoCuestionario() {
     // ======================================================
 
     const presentacionResultado =
-        useMemo(() => {
+        useMemo(
+            () => {
 
-            if (
-                resultado
-                    ?.tipo_finalizacion ===
-                "regla_instrumento"
-            ) {
+                if (
+                    resultado
+                        ?.tipo_finalizacion ===
+                    "regla_instrumento"
+                ) {
+
+                    return {
+
+                        icono:
+                            "flag-outline" as const,
+
+                        color:
+                            "#F59E0B",
+
+                        fondo:
+                            "bg-amber-50",
+
+                    };
+
+                }
+
+
+                if (
+                    resultado &&
+                    !resultado.es_valido
+                ) {
+
+                    return {
+
+                        icono:
+                            "warning-outline" as const,
+
+                        color:
+                            "#EF4444",
+
+                        fondo:
+                            "bg-red-50",
+
+                    };
+
+                }
+
 
                 return {
 
                     icono:
-                        "flag-outline" as const,
+                        "analytics-outline" as const,
 
                     color:
-                        "#F59E0B",
+                        "#4F8EF7",
 
                     fondo:
-                        "bg-amber-50",
+                        "bg-blue-50",
 
                 };
 
-            }
-
-
-            if (
-                !resultado
-                    ?.es_valido
-            ) {
-
-                return {
-
-                    icono:
-                        "warning-outline" as const,
-
-                    color:
-                        "#EF4444",
-
-                    fondo:
-                        "bg-red-50",
-
-                };
-
-            }
-
-
-            return {
-
-                icono:
-                    "analytics-outline" as const,
-
-                color:
-                    "#4F8EF7",
-
-                fondo:
-                    "bg-blue-50",
-
-            };
-
-        }, [
-            resultado,
-        ]);
+            },
+            [
+                resultado,
+            ]
+        );
 
 
     // ======================================================
-    // TIPO DE FINALIZACIÓN
+    // TEXTO DE FINALIZACIÓN
     // ======================================================
 
     const textoTipoFinalizacion =
+
         resultado
             ?.tipo_finalizacion ===
         "regla_instrumento"
@@ -1132,7 +1022,7 @@ export default function ResultadoCuestionario() {
 
 
     // ======================================================
-    // VOLVER
+    // VOLVER A CUESTIONARIOS
     // ======================================================
 
     const volverACuestionarios =
@@ -1149,7 +1039,9 @@ export default function ResultadoCuestionario() {
     // CARGANDO
     // ======================================================
 
-    if (cargando) {
+    if (
+        cargando
+    ) {
 
         return (
 
@@ -1285,7 +1177,6 @@ export default function ResultadoCuestionario() {
                 className="flex-1"
 
                 contentContainerStyle={{
-
                     paddingHorizontal:
                         20,
 
@@ -1294,14 +1185,15 @@ export default function ResultadoCuestionario() {
 
                     paddingBottom:
                         120,
-
                 }}
 
                 showsVerticalScrollIndicator={
                     false
                 }
 
-                bounces={false}
+                bounces={
+                    false
+                }
 
                 overScrollMode="never"
 
@@ -1412,11 +1304,7 @@ export default function ResultadoCuestionario() {
 
                 <View className="bg-white rounded-3xl p-6 shadow-md mb-5 items-center">
 
-
-                    {/* Puntaje */}
-
                     <View className="w-32 h-32 rounded-full bg-blue-50 items-center justify-center">
-
 
                         <Text
                             style={{
@@ -1505,8 +1393,6 @@ export default function ResultadoCuestionario() {
 
                     </Text>
 
-
-                    {/* Barra de posición */}
 
                     {
                         rangoVisual.porcentaje !==
@@ -1640,8 +1526,6 @@ export default function ResultadoCuestionario() {
                     }
 
 
-                    {/* Puntaje directo */}
-
                     {
                         resultado.puntaje_directo !==
                             null &&
@@ -1682,7 +1566,7 @@ export default function ResultadoCuestionario() {
 
 
                 {/* ==================================================
-                    INTERPRETACIÓN REGISTRADA
+                    INTERPRETACIÓN
                 ================================================== */}
 
                 <View
@@ -1699,7 +1583,9 @@ export default function ResultadoCuestionario() {
                                     presentacionResultado.icono
                                 }
 
-                                size={27}
+                                size={
+                                    27
+                                }
 
                                 color={
                                     presentacionResultado.color
@@ -1772,7 +1658,7 @@ export default function ResultadoCuestionario() {
 
 
                 {/* ==================================================
-                    ESTADO DE LA APLICACIÓN
+                    ESTADO
                 ================================================== */}
 
                 <View className="bg-white rounded-3xl p-5 shadow-md mb-5">
@@ -1801,7 +1687,9 @@ export default function ResultadoCuestionario() {
                                         : "checkmark-circle-outline"
                                 }
 
-                                size={24}
+                                size={
+                                    24
+                                }
 
                                 color={
                                     resultado.tipo_finalizacion ===
@@ -1937,8 +1825,10 @@ export default function ResultadoCuestionario() {
 
                                             const puntajeSubescala =
                                                 Number(
-                                                    subResultado.puntaje_transformado ??
-                                                    subResultado.puntaje_directo ??
+                                                    subResultado
+                                                        .puntaje_transformado ??
+                                                    subResultado
+                                                        .puntaje_directo ??
                                                     0
                                                 );
 
@@ -1982,7 +1872,8 @@ export default function ResultadoCuestionario() {
 
 
                                                             {
-                                                                subResultado.subescala
+                                                                subResultado
+                                                                    .subescala
                                                                     ?.descripcion && (
 
                                                                     <Text
@@ -2045,7 +1936,8 @@ export default function ResultadoCuestionario() {
 
 
                                                     {
-                                                        subResultado.nivel_cualitativo && (
+                                                        subResultado
+                                                            .nivel_cualitativo && (
 
                                                             <Text
                                                                 style={{
@@ -2075,7 +1967,8 @@ export default function ResultadoCuestionario() {
 
 
                                                     {
-                                                        subResultado.interpretacion_texto && (
+                                                        subResultado
+                                                            .interpretacion_texto && (
 
                                                             <Text
                                                                 style={{
@@ -2123,7 +2016,7 @@ export default function ResultadoCuestionario() {
 
 
                 {/* ==================================================
-                    BAREMO UTILIZADO
+                    BAREMO
                 ================================================== */}
 
                 {
@@ -2308,7 +2201,7 @@ export default function ResultadoCuestionario() {
 
 
                 {/* ==================================================
-                    INFORMACIÓN DE LA EVALUACIÓN
+                    INFORMACIÓN
                 ================================================== */}
 
                 <View className="bg-white rounded-3xl p-5 shadow-md mb-6">
@@ -2425,7 +2318,9 @@ export default function ResultadoCuestionario() {
                                     : "person-outline"
                             }
 
-                            size={18}
+                            size={
+                                18
+                            }
 
                             color="#64748B"
 

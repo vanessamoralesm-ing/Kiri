@@ -59,11 +59,7 @@ export default function EducacionScreen() {
           entering={FadeInDown.delay(100).duration(500)}
           className="mt-7 flex-row items-center rounded-2xl bg-white px-4 shadow-md"
         >
-          <Ionicons
-            name="search-outline"
-            size={27}
-            color="#7C8799"
-          />
+          <Ionicons name="search-outline" size={27} color="#7C8799" />
 
           <TextInput
             placeholder="¿Qué tema te gustaría explorar hoy?"
@@ -76,22 +72,16 @@ export default function EducacionScreen() {
           entering={FadeInDown.delay(200).duration(500)}
           className="mb-5 mt-8 flex-row items-center justify-between"
         >
-          <Text className="text-xl font-medium text-slate-800">
-            Categorías
-          </Text>
+          <Text className="text-xl font-medium text-slate-800">Categorías</Text>
 
-          <Text className="text-sm text-blue-500">
-            Ver más
-          </Text>
+          <Text className="text-sm text-blue-500">Ver más</Text>
         </Animated.View>
 
         <View className="flex-row flex-wrap justify-between gap-y-5">
           {categorias.map((categoria, index) => (
             <Animated.View
               key={categoria.id}
-              entering={FadeInDown
-                .delay(250 + index * 80)
-                .duration(450)}
+              entering={FadeInDown.delay(250 + index * 80).duration(450)}
               className="w-[48%]"
             >
               <CategoriaCard

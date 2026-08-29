@@ -1,18 +1,56 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React from "react";
 
-// Definimos las propiedades que recibira cada tarjeta de recomendacion
+import {
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+import {
+  Ionicons,
+} from "@expo/vector-icons";
+
+import {
+  useColorScheme,
+} from "@/hooks/use-color-scheme";
+
+import {
+  useThemeColor,
+} from "@/hooks/use-theme-color";
+
+
+// ==========================================================
+// PROPS
+// ==========================================================
+
 interface TarjetaRecomendacionProps {
   titulo: string;
-  tiempo?: string; // Opcional, por si alguna tarjeta como Reto no lleva tiempo
+
+  tiempo?: string;
+
   descripcion: string;
-  nombreIcono: keyof typeof Ionicons.glyphMap;
-  colorFondo: string;  // Clase de NativeWind para el fondo 'bg-purple-50'
-  colorIcono: string;  // Hexadecimal para el color del icono '#8B5CF6'
-  colorTextoFlecha: string; // Hexadecimal para la flecha
+
+  nombreIcono:
+    keyof typeof Ionicons.glyphMap;
+
+  // Clase NativeWind usada en modo claro.
+  // Ejemplo:
+  // bg-purple-100
+  // bg-blue-100
+  // bg-emerald-100
+  colorFondo: string;
+
+  colorIcono: string;
+
+  colorTextoFlecha: string;
+
   onPress: () => void;
 }
+
+
+// ==========================================================
+// COMPONENTE
+// ==========================================================
 
 export const TarjetaRecomendacion = ({
   titulo,
@@ -24,40 +62,226 @@ export const TarjetaRecomendacion = ({
   colorTextoFlecha,
   onPress,
 }: TarjetaRecomendacionProps) => {
+
+  // ========================================================
+  // TEMA
+  // ========================================================
+
+  const colorScheme =
+    useColorScheme();
+
+  const esOscuro =
+    colorScheme === "dark";
+
+
+  const surfaceColor =
+    useThemeColor(
+      {},
+      "surface"
+    );
+
+  const borderColor =
+    useThemeColor(
+      {},
+      "border"
+    );
+
+  const textColor =
+    useThemeColor(
+      {},
+      "text"
+    );
+
+  const textSecondaryColor =
+    useThemeColor(
+      {},
+      "textSecondary"
+    );
+
+  const textMutedColor =
+    useThemeColor(
+      {},
+      "textMuted"
+    );
+
+
+  // ========================================================
+  // UI
+  // ========================================================
+
   return (
     <TouchableOpacity
       activeOpacity={0.8}
+
       onPress={onPress}
-      // Contenedor principal de la tarjeta en horizontal (icono a la izquierda, textos al centro)
-     className={`${colorFondo} w-[100%] self-center p-5 rounded-2xl mb-3.5 flex-row items-center justify-between border border-black/5 shadow-sm`}
+
+      className={`
+        ${!esOscuro ? colorFondo : ""}
+        w-[100%]
+        self-center
+        p-5
+        rounded-2xl
+        mb-3.5
+        flex-row
+        items-center
+        justify-between
+      `}
+
+      style={{
+        backgroundColor:
+          esOscuro
+            ? surfaceColor
+            : undefined,
+
+        borderWidth: 1,
+
+        borderColor:
+          borderColor,
+
+        shadowColor:
+          "#000000",
+
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+
+        shadowOpacity:
+          esOscuro
+            ? 0.2
+            : 0.08,
+
+        shadowRadius:
+          4,
+
+        elevation:
+          2,
+      }}
     >
-      <View className="flex-row items-center flex-1 mr-2">
-        {/* Icono representativo a la izquierda */}
-        <View className="mr-4 items-center justify-center">
-          <Ionicons name={nombreIcono} size={40} color={colorIcono} />
+
+      {/* ===================================================
+          CONTENIDO PRINCIPAL
+      =================================================== */}
+
+      <View
+        className="
+          flex-row
+          items-center
+          flex-1
+          mr-2
+        "
+      >
+
+        {/* =================================================
+            ICONO
+        ================================================= */}
+
+        <View
+          className="
+            mr-4
+            items-center
+            justify-center
+          "
+        >
+          <Ionicons
+            name={nombreIcono}
+            size={40}
+            color={colorIcono}
+          />
         </View>
 
-        {/* Textos: Titulo, tiempo y descripcion */}
+
+        {/* =================================================
+            TEXTOS
+        ================================================= */}
+
         <View className="flex-1">
-          {/* Titulo */}
-          <Text style={{ fontFamily: 'Nunito-Bold', fontSize: 16, fontWeight: '700', color: '#2D3748' }}>
+
+          {/* Título */}
+
+          <Text
+            style={{
+              fontFamily:
+                "Nunito-Bold",
+
+              fontSize:
+                16,
+
+              lineHeight:
+                21,
+
+              color:
+                textColor,
+            }}
+          >
             {titulo}
           </Text>
 
+
+          {/* Tiempo */}
+
           {tiempo && (
-            <Text className="text-slate-400 text-s font-nunito-semibold my-0.5">
+            <Text
+              style={{
+                marginVertical:
+                  2,
+
+                fontFamily:
+                  "Nunito-SemiBold",
+
+                fontSize:
+                  13,
+
+                lineHeight:
+                  17,
+
+                color:
+                  textMutedColor,
+              }}
+            >
               {tiempo}
             </Text>
           )}
 
-          <Text className="text-slate-500 font-nunito-semibold text-s leading-4 mt-0.5">
+
+          {/* Descripción */}
+
+          <Text
+            style={{
+              marginTop:
+                2,
+
+              fontFamily:
+                "Nunito-SemiBold",
+
+              fontSize:
+                13,
+
+              lineHeight:
+                18,
+
+              color:
+                textSecondaryColor,
+            }}
+          >
             {descripcion}
           </Text>
+
         </View>
+
       </View>
 
-      {/* Flecha a la derecha */}
-      <Ionicons name="arrow-forward" size={20} color={colorTextoFlecha} />
+
+      {/* ===================================================
+          FLECHA
+      =================================================== */}
+
+      <Ionicons
+        name="arrow-forward"
+        size={20}
+        color={colorTextoFlecha}
+      />
+
     </TouchableOpacity>
   );
 };

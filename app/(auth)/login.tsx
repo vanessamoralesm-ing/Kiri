@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import GoogleButton from '@/components/ui/GoogleButton';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/services/authProvider';
 import { validateLogin } from '@/utils/validations';
 
@@ -14,6 +15,7 @@ export default function LoginScreen() {
   // ESTADOS DEL FORMULARIO
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [mostrarPassword, setMostrarPassword] = useState(false);
 
   // ESTADOS DEL PROCESO
   const [submitting, setSubmitting] = useState(false);
@@ -108,13 +110,27 @@ export default function LoginScreen() {
               setPassword(value);
               limpiarError();
             }}
-            secureTextEntry
+            secureTextEntry={!mostrarPassword}
             autoCapitalize="none"
             autoCorrect={false}
             autoComplete="password"
             rightLabel={
               <TouchableOpacity onPress={handleForgotPassword}>
-                <Text style={styles.forgotPasswordText}>¿Olvidaste tu contraseña?</Text>
+                <Text style={styles.forgotPasswordText}>
+                  ¿Olvidaste tu contraseña?
+                </Text>
+              </TouchableOpacity>
+            }
+            rightIcon={
+              <TouchableOpacity
+                onPress={() => setMostrarPassword(!mostrarPassword)}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name={mostrarPassword ? 'eye-off' : 'eye'}
+                  size={22}
+                  color="#64748B"
+                />
               </TouchableOpacity>
             }
           />
