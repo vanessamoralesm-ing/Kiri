@@ -68,7 +68,7 @@ export default function HomeScreen() {
         {/* Módulos de ingreso rápido */}
         <View className="flex-row flex-wrap justify-between mb-4">
           <TarjetaModulo titulo="Nuevo Registro en Diario" nombreIcono="book-outline" onPress={() => router.push('/(tabs)/diario')} />
-          <TarjetaModulo titulo="Test y Cuestionarios" nombreIcono="document-text-outline" onPress={() => console.log('/tabs/cuestionarios')} />
+          <TarjetaModulo titulo="Test y Cuestionarios" nombreIcono="document-text-outline" onPress={() => router.push('/(tabs)/cuestionarios')} />
           <TarjetaModulo titulo="Ir a Foro Comunitario" nombreIcono="megaphone-outline" onPress={() => console.log('Ir a Foro')} />
           <TarjetaModulo titulo="Entrevista de Bienestar" nombreIcono="heart-outline" onPress={() => router.push('/(tabs)/entrevistas')} />
           <TarjetaModulo titulo="Técnicas Complementarias" nombreIcono="clipboard-outline" onPress={() => console.log('Ir a Técnicas Complementarias')} />
