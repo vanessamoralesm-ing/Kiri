@@ -11,11 +11,23 @@ import {
     View,
 } from "react-native";
 
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import {
+    Ionicons,
+} from "@expo/vector-icons";
+
+import {
+    useRouter,
+} from "expo-router";
 
 import SearchBar from "@/components/ui/SearchBar";
-import { supabase } from "@/lib/supabase";
+
+import {
+    supabase,
+} from "@/lib/supabase";
+
+import {
+    useThemeColor,
+} from "@/hooks/use-theme-color";
 
 
 // ==========================================================
@@ -31,8 +43,8 @@ interface TestSupabase {
     poblacion_objetivo: string | null;
 
     tipo_aplicacion:
-        | "autoadministrado"
-        | "profesional";
+    | "autoadministrado"
+    | "profesional";
 
     tiene_subescalas: boolean;
     version: string | null;
@@ -61,46 +73,133 @@ type TipoFiltro =
 
 export default function CuestionariosPantalla() {
 
-    const router = useRouter();
+    const router =
+        useRouter();
 
+
+    // ========================================================
+    // TEMA
+    // ========================================================
+
+    const backgroundColor =
+        useThemeColor(
+            {},
+            "background"
+        );
+
+    const surfaceColor =
+        useThemeColor(
+            {},
+            "surface"
+        );
+
+    const surfaceSecondaryColor =
+        useThemeColor(
+            {},
+            "surfaceSecondary"
+        );
+
+    const textColor =
+        useThemeColor(
+            {},
+            "text"
+        );
+
+    const textSecondaryColor =
+        useThemeColor(
+            {},
+            "textSecondary"
+        );
+
+    const textMutedColor =
+        useThemeColor(
+            {},
+            "textMuted"
+        );
+
+    const borderColor =
+        useThemeColor(
+            {},
+            "border"
+        );
+
+    const primaryColor =
+        useThemeColor(
+            {},
+            "primary"
+        );
+
+    const primarySoftColor =
+        useThemeColor(
+            {},
+            "primarySoft"
+        );
+
+    const secondarySoftColor =
+        useThemeColor(
+            {},
+            "secondarySoft"
+        );
+
+    const accentSoftColor =
+        useThemeColor(
+            {},
+            "accentSoft"
+        );
+
+    const accentColor =
+        useThemeColor(
+            {},
+            "accent"
+        );
+
+
+    // ========================================================
+    // ESTADOS
+    // ========================================================
 
     const [
         cuestionarios,
         setCuestionarios,
-    ] = useState<TestSupabase[]>([]);
+    ] =
+        useState<TestSupabase[]>([]);
 
 
     const [
         busqueda,
         setBusqueda,
-    ] = useState("");
+    ] =
+        useState("");
 
 
     const [
         tipoSeleccionado,
         setTipoSeleccionado,
-    ] = useState<TipoFiltro>(
-        "Todos"
-    );
+    ] =
+        useState<TipoFiltro>(
+            "Todos"
+        );
 
 
     const [
         cargando,
         setCargando,
-    ] = useState(true);
+    ] =
+        useState(true);
 
 
     const [
         error,
         setError,
-    ] = useState<string | null>(
-        null
-    );
+    ] =
+        useState<string | null>(
+            null
+        );
 
 
-    // ======================================================
+    // ========================================================
     // CARGAR CUESTIONARIOS
-    // ======================================================
+    // ========================================================
 
     useEffect(() => {
 
@@ -118,13 +217,12 @@ export default function CuestionariosPantalla() {
                 setError(null);
 
 
-                // Verificar sesión
                 const {
                     data: {
                         user,
                     },
                     error:
-                        errorAuth,
+                    errorAuth,
                 } =
                     await supabase.auth.getUser();
 
@@ -143,45 +241,44 @@ export default function CuestionariosPantalla() {
                     );
 
                     return;
-
                 }
 
 
-                // Obtener tests
                 const {
                     data,
                     error:
-                        errorSupabase,
-                } = await supabase
+                    errorSupabase,
+                } =
+                    await supabase
 
-                    .from("test")
+                        .from("test")
 
-                    .select(`
-                        id_test,
-                        codigo,
-                        nombre,
-                        descripcion,
-                        instrucciones,
-                        poblacion_objetivo,
-                        tipo_aplicacion,
-                        tiene_subescalas,
-                        version,
-                        estado,
-                        pregunta_test(count)
-                    `)
+                        .select(`
+              id_test,
+              codigo,
+              nombre,
+              descripcion,
+              instrucciones,
+              poblacion_objetivo,
+              tipo_aplicacion,
+              tiene_subescalas,
+              version,
+              estado,
+              pregunta_test(count)
+            `)
 
-                    .eq(
-                        "estado",
-                        true
-                    )
+                        .eq(
+                            "estado",
+                            true
+                        )
 
-                    .order(
-                        "nombre",
-                        {
-                            ascending:
-                                true,
-                        }
-                    );
+                        .order(
+                            "nombre",
+                            {
+                                ascending:
+                                    true,
+                            }
+                        );
 
 
                 if (errorSupabase) {
@@ -216,9 +313,9 @@ export default function CuestionariosPantalla() {
         };
 
 
-    // ======================================================
+    // ========================================================
     // FILTRADO
-    // ======================================================
+    // ========================================================
 
     const cuestionariosFiltrados =
         cuestionarios.filter(
@@ -260,7 +357,7 @@ export default function CuestionariosPantalla() {
 
                 const coincideTipo =
                     tipoSeleccionado ===
-                    "Todos"
+                        "Todos"
 
                         ? true
 
@@ -283,9 +380,9 @@ export default function CuestionariosPantalla() {
         );
 
 
-    // ======================================================
+    // ========================================================
     // NAVEGACIÓN
-    // ======================================================
+    // ========================================================
 
     const irACuestionario =
         (
@@ -299,9 +396,9 @@ export default function CuestionariosPantalla() {
         };
 
 
-    // ======================================================
+    // ========================================================
     // APARIENCIA
-    // ======================================================
+    // ========================================================
 
     const obtenerApariencia =
         (
@@ -322,7 +419,7 @@ export default function CuestionariosPantalla() {
                         "#B8A8F8",
 
                     fondo:
-                        "bg-purple-100",
+                        accentSoftColor,
                 };
 
             }
@@ -340,7 +437,7 @@ export default function CuestionariosPantalla() {
                         "#7BBF9A",
 
                     fondo:
-                        "bg-emerald-100",
+                        secondarySoftColor,
                 };
 
             }
@@ -354,26 +451,41 @@ export default function CuestionariosPantalla() {
                     "#4F8EF7",
 
                 fondo:
-                    "bg-blue-100",
+                    primarySoftColor,
             };
 
         };
 
 
-    // ======================================================
+    // ========================================================
     // CARGANDO
-    // ======================================================
+    // ========================================================
 
     if (cargando) {
 
         return (
 
-            <View className="flex-1 bg-slate-50 items-center justify-center">
+            <View
+                style={{
+                    flex: 1,
+
+                    backgroundColor,
+
+                    alignItems:
+                        "center",
+
+                    justifyContent:
+                        "center",
+                }}
+            >
 
                 <ActivityIndicator
                     size="large"
-                    color="#4F8EF7"
+                    color={
+                        primaryColor
+                    }
                 />
+
 
                 <Text
                     style={{
@@ -384,7 +496,7 @@ export default function CuestionariosPantalla() {
                             15,
 
                         color:
-                            "#64748B",
+                            textSecondaryColor,
 
                         marginTop:
                             12,
@@ -400,21 +512,39 @@ export default function CuestionariosPantalla() {
     }
 
 
-    // ======================================================
+    // ========================================================
     // ERROR
-    // ======================================================
+    // ========================================================
 
     if (error) {
 
         return (
 
-            <View className="flex-1 bg-slate-50 items-center justify-center px-6">
+            <View
+                style={{
+                    flex: 1,
+
+                    backgroundColor,
+
+                    alignItems:
+                        "center",
+
+                    justifyContent:
+                        "center",
+
+                    paddingHorizontal:
+                        24,
+                }}
+            >
 
                 <Ionicons
                     name="cloud-offline-outline"
                     size={48}
-                    color="#B8A8F8"
+                    color={
+                        accentColor
+                    }
                 />
+
 
                 <Text
                     style={{
@@ -425,7 +555,7 @@ export default function CuestionariosPantalla() {
                             18,
 
                         color:
-                            "#2D3748",
+                            textColor,
 
                         marginTop:
                             12,
@@ -437,12 +567,30 @@ export default function CuestionariosPantalla() {
                     {error}
                 </Text>
 
+
                 <Pressable
                     onPress={
                         cargarCuestionarios
                     }
-                    className="bg-blue-500 px-6 py-3 rounded-xl mt-5"
+
+                    style={{
+                        backgroundColor:
+                            primaryColor,
+
+                        paddingHorizontal:
+                            24,
+
+                        paddingVertical:
+                            12,
+
+                        borderRadius:
+                            12,
+
+                        marginTop:
+                            20,
+                    }}
                 >
+
                     <Text
                         style={{
                             fontFamily:
@@ -457,6 +605,7 @@ export default function CuestionariosPantalla() {
                     >
                         Intentar nuevamente
                     </Text>
+
                 </Pressable>
 
             </View>
@@ -466,16 +615,24 @@ export default function CuestionariosPantalla() {
     }
 
 
-    // ======================================================
+    // ========================================================
     // UI
-    // ======================================================
+    // ========================================================
 
     return (
 
-        <View className="flex-1 bg-slate-50">
+        <View
+            style={{
+                flex: 1,
+                backgroundColor,
+            }}
+        >
 
             <ScrollView
-                className="flex-1"
+                style={{
+                    flex: 1,
+                }}
+
                 contentContainerStyle={{
                     paddingHorizontal:
                         16,
@@ -486,15 +643,21 @@ export default function CuestionariosPantalla() {
                     paddingBottom:
                         100,
                 }}
+
                 showsVerticalScrollIndicator={
                     false
                 }
+
                 keyboardShouldPersistTaps="handled"
+
                 bounces={false}
+
                 overScrollMode="never"
             >
 
-                {/* Presentación */}
+                {/* =================================================
+            PRESENTACIÓN
+        ================================================= */}
 
                 <View className="mb-5">
 
@@ -507,11 +670,12 @@ export default function CuestionariosPantalla() {
                                 26,
 
                             color:
-                                "#2D3748",
+                                textColor,
                         }}
                     >
                         Explora tu bienestar
                     </Text>
+
 
                     <Text
                         style={{
@@ -525,7 +689,7 @@ export default function CuestionariosPantalla() {
                                 22,
 
                             color:
-                                "#475569",
+                                textSecondaryColor,
 
                             marginTop:
                                 8,
@@ -537,14 +701,21 @@ export default function CuestionariosPantalla() {
                 </View>
 
 
-                {/* Buscador */}
+                {/* =================================================
+            BUSCADOR
+        ================================================= */}
 
                 <SearchBar
-                    value={busqueda}
+                    value={
+                        busqueda
+                    }
+
                     onChangeText={
                         setBusqueda
                     }
+
                     placeholder="Buscar cuestionario..."
+
                     style={{
                         marginBottom:
                             22,
@@ -552,14 +723,18 @@ export default function CuestionariosPantalla() {
                 />
 
 
-                {/* Filtros */}
+                {/* =================================================
+            FILTROS
+        ================================================= */}
 
                 <ScrollView
                     horizontal
                     nestedScrollEnabled
+
                     showsHorizontalScrollIndicator={
                         false
                     }
+
                     contentContainerStyle={{
                         gap:
                             10,
@@ -567,6 +742,7 @@ export default function CuestionariosPantalla() {
                         paddingRight:
                             16,
                     }}
+
                     style={{
                         marginBottom:
                             22,
@@ -587,17 +763,39 @@ export default function CuestionariosPantalla() {
                                 return (
 
                                     <Pressable
-                                        key={tipo}
+                                        key={
+                                            tipo
+                                        }
+
                                         onPress={() =>
                                             setTipoSeleccionado(
                                                 tipo
                                             )
                                         }
-                                        className={`px-4 py-2 rounded-full ${
-                                            seleccionado
-                                                ? "bg-blue-500"
-                                                : "bg-slate-200"
-                                        }`}
+
+                                        style={{
+                                            paddingHorizontal:
+                                                16,
+
+                                            paddingVertical:
+                                                8,
+
+                                            borderRadius:
+                                                999,
+
+                                            backgroundColor:
+                                                seleccionado
+                                                    ? primaryColor
+                                                    : surfaceSecondaryColor,
+
+                                            borderWidth:
+                                                seleccionado
+                                                    ? 0
+                                                    : 1,
+
+                                            borderColor:
+                                                borderColor,
+                                        }}
                                     >
 
                                         <Text
@@ -613,7 +811,7 @@ export default function CuestionariosPantalla() {
                                                 color:
                                                     seleccionado
                                                         ? "#FFFFFF"
-                                                        : "#475569",
+                                                        : textSecondaryColor,
                                             }}
                                         >
                                             {tipo}
@@ -630,7 +828,9 @@ export default function CuestionariosPantalla() {
                 </ScrollView>
 
 
-                {/* Lista */}
+                {/* =================================================
+            LISTA
+        ================================================= */}
 
                 <View className="gap-5">
 
@@ -657,38 +857,118 @@ export default function CuestionariosPantalla() {
                                     "profesional";
 
 
+                                const fondoTipoAplicacion =
+                                    esProfesional
+                                        ? accentSoftColor
+                                        : secondarySoftColor;
+
+
                                 return (
 
                                     <Pressable
                                         key={
                                             cuestionario.id_test
                                         }
+
                                         onPress={() =>
                                             irACuestionario(
                                                 cuestionario.codigo
                                             )
                                         }
-                                        className="bg-white rounded-3xl p-5 shadow-md"
+
+                                        style={{
+                                            backgroundColor:
+                                                surfaceColor,
+
+                                            borderRadius:
+                                                24,
+
+                                            padding:
+                                                20,
+
+                                            borderWidth:
+                                                1,
+
+                                            borderColor:
+                                                borderColor,
+
+                                            shadowColor:
+                                                "#000000",
+
+                                            shadowOffset: {
+                                                width: 0,
+                                                height: 3,
+                                            },
+
+                                            shadowOpacity:
+                                                0.1,
+
+                                            shadowRadius:
+                                                6,
+
+                                            elevation:
+                                                4,
+                                        }}
                                     >
 
                                         <View className="flex-row justify-between items-start mb-3">
 
+                                            {/* Icono */}
+
                                             <View
-                                                className={`w-12 h-12 rounded-2xl items-center justify-center ${apariencia.fondo}`}
+                                                style={{
+                                                    width:
+                                                        48,
+
+                                                    height:
+                                                        48,
+
+                                                    borderRadius:
+                                                        16,
+
+                                                    alignItems:
+                                                        "center",
+
+                                                    justifyContent:
+                                                        "center",
+
+                                                    backgroundColor:
+                                                        apariencia.fondo,
+                                                }}
                                             >
+
                                                 <Ionicons
                                                     name={
                                                         apariencia.icono
                                                     }
+
                                                     size={28}
+
                                                     color={
                                                         apariencia.color
                                                     }
                                                 />
+
                                             </View>
 
 
-                                            <View className="bg-slate-100 px-3 py-1.5 rounded-full">
+                                            {/* Código */}
+
+                                            <View
+                                                style={{
+                                                    backgroundColor:
+                                                        surfaceSecondaryColor,
+
+                                                    paddingHorizontal:
+                                                        12,
+
+                                                    paddingVertical:
+                                                        6,
+
+                                                    borderRadius:
+                                                        999,
+                                                }}
+                                            >
 
                                                 <Text
                                                     style={{
@@ -699,7 +979,7 @@ export default function CuestionariosPantalla() {
                                                             11,
 
                                                         color:
-                                                            "#64748B",
+                                                            textSecondaryColor,
                                                     }}
                                                 >
                                                     {
@@ -712,6 +992,8 @@ export default function CuestionariosPantalla() {
                                         </View>
 
 
+                                        {/* Nombre */}
+
                                         <Text
                                             style={{
                                                 fontFamily:
@@ -721,7 +1003,7 @@ export default function CuestionariosPantalla() {
                                                     20,
 
                                                 color:
-                                                    "#2D3748",
+                                                    textColor,
                                             }}
                                         >
                                             {
@@ -729,6 +1011,8 @@ export default function CuestionariosPantalla() {
                                             }
                                         </Text>
 
+
+                                        {/* Descripción */}
 
                                         <Text
                                             style={{
@@ -742,7 +1026,7 @@ export default function CuestionariosPantalla() {
                                                     20,
 
                                                 color:
-                                                    "#64748B",
+                                                    textSecondaryColor,
 
                                                 marginTop:
                                                     5,
@@ -755,6 +1039,8 @@ export default function CuestionariosPantalla() {
                                         </Text>
 
 
+                                        {/* Información */}
+
                                         <View className="flex-row flex-wrap items-center mt-4 gap-3">
 
                                             <View className="flex-row items-center">
@@ -762,7 +1048,9 @@ export default function CuestionariosPantalla() {
                                                 <Ionicons
                                                     name="document-text-outline"
                                                     size={15}
-                                                    color="#94A3B8"
+                                                    color={
+                                                        textMutedColor
+                                                    }
                                                 />
 
                                                 <Text
@@ -774,7 +1062,7 @@ export default function CuestionariosPantalla() {
                                                             12,
 
                                                         color:
-                                                            "#64748B",
+                                                            textSecondaryColor,
 
                                                         marginLeft:
                                                             5,
@@ -783,7 +1071,7 @@ export default function CuestionariosPantalla() {
                                                     {numeroPreguntas}{" "}
                                                     {
                                                         numeroPreguntas ===
-                                                        1
+                                                            1
                                                             ? "pregunta"
                                                             : "preguntas"
                                                     }
@@ -800,11 +1088,14 @@ export default function CuestionariosPantalla() {
                                                         <Ionicons
                                                             name="people-outline"
                                                             size={15}
-                                                            color="#94A3B8"
+                                                            color={
+                                                                textMutedColor
+                                                            }
                                                         />
 
                                                         <Text
                                                             numberOfLines={1}
+
                                                             style={{
                                                                 fontFamily:
                                                                     "Nunito-Medium",
@@ -813,7 +1104,7 @@ export default function CuestionariosPantalla() {
                                                                     12,
 
                                                                 color:
-                                                                    "#64748B",
+                                                                    textSecondaryColor,
 
                                                                 marginLeft:
                                                                     5,
@@ -835,14 +1126,30 @@ export default function CuestionariosPantalla() {
                                         </View>
 
 
+                                        {/* Tipo e iniciar */}
+
                                         <View className="flex-row justify-between items-center mt-5">
 
                                             <View
-                                                className={`flex-row items-center px-3 py-1.5 rounded-full ${
-                                                    esProfesional
-                                                        ? "bg-purple-100"
-                                                        : "bg-emerald-100"
-                                                }`}
+                                                style={{
+                                                    flexDirection:
+                                                        "row",
+
+                                                    alignItems:
+                                                        "center",
+
+                                                    paddingHorizontal:
+                                                        12,
+
+                                                    paddingVertical:
+                                                        6,
+
+                                                    borderRadius:
+                                                        999,
+
+                                                    backgroundColor:
+                                                        fondoTipoAplicacion,
+                                                }}
                                             >
 
                                                 <Ionicons
@@ -851,13 +1158,16 @@ export default function CuestionariosPantalla() {
                                                             ? "medkit-outline"
                                                             : "person-outline"
                                                     }
+
                                                     size={14}
+
                                                     color={
                                                         esProfesional
-                                                            ? "#8B5CF6"
-                                                            : "#10B981"
+                                                            ? "#B8A8F8"
+                                                            : "#7BBF9A"
                                                     }
                                                 />
+
 
                                                 <Text
                                                     style={{
@@ -869,8 +1179,8 @@ export default function CuestionariosPantalla() {
 
                                                         color:
                                                             esProfesional
-                                                                ? "#7C3AED"
-                                                                : "#059669",
+                                                                ? "#B8A8F8"
+                                                                : "#7BBF9A",
 
                                                         marginLeft:
                                                             4,
@@ -892,6 +1202,7 @@ export default function CuestionariosPantalla() {
                                                         cuestionario.codigo
                                                     )
                                                 }
+
                                                 className="flex-row items-center px-2 py-2"
                                             >
 
@@ -904,16 +1215,19 @@ export default function CuestionariosPantalla() {
                                                             13,
 
                                                         color:
-                                                            "#4F8EF7",
+                                                            primaryColor,
                                                     }}
                                                 >
                                                     Iniciar test
                                                 </Text>
 
+
                                                 <Ionicons
                                                     name="chevron-forward"
                                                     size={18}
-                                                    color="#4F8EF7"
+                                                    color={
+                                                        primaryColor
+                                                    }
                                                 />
 
                                             </Pressable>
@@ -931,16 +1245,22 @@ export default function CuestionariosPantalla() {
                 </View>
 
 
+                {/* =================================================
+            SIN RESULTADOS
+        ================================================= */}
+
                 {
                     cuestionariosFiltrados.length ===
-                        0 && (
+                    0 && (
 
                         <View className="items-center py-12 px-6">
 
                             <Ionicons
                                 name="search-outline"
                                 size={42}
-                                color="#B8A8F8"
+                                color={
+                                    accentColor
+                                }
                             />
 
                             <Text
@@ -952,7 +1272,7 @@ export default function CuestionariosPantalla() {
                                         18,
 
                                     color:
-                                        "#2D3748",
+                                        textColor,
 
                                     marginTop:
                                         12,
@@ -960,6 +1280,7 @@ export default function CuestionariosPantalla() {
                             >
                                 No encontramos cuestionarios
                             </Text>
+
 
                             <Text
                                 style={{
@@ -973,7 +1294,7 @@ export default function CuestionariosPantalla() {
                                         20,
 
                                     color:
-                                        "#64748B",
+                                        textSecondaryColor,
 
                                     textAlign:
                                         "center",
@@ -991,15 +1312,32 @@ export default function CuestionariosPantalla() {
                 }
 
 
-                {/* Privacidad */}
+                {/* =================================================
+            PRIVACIDAD
+        ================================================= */}
 
-                <View className="bg-blue-500 rounded-3xl p-5 mt-6">
+                <View
+                    style={{
+                        backgroundColor:
+                            primaryColor,
+
+                        borderRadius:
+                            24,
+
+                        padding:
+                            20,
+
+                        marginTop:
+                            24,
+                    }}
+                >
 
                     <Ionicons
                         name="shield-checkmark-outline"
                         size={28}
                         color="#FFFFFF"
                     />
+
 
                     <Text
                         style={{
@@ -1019,6 +1357,7 @@ export default function CuestionariosPantalla() {
                         Privacidad garantizada
                     </Text>
 
+
                     <Text
                         style={{
                             fontFamily:
@@ -1031,7 +1370,7 @@ export default function CuestionariosPantalla() {
                                 20,
 
                             color:
-                                "#DBEAFE",
+                                "#EAF2FF",
 
                             marginTop:
                                 8,

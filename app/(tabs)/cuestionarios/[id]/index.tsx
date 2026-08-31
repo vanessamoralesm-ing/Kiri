@@ -1,5 +1,6 @@
 import OpcionRespuesta from "@/components/cuestionarios/OpcionRespuesta";
 import ProgresoCuestionario from "@/components/cuestionarios/ProgresoCuestionario";
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { supabase } from "@/lib/supabase";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -265,6 +266,44 @@ export default function CuestionarioDetalle() {
 
     const router =
         useRouter();
+
+
+    // ======================================================
+    // TEMA
+    // ======================================================
+
+    const backgroundColor =
+        useThemeColor({}, "background");
+
+    const surfaceColor =
+        useThemeColor({}, "surface");
+
+    const surfaceSecondaryColor =
+        useThemeColor({}, "surfaceSecondary");
+
+    const textColor =
+        useThemeColor({}, "text");
+
+    const textSecondaryColor =
+        useThemeColor({}, "textSecondary");
+
+    const borderColor =
+        useThemeColor({}, "border");
+
+    const primaryColor =
+        useThemeColor({}, "primary");
+
+    const primarySoftColor =
+        useThemeColor({}, "primarySoft");
+
+    const accentColor =
+        useThemeColor({}, "accent");
+
+    const warningColor =
+        useThemeColor({}, "warning");
+
+    const disabledColor =
+        useThemeColor({}, "disabled");
 
 
     // ======================================================
@@ -2565,11 +2604,18 @@ export default function CuestionarioDetalle() {
 
         return (
 
-            <View className="flex-1 bg-slate-50 items-center justify-center">
+            <View
+                style={{
+                    flex: 1,
+                    backgroundColor,
+                    alignItems: "center",
+                    justifyContent: "center",
+                }}
+            >
 
                 <ActivityIndicator
                     size="large"
-                    color="#4F8EF7"
+                    color={primaryColor}
                 />
 
 
@@ -2582,7 +2628,7 @@ export default function CuestionarioDetalle() {
                             15,
 
                         color:
-                            "#64748B",
+                            textSecondaryColor,
 
                         marginTop:
                             12,
@@ -2609,12 +2655,20 @@ export default function CuestionarioDetalle() {
 
         return (
 
-            <View className="flex-1 bg-slate-50 items-center justify-center px-6">
+            <View
+                style={{
+                    flex: 1,
+                    backgroundColor,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingHorizontal: 24,
+                }}
+            >
 
                 <Ionicons
                     name="alert-circle-outline"
                     size={50}
-                    color="#B8A8F8"
+                    color={accentColor}
                 />
 
 
@@ -2630,7 +2684,7 @@ export default function CuestionarioDetalle() {
                             25,
 
                         color:
-                            "#2D3748",
+                            textColor,
 
                         textAlign:
                             "center",
@@ -2649,13 +2703,25 @@ export default function CuestionarioDetalle() {
 
 
                 <Pressable
-
                     onPress={() =>
                         router.back()
                     }
+                    style={{
+                        backgroundColor:
+                            primaryColor,
 
-                    className="bg-blue-500 px-6 py-3 rounded-xl mt-5"
+                        paddingHorizontal:
+                            24,
 
+                        paddingVertical:
+                            12,
+
+                        borderRadius:
+                            12,
+
+                        marginTop:
+                            20,
+                    }}
                 >
 
                     <Text
@@ -2693,12 +2759,20 @@ export default function CuestionarioDetalle() {
 
         return (
 
-            <View className="flex-1 bg-slate-50 items-center justify-center px-6">
+            <View
+                style={{
+                    flex: 1,
+                    backgroundColor,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingHorizontal: 24,
+                }}
+            >
 
                 <Ionicons
                     name="document-text-outline"
                     size={50}
-                    color="#B8A8F8"
+                    color={accentColor}
                 />
 
 
@@ -2711,7 +2785,7 @@ export default function CuestionarioDetalle() {
                             19,
 
                         color:
-                            "#2D3748",
+                            textColor,
 
                         textAlign:
                             "center",
@@ -2728,7 +2802,22 @@ export default function CuestionarioDetalle() {
                     onPress={() =>
                         router.back()
                     }
-                    className="bg-blue-500 px-6 py-3 rounded-xl mt-5"
+                    style={{
+                        backgroundColor:
+                            primaryColor,
+
+                        paddingHorizontal:
+                            24,
+
+                        paddingVertical:
+                            12,
+
+                        borderRadius:
+                            12,
+
+                        marginTop:
+                            20,
+                    }}
                 >
 
                     <Text
@@ -2761,7 +2850,12 @@ export default function CuestionarioDetalle() {
 
     return (
 
-        <View className="flex-1 bg-slate-50">
+        <View
+            style={{
+                flex: 1,
+                backgroundColor,
+            }}
+        >
 
             <ScrollView
 
@@ -2769,7 +2863,9 @@ export default function CuestionarioDetalle() {
                     scrollViewRef
                 }
 
-                className="flex-1"
+                style={{
+                    flex: 1,
+                }}
 
                 contentContainerStyle={{
                     paddingHorizontal:
@@ -2818,7 +2914,7 @@ export default function CuestionarioDetalle() {
                         <Ionicons
                             name="arrow-back-outline"
                             size={24}
-                            color="#64748B"
+                            color={textSecondaryColor}
                         />
 
                     </Pressable>
@@ -2837,7 +2933,7 @@ export default function CuestionarioDetalle() {
                                 18,
 
                             color:
-                                "#2D3748",
+                                textColor,
 
                             marginLeft:
                                 8,
@@ -2891,14 +2987,34 @@ export default function CuestionarioDetalle() {
                     cuestionario
                         .instrucciones && (
 
-                        <View className="bg-blue-50 rounded-2xl p-4 mb-7">
+                        <View
+                            style={{
+                                backgroundColor:
+                                    primarySoftColor,
+
+                                borderRadius:
+                                    16,
+
+                                padding:
+                                    16,
+
+                                marginBottom:
+                                    28,
+
+                                borderWidth:
+                                    1,
+
+                                borderColor:
+                                    borderColor,
+                            }}
+                        >
 
                             <View className="flex-row items-start">
 
                                 <Ionicons
                                     name="information-circle-outline"
                                     size={22}
-                                    color="#4F8EF7"
+                                    color={primaryColor}
                                 />
 
 
@@ -2917,7 +3033,7 @@ export default function CuestionarioDetalle() {
                                             19,
 
                                         color:
-                                            "#475569",
+                                            textSecondaryColor,
 
                                         marginLeft:
                                             8,
@@ -2979,7 +3095,7 @@ export default function CuestionarioDetalle() {
                                                 28,
 
                                             color:
-                                                "#2D3748",
+                                                textColor,
                                         }}
                                     >
 
@@ -3012,7 +3128,7 @@ export default function CuestionarioDetalle() {
                                                         18,
 
                                                     color:
-                                                        "#64748B",
+                                                        textSecondaryColor,
 
                                                     marginTop:
                                                         10,
@@ -3083,14 +3199,31 @@ export default function CuestionarioDetalle() {
 
                                                 : (
 
-                                                    <View className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                                                    <View
+                                                        style={{
+                                                            backgroundColor:
+                                                                surfaceColor,
+
+                                                            borderWidth:
+                                                                1,
+
+                                                            borderColor:
+                                                                warningColor,
+
+                                                            borderRadius:
+                                                                16,
+
+                                                            padding:
+                                                                16,
+                                                        }}
+                                                    >
 
                                                         <View className="flex-row items-start">
 
                                                             <Ionicons
                                                                 name="information-circle-outline"
                                                                 size={20}
-                                                                color="#F59E0B"
+                                                                color={warningColor}
                                                             />
 
 
@@ -3109,7 +3242,7 @@ export default function CuestionarioDetalle() {
                                                                         18,
 
                                                                     color:
-                                                                        "#92400E",
+                                                                        textSecondaryColor,
 
                                                                     marginLeft:
                                                                         8,
@@ -3157,14 +3290,41 @@ export default function CuestionarioDetalle() {
                             finalizando
                         }
 
-                        className="flex-1 bg-slate-300 rounded-xl py-4 flex-row items-center justify-center"
+                        style={{
+                            flex:
+                                1,
+
+                            backgroundColor:
+                                surfaceSecondaryColor,
+
+                            borderRadius:
+                                12,
+
+                            paddingVertical:
+                                16,
+
+                            flexDirection:
+                                "row",
+
+                            alignItems:
+                                "center",
+
+                            justifyContent:
+                                "center",
+
+                            borderWidth:
+                                1,
+
+                            borderColor:
+                                borderColor,
+                        }}
 
                     >
 
                         <Ionicons
                             name="arrow-back-outline"
                             size={16}
-                            color="#64748B"
+                            color={textSecondaryColor}
                         />
 
 
@@ -3177,7 +3337,7 @@ export default function CuestionarioDetalle() {
                                     14,
 
                                 color:
-                                    "#64748B",
+                                    textSecondaryColor,
 
                                 marginLeft:
                                     5,
@@ -3202,14 +3362,33 @@ export default function CuestionarioDetalle() {
                             avanzar
                         }
 
-                        className={`flex-[1.5] rounded-xl py-4 flex-row items-center justify-center ${
-                            todasRespondidasEnPagina &&
-                            !finalizando
+                        style={{
+                            flex:
+                                1.5,
 
-                                ? "bg-blue-500"
+                            borderRadius:
+                                12,
 
-                                : "bg-blue-200"
-                        }`}
+                            paddingVertical:
+                                16,
+
+                            flexDirection:
+                                "row",
+
+                            alignItems:
+                                "center",
+
+                            justifyContent:
+                                "center",
+
+                            backgroundColor:
+                                todasRespondidasEnPagina &&
+                                !finalizando
+
+                                    ? primaryColor
+
+                                    : disabledColor,
+                        }}
 
                     >
 
