@@ -1,6 +1,15 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "@react-navigation/native";
-import { useRouter } from "expo-router";
+import {
+  Ionicons,
+} from "@expo/vector-icons";
+
+import {
+  useTheme,
+} from "@react-navigation/native";
+
+import {
+  useRouter,
+} from "expo-router";
+
 import React from "react";
 
 import {
@@ -14,40 +23,25 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
-import { EncabezadoHome } from "@/components/ui/EncabezadoHome";
-import { TarjetaModulo } from "@/components/ui/TarjetaModulo";
-import { TarjetaRecomendacion } from "@/components/ui/TarjetaRecomendacion";
+import {
+  EncabezadoHome,
+} from "@/components/ui/EncabezadoHome";
 
-import { useThemeColor } from "@/hooks/use-theme-color";
-import { useResumenBienestar } from "@/hooks/useResumenBienestar";
+import {
+  TarjetaModulo,
+} from "@/components/ui/TarjetaModulo";
 
+import {
+  TarjetaRecomendacion,
+} from "@/components/ui/TarjetaRecomendacion";
 
-// ==========================================================
-// COLORES VISUALES DE RECOMENDACIONES
-// ==========================================================
+import {
+  useThemeColor,
+} from "@/hooks/use-theme-color";
 
-const COLORES_RECOMENDACION = [
-  {
-    fondoClaro: "bg-purple-100",
-    fondoOscuro: "bg-purple-950",
-    icono: "#8B5CF6",
-  },
-  {
-    fondoClaro: "bg-emerald-100",
-    fondoOscuro: "bg-emerald-950",
-    icono: "#10B981",
-  },
-  {
-    fondoClaro: "bg-blue-100",
-    fondoOscuro: "bg-blue-950",
-    icono: "#4F8EF7",
-  },
-  {
-    fondoClaro: "bg-amber-100",
-    fondoOscuro: "bg-amber-950",
-    icono: "#F59E0B",
-  },
-];
+import {
+  useResumenBienestar,
+} from "@/hooks/useResumenBienestar";
 
 
 // ==========================================================
@@ -65,7 +59,8 @@ export default function HomeScreen() {
 
 
   const {
-    dark: isDarkMode,
+    dark:
+      isDarkMode,
   } =
     useTheme();
 
@@ -101,6 +96,79 @@ export default function HomeScreen() {
     );
 
 
+  const secondaryColor =
+    useThemeColor(
+      {},
+      "secondary"
+    );
+
+
+  const accentColor =
+    useThemeColor(
+      {},
+      "accent"
+    );
+
+
+  const primarySoftColor =
+    useThemeColor(
+      {},
+      "primarySoft"
+    );
+
+
+  const secondarySoftColor =
+    useThemeColor(
+      {},
+      "secondarySoft"
+    );
+
+
+  const accentSoftColor =
+    useThemeColor(
+      {},
+      "accentSoft"
+    );
+
+
+  // ========================================================
+  // COLORES PARA RECOMENDACIONES
+  // ========================================================
+
+  const coloresRecomendacion = [
+    {
+      fondo:
+        accentSoftColor,
+
+      icono:
+        accentColor,
+    },
+    {
+      fondo:
+        secondarySoftColor,
+
+      icono:
+        secondaryColor,
+    },
+    {
+      fondo:
+        primarySoftColor,
+
+      icono:
+        primaryColor,
+    },
+    {
+      fondo:
+        isDarkMode
+          ? "#3A2C12"
+          : "#FEF3C7",
+
+      icono:
+        "#F59E0B",
+    },
+  ];
+
+
   // ========================================================
   // UI
   // ========================================================
@@ -109,14 +177,17 @@ export default function HomeScreen() {
 
     <View
       style={{
-        flex: 1,
+        flex:
+          1,
+
         backgroundColor,
       }}
     >
 
       <ScrollView
         style={{
-          flex: 1,
+          flex:
+            1,
         }}
 
         showsVerticalScrollIndicator={
@@ -124,14 +195,17 @@ export default function HomeScreen() {
         }
 
         contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingTop: 8,
+          paddingHorizontal:
+            16,
 
-          // Espacio adicional para que la barra inferior
-          // no cubra las últimas tarjetas en Android.
+          paddingTop:
+            8,
+
           paddingBottom:
             Math.max(
-              insets.bottom + 150,
+              insets.bottom +
+              150,
+
               175
             ),
         }}
@@ -149,18 +223,25 @@ export default function HomeScreen() {
         ================================================= */}
 
         <View
-          className="rounded-3xl p-5 mb-4"
+          className="
+            rounded-3xl
+            p-5
+            mb-4
+          "
 
           style={{
             backgroundColor:
-              "#4F8EF7",
+              primaryColor,
 
             shadowColor:
               "#000000",
 
             shadowOffset: {
-              width: 0,
-              height: 3,
+              width:
+                0,
+
+              height:
+                3,
             },
 
             shadowOpacity:
@@ -199,7 +280,9 @@ export default function HomeScreen() {
             "
           >
 
-            {/* Racha */}
+            {/* =================================================
+                RACHA
+            ================================================= */}
 
             <View
               className="
@@ -245,7 +328,9 @@ export default function HomeScreen() {
             </View>
 
 
-            {/* Días */}
+            {/* =================================================
+                DÍAS
+            ================================================= */}
 
             <View
               className="
@@ -254,67 +339,69 @@ export default function HomeScreen() {
               "
             >
 
-              {[
-                "L",
-                "M",
-                "M",
-                "J",
-                "V",
-                "S",
-                "D",
-              ].map(
-                (
-                  dia,
-                  index
-                ) => (
+              {
+                [
+                  "L",
+                  "M",
+                  "M",
+                  "J",
+                  "V",
+                  "S",
+                  "D",
+                ].map(
+                  (
+                    dia,
+                    index
+                  ) => (
 
-                  <View
-                    key={
-                      index
-                    }
+                    <View
+                      key={
+                        index
+                      }
 
-                    style={{
-                      width:
-                        28,
-
-                      height:
-                        28,
-
-                      borderRadius:
-                        14,
-
-                      alignItems:
-                        "center",
-
-                      justifyContent:
-                        "center",
-
-                      backgroundColor:
-                        index < 5
-                          ? "#7BBF9A"
-                          : "rgba(255,255,255,0.22)",
-                    }}
-                  >
-
-                    <Text
                       style={{
-                        fontFamily:
-                          "Nunito-Bold",
+                        width:
+                          28,
 
-                        fontSize:
-                          13,
+                        height:
+                          28,
 
-                        color:
-                          "#FFFFFF",
+                        borderRadius:
+                          14,
+
+                        alignItems:
+                          "center",
+
+                        justifyContent:
+                          "center",
+
+                        backgroundColor:
+                          index < 5
+                            ? secondaryColor
+                            : "rgba(255,255,255,0.22)",
                       }}
                     >
-                      {dia}
-                    </Text>
 
-                  </View>
+                      <Text
+                        style={{
+                          fontFamily:
+                            "Nunito-Bold",
 
+                          fontSize:
+                            13,
+
+                          color:
+                            "#FFFFFF",
+                        }}
+                      >
+                        {dia}
+                      </Text>
+
+                    </View>
+
+                  )
                 )
-              )}
+              }
 
             </View>
 
@@ -378,14 +465,17 @@ export default function HomeScreen() {
 
           style={{
             backgroundColor:
-              "#7BBF9A",
+              secondaryColor,
 
             shadowColor:
               "#000000",
 
             shadowOffset: {
-              width: 0,
-              height: 3,
+              width:
+                0,
+
+              height:
+                3,
             },
 
             shadowOpacity:
@@ -442,7 +532,8 @@ export default function HomeScreen() {
 
             <View
               style={{
-                flexShrink: 1,
+                flexShrink:
+                  1,
               }}
             >
 
@@ -463,7 +554,9 @@ export default function HomeScreen() {
 
 
               <Text
-                numberOfLines={2}
+                numberOfLines={
+                  2
+                }
 
                 style={{
                   marginTop:
@@ -495,13 +588,6 @@ export default function HomeScreen() {
 
         </TouchableOpacity>
 
-        {/* Módulos de ingreso rápido */}
-        <View className="flex-row flex-wrap justify-between mb-4">
-          <TarjetaModulo titulo="Nuevo Registro en Diario" nombreIcono="book-outline" onPress={() => router.push('/(tabs)/diario')} />
-          <TarjetaModulo titulo="Test y Cuestionarios" nombreIcono="document-text-outline" onPress={() => router.push('/(tabs)/cuestionarios')} />
-          <TarjetaModulo titulo="Ir a Foro Comunitario" nombreIcono="megaphone-outline" onPress={() => console.log('Ir a Foro')} />
-          <TarjetaModulo titulo="Entrevista de Bienestar" nombreIcono="heart-outline" onPress={() => router.push('/(tabs)/entrevistas')} />
-          <TarjetaModulo titulo="Técnicas Complementarias" nombreIcono="clipboard-outline" onPress={() => console.log('Ir a Técnicas Complementarias')} />
 
         {/* =================================================
             MÓDULOS DE INGRESO RÁPIDO
@@ -594,6 +680,10 @@ export default function HomeScreen() {
           "
         >
 
+          {/* =================================================
+              HEADER DEL PLAN
+          ================================================= */}
+
           <View
             className="
               flex-row
@@ -620,8 +710,11 @@ export default function HomeScreen() {
 
 
             {
-              resumen?.id_entrevista &&
-              resumen.actividades.length >
+              resumen
+                ?.id_entrevista &&
+              resumen
+                .actividades
+                .length >
                 0 && (
 
                 <TouchableOpacity
@@ -672,7 +765,8 @@ export default function HomeScreen() {
 
               ? (
 
-                resumen.actividades
+                resumen
+                  .actividades
                   .slice(
                     0,
                     4
@@ -684,16 +778,10 @@ export default function HomeScreen() {
                     ) => {
 
                       const color =
-                        COLORES_RECOMENDACION[
+                        coloresRecomendacion[
                           index %
-                          COLORES_RECOMENDACION.length
+                          coloresRecomendacion.length
                         ];
-
-
-                      const fondoRecomendacion =
-                        isDarkMode
-                          ? color.fondoOscuro
-                          : color.fondoClaro;
 
 
                       return (
@@ -716,7 +804,7 @@ export default function HomeScreen() {
                           }
 
                           colorFondo={
-                            fondoRecomendacion
+                            color.fondo
                           }
 
                           colorIcono={
@@ -757,14 +845,16 @@ export default function HomeScreen() {
                   nombreIcono="heart-outline"
 
                   colorFondo={
-                    isDarkMode
-                      ? "bg-blue-950"
-                      : "bg-blue-100"
+                    primarySoftColor
                   }
 
-                  colorIcono="#4F8EF7"
+                  colorIcono={
+                    primaryColor
+                  }
 
-                  colorTextoFlecha="#4F8EF7"
+                  colorTextoFlecha={
+                    primaryColor
+                  }
 
                   onPress={() =>
                     router.push(

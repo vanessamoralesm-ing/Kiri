@@ -1,20 +1,40 @@
-import { Ionicons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
+import {
+  Ionicons,
+} from "@expo/vector-icons";
+
+import {
+  router,
+  useLocalSearchParams,
+} from "expo-router";
+
 import React from "react";
+
 import {
   Pressable,
   ScrollView,
   Text,
   View,
 } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
+
+import Animated, {
+  FadeInDown,
+} from "react-native-reanimated";
 
 import LecturaRecomendadaCard from "../../../../components/educacion/LecturaRecomendadaCard";
 
-// Datos temporales de cada categoría. Después estos datos vendrán desde Supabase.
+import {
+  useThemeColor,
+} from "@/hooks/use-theme-color";
+
+
+// ==========================================================
+// DATOS TEMPORALES
+// ==========================================================
+
 const contenidoCategorias = {
   Ansiedad: {
-    titulo: "Ansiedad",
+    titulo:
+      "Ansiedad",
 
     descripcion:
       "Conoce más sobre la ansiedad, aprende a identificarla y descubre herramientas que pueden ayudarte a comprender mejor lo que sientes.",
@@ -27,18 +47,34 @@ const contenidoCategorias = {
 
     lecturas: [
       {
-        id: "que-es-la-ansiedad",
-        categoria: "Ansiedad",
-        tiempo: "5 min de lectura",
-        titulo: "¿Qué es la ansiedad?",
+        id:
+          "que-es-la-ansiedad",
+
+        categoria:
+          "Ansiedad",
+
+        tiempo:
+          "5 min de lectura",
+
+        titulo:
+          "¿Qué es la ansiedad?",
+
         descripcion:
           "Conoce qué es la ansiedad, por qué aparece y cómo puede manifestarse en diferentes situaciones.",
       },
       {
-        id: "reconocer-ansiedad",
-        categoria: "Ansiedad",
-        tiempo: "7 min de lectura",
-        titulo: "Cómo reconocer la ansiedad",
+        id:
+          "reconocer-ansiedad",
+
+        categoria:
+          "Ansiedad",
+
+        tiempo:
+          "7 min de lectura",
+
+        titulo:
+          "Cómo reconocer la ansiedad",
+
         descripcion:
           "Aprende a identificar algunas señales físicas, emocionales y conductuales relacionadas con la ansiedad.",
       },
@@ -46,7 +82,8 @@ const contenidoCategorias = {
   },
 
   Autoestima: {
-    titulo: "Autoestima",
+    titulo:
+      "Autoestima",
 
     descripcion:
       "Descubre cómo la manera en que te percibes puede influir en tus emociones, decisiones y relaciones.",
@@ -59,18 +96,34 @@ const contenidoCategorias = {
 
     lecturas: [
       {
-        id: "comprender-autoestima",
-        categoria: "Autoestima",
-        tiempo: "6 min de lectura",
-        titulo: "Comprendiendo la autoestima",
+        id:
+          "comprender-autoestima",
+
+        categoria:
+          "Autoestima",
+
+        tiempo:
+          "6 min de lectura",
+
+        titulo:
+          "Comprendiendo la autoestima",
+
         descripcion:
           "Conoce qué es la autoestima y cómo puede influir en la manera en que pensamos y actuamos.",
       },
       {
-        id: "fortalecer-autoestima",
-        categoria: "Autoestima",
-        tiempo: "7 min de lectura",
-        titulo: "Cómo fortalecer tu autoestima",
+        id:
+          "fortalecer-autoestima",
+
+        categoria:
+          "Autoestima",
+
+        tiempo:
+          "7 min de lectura",
+
+        titulo:
+          "Cómo fortalecer tu autoestima",
+
         descripcion:
           "Descubre pequeñas acciones que pueden ayudarte a construir una relación más saludable contigo.",
       },
@@ -78,7 +131,8 @@ const contenidoCategorias = {
   },
 
   Estres: {
-    titulo: "Estrés",
+    titulo:
+      "Estrés",
 
     descripcion:
       "Aprende qué es el estrés, cómo puede manifestarse y qué podemos hacer para manejarlo de una manera más saludable.",
@@ -91,18 +145,34 @@ const contenidoCategorias = {
 
     lecturas: [
       {
-        id: "comprender-estres",
-        categoria: "Estrés",
-        tiempo: "5 min de lectura",
-        titulo: "Comprendiendo el estrés",
+        id:
+          "comprender-estres",
+
+        categoria:
+          "Estrés",
+
+        tiempo:
+          "5 min de lectura",
+
+        titulo:
+          "Comprendiendo el estrés",
+
         descripcion:
           "Conoce por qué aparece el estrés y cuáles son algunas de las señales más comunes.",
       },
       {
-        id: "manejar-estres",
-        categoria: "Estrés",
-        tiempo: "8 min de lectura",
-        titulo: "Estrategias para manejar el estrés",
+        id:
+          "manejar-estres",
+
+        categoria:
+          "Estrés",
+
+        tiempo:
+          "8 min de lectura",
+
+        titulo:
+          "Estrategias para manejar el estrés",
+
         descripcion:
           "Conoce algunas estrategias que pueden ayudarte a afrontar situaciones estresantes.",
       },
@@ -110,7 +180,8 @@ const contenidoCategorias = {
   },
 
   Procrastinacion: {
-    titulo: "Procrastinación",
+    titulo:
+      "Procrastinación",
 
     descripcion:
       "Comprende por qué algunas veces dejamos nuestras responsabilidades para después y cómo podemos empezar a cambiar este hábito.",
@@ -123,18 +194,34 @@ const contenidoCategorias = {
 
     lecturas: [
       {
-        id: "entender-procrastinacion",
-        categoria: "Procrastinación",
-        tiempo: "6 min de lectura",
-        titulo: "¿Por qué procrastinamos?",
+        id:
+          "entender-procrastinacion",
+
+        categoria:
+          "Procrastinación",
+
+        tiempo:
+          "6 min de lectura",
+
+        titulo:
+          "¿Por qué procrastinamos?",
+
         descripcion:
           "Comprende algunas de las razones que pueden llevarnos a posponer nuestras responsabilidades.",
       },
       {
-        id: "evitar-procrastinacion",
-        categoria: "Procrastinación",
-        tiempo: "7 min de lectura",
-        titulo: "Pequeños pasos para dejar de procrastinar",
+        id:
+          "evitar-procrastinacion",
+
+        categoria:
+          "Procrastinación",
+
+        tiempo:
+          "7 min de lectura",
+
+        titulo:
+          "Pequeños pasos para dejar de procrastinar",
+
         descripcion:
           "Aprende estrategias sencillas para comenzar tus tareas y organizar mejor tu tiempo.",
       },
@@ -142,7 +229,8 @@ const contenidoCategorias = {
   },
 
   Soledad: {
-    titulo: "Soledad",
+    titulo:
+      "Soledad",
 
     descripcion:
       "Conoce mejor qué significa sentirse solo y cómo podemos fortalecer nuestros vínculos y nuestro bienestar emocional.",
@@ -155,18 +243,34 @@ const contenidoCategorias = {
 
     lecturas: [
       {
-        id: "comprender-soledad",
-        categoria: "Soledad",
-        tiempo: "5 min de lectura",
-        titulo: "Comprendiendo la soledad",
+        id:
+          "comprender-soledad",
+
+        categoria:
+          "Soledad",
+
+        tiempo:
+          "5 min de lectura",
+
+        titulo:
+          "Comprendiendo la soledad",
+
         descripcion:
           "Conoce las diferencias entre estar solo y experimentar sentimientos de soledad.",
       },
       {
-        id: "conexiones-saludables",
-        categoria: "Soledad",
-        tiempo: "7 min de lectura",
-        titulo: "Construyendo conexiones saludables",
+        id:
+          "conexiones-saludables",
+
+        categoria:
+          "Soledad",
+
+        tiempo:
+          "7 min de lectura",
+
+        titulo:
+          "Construyendo conexiones saludables",
+
         descripcion:
           "Descubre algunas formas de fortalecer nuestras relaciones y crear vínculos significativos.",
       },
@@ -174,217 +278,838 @@ const contenidoCategorias = {
   },
 };
 
+
+// ==========================================================
+// COMPONENTE
+// ==========================================================
+
 export default function CategoriaScreen() {
-  // Obtiene el id de la categoría seleccionada desde la ruta.
-  const { id } = useLocalSearchParams<{ id: string }>();
 
-  // Busca la información correspondiente a la categoría seleccionada.
+  // ========================================================
+  // PARÁMETROS
+  // ========================================================
+
+  const {
+    id,
+  } =
+    useLocalSearchParams<{
+      id: string;
+    }>();
+
+
+  // ========================================================
+  // COLORES DEL TEMA
+  // ========================================================
+
+  const backgroundColor =
+    useThemeColor(
+      {},
+      "background"
+    );
+
+
+  const surfaceColor =
+    useThemeColor(
+      {},
+      "surface"
+    );
+
+
+  const textColor =
+    useThemeColor(
+      {},
+      "text"
+    );
+
+
+  const textSecondaryColor =
+    useThemeColor(
+      {},
+      "textSecondary"
+    );
+
+
+  const textMutedColor =
+    useThemeColor(
+      {},
+      "textMuted"
+    );
+
+
+  const primaryColor =
+    useThemeColor(
+      {},
+      "primary"
+    );
+
+
+  const textOnPrimaryColor =
+    useThemeColor(
+      {},
+      "textOnPrimary"
+    );
+
+
+  const iconColor =
+    useThemeColor(
+      {},
+      "icon"
+    );
+
+
+  const borderColor =
+    useThemeColor(
+      {},
+      "border"
+    );
+
+
+  const accentColor =
+    useThemeColor(
+      {},
+      "accent"
+    );
+
+
+  const accentSoftColor =
+    useThemeColor(
+      {},
+      "accentSoft"
+    );
+
+
+  const secondaryColor =
+    useThemeColor(
+      {},
+      "secondary"
+    );
+
+
+  const secondarySoftColor =
+    useThemeColor(
+      {},
+      "secondarySoft"
+    );
+
+
+  // ========================================================
+  // CATEGORÍA
+  // ========================================================
+
   const categoria =
-    contenidoCategorias[id as keyof typeof contenidoCategorias];
+    contenidoCategorias[
+      id as keyof typeof contenidoCategorias
+    ];
 
-  // Si la categoría no existe, mostramos un mensaje sencillo.
-  if (!categoria) {
+
+  // ========================================================
+  // CATEGORÍA NO ENCONTRADA
+  // ========================================================
+
+  if (
+    !categoria
+  ) {
+
     return (
-      <View className="flex-1 items-center justify-center bg-slate-50 px-6">
+
+      <View
+        style={{
+          flex:
+            1,
+
+          paddingHorizontal:
+            24,
+
+          alignItems:
+            "center",
+
+          justifyContent:
+            "center",
+
+          backgroundColor,
+        }}
+      >
+
         <Text
-          className="text-center text-[18px] text-slate-700"
           style={{
-            fontFamily: "Nunito-SemiBold",
+            fontFamily:
+              "Nunito-SemiBold",
+
+            fontSize:
+              18,
+
+            textAlign:
+              "center",
+
+            color:
+              textColor,
           }}
         >
           No encontramos esta categoría.
         </Text>
 
+
         <Pressable
-          onPress={() => router.replace("/(tabs)/educacion" as any)}
-          className="mt-5 rounded-xl bg-blue-500 px-5 py-3"
+          onPress={() =>
+            router.replace(
+              "/(tabs)/educacion" as any
+            )
+          }
+
+          style={({
+            pressed,
+          }) => ({
+            marginTop:
+              20,
+
+            paddingHorizontal:
+              20,
+
+            paddingVertical:
+              12,
+
+            borderRadius:
+              12,
+
+            backgroundColor:
+              primaryColor,
+
+            opacity:
+              pressed
+                ? 0.8
+                : 1,
+          })}
         >
+
           <Text
-            className="text-white"
             style={{
-              fontFamily: "Nunito-SemiBold",
+              fontFamily:
+                "Nunito-SemiBold",
+
+              color:
+                textOnPrimaryColor,
             }}
           >
             Volver a Educación
           </Text>
+
         </Pressable>
+
       </View>
+
     );
+
   }
 
+
+  // ========================================================
+  // UI
+  // ========================================================
+
   return (
+
     <ScrollView
-      className="flex-1 bg-slate-50"
-      showsVerticalScrollIndicator={false}
+      style={{
+        flex:
+          1,
+
+        backgroundColor,
+      }}
+
+      showsVerticalScrollIndicator={
+        false
+      }
+
       contentContainerStyle={{
-        paddingBottom: 130,
+        paddingBottom:
+          130,
       }}
     >
-      <View className="px-6 pt-12">
 
-        {/* Regresa directamente a la pantalla principal de Educación. */}
+      <View
+        style={{
+          paddingHorizontal:
+            24,
+
+          paddingTop:
+            48,
+        }}
+      >
+
+        {/* =================================================
+            VOLVER
+        ================================================= */}
+
         <Pressable
-          onPress={() => router.replace("/(tabs)/educacion" as any)}
-          className="mb-5 h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm"
+          onPress={() =>
+            router.replace(
+              "/(tabs)/educacion" as any
+            )
+          }
+
+          style={({
+            pressed,
+          }) => ({
+            width:
+              44,
+
+            height:
+              44,
+
+            marginBottom:
+              20,
+
+            borderRadius:
+              22,
+
+            alignItems:
+              "center",
+
+            justifyContent:
+              "center",
+
+            borderWidth:
+              1,
+
+            borderColor,
+
+            backgroundColor:
+              surfaceColor,
+
+            opacity:
+              pressed
+                ? 0.7
+                : 1,
+
+            shadowColor:
+              "#000000",
+
+            shadowOffset: {
+              width:
+                0,
+
+              height:
+                2,
+            },
+
+            shadowOpacity:
+              0.06,
+
+            shadowRadius:
+              4,
+
+            elevation:
+              2,
+          })}
         >
+
           <Ionicons
             name="arrow-back"
             size={23}
-            color="#475569"
+            color={
+              iconColor
+            }
           />
+
         </Pressable>
 
-        {/* Nombre y descripción de la categoría seleccionada. */}
-        <Animated.View entering={FadeInDown.duration(450)}>
+
+        {/* =================================================
+            INFORMACIÓN DE LA CATEGORÍA
+        ================================================= */}
+
+        <Animated.View
+          entering={
+            FadeInDown.duration(
+              450
+            )
+          }
+        >
+
           <Text
-            className="text-[26px] text-blue-500"
             style={{
-              fontFamily: "Nunito-Bold",
+              fontFamily:
+                "Nunito-Bold",
+
+              fontSize:
+                26,
+
+              color:
+                primaryColor,
             }}
           >
             {categoria.titulo}
           </Text>
 
+
           <Text
-            className="mt-2 text-[15px] leading-6 text-slate-500"
             style={{
-              fontFamily: "Nunito-Medium",
-              textAlign: "justify",
+              marginTop:
+                8,
+
+              fontFamily:
+                "Nunito-Medium",
+
+              fontSize:
+                15,
+
+              lineHeight:
+                24,
+
+              textAlign:
+                "justify",
+
+              color:
+                textSecondaryColor,
             }}
           >
             {categoria.descripcion}
           </Text>
+
         </Animated.View>
 
-        {/* Sección de Mitos y Realidades de la categoría. */}
+
+        {/* =================================================
+            MITOS Y REALIDADES
+        ================================================= */}
+
         <Animated.View
-          entering={FadeInDown.delay(100).duration(450)}
-          className="mt-9"
+          entering={
+            FadeInDown
+              .delay(
+                100
+              )
+              .duration(
+                450
+              )
+          }
+
+          style={{
+            marginTop:
+              36,
+          }}
         >
+
           <Text
-            className="mb-5 text-[20px] text-slate-800"
             style={{
-              fontFamily: "Nunito-SemiBold",
+              marginBottom:
+                20,
+
+              fontFamily:
+                "Nunito-SemiBold",
+
+              fontSize:
+                20,
+
+              color:
+                textColor,
             }}
           >
             Mitos y Realidades
           </Text>
 
-          <View className="rounded-[22px] bg-white p-4 shadow-md">
 
-            {/* Mito de la categoría. */}
-            <View className="rounded-[18px] bg-[#F3EEFF] p-4">
-              <View className="flex-row items-center">
-                <View className="h-10 w-10 items-center justify-center rounded-full bg-white">
+          {/* =================================================
+              CONTENEDOR
+          ================================================= */}
+
+          <View
+            style={{
+              padding:
+                16,
+
+              borderRadius:
+                22,
+
+              borderWidth:
+                1,
+
+              borderColor,
+
+              backgroundColor:
+                surfaceColor,
+
+              shadowColor:
+                "#000000",
+
+              shadowOffset: {
+                width:
+                  0,
+
+                height:
+                  2,
+              },
+
+              shadowOpacity:
+                0.08,
+
+              shadowRadius:
+                6,
+
+              elevation:
+                3,
+            }}
+          >
+
+            {/* =================================================
+                MITO
+            ================================================= */}
+
+            <View
+              style={{
+                padding:
+                  16,
+
+                borderRadius:
+                  18,
+
+                backgroundColor:
+                  accentSoftColor,
+              }}
+            >
+
+              <View
+                style={{
+                  flexDirection:
+                    "row",
+
+                  alignItems:
+                    "center",
+                }}
+              >
+
+                <View
+                  style={{
+                    width:
+                      40,
+
+                    height:
+                      40,
+
+                    borderRadius:
+                      20,
+
+                    alignItems:
+                      "center",
+
+                    justifyContent:
+                      "center",
+
+                    backgroundColor:
+                      surfaceColor,
+                  }}
+                >
+
                   <Ionicons
                     name="bulb-outline"
                     size={22}
-                    color="#7C6EE6"
+                    color={
+                      accentColor
+                    }
                   />
+
                 </View>
 
+
                 <Text
-                  className="ml-3 text-[13px] uppercase tracking-wide text-[#7466D9]"
                   style={{
-                    fontFamily: "Nunito-Bold",
+                    marginLeft:
+                      12,
+
+                    fontFamily:
+                      "Nunito-Bold",
+
+                    fontSize:
+                      13,
+
+                    textTransform:
+                      "uppercase",
+
+                    letterSpacing:
+                      0.7,
+
+                    color:
+                      accentColor,
                   }}
                 >
                   Mito
                 </Text>
+
               </View>
 
+
               <Text
-                className="mt-4 text-[16px] leading-6 text-slate-800"
                 style={{
-                  fontFamily: "Nunito-SemiBold",
+                  marginTop:
+                    16,
+
+                  fontFamily:
+                    "Nunito-SemiBold",
+
+                  fontSize:
+                    16,
+
+                  lineHeight:
+                    24,
+
+                  color:
+                    textColor,
                 }}
               >
                 {categoria.mito}
               </Text>
+
             </View>
 
-            {/* Realidad de la categoría. */}
-            <View className="mt-4 rounded-[18px] bg-[#EAF8F4] p-4">
-              <View className="flex-row items-center">
-                <View className="h-10 w-10 items-center justify-center rounded-full bg-white">
+
+            {/* =================================================
+                REALIDAD
+            ================================================= */}
+
+            <View
+              style={{
+                marginTop:
+                  16,
+
+                padding:
+                  16,
+
+                borderRadius:
+                  18,
+
+                backgroundColor:
+                  secondarySoftColor,
+              }}
+            >
+
+              <View
+                style={{
+                  flexDirection:
+                    "row",
+
+                  alignItems:
+                    "center",
+                }}
+              >
+
+                <View
+                  style={{
+                    width:
+                      40,
+
+                    height:
+                      40,
+
+                    borderRadius:
+                      20,
+
+                    alignItems:
+                      "center",
+
+                    justifyContent:
+                      "center",
+
+                    backgroundColor:
+                      surfaceColor,
+                  }}
+                >
+
                   <Ionicons
                     name="checkmark-circle-outline"
                     size={23}
-                    color="#5BC4AD"
+                    color={
+                      secondaryColor
+                    }
                   />
+
                 </View>
 
+
                 <Text
-                  className="ml-3 text-[13px] uppercase tracking-wide text-[#49A994]"
                   style={{
-                    fontFamily: "Nunito-Bold",
+                    marginLeft:
+                      12,
+
+                    fontFamily:
+                      "Nunito-Bold",
+
+                    fontSize:
+                      13,
+
+                    textTransform:
+                      "uppercase",
+
+                    letterSpacing:
+                      0.7,
+
+                    color:
+                      secondaryColor,
                   }}
                 >
                   Realidad
                 </Text>
+
               </View>
 
+
               <Text
-                className="mt-4 text-[14px] leading-6 text-slate-600"
                 style={{
-                  fontFamily: "Nunito-Medium",
-                  textAlign: "justify",
+                  marginTop:
+                    16,
+
+                  fontFamily:
+                    "Nunito-Medium",
+
+                  fontSize:
+                    14,
+
+                  lineHeight:
+                    24,
+
+                  textAlign:
+                    "justify",
+
+                  color:
+                    textSecondaryColor,
                 }}
               >
                 {categoria.realidad}
               </Text>
+
             </View>
+
           </View>
+
         </Animated.View>
 
-        {/* Lecturas recomendadas relacionadas con la categoría. */}
+
+        {/* =================================================
+            LECTURAS RECOMENDADAS
+        ================================================= */}
+
         <Animated.View
-          entering={FadeInDown.delay(200).duration(450)}
-          className="mt-10"
+          entering={
+            FadeInDown
+              .delay(
+                200
+              )
+              .duration(
+                450
+              )
+          }
+
+          style={{
+            marginTop:
+              40,
+          }}
         >
-          <View className="mb-5 flex-row items-center justify-between">
+
+          <View
+            style={{
+              marginBottom:
+                20,
+
+              flexDirection:
+                "row",
+
+              alignItems:
+                "center",
+
+              justifyContent:
+                "space-between",
+            }}
+          >
+
             <Text
-              className="text-[20px] text-slate-800"
               style={{
-                fontFamily: "Nunito-SemiBold",
+                fontFamily:
+                  "Nunito-SemiBold",
+
+                fontSize:
+                  20,
+
+                color:
+                  textColor,
               }}
             >
               Lecturas recomendadas
             </Text>
 
-            {/* Más adelante este botón mostrará todas las lecturas relacionadas. */}
+
             <Pressable
+              hitSlop={
+                8
+              }
+
               onPress={() =>
-              router.push({
-                pathname: "/(tabs)/educacion/lecturas",
-                params: {
-                  categoria: categoria.titulo,
-                },
-              } as any)
-            }
-          >
-          <Text
-          className="text-[13px] text-blue-500"
-        style={{
-      fontFamily: "Nunito-SemiBold",
-    }}
-  >
-    Ver todas
-  </Text>
-</Pressable>
+                router.push({
+                  pathname:
+                    "/(tabs)/educacion/lecturas",
+
+                  params: {
+                    categoria:
+                      categoria.titulo,
+                  },
+                } as any)
+              }
+            >
+
+              <Text
+                style={{
+                  fontFamily:
+                    "Nunito-SemiBold",
+
+                  fontSize:
+                    13,
+
+                  color:
+                    primaryColor,
+                }}
+              >
+                Ver todas
+              </Text>
+
+            </Pressable>
+
           </View>
 
-          {categoria.lecturas.map((lectura) => (
-            <LecturaRecomendadaCard
-              key={lectura.id}
-              categoria={lectura.categoria}
-              tiempo={lectura.tiempo}
-              titulo={lectura.titulo}
-              descripcion={lectura.descripcion}
-            />
-          ))}
+
+          {
+            categoria.lecturas.map(
+              lectura => (
+
+                <LecturaRecomendadaCard
+                  key={
+                    lectura.id
+                  }
+
+                  categoria={
+                    lectura.categoria
+                  }
+
+                  tiempo={
+                    lectura.tiempo
+                  }
+
+                  titulo={
+                    lectura.titulo
+                  }
+
+                  descripcion={
+                    lectura.descripcion
+                  }
+                />
+
+              )
+            )
+          }
+
         </Animated.View>
+
       </View>
+
     </ScrollView>
+
   );
+
 }
