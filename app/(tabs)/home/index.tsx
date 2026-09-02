@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import React from "react";
 
@@ -8,6 +9,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
+import {
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import { EncabezadoHome } from "@/components/ui/EncabezadoHome";
 import { TarjetaModulo } from "@/components/ui/TarjetaModulo";
@@ -50,9 +55,24 @@ const COLORES_RECOMENDACION = [
 // ==========================================================
 
 export default function HomeScreen() {
-  const router = useRouter();
 
-  const { resumen } =
+  const router =
+    useRouter();
+
+
+  const insets =
+    useSafeAreaInsets();
+
+
+  const {
+    dark: isDarkMode,
+  } =
+    useTheme();
+
+
+  const {
+    resumen,
+  } =
     useResumenBienestar();
 
 
@@ -66,17 +86,13 @@ export default function HomeScreen() {
       "background"
     );
 
+
   const textColor =
     useThemeColor(
       {},
       "text"
     );
 
-  const textSecondaryColor =
-    useThemeColor(
-      {},
-      "textSecondary"
-    );
 
   const primaryColor =
     useThemeColor(
@@ -84,61 +100,41 @@ export default function HomeScreen() {
       "primary"
     );
 
-  const secondaryColor =
-    useThemeColor(
-      {},
-      "secondary"
-    );
-
-  const surfaceColor =
-    useThemeColor(
-      {},
-      "surface"
-    );
-
-  const borderColor =
-    useThemeColor(
-      {},
-      "border"
-    );
-
-  const primarySoftColor =
-    useThemeColor(
-      {},
-      "primarySoft"
-    );
-
-  const secondarySoftColor =
-    useThemeColor(
-      {},
-      "secondarySoft"
-    );
-
-  const isDarkBackground =
-    backgroundColor === "#0F172A";
-
 
   // ========================================================
   // UI
   // ========================================================
 
   return (
+
     <View
       style={{
         flex: 1,
         backgroundColor,
       }}
     >
+
       <ScrollView
         style={{
           flex: 1,
         }}
+
+        showsVerticalScrollIndicator={
+          false
+        }
+
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingTop: 8,
-          paddingBottom: 110,
+
+          // Espacio adicional para que la barra inferior
+          // no cubra las últimas tarjetas en Android.
+          paddingBottom:
+            Math.max(
+              insets.bottom + 150,
+              175
+            ),
         }}
-        showsVerticalScrollIndicator={false}
       >
 
         {/* =================================================
@@ -154,6 +150,7 @@ export default function HomeScreen() {
 
         <View
           className="rounded-3xl p-5 mb-4"
+
           style={{
             backgroundColor:
               "#4F8EF7",
@@ -166,19 +163,24 @@ export default function HomeScreen() {
               height: 3,
             },
 
-            shadowOpacity: 0.12,
+            shadowOpacity:
+              0.12,
 
-            shadowRadius: 6,
+            shadowRadius:
+              6,
 
-            elevation: 4,
+            elevation:
+              4,
           }}
         >
+
           <Text
             style={{
               fontFamily:
                 "Nunito-SemiBold",
 
-              fontSize: 13,
+              fontSize:
+                13,
 
               color:
                 "#EAF2FF",
@@ -188,18 +190,31 @@ export default function HomeScreen() {
           </Text>
 
 
-          <View className="flex-row justify-between items-center mt-2">
+          <View
+            className="
+              flex-row
+              justify-between
+              items-center
+              mt-2
+            "
+          >
 
             {/* Racha */}
 
-            <View className="flex-row items-baseline">
+            <View
+              className="
+                flex-row
+                items-baseline
+              "
+            >
 
               <Text
                 style={{
                   fontFamily:
                     "Nunito-Bold",
 
-                  fontSize: 35,
+                  fontSize:
+                    35,
 
                   color:
                     "#FFFFFF",
@@ -211,12 +226,14 @@ export default function HomeScreen() {
 
               <Text
                 style={{
-                  marginLeft: 4,
+                  marginLeft:
+                    4,
 
                   fontFamily:
                     "Nunito-Medium",
 
-                  fontSize: 12,
+                  fontSize:
+                    12,
 
                   color:
                     "#FFFFFF",
@@ -230,7 +247,12 @@ export default function HomeScreen() {
 
             {/* Días */}
 
-            <View className="flex-row gap-1">
+            <View
+              className="
+                flex-row
+                gap-1
+              "
+            >
 
               {[
                 "L",
@@ -247,13 +269,19 @@ export default function HomeScreen() {
                 ) => (
 
                   <View
-                    key={index}
+                    key={
+                      index
+                    }
 
                     style={{
-                      width: 28,
-                      height: 28,
+                      width:
+                        28,
 
-                      borderRadius: 14,
+                      height:
+                        28,
+
+                      borderRadius:
+                        14,
 
                       alignItems:
                         "center",
@@ -273,7 +301,8 @@ export default function HomeScreen() {
                         fontFamily:
                           "Nunito-Bold",
 
-                        fontSize: 13,
+                        fontSize:
+                          13,
 
                         color:
                           "#FFFFFF",
@@ -301,7 +330,8 @@ export default function HomeScreen() {
 
           <Text
             style={{
-              marginTop: 8,
+              marginTop:
+                8,
 
               textAlign:
                 "right",
@@ -309,7 +339,8 @@ export default function HomeScreen() {
               fontFamily:
                 "Nunito-Medium",
 
-              fontSize: 12,
+              fontSize:
+                12,
 
               color:
                 "#EAF2FF",
@@ -326,7 +357,9 @@ export default function HomeScreen() {
         ================================================= */}
 
         <TouchableOpacity
-          activeOpacity={0.8}
+          activeOpacity={
+            0.8
+          }
 
           onPress={() =>
             console.log(
@@ -355,24 +388,37 @@ export default function HomeScreen() {
               height: 3,
             },
 
-            shadowOpacity: 0.1,
+            shadowOpacity:
+              0.1,
 
-            shadowRadius: 6,
+            shadowRadius:
+              6,
 
-            elevation: 4,
+            elevation:
+              4,
           }}
         >
 
-          <View className="flex-row items-center">
+          <View
+            className="
+              flex-row
+              items-center
+            "
+          >
 
             <View
               style={{
-                width: 40,
-                height: 40,
+                width:
+                  40,
 
-                marginRight: 12,
+                height:
+                  40,
 
-                borderRadius: 20,
+                marginRight:
+                  12,
+
+                borderRadius:
+                  20,
 
                 alignItems:
                   "center",
@@ -384,22 +430,29 @@ export default function HomeScreen() {
                   "rgba(255,255,255,0.20)",
               }}
             >
+
               <Ionicons
                 name="trophy-outline"
                 size={21}
                 color="#FFFFFF"
               />
+
             </View>
 
 
-            <View>
+            <View
+              style={{
+                flexShrink: 1,
+              }}
+            >
 
               <Text
                 style={{
                   fontFamily:
                     "Nunito-Bold",
 
-                  fontSize: 16,
+                  fontSize:
+                    16,
 
                   color:
                     "#FFFFFF",
@@ -410,13 +463,17 @@ export default function HomeScreen() {
 
 
               <Text
+                numberOfLines={2}
+
                 style={{
-                  marginTop: 2,
+                  marginTop:
+                    2,
 
                   fontFamily:
                     "Nunito-Medium",
 
-                  fontSize: 12,
+                  fontSize:
+                    12,
 
                   color:
                     "#ECFDF5",
@@ -443,22 +500,34 @@ export default function HomeScreen() {
             MÓDULOS DE INGRESO RÁPIDO
         ================================================= */}
 
-        <View className="flex-row flex-wrap justify-between mb-4">
+        <View
+          className="
+            flex-row
+            flex-wrap
+            justify-between
+            mb-4
+          "
+        >
 
           <TarjetaModulo
             titulo="Nuevo Registro en Diario"
+
             nombreIcono="book-outline"
 
             onPress={() =>
-              router.push(
-                "/(tabs)/diario"
-              )
+              router.push({
+                pathname: "/diario/nuevo" as never,
+                params: {
+                  origen: "home",
+                },
+              })
             }
           />
 
 
           <TarjetaModulo
-            titulo="Test y Cuestionarios"
+            titulo="Cuestionarios"
+
             nombreIcono="document-text-outline"
 
             onPress={() =>
@@ -471,6 +540,7 @@ export default function HomeScreen() {
 
           <TarjetaModulo
             titulo="Ir a Foro Comunitario"
+
             nombreIcono="megaphone-outline"
 
             onPress={() =>
@@ -483,6 +553,7 @@ export default function HomeScreen() {
 
           <TarjetaModulo
             titulo="Entrevista de Bienestar"
+
             nombreIcono="heart-outline"
 
             onPress={() =>
@@ -495,11 +566,12 @@ export default function HomeScreen() {
 
           <TarjetaModulo
             titulo="Técnicas Complementarias"
+
             nombreIcono="clipboard-outline"
 
             onPress={() =>
-              console.log(
-                "Ir a Técnicas Complementarias"
+              router.push(
+                "/(tabs)/tecnicas"
               )
             }
           />
@@ -511,16 +583,29 @@ export default function HomeScreen() {
             PLAN RECOMENDADO
         ================================================= */}
 
-        <View className="mb-12 px-2">
+        <View
+          className="
+            mb-12
+            px-2
+          "
+        >
 
-          <View className="flex-row justify-between items-center mb-4">
+          <View
+            className="
+              flex-row
+              justify-between
+              items-center
+              mb-4
+            "
+          >
 
             <Text
               style={{
                 fontFamily:
                   "Nunito-Bold",
 
-                fontSize: 18,
+                fontSize:
+                  18,
 
                 color:
                   textColor,
@@ -530,8 +615,10 @@ export default function HomeScreen() {
             </Text>
 
 
-            {resumen?.id_entrevista &&
-              resumen.actividades.length > 0 && (
+            {
+              resumen?.id_entrevista &&
+              resumen.actividades.length >
+                0 && (
 
                 <TouchableOpacity
                   onPress={() =>
@@ -552,7 +639,8 @@ export default function HomeScreen() {
                       fontFamily:
                         "Nunito-SemiBold",
 
-                      fontSize: 12,
+                      fontSize:
+                        12,
 
                       color:
                         primaryColor,
@@ -563,7 +651,8 @@ export default function HomeScreen() {
 
                 </TouchableOpacity>
 
-              )}
+              )
+            }
 
           </View>
 
@@ -572,109 +661,123 @@ export default function HomeScreen() {
               RECOMENDACIONES
           ================================================= */}
 
-          {resumen?.actividades?.length ? (
+          {
+            resumen
+              ?.actividades
+              ?.length
 
-            resumen.actividades
-              .slice(0, 4)
-              .map(
-                (
-                  actividad,
-                  index
-                ) => {
+              ? (
 
-                  const color =
-                    COLORES_RECOMENDACION[
-                      index %
-                      COLORES_RECOMENDACION.length
-                    ];
+                resumen.actividades
+                  .slice(
+                    0,
+                    4
+                  )
+                  .map(
+                    (
+                      actividad,
+                      index
+                    ) => {
+
+                      const color =
+                        COLORES_RECOMENDACION[
+                          index %
+                          COLORES_RECOMENDACION.length
+                        ];
 
 
-                  const fondoRecomendacion =
-                    isDarkBackground
-                      ? color.fondoOscuro
-                      : color.fondoClaro;
+                      const fondoRecomendacion =
+                        isDarkMode
+                          ? color.fondoOscuro
+                          : color.fondoClaro;
 
 
-                  return (
+                      return (
 
-                    <TarjetaRecomendacion
-                      key={
-                        actividad.codigo
-                      }
+                        <TarjetaRecomendacion
+                          key={
+                            actividad.codigo
+                          }
 
-                      titulo={
-                        actividad.titulo
-                      }
+                          titulo={
+                            actividad.titulo
+                          }
 
-                      descripcion={
-                        actividad.descripcion
-                      }
+                          descripcion={
+                            actividad.descripcion
+                          }
 
-                      nombreIcono={
-                        actividad.icono as keyof typeof Ionicons.glyphMap
-                      }
+                          nombreIcono={
+                            actividad.icono as keyof typeof Ionicons.glyphMap
+                          }
 
-                      colorFondo={
-                        fondoRecomendacion
-                      }
+                          colorFondo={
+                            fondoRecomendacion
+                          }
 
-                      colorIcono={
-                        color.icono
-                      }
+                          colorIcono={
+                            color.icono
+                          }
 
-                      colorTextoFlecha={
-                        color.icono
-                      }
+                          colorTextoFlecha={
+                            color.icono
+                          }
 
-                      onPress={() =>
-                        router.push({
-                          pathname:
-                            "/(tabs)/entrevistas/[id]/plan",
+                          onPress={() =>
+                            router.push({
+                              pathname:
+                                "/(tabs)/entrevistas/[id]/plan",
 
-                          params: {
-                            id:
-                              resumen.id_entrevista,
-                          },
-                        })
-                      }
-                    />
+                              params: {
+                                id:
+                                  resumen.id_entrevista,
+                              },
+                            })
+                          }
+                        />
 
-                  );
+                      );
 
-                }
+                    }
+                  )
+
               )
 
-          ) : (
+              : (
 
-            <TarjetaRecomendacion
-              titulo="Realiza tu entrevista de bienestar"
+                <TarjetaRecomendacion
+                  titulo="Realiza tu entrevista de bienestar"
 
-              descripcion="Completa tu evaluación para recibir un plan personalizado."
+                  descripcion="Completa tu evaluación para recibir un plan personalizado."
 
-              nombreIcono="heart-outline"
+                  nombreIcono="heart-outline"
 
-              colorFondo={
-                isDarkBackground
-                  ? "bg-blue-950"
-                  : "bg-blue-100"
-              }
+                  colorFondo={
+                    isDarkMode
+                      ? "bg-blue-950"
+                      : "bg-blue-100"
+                  }
 
-              colorIcono="#4F8EF7"
+                  colorIcono="#4F8EF7"
 
-              colorTextoFlecha="#4F8EF7"
+                  colorTextoFlecha="#4F8EF7"
 
-              onPress={() =>
-                router.push(
-                  "/(tabs)/entrevistas"
-                )
-              }
-            />
+                  onPress={() =>
+                    router.push(
+                      "/(tabs)/entrevistas"
+                    )
+                  }
+                />
 
-          )}
+              )
+          }
 
         </View>
 
       </ScrollView>
+
     </View>
+
   );
+
 }

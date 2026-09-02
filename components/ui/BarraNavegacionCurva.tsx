@@ -234,12 +234,17 @@ export function BarraNavegacionCurva({
     pathname ===
     "/adultos/";
 
+  const esNuevoRegistroDiario =
+    pathname === "/diario/nuevo" ||
+    pathname === "/diario/nuevo/";
+
 
   const esRutaSecundariaDeInicio =
     esListaCuestionarios ||
     esForoPrincipal ||
     esEntrevistaNinosPrincipal ||
-    esEntrevistaAdultosPrincipal;
+    esEntrevistaAdultosPrincipal ||
+    esNuevoRegistroDiario;
 
 
   // ========================================================
@@ -272,7 +277,6 @@ export function BarraNavegacionCurva({
     "adultos" &&
     segmentosRuta.length >=
     2;
-
 
   const ocultarBarra =
     estaDentroDeCuestionario ||

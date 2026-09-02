@@ -12,7 +12,7 @@ export default function DiarioLayout() {
     >
       <Stack.Screen name="index" />
 
-      <Stack.Screen name="nuevo" />
+      <Stack.Screen name="[nuevo]" />
 
       <Stack.Screen name="[id]" />
     </Stack>

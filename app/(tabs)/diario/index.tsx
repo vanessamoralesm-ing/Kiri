@@ -29,9 +29,12 @@ export default function DiarioScreen() {
   const totalEntradas = 24;
 
   const irANuevoRegistro = () => {
-    router.push(
-      "/diario/nuevo"
-    );
+   router.push({
+      pathname: "/diario/nuevo" as never,
+      params: {
+        origen: "diario",
+      },
+    });
   };
 
   const verTodasLasEntradas = () => {
