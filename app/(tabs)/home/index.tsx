@@ -1,6 +1,15 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "@react-navigation/native";
-import { useRouter } from "expo-router";
+import {
+  Ionicons,
+} from "@expo/vector-icons";
+
+import {
+  useTheme,
+} from "@react-navigation/native";
+
+import {
+  useRouter,
+} from "expo-router";
+
 import React from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
