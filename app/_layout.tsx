@@ -28,10 +28,6 @@ import "react-native-reanimated";
 import AnimatedLogo from "@/components/ui/AnimatedLogo";
 
 import {
-  useColorScheme,
-} from "@/hooks/use-color-scheme";
-
-import {
   AuthProvider,
   useAuth,
 } from "@/services/authProvider";
@@ -40,6 +36,11 @@ import {
   KiriDarkTheme,
   KiriLightTheme,
 } from "@/constants/theme";
+
+import {
+  ThemeModeProvider,
+  useThemeMode,
+} from "@/contexts/ThemeModeContext";
 
 
 SplashScreen.preventAutoHideAsync();
@@ -66,107 +67,137 @@ function RootNavigation() {
     splashTerminado,
     setSplashTerminado,
   ] =
-    React.useState(false);
+    React.useState(
+      false
+    );
 
 
   const [
     inicioListo,
     setInicioListo,
   ] =
-    React.useState(false);
+    React.useState(
+      false
+    );
 
 
   // ========================================================
   // SPLASH
   // ========================================================
 
-  useEffect(() => {
+  useEffect(
+    () => {
 
-    const timer =
-      setTimeout(() => {
+      const timer =
+        setTimeout(
+          () => {
 
-        setSplashTerminado(
-          true
+            setSplashTerminado(
+              true
+            );
+
+          },
+          3000
         );
 
-      }, 3000);
 
+      return () =>
+        clearTimeout(
+          timer
+        );
 
-    return () =>
-      clearTimeout(timer);
-
-  }, []);
+    },
+    []
+  );
 
 
   // ========================================================
   // FINALIZAR ARRANQUE
   // ========================================================
 
-  useEffect(() => {
+  useEffect(
+    () => {
 
-    if (inicioListo) {
-      return;
-    }
-
-
-    if (
-      !splashTerminado ||
-      loading
-    ) {
-      return;
-    }
+      if (
+        inicioListo
+      ) {
+        return;
+      }
 
 
-    setInicioListo(true);
+      if (
+        !splashTerminado ||
+        loading
+      ) {
+        return;
+      }
 
-  }, [
-    splashTerminado,
-    loading,
-    inicioListo,
-  ]);
+
+      setInicioListo(
+        true
+      );
+
+    },
+    [
+      splashTerminado,
+      loading,
+      inicioListo,
+    ]
+  );
 
 
   // ========================================================
   // AUTENTICACIÓN
   // ========================================================
 
-  useEffect(() => {
+  useEffect(
+    () => {
 
-    if (!inicioListo) {
-      return;
-    }
+      if (
+        !inicioListo
+      ) {
+        return;
+      }
 
 
-    if (session) {
+      if (
+        session
+      ) {
+
+        router.replace(
+          "/(tabs)/home"
+        );
+
+        return;
+
+      }
+
 
       router.replace(
-        "/(tabs)/home"
+        "/(auth)/welcome"
       );
 
-      return;
-    }
-
-
-    router.replace(
-      "/(auth)/welcome"
-    );
-
-  }, [
-    inicioListo,
-    !!session,
-    router,
-  ]);
+    },
+    [
+      inicioListo,
+      !!session,
+      router,
+    ]
+  );
 
 
   // ========================================================
   // SPLASH PERSONALIZADO
   // ========================================================
 
-  if (!inicioListo) {
+  if (
+    !inicioListo
+  ) {
 
     return (
       <AnimatedLogo />
     );
+
   }
 
 
@@ -202,6 +233,51 @@ function RootNavigation() {
     </Stack>
 
   );
+
+}
+
+
+// ==========================================================
+// APLICACIÓN CON TEMA
+// ==========================================================
+
+function AppConTema() {
+
+  const {
+    isDarkMode,
+  } =
+    useThemeMode();
+
+
+  return (
+
+    <ThemeProvider
+      value={
+        isDarkMode
+          ? KiriDarkTheme
+          : KiriLightTheme
+      }
+    >
+
+      <AuthProvider>
+
+        <RootNavigation />
+
+      </AuthProvider>
+
+
+      <StatusBar
+        style={
+          isDarkMode
+            ? "light"
+            : "dark"
+        }
+      />
+
+    </ThemeProvider>
+
+  );
+
 }
 
 
@@ -210,14 +286,6 @@ function RootNavigation() {
 // ==========================================================
 
 export default function RootLayout() {
-
-  const colorScheme =
-    useColorScheme();
-
-
-  const esOscuro =
-    colorScheme === "dark";
-
 
   const [
     loaded,
@@ -243,58 +311,76 @@ export default function RootLayout() {
     });
 
 
-  useEffect(() => {
+  // ========================================================
+  // ERROR AL CARGAR FUENTES
+  // ========================================================
 
-    if (error) {
-      throw error;
-    }
+  useEffect(
+    () => {
 
-  }, [error]);
+      if (
+        error
+      ) {
+
+        throw error;
+
+      }
+
+    },
+    [
+      error,
+    ]
+  );
 
 
-  useEffect(() => {
+  // ========================================================
+  // OCULTAR SPLASH NATIVO
+  // ========================================================
 
-    if (loaded) {
+  useEffect(
+    () => {
 
-      SplashScreen
-        .hideAsync();
+      if (
+        loaded
+      ) {
 
-    }
+        SplashScreen
+          .hideAsync();
 
-  }, [loaded]);
+      }
+
+    },
+    [
+      loaded,
+    ]
+  );
 
 
-  if (!loaded) {
+  // ========================================================
+  // ESPERAR FUENTES
+  // ========================================================
+
+  if (
+    !loaded
+  ) {
+
     return null;
+
   }
 
 
+  // ========================================================
+  // PROVIDERS
+  // ========================================================
+
   return (
 
-    <ThemeProvider
-      value={
-        esOscuro
-          ? KiriDarkTheme
-          : KiriLightTheme
-      }
-    >
+    <ThemeModeProvider>
 
-      <AuthProvider>
+      <AppConTema />
 
-        <RootNavigation />
-
-      </AuthProvider>
-
-
-      <StatusBar
-        style={
-          esOscuro
-            ? "light"
-            : "dark"
-        }
-      />
-
-    </ThemeProvider>
+    </ThemeModeProvider>
 
   );
+
 }

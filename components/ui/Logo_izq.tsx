@@ -7,8 +7,8 @@ import {
 } from "react-native";
 
 import {
-  useColorScheme,
-} from "@/hooks/use-color-scheme";
+  useTheme,
+} from "@react-navigation/native";
 
 
 // ==========================================================
@@ -17,9 +17,7 @@ import {
 
 interface LogoProps {
   ancho?: number;
-
   alto?: number;
-
   estilo?: StyleProp<ImageStyle>;
 }
 
@@ -34,27 +32,42 @@ export default function Logo({
   estilo,
 }: LogoProps) {
 
-  const colorScheme =
-    useColorScheme();
+  const {
+    dark,
+  } =
+    useTheme();
 
-  const esOscuro =
-    colorScheme === "dark";
 
+  // ========================================================
+  // LOGO SEGÚN EL TEMA GLOBAL DE KIRI
+  // ========================================================
 
   const logo =
-    esOscuro
-      ? require("../../assets/images/splash-icon-ps.png")
-      : require("../../assets/images/splash-icon.png");
+    dark
+
+      ? require(
+          "../../assets/images/splash-icon-ps.png"
+        )
+
+      : require(
+          "../../assets/images/splash-icon.png"
+        );
 
 
   return (
+
     <Image
-      source={logo}
+      source={
+        logo
+      }
 
       style={[
         {
-          width: ancho,
-          height: alto,
+          width:
+            ancho,
+
+          height:
+            alto,
         },
 
         estilo,
@@ -62,5 +75,7 @@ export default function Logo({
 
       resizeMode="contain"
     />
+
   );
+
 }

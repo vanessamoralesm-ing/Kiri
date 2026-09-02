@@ -1,6 +1,11 @@
-import React from "react";
+import React, {
+    useEffect,
+    useState,
+} from "react";
 
 import {
+    Alert,
+    Image,
     Pressable,
     Text,
     View,
@@ -10,13 +15,26 @@ import {
     Ionicons,
 } from "@expo/vector-icons";
 
+import {
+    useRouter,
+} from "expo-router";
+
 import type {
     PublicacionForo,
+    TipoReaccion,
 } from "@/types/foro";
 
 import {
     useThemeColor,
 } from "@/hooks/use-theme-color";
+
+import {
+    useAuth,
+} from "@/services/authProvider";
+
+import {
+    reaccionarPublicacion,
+} from "@/services/foro/foroService";
 
 
 // ==========================================================
@@ -36,6 +54,77 @@ export default function PublicacionCard({
     publicacion,
 }: PublicacionCardProps) {
 
+    const router =
+        useRouter();
+
+
+    const {
+        profile,
+    } =
+        useAuth();
+
+
+    // ========================================================
+    // ESTADOS
+    // ========================================================
+
+    const [
+        reaccionActual,
+        setReaccionActual,
+    ] =
+        useState<
+            TipoReaccion | null
+        >(
+            publicacion.reaccion_usuario ??
+            null
+        );
+
+
+    const [
+        totalReacciones,
+        setTotalReacciones,
+    ] =
+        useState(
+            publicacion.total_reacciones ??
+            0
+        );
+
+
+    const [
+        procesandoReaccion,
+        setProcesandoReaccion,
+    ] =
+        useState(
+            false
+        );
+
+
+    // ========================================================
+    // SINCRONIZAR CON PROPS
+    // ========================================================
+
+    useEffect(
+        () => {
+
+            setReaccionActual(
+                publicacion.reaccion_usuario ??
+                null
+            );
+
+
+            setTotalReacciones(
+                publicacion.total_reacciones ??
+                0
+            );
+
+        },
+        [
+            publicacion.reaccion_usuario,
+            publicacion.total_reacciones,
+        ]
+    );
+
+
     // ========================================================
     // TEMA
     // ========================================================
@@ -46,11 +135,13 @@ export default function PublicacionCard({
             "surface"
         );
 
+
     const surfaceSecondaryColor =
         useThemeColor(
             {},
             "surfaceSecondary"
         );
+
 
     const borderColor =
         useThemeColor(
@@ -58,11 +149,13 @@ export default function PublicacionCard({
             "border"
         );
 
+
     const textColor =
         useThemeColor(
             {},
             "text"
         );
+
 
     const textSecondaryColor =
         useThemeColor(
@@ -70,11 +163,13 @@ export default function PublicacionCard({
             "textSecondary"
         );
 
+
     const textMutedColor =
         useThemeColor(
             {},
             "textMuted"
         );
+
 
     const iconColor =
         useThemeColor(
@@ -82,17 +177,20 @@ export default function PublicacionCard({
             "icon"
         );
 
+
     const primaryColor =
         useThemeColor(
             {},
             "primary"
         );
 
+
     const accentColor =
         useThemeColor(
             {},
             "accent"
         );
+
 
     const accentSoftColor =
         useThemeColor(
@@ -101,30 +199,52 @@ export default function PublicacionCard({
         );
 
 
+    const primarySoftColor =
+        useThemeColor(
+            {},
+            "primarySoft"
+        );
+
+
     // ========================================================
     // DATOS VISUALES
     // ========================================================
 
     const nombreUsuario =
-        publicacion.usuario?.nombre_preferido ||
-        publicacion.usuario?.nombres ||
+        publicacion.usuario
+            ?.nombre_preferido
+            ?.trim() ||
+
+        publicacion.usuario
+            ?.nombres
+            ?.trim() ||
+
         "Usuario";
 
 
+    const fotoPerfil =
+        publicacion.usuario
+            ?.foto_perfil ??
+        null;
+
+
     const emociones =
-        publicacion.emociones ?? [];
-
-
-    const totalReacciones =
-        publicacion.total_reacciones ?? 0;
+        publicacion.emociones ??
+        [];
 
 
     const totalComentarios =
-        publicacion.total_comentarios ?? 0;
+        publicacion.total_comentarios ??
+        0;
+
+
+    const reaccionMeGusta =
+        reaccionActual ===
+        "me_gusta";
 
 
     // ========================================================
-    // FECHA TEMPORAL
+    // FORMATEAR FECHA
     // ========================================================
 
     function formatearFecha(
@@ -137,13 +257,27 @@ export default function PublicacionCard({
             );
 
 
+        if (
+            Number.isNaN(
+                fechaPublicacion.getTime()
+            )
+        ) {
+
+            return "";
+
+        }
+
+
         const ahora =
             new Date();
 
 
         const diferencia =
-            ahora.getTime() -
-            fechaPublicacion.getTime();
+            Math.max(
+                0,
+                ahora.getTime() -
+                fechaPublicacion.getTime()
+            );
 
 
         const minutos =
@@ -168,27 +302,56 @@ export default function PublicacionCard({
 
 
         if (
-            minutos < 1
+            minutos <
+            1
         ) {
+
             return "Ahora";
+
         }
 
 
         if (
-            minutos < 60
+            minutos <
+            60
         ) {
+
             return `${minutos} min`;
+
         }
 
 
         if (
-            horas < 24
+            horas <
+            24
         ) {
+
             return `${horas} h`;
+
         }
 
 
-        return `${dias} d`;
+        if (
+            dias <
+            7
+        ) {
+
+            return `${dias} d`;
+
+        }
+
+
+        return fechaPublicacion
+            .toLocaleDateString(
+                "es-NI",
+                {
+                    day:
+                        "2-digit",
+
+                    month:
+                        "short",
+                }
+            );
 
     }
 
@@ -197,6 +360,177 @@ export default function PublicacionCard({
         formatearFecha(
             publicacion.fecha_publicacion
         );
+
+
+    // ========================================================
+    // ABRIR PUBLICACIÓN
+    // ========================================================
+
+    function abrirPublicacion() {
+
+        router.push({
+            pathname:
+                "/(tabs)/foro/[id]",
+
+            params: {
+                id:
+                    publicacion.id_publicacion,
+            },
+        });
+
+    }
+
+
+    // ========================================================
+    // REACCIONAR
+    // ========================================================
+
+    async function manejarReaccion() {
+
+        if (
+            procesandoReaccion
+        ) {
+            return;
+        }
+
+
+        if (
+            !profile?.id_usuario
+        ) {
+
+            Alert.alert(
+                "Sesión requerida",
+                "Debes iniciar sesión para reaccionar a una publicación."
+            );
+
+            return;
+
+        }
+
+
+        const reaccionAnterior =
+            reaccionActual;
+
+
+        const totalAnterior =
+            totalReacciones;
+
+
+        /*
+         * Actualización optimista:
+         *
+         * Sin reacción -> me gusta:
+         * +1
+         *
+         * me gusta -> quitar:
+         * -1
+         *
+         * otra reacción -> me gusta:
+         * total permanece igual
+         */
+
+        if (
+            reaccionAnterior ===
+            "me_gusta"
+        ) {
+
+            setReaccionActual(
+                null
+            );
+
+
+            setTotalReacciones(
+                actual =>
+                    Math.max(
+                        0,
+                        actual - 1
+                    )
+            );
+
+        } else {
+
+            setReaccionActual(
+                "me_gusta"
+            );
+
+
+            if (
+                reaccionAnterior ===
+                null
+            ) {
+
+                setTotalReacciones(
+                    actual =>
+                        actual + 1
+                );
+
+            }
+
+        }
+
+
+        try {
+
+            setProcesandoReaccion(
+                true
+            );
+
+
+            const nuevaReaccion =
+                await reaccionarPublicacion(
+                    publicacion.id_publicacion,
+                    profile.id_usuario,
+                    "me_gusta"
+                );
+
+
+            setReaccionActual(
+                nuevaReaccion
+            );
+
+
+        } catch (
+        error
+        ) {
+
+            console.error(
+                "Error reaccionando a publicación:",
+                error
+            );
+
+
+            /*
+             * Si Supabase falla,
+             * revertimos el cambio visual.
+             */
+
+            setReaccionActual(
+                reaccionAnterior
+            );
+
+
+            setTotalReacciones(
+                totalAnterior
+            );
+
+
+            Alert.alert(
+                "No se pudo reaccionar",
+                error instanceof Error
+                    ? error.message
+                    : "Ocurrió un error al registrar tu reacción."
+            );
+
+
+        } finally {
+
+            setProcesandoReaccion(
+                false
+            );
+
+        }
+
+    }
 
 
     // ========================================================
@@ -243,45 +577,93 @@ export default function PublicacionCard({
                 }}
             >
 
-                {/* Avatar */}
+                {/* =================================================
+            AVATAR
+        ================================================= */}
 
-                <View
-                    style={{
-                        width:
-                            46,
+                {
+                    fotoPerfil
 
-                        height:
-                            46,
+                        ? (
 
-                        borderRadius:
-                            23,
+                            <Image
+                                source={{
+                                    uri:
+                                        fotoPerfil,
+                                }}
 
-                        marginRight:
-                            12,
+                                style={{
+                                    width:
+                                        46,
 
-                        alignItems:
-                            "center",
+                                    height:
+                                        46,
 
-                        justifyContent:
-                            "center",
+                                    borderRadius:
+                                        23,
 
-                        backgroundColor:
-                            surfaceSecondaryColor,
-                    }}
-                >
+                                    marginRight:
+                                        12,
 
-                    <Ionicons
-                        name="person-outline"
-                        size={23}
-                        color={
-                            iconColor
-                        }
-                    />
+                                    borderWidth:
+                                        1,
 
-                </View>
+                                    borderColor,
+                                }}
+                            />
+
+                        )
+
+                        : (
+
+                            <View
+                                style={{
+                                    width:
+                                        46,
+
+                                    height:
+                                        46,
+
+                                    borderRadius:
+                                        23,
+
+                                    marginRight:
+                                        12,
+
+                                    alignItems:
+                                        "center",
+
+                                    justifyContent:
+                                        "center",
+
+                                    backgroundColor:
+                                        surfaceSecondaryColor,
+
+                                    borderWidth:
+                                        1,
+
+                                    borderColor,
+                                }}
+                            >
+
+                                <Ionicons
+                                    name="person-outline"
+                                    size={23}
+
+                                    color={
+                                        iconColor
+                                    }
+                                />
+
+                            </View>
+
+                        )
+                }
 
 
-                {/* Nombre y fecha */}
+                {/* =================================================
+            NOMBRE Y FECHA
+        ================================================= */}
 
                 <View
                     style={{
@@ -297,11 +679,21 @@ export default function PublicacionCard({
 
                             alignItems:
                                 "center",
+
+                            flexWrap:
+                                "wrap",
                         }}
                     >
 
                         <Text
+                            numberOfLines={
+                                1
+                            }
+
                             style={{
+                                maxWidth:
+                                    "70%",
+
                                 fontFamily:
                                     "Nunito-Bold",
 
@@ -316,36 +708,46 @@ export default function PublicacionCard({
                         </Text>
 
 
-                        <Text
-                            style={{
-                                marginHorizontal:
-                                    6,
+                        {
+                            fecha && (
 
-                                fontFamily:
-                                    "Nunito-Medium",
+                                <>
 
-                                color:
-                                    textMutedColor,
-                            }}
-                        >
-                            |
-                        </Text>
+                                    <Text
+                                        style={{
+                                            marginHorizontal:
+                                                6,
+
+                                            fontFamily:
+                                                "Nunito-Medium",
+
+                                            color:
+                                                textMutedColor,
+                                        }}
+                                    >
+                                        |
+                                    </Text>
 
 
-                        <Text
-                            style={{
-                                fontFamily:
-                                    "Nunito-Medium",
+                                    <Text
+                                        style={{
+                                            fontFamily:
+                                                "Nunito-Medium",
 
-                                fontSize:
-                                    13,
+                                            fontSize:
+                                                13,
 
-                                color:
-                                    primaryColor,
-                            }}
-                        >
-                            {fecha}
-                        </Text>
+                                            color:
+                                                primaryColor,
+                                        }}
+                                    >
+                                        {fecha}
+                                    </Text>
+
+                                </>
+
+                            )
+                        }
 
                     </View>
 
@@ -377,27 +779,44 @@ export default function PublicacionCard({
                 </View>
 
 
-                {/* Opciones */}
+                {/* =================================================
+            OPCIONES
+        ================================================= */}
 
                 <Pressable
-                    style={{
+                    hitSlop={
+                        8
+                    }
+
+                    style={({
+                        pressed,
+                    }) => ({
                         width:
                             40,
 
                         height:
                             40,
 
+                        borderRadius:
+                            20,
+
                         alignItems:
                             "center",
 
                         justifyContent:
                             "center",
-                    }}
+
+                        backgroundColor:
+                            pressed
+                                ? surfaceSecondaryColor
+                                : "transparent",
+                    })}
                 >
 
                     <Ionicons
                         name="ellipsis-horizontal"
                         size={21}
+
                         color={
                             iconColor
                         }
@@ -413,7 +832,8 @@ export default function PublicacionCard({
       =================================================== */}
 
             {
-                emociones.length > 0 && (
+                emociones.length >
+                0 && (
 
                     <View
                         style={{
@@ -473,7 +893,9 @@ export default function PublicacionCard({
                                                     accentColor,
                                             }}
                                         >
-                                            {emocion.nombre}
+                                            {
+                                                emocion.nombre
+                                            }
                                         </Text>
 
                                     </View>
@@ -489,49 +911,78 @@ export default function PublicacionCard({
 
 
             {/* ===================================================
-          TÍTULO
+          CONTENIDO DE LA PUBLICACIÓN
       =================================================== */}
 
-            <Text
-                style={{
-                    marginBottom:
-                        8,
+            <Pressable
+                onPress={
+                    abrirPublicacion
+                }
 
-                    fontFamily:
-                        "Nunito-Bold",
-
-                    fontSize:
-                        18,
-
-                    color:
-                        textColor,
-                }}
+                style={({
+                    pressed,
+                }) => ({
+                    opacity:
+                        pressed
+                            ? 0.82
+                            : 1,
+                })}
             >
-                {publicacion.titulo}
-            </Text>
+
+                {/* =================================================
+            TÍTULO
+        ================================================= */}
+
+                <Text
+                    style={{
+                        marginBottom:
+                            8,
+
+                        fontFamily:
+                            "Nunito-Bold",
+
+                        fontSize:
+                            18,
+
+                        color:
+                            textColor,
+                    }}
+                >
+                    {
+                        publicacion.titulo
+                    }
+                </Text>
 
 
-            {/* ===================================================
-          CONTENIDO
-      =================================================== */}
+                {/* =================================================
+            CONTENIDO
+        ================================================= */}
 
-            <Text
-                style={{
-                    fontFamily:
-                        "Nunito-Medium",
+                <Text
+                    numberOfLines={
+                        8
+                    }
 
-                    fontSize:
-                        15,
+                    style={{
+                        fontFamily:
+                            "Nunito-Medium",
 
-                    lineHeight:
-                        23,
+                        fontSize:
+                            15,
 
-                    color:
-                        textSecondaryColor,
-                }}
-            >
-                {publicacion.contenido}
-            </Text>
+                        lineHeight:
+                            23,
+
+                        color:
+                            textSecondaryColor,
+                    }}
+                >
+                    {
+                        publicacion.contenido
+                    }
+                </Text>
+
+            </Pressable>
 
 
             {/* ===================================================
@@ -548,14 +999,42 @@ export default function PublicacionCard({
 
                     alignItems:
                         "center",
-
-                    justifyContent:
-                        "space-between",
                 }}
             >
 
-                <View
-                    style={{
+                {/* =================================================
+            REACCIONES
+        ================================================= */}
+
+                <Pressable
+                    disabled={
+                        procesandoReaccion
+                    }
+
+                    onPress={
+                        manejarReaccion
+                    }
+
+                    accessibilityRole="button"
+
+                    accessibilityLabel={
+                        reaccionMeGusta
+                            ? "Quitar Me gusta"
+                            : "Dar Me gusta"
+                    }
+
+                    style={({
+                        pressed,
+                    }) => ({
+                        minHeight:
+                            40,
+
+                        paddingHorizontal:
+                            10,
+
+                        borderRadius:
+                            12,
+
                         flexDirection:
                             "row",
 
@@ -563,107 +1042,132 @@ export default function PublicacionCard({
                             "center",
 
                         gap:
-                            22,
-                    }}
+                            7,
+
+                        opacity:
+                            procesandoReaccion
+                                ? 0.55
+                                : pressed
+                                    ? 0.75
+                                    : 1,
+
+                        backgroundColor:
+                            reaccionMeGusta
+                                ? primarySoftColor
+                                : "transparent",
+                    })}
                 >
 
-                    {/* Reacciones */}
+                    <Ionicons
+                        name={
+                            reaccionMeGusta
+                                ? "heart"
+                                : "heart-outline"
+                        }
 
-                    <Pressable
+                        size={22}
+
+                        color={
+                            primaryColor
+                        }
+                    />
+
+
+                    <Text
                         style={{
-                            flexDirection:
-                                "row",
+                            fontFamily:
+                                "Nunito-SemiBold",
 
-                            alignItems:
-                                "center",
+                            fontSize:
+                                14,
 
-                            gap:
-                                6,
+                            color:
+                                primaryColor,
                         }}
                     >
+                        {
+                            totalReacciones
+                        }
+                    </Text>
 
-                        <Ionicons
-                            name="heart-outline"
-                            size={21}
-                            color={
-                                primaryColor
-                            }
-                        />
+                </Pressable>
 
 
-                        <Text
-                            style={{
-                                fontFamily:
-                                    "Nunito-SemiBold",
+                {/* =================================================
+            COMENTARIOS
+        ================================================= */}
 
-                                fontSize:
-                                    14,
+                <Pressable
+                    onPress={
+                        abrirPublicacion
+                    }
 
-                                color:
-                                    primaryColor,
-                            }}
-                        >
-                            {totalReacciones}
-                        </Text>
+                    accessibilityRole="button"
 
-                    </Pressable>
+                    accessibilityLabel="Ver comentarios"
 
+                    style={({
+                        pressed,
+                    }) => ({
+                        marginLeft:
+                            14,
 
-                    {/* Comentarios */}
+                        minHeight:
+                            40,
 
-                    <Pressable
-                        style={{
-                            flexDirection:
-                                "row",
+                        paddingHorizontal:
+                            10,
 
-                            alignItems:
-                                "center",
+                        borderRadius:
+                            12,
 
-                            gap:
-                                6,
-                        }}
-                    >
+                        flexDirection:
+                            "row",
 
-                        <Ionicons
-                            name="chatbubble-outline"
-                            size={20}
-                            color={
-                                iconColor
-                            }
-                        />
+                        alignItems:
+                            "center",
 
+                        gap:
+                            7,
 
-                        <Text
-                            style={{
-                                fontFamily:
-                                    "Nunito-Medium",
+                        opacity:
+                            pressed
+                                ? 0.7
+                                : 1,
 
-                                fontSize:
-                                    14,
-
-                                color:
-                                    textSecondaryColor,
-                            }}
-                        >
-                            {totalComentarios}
-                        </Text>
-
-                    </Pressable>
-
-                </View>
-
-
-                {/* Guardar */}
-
-                <Pressable>
+                        backgroundColor:
+                            pressed
+                                ? surfaceSecondaryColor
+                                : "transparent",
+                    })}
+                >
 
                     <Ionicons
-                        name="bookmark-outline"
-                        size={21}
+                        name="chatbubble-outline"
+                        size={20}
+
                         color={
                             iconColor
                         }
                     />
+
+
+                    <Text
+                        style={{
+                            fontFamily:
+                                "Nunito-Medium",
+
+                            fontSize:
+                                14,
+
+                            color:
+                                textSecondaryColor,
+                        }}
+                    >
+                        {
+                            totalComentarios
+                        }
+                    </Text>
 
                 </Pressable>
 

@@ -35,12 +35,12 @@ const categorias = [
   {
     id: "Soledad",
     titulo: "Soledad",
-    imagen: require("../../../assets/images_educacion/sole_kiri.png"),
+    imagen: require("../../../assets/images_educacion/kiri_solito.png"),
   },
   {
     id: "Depresion",
     titulo: "Depresión",
-    imagen: require("../../../assets/images_educacion/depre_kiri.png"),
+    imagen: require("../../../assets/images_educacion/depresion_kiri.png"),
   },
 ];
 

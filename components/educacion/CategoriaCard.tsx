@@ -48,13 +48,16 @@ export default function CategoriaCard({
         }}
         className="h-[145px] items-center justify-center rounded-2xl bg-white px-4 shadow-md"
       >
-        {/* Espacio reservado para la imagen de cada categoría. */}
-        <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-gray-200">
+        {/* Imagen de la categoría con mayor tamaño. */}
+        <View className="mb-2 h-24 w-24 items-center justify-center ">
           {imagen && (
             <Image
               source={imagen}
-              className="h-16 w-16"
-              resizeMode="contain"
+              style={{
+                width: 110,
+                height: 100,
+              }}
+              resizeMode="cover"
             />
           )}
         </View>

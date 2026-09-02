@@ -9,6 +9,7 @@ import {
   Image,
   Platform,
   ScrollView,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -48,6 +49,10 @@ import {
 import {
   useThemeColor,
 } from "@/hooks/use-theme-color";
+
+import {
+  useThemeMode,
+} from "@/contexts/ThemeModeContext";
 
 
 // ==========================================================
@@ -95,7 +100,18 @@ export default function PerfilScreen() {
 
 
   // ========================================================
-  // TEMA
+  // CONTROL GLOBAL DEL TEMA
+  // ========================================================
+
+  const {
+    isDarkMode,
+    toggleDarkMode,
+  } =
+    useThemeMode();
+
+
+  // ========================================================
+  // COLORES DEL TEMA
   // ========================================================
 
   const backgroundColor =
@@ -175,13 +191,6 @@ export default function PerfilScreen() {
     );
 
 
-  const secondarySoftColor =
-    useThemeColor(
-      {},
-      "secondarySoft"
-    );
-
-
   const inputBackgroundColor =
     useThemeColor(
       {},
@@ -193,13 +202,6 @@ export default function PerfilScreen() {
     useThemeColor(
       {},
       "inputBorder"
-    );
-
-
-  const placeholderColor =
-    useThemeColor(
-      {},
-      "placeholder"
     );
 
 
@@ -434,6 +436,10 @@ export default function PerfilScreen() {
   }
 
 
+  // ========================================================
+  // DATOS DERIVADOS
+  // ========================================================
+
   const esIndependiente =
     perfil
       ?.rol_nombre
@@ -499,11 +505,15 @@ export default function PerfilScreen() {
       await actualizarPerfil({
         nombres,
         apellidos,
+
         nombre_preferido:
           nombrePreferido,
+
         telefono,
+
         fecha_nacimiento:
           fechaNacimiento,
+
         genero,
       });
 
@@ -546,8 +556,7 @@ export default function PerfilScreen() {
   function seleccionarFoto() {
 
     if (
-      Platform.OS ===
-      "web"
+      Platform.OS === "web"
     ) {
 
       abrirGaleria();
@@ -764,8 +773,7 @@ export default function PerfilScreen() {
 
 
     if (
-      nuevaPassword.length <
-      8
+      nuevaPassword.length < 8
     ) {
 
       Alert.alert(
@@ -1060,7 +1068,7 @@ export default function PerfilScreen() {
               styles.camara,
 
               subiendoFoto &&
-                styles.deshabilitado,
+              styles.deshabilitado,
 
               {
                 backgroundColor:
@@ -1304,7 +1312,7 @@ export default function PerfilScreen() {
 
                       {
                         genero ===
-                          opcion.value && (
+                        opcion.value && (
 
                           <Ionicons
                             name="checkmark-circle"
@@ -1438,10 +1446,13 @@ export default function PerfilScreen() {
 
           <FilaInformacion
             icono="person-circle-outline"
+
             color={
               primaryColor
             }
+
             titulo="Tipo de cuenta"
+
             valor={
               perfil?.rol_nombre ??
               "Sin rol"
@@ -1463,13 +1474,143 @@ export default function PerfilScreen() {
 
           <FilaInformacion
             icono="school-outline"
+
             color={
               secondaryColor
             }
+
             titulo="Institución"
+
             valor={
               perfil?.institucion_nombre ??
               "Cuenta independiente"
+            }
+          />
+
+        </View>
+
+
+        {/* =================================================
+            APARIENCIA
+        ================================================= */}
+
+        <TituloSeccion>
+          APARIENCIA
+        </TituloSeccion>
+
+
+        <View
+          style={[
+            styles.opcionSeguridad,
+
+            {
+              backgroundColor:
+                surfaceColor,
+
+              borderColor,
+            },
+          ]}
+        >
+
+          {/* Icono del tema */}
+
+          <View
+            style={[
+              styles.iconoCuenta,
+
+              {
+                backgroundColor:
+                  primarySoftColor,
+              },
+            ]}
+          >
+
+            <Ionicons
+              name={
+                isDarkMode
+                  ? "moon"
+                  : "sunny-outline"
+              }
+
+              size={21}
+
+              color={
+                primaryColor
+              }
+            />
+
+          </View>
+
+
+          {/* Información */}
+
+          <View
+            style={
+              styles.flex
+            }
+          >
+
+            <Text
+              style={[
+                styles.valorCuenta,
+
+                {
+                  color:
+                    textColor,
+                },
+              ]}
+            >
+              Modo oscuro
+            </Text>
+
+
+            <Text
+              style={[
+                styles.labelCuenta,
+
+                {
+                  color:
+                    textSecondaryColor,
+                },
+              ]}
+            >
+              {
+                isDarkMode
+                  ? "El tema oscuro está activado"
+                  : "El tema claro está activado"
+              }
+            </Text>
+
+          </View>
+
+
+          {/* Interruptor */}
+
+          <Switch
+            value={
+              isDarkMode
+            }
+
+            onValueChange={
+              toggleDarkMode
+            }
+
+            trackColor={{
+              false:
+                surfaceSecondaryColor,
+
+              true:
+                primarySoftColor,
+            }}
+
+            thumbColor={
+              isDarkMode
+                ? primaryColor
+                : textMutedColor
+            }
+
+            ios_backgroundColor={
+              surfaceSecondaryColor
             }
           />
 
@@ -1607,9 +1748,18 @@ export default function PerfilScreen() {
 
                     <PasswordInput
                       titulo="Nueva contraseña"
-                      valor={nuevaPassword}
-                      onChange={setNuevaPassword}
-                      visible={verPassword}
+
+                      valor={
+                        nuevaPassword
+                      }
+
+                      onChange={
+                        setNuevaPassword
+                      }
+
+                      visible={
+                        verPassword
+                      }
 
                       onToggle={() =>
                         setVerPassword(
@@ -1622,9 +1772,18 @@ export default function PerfilScreen() {
 
                     <PasswordInput
                       titulo="Confirmar contraseña"
-                      valor={confirmarPassword}
-                      onChange={setConfirmarPassword}
-                      visible={verConfirmacion}
+
+                      valor={
+                        confirmarPassword
+                      }
+
+                      onChange={
+                        setConfirmarPassword
+                      }
+
+                      visible={
+                        verConfirmacion
+                      }
 
                       onToggle={() =>
                         setVerConfirmacion(
@@ -1652,7 +1811,7 @@ export default function PerfilScreen() {
                         styles.botonPassword,
 
                         guardandoPassword &&
-                          styles.deshabilitado,
+                        styles.deshabilitado,
 
                         {
                           backgroundColor:
@@ -1751,6 +1910,7 @@ export default function PerfilScreen() {
             <Ionicons
               name="shield-checkmark-outline"
               size={24}
+
               color={
                 primaryColor
               }
@@ -1818,7 +1978,7 @@ export default function PerfilScreen() {
             styles.botonGuardar,
 
             guardando &&
-              styles.deshabilitado,
+            styles.deshabilitado,
 
             {
               backgroundColor:
@@ -1901,6 +2061,7 @@ export default function PerfilScreen() {
           <Ionicons
             name="log-out-outline"
             size={21}
+
             color={
               iconColor
             }
@@ -1949,21 +2110,24 @@ export default function PerfilScreen() {
 // ==========================================================
 
 type CampoProps = {
-  titulo: string;
+  titulo:
+  string;
 
-  valor: string;
+  valor:
+  string;
 
   onChange:
-    (texto: string) => void;
+  (texto: string) => void;
 
-  placeholder: string;
+  placeholder:
+  string;
 
   icono:
-    keyof typeof Ionicons.glyphMap;
+  keyof typeof Ionicons.glyphMap;
 
   keyboardType?:
-    | "default"
-    | "phone-pad";
+  | "default"
+  | "phone-pad";
 };
 
 
@@ -2105,17 +2269,20 @@ function Campo({
 // ==========================================================
 
 type PasswordProps = {
-  titulo: string;
+  titulo:
+  string;
 
-  valor: string;
+  valor:
+  string;
 
   onChange:
-    (valor: string) => void;
+  (valor: string) => void;
 
-  visible: boolean;
+  visible:
+  boolean;
 
   onToggle:
-    () => void;
+  () => void;
 };
 
 
@@ -2204,6 +2371,7 @@ function PasswordInput({
         <Ionicons
           name="lock-closed-outline"
           size={19}
+
           color={
             primaryColor
           }
@@ -2282,18 +2450,21 @@ function PasswordInput({
 
 
 // ==========================================================
-// FILA INFORMACIÓN
+// FILA DE INFORMACIÓN
 // ==========================================================
 
 type FilaProps = {
   icono:
-    keyof typeof Ionicons.glyphMap;
+  keyof typeof Ionicons.glyphMap;
 
-  color: string;
+  color:
+  string;
 
-  titulo: string;
+  titulo:
+  string;
 
-  valor: string;
+  valor:
+  string;
 };
 
 
@@ -2409,7 +2580,7 @@ function TituloSeccion({
   children,
 }: {
   children:
-    React.ReactNode;
+  React.ReactNode;
 }) {
 
   const primaryColor =

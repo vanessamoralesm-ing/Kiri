@@ -1,6 +1,20 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+
+import {
+  useThemeColor,
+} from "@/hooks/use-theme-color";
+
+
+// ==========================================================
+// PROPS
+// ==========================================================
 
 interface Props {
   texto: string;
@@ -8,42 +22,276 @@ interface Props {
   onPress: () => void;
 }
 
-export default function OpcionRespuesta({ texto, seleccionada, onPress }: Props) {
+
+// ==========================================================
+// COMPONENTE
+// ==========================================================
+
+export default function OpcionRespuesta({
+  texto,
+  seleccionada,
+  onPress,
+}: Props) {
+
+  // ========================================================
+  // COLORES DEL TEMA
+  // ========================================================
+
+  const surfaceColor =
+    useThemeColor(
+      {},
+      "surface"
+    );
+
+  const borderColor =
+    useThemeColor(
+      {},
+      "border"
+    );
+
+  const textColor =
+    useThemeColor(
+      {},
+      "text"
+    );
+
+  const textSecondaryColor =
+    useThemeColor(
+      {},
+      "textSecondary"
+    );
+
+  const primaryColor =
+    useThemeColor(
+      {},
+      "primary"
+    );
+
+  const primarySoftColor =
+    useThemeColor(
+      {},
+      "primarySoft"
+    );
+
+
+  // ========================================================
+  // UI
+  // ========================================================
+
   return (
+
     <Pressable
-      onPress={onPress}
-      android_ripple={{ color: "rgba(94, 140, 233, 0.10)" }}
-      style={({ pressed }) => [
-        styles.opcion,
-        seleccionada && styles.opcionSeleccionada,
-        pressed && styles.opcionPresionada,
-      ]}
+      onPress={
+        onPress
+      }
+
+      android_ripple={{
+        color: "rgba(79, 142, 247, 0.10)",
+      }}
+
+      style={({
+        pressed,
+      }) => [
+          styles.opcion,
+
+          {
+            backgroundColor:
+              seleccionada
+                ? primarySoftColor
+                : surfaceColor,
+
+            borderColor:
+              seleccionada
+                ? primaryColor
+                : borderColor,
+          },
+
+          pressed &&
+          styles.opcionPresionada,
+        ]}
     >
-      <View style={[styles.radio, seleccionada && styles.radioSeleccionado]}>
-        {seleccionada && <View style={styles.radioInterno} />}
+
+      {/* =================================================
+          CONTENEDOR HORIZONTAL
+      ================================================= */}
+
+      <View
+        style={
+          styles.contenidoOpcion
+        }
+      >
+
+        {/* ===============================================
+            RADIO
+        =============================================== */}
+
+        <View
+          style={[
+            styles.radio,
+
+            {
+              borderColor:
+                seleccionada
+                  ? primaryColor
+                  : textSecondaryColor,
+            },
+          ]}
+        >
+
+          {
+            seleccionada && (
+
+              <View
+                style={[
+                  styles.radioInterno,
+
+                  {
+                    backgroundColor:
+                      primaryColor,
+                  },
+                ]}
+              />
+
+            )
+          }
+
+        </View>
+
+
+        {/* ===============================================
+            TEXTO
+        =============================================== */}
+
+        <Text
+          style={[
+            styles.texto,
+
+            {
+              color:
+                seleccionada
+                  ? primaryColor
+                  : textColor,
+            },
+          ]}
+        >
+          {texto}
+        </Text>
+
       </View>
 
-      <Text style={[styles.texto, seleccionada && styles.textoSeleccionado]}>
-        {texto}
-      </Text>
-
-      <View style={styles.zonaCheck}>
-        {seleccionada && (
-          <Ionicons name="checkmark-circle" size={21} color="#5E8CE9" />
-        )}
-      </View>
     </Pressable>
+
   );
+
 }
 
-const styles = StyleSheet.create({
-  opcion: { width: "100%", minHeight: 57, flexDirection: "row", alignItems: "center", backgroundColor: "#FBFCFE", borderWidth: 1.5, borderColor: "#E2E7EE", borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 11 },
-  opcionSeleccionada: { backgroundColor: "#F1F5FF", borderColor: "#6C91E9" },
-  opcionPresionada: { opacity: 0.85 },
-  radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: "#A9B2BF", alignItems: "center", justifyContent: "center", marginRight: 13, flexShrink: 0 },
-  radioSeleccionado: { borderColor: "#5E8CE9" },
-  radioInterno: { width: 10, height: 10, borderRadius: 5, backgroundColor: "#5E8CE9" },
-  texto: { flex: 1, flexShrink: 1, fontSize: 15, lineHeight: 21, color: "#3E4A5D", fontFamily: "Nunito-SemiBold", marginRight: 8 },
-  textoSeleccionado: { color: "#315FAF" },
-  zonaCheck: { width: 24, minWidth: 24, alignItems: "center", justifyContent: "center", flexShrink: 0 },
-});
+
+// ==========================================================
+// ESTILOS
+// ==========================================================
+
+const styles =
+  StyleSheet.create({
+
+    // ------------------------------------------------------
+    // OPCIÓN COMPLETA
+    // ------------------------------------------------------
+
+    opcion: {
+      width: "100%",
+
+      minHeight: 58,
+
+      borderWidth: 1.5,
+
+      borderRadius: 16,
+
+      marginBottom: 12,
+
+      overflow: "hidden",
+    },
+
+
+    // ------------------------------------------------------
+    // RADIO + TEXTO
+    // ------------------------------------------------------
+
+    contenidoOpcion: {
+      width: "100%",
+
+      minHeight: 56,
+
+      flexDirection: "row",
+
+      alignItems: "center",
+
+      paddingHorizontal: 16,
+
+      paddingVertical: 12,
+    },
+
+
+    // ------------------------------------------------------
+    // RADIO
+    // ------------------------------------------------------
+
+    radio: {
+      width: 24,
+
+      height: 24,
+
+      borderRadius: 12,
+
+      borderWidth: 2,
+
+      alignItems: "center",
+
+      justifyContent: "center",
+
+      marginRight: 14,
+
+      flexShrink: 0,
+    },
+
+
+    // ------------------------------------------------------
+    // CENTRO DEL RADIO
+    // ------------------------------------------------------
+
+    radioInterno: {
+      width: 12,
+
+      height: 12,
+
+      borderRadius: 6,
+    },
+
+
+    // ------------------------------------------------------
+    // TEXTO
+    // ------------------------------------------------------
+
+    texto: {
+      flex: 1,
+
+      fontSize: 16,
+
+      lineHeight: 22,
+
+      fontFamily: "Nunito-SemiBold",
+
+      textAlignVertical: "center",
+
+      includeFontPadding: false,
+    },
+
+
+    // ------------------------------------------------------
+    // PRESIONADO
+    // ------------------------------------------------------
+
+    opcionPresionada: {
+      opacity: 0.85,
+    },
+
+  });
