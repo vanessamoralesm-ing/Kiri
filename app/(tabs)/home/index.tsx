@@ -69,15 +69,37 @@ export default function HomeScreen() {
             elevation: 4,
           }}
         >
-          <Text style={{ fontFamily: "Nunito-SemiBold", fontSize: 13, color: "#EAF2FF" }}>
+          <Text
+            style={{
+              fontFamily: "Nunito-SemiBold",
+              fontSize: 13,
+              color: "#EAF2FF",
+            }}
+          >
             Racha emocional
           </Text>
 
           <View className="flex-row justify-between items-center mt-2">
             {/* Racha */}
             <View className="flex-row items-baseline">
-              <Text style={{ fontFamily: "Nunito-Bold", fontSize: 35, color: "#FFFFFF" }}>5</Text>
-              <Text style={{ marginLeft: 4, fontFamily: "Nunito-Medium", fontSize: 12, color: "#FFFFFF" }}>
+              <Text
+                style={{
+                  fontFamily: "Nunito-Bold",
+                  fontSize: 35,
+                  color: "#FFFFFF",
+                }}
+              >
+                5
+              </Text>
+
+              <Text
+                style={{
+                  marginLeft: 4,
+                  fontFamily: "Nunito-Medium",
+                  fontSize: 12,
+                  color: "#FFFFFF",
+                }}
+              >
                 días
               </Text>
             </View>
@@ -93,10 +115,19 @@ export default function HomeScreen() {
                     borderRadius: 14,
                     alignItems: "center",
                     justifyContent: "center",
-                    backgroundColor: index < 5 ? "#7BBF9A" : "rgba(255,255,255,0.22)",
+                    backgroundColor:
+                      index < 5
+                        ? "#7BBF9A"
+                        : "rgba(255,255,255,0.22)",
                   }}
                 >
-                  <Text style={{ fontFamily: "Nunito-Bold", fontSize: 13, color: "#FFFFFF" }}>
+                  <Text
+                    style={{
+                      fontFamily: "Nunito-Bold",
+                      fontSize: 13,
+                      color: "#FFFFFF",
+                    }}
+                  >
                     {dia}
                   </Text>
                 </View>
@@ -106,7 +137,15 @@ export default function HomeScreen() {
             <Ionicons name="flame" size={26} color="#FFFFFF" />
           </View>
 
-          <Text style={{ marginTop: 8, textAlign: "right", fontFamily: "Nunito-Medium", fontSize: 12, color: "#EAF2FF" }}>
+          <Text
+            style={{
+              marginTop: 8,
+              textAlign: "right",
+              fontFamily: "Nunito-Medium",
+              fontSize: 12,
+              color: "#EAF2FF",
+            }}
+          >
             ¡Sigue así!
           </Text>
         </View>
@@ -137,77 +176,184 @@ export default function HomeScreen() {
                 backgroundColor: "rgba(255,255,255,0.20)",
               }}
             >
-              <Ionicons name="trophy-outline" size={21} color="#FFFFFF" />
+              <Ionicons
+                name="trophy-outline"
+                size={21}
+                color="#FFFFFF"
+              />
             </View>
 
             <View style={{ flexShrink: 1 }}>
-              <Text style={{ fontFamily: "Nunito-Bold", fontSize: 16, color: "#FFFFFF" }}>
+              <Text
+                style={{
+                  fontFamily: "Nunito-Bold",
+                  fontSize: 16,
+                  color: "#FFFFFF",
+                }}
+              >
                 Mi Progreso
               </Text>
-              <Text numberOfLines={2} style={{ marginTop: 2, fontFamily: "Nunito-Medium", fontSize: 12, color: "#ECFDF5" }}>
+
+              <Text
+                numberOfLines={2}
+                style={{
+                  marginTop: 2,
+                  fontFamily: "Nunito-Medium",
+                  fontSize: 12,
+                  color: "#ECFDF5",
+                }}
+              >
                 0 insignias - 0 retos completados
               </Text>
             </View>
           </View>
 
-          <Ionicons name="chevron-forward" size={22} color="#FFFFFF" />
+          <Ionicons
+            name="chevron-forward"
+            size={22}
+            color="#FFFFFF"
+          />
         </TouchableOpacity>
 
         {/* MÓDULOS DE INGRESO RÁPIDO */}
         <View className="flex-row flex-wrap justify-between mb-4">
-          <TarjetaModulo titulo="Nuevo Registro en Diario" nombreIcono="book-outline" onPress={() => router.push("/(tabs)/diario")} />
-          <TarjetaModulo titulo="Cuestionarios" nombreIcono="document-text-outline" onPress={() => router.push("/(tabs)/cuestionarios")} />
-          <TarjetaModulo titulo="Ir a Foro Comunitario" nombreIcono="megaphone-outline" onPress={() => router.push("/(tabs)/foro")} />
-          <TarjetaModulo titulo="Entrevista de Bienestar" nombreIcono="heart-outline" onPress={() => router.push("/(tabs)/entrevistas")} />
-          <TarjetaModulo titulo="Técnicas Complementarias" nombreIcono="clipboard-outline" onPress={() => router.push("/(tabs)/tecnicas")} />
+          <TarjetaModulo
+            titulo="Nuevo Registro en Diario"
+            nombreIcono="book-outline"
+            onPress={() =>
+              router.push({
+                pathname: "/diario/nuevo" as never,
+                params: {
+                  origen: "home",
+                },
+              })
+            }
+          />
+
+          <TarjetaModulo
+            titulo="Cuestionarios"
+            nombreIcono="document-text-outline"
+            onPress={() =>
+              router.push("/(tabs)/cuestionarios")
+            }
+          />
+
+          <TarjetaModulo
+            titulo="Ir a Foro Comunitario"
+            nombreIcono="megaphone-outline"
+            onPress={() =>
+              router.push("/(tabs)/foro")
+            }
+          />
+
+          <TarjetaModulo
+            titulo="Entrevista de Bienestar"
+            nombreIcono="heart-outline"
+            onPress={() =>
+              router.push("/(tabs)/entrevistas")
+            }
+          />
+
+          <TarjetaModulo
+            titulo="Técnicas Complementarias"
+            nombreIcono="clipboard-outline"
+            onPress={() =>
+              router.push("/(tabs)/tecnicas")
+            }
+          />
         </View>
 
         {/* PLAN RECOMENDADO */}
         <View className="mb-12 px-2">
           <View className="flex-row justify-between items-center mb-4">
-            <Text style={{ fontFamily: "Nunito-Bold", fontSize: 18, color: textColor }}>
+            <Text
+              style={{
+                fontFamily: "Nunito-Bold",
+                fontSize: 18,
+                color: textColor,
+              }}
+            >
               Plan recomendado
             </Text>
 
-            {resumen?.id_entrevista && resumen.actividades.length > 0 && (
-              <TouchableOpacity
-                onPress={() => router.push({ pathname: "/(tabs)/entrevistas/[id]/plan", params: { id: resumen.id_entrevista } })}
-              >
-                <Text style={{ fontFamily: "Nunito-SemiBold", fontSize: 12, color: primaryColor }}>
-                  Ver más
-                </Text>
-              </TouchableOpacity>
-            )}
+            {resumen?.id_entrevista &&
+              resumen.actividades.length > 0 && (
+                <TouchableOpacity
+                  onPress={() =>
+                    router.push({
+                      pathname:
+                        "/(tabs)/entrevistas/[id]/plan",
+                      params: {
+                        id: resumen.id_entrevista,
+                      },
+                    })
+                  }
+                >
+                  <Text
+                    style={{
+                      fontFamily: "Nunito-SemiBold",
+                      fontSize: 12,
+                      color: primaryColor,
+                    }}
+                  >
+                    Ver más
+                  </Text>
+                </TouchableOpacity>
+              )}
           </View>
 
           {/* RECOMENDACIONES */}
           {resumen?.actividades?.length ? (
-            resumen.actividades.slice(0, 4).map((actividad, index) => {
-              const color = COLORES_RECOMENDACION[index % COLORES_RECOMENDACION.length];
-              const fondoRecomendacion = isDarkMode ? color.fondoOscuro : color.fondoClaro;
+            resumen.actividades
+              .slice(0, 4)
+              .map((actividad, index) => {
+                const color =
+                  COLORES_RECOMENDACION[
+                    index % COLORES_RECOMENDACION.length
+                  ];
 
-              return (
-                <TarjetaRecomendacion
-                  key={actividad.codigo}
-                  titulo={actividad.titulo}
-                  descripcion={actividad.descripcion}
-                  nombreIcono={actividad.icono as keyof typeof Ionicons.glyphMap}
-                  colorFondo={fondoRecomendacion}
-                  colorIcono={color.icono}
-                  colorTextoFlecha={color.icono}
-                  onPress={() => router.push({ pathname: "/(tabs)/entrevistas/[id]/plan", params: { id: resumen.id_entrevista } })}
-                />
-              );
-            })
+                const fondoRecomendacion = isDarkMode
+                  ? color.fondoOscuro
+                  : color.fondoClaro;
+
+                return (
+                  <TarjetaRecomendacion
+                    key={actividad.codigo}
+                    titulo={actividad.titulo}
+                    descripcion={actividad.descripcion}
+                    nombreIcono={
+                      actividad.icono as keyof typeof Ionicons.glyphMap
+                    }
+                    colorFondo={fondoRecomendacion}
+                    colorIcono={color.icono}
+                    colorTextoFlecha={color.icono}
+                    onPress={() =>
+                      router.push({
+                        pathname:
+                          "/(tabs)/entrevistas/[id]/plan",
+                        params: {
+                          id: resumen.id_entrevista,
+                        },
+                      })
+                    }
+                  />
+                );
+              })
           ) : (
             <TarjetaRecomendacion
               titulo="Realiza tu entrevista de bienestar"
               descripcion="Completa tu evaluación para recibir un plan personalizado."
               nombreIcono="heart-outline"
-              colorFondo={isDarkMode ? "bg-blue-950" : "bg-blue-100"}
+              colorFondo={
+                isDarkMode
+                  ? "bg-blue-950"
+                  : "bg-blue-100"
+              }
               colorIcono="#4F8EF7"
               colorTextoFlecha="#4F8EF7"
-              onPress={() => router.push("/(tabs)/entrevistas")}
+              onPress={() =>
+                router.push("/(tabs)/entrevistas")
+              }
             />
           )}
         </View>
