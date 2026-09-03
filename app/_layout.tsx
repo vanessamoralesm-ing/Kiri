@@ -130,6 +130,7 @@ function RootNavigation() {
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="(entrevista)" />
+      <Stack.Screen name="(tecnica)" />
     </Stack>
   );
 }
