@@ -1,4 +1,5 @@
 import React from "react";
+
 import {
   Image,
   ImageSourcePropType,
@@ -6,47 +7,181 @@ import {
   Text,
   View,
 } from "react-native";
+
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
 
-// Define los datos que necesita cada tarjeta de categoría.
+import {
+  useThemeColor,
+} from "@/hooks/use-theme-color";
+
+
+// ==========================================================
+// PROPS
+// ==========================================================
+
 type CategoriaCardProps = {
   titulo: string;
   imagen?: ImageSourcePropType;
   onPress: () => void;
 };
 
+
+// ==========================================================
+// COMPONENTE
+// ==========================================================
+
 export default function CategoriaCard({
   titulo,
   imagen,
   onPress,
 }: CategoriaCardProps) {
-  // Controla la escala de la tarjeta al presionarla.
-  const escala = useSharedValue(1);
 
-  const estiloAnimado = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: escala.value }],
-    };
-  });
+  // ========================================================
+  // ANIMACIÓN
+  // ========================================================
 
+  const escala =
+    useSharedValue(
+      1
+    );
+
+
+  const estiloAnimado =
+    useAnimatedStyle(
+      () => {
+
+        return {
+          transform: [
+            {
+              scale:
+                escala.value,
+            },
+          ],
+        };
+
+      }
+    );
+
+  // COLORES DEL TEMA
+  const surfaceColor =
+    useThemeColor(
+      {},
+      "surface"
+    );
+
+
+  const surfaceSecondaryColor =
+    useThemeColor(
+      {},
+      "surfaceSecondary"
+    );
+
+
+  const textColor =
+    useThemeColor(
+      {},
+      "text"
+    );
+
+
+  const borderColor =
+    useThemeColor(
+      {},
+      "border"
+    );
+
+
+  // UI
   return (
+
     <Animated.View
-      style={estiloAnimado}
-      className="w-full"
+      style={[
+        estiloAnimado,
+        {
+          width:
+            "100%",
+        },
+      ]}
     >
+
       <Pressable
-        onPress={onPress}
+        onPress={
+          onPress
+        }
+
         onPressIn={() => {
-          escala.value = withSpring(0.96);
+
+          escala.value =
+            withSpring(
+              0.96
+            );
+
         }}
+
         onPressOut={() => {
-          escala.value = withSpring(1);
+
+          escala.value =
+            withSpring(
+              1
+            );
+
         }}
-        className="h-[145px] items-center justify-center rounded-2xl bg-white px-4 shadow-md"
+
+        style={({
+          pressed,
+        }) => ({
+          height:
+            145,
+
+          paddingHorizontal:
+            16,
+
+          alignItems:
+            "center",
+
+          justifyContent:
+            "center",
+
+          borderRadius:
+            16,
+
+          borderWidth:
+            1,
+
+          borderColor,
+
+          backgroundColor:
+            surfaceColor,
+
+          opacity:
+            pressed
+              ? 0.9
+              : 1,
+
+          shadowColor:
+            "#000000",
+
+          shadowOffset: {
+            width:
+              0,
+
+            height:
+              2,
+          },
+
+          shadowOpacity:
+            0.08,
+
+          shadowRadius:
+            6,
+
+          elevation:
+            3,
+        })}
       >
         {/* Imagen de la categoría con mayor tamaño. */}
         <View className="mb-2 h-24 w-24 items-center justify-center ">
@@ -62,15 +197,31 @@ export default function CategoriaCard({
           )}
         </View>
 
+
+        {/*TÍTULO*/}
+
         <Text
-          className="text-center text-[15px] text-slate-700"
           style={{
-            fontFamily: "Nunito-SemiBold",
+            fontFamily:
+              "Nunito-SemiBold",
+
+            fontSize:
+              15,
+
+            textAlign:
+              "center",
+
+            color:
+              textColor,
           }}
         >
           {titulo}
         </Text>
+
       </Pressable>
+
     </Animated.View>
+
   );
+
 }

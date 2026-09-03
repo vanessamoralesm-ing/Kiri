@@ -1,78 +1,372 @@
-import { Ionicons } from "@expo/vector-icons";
-import React from "react";
-import { Text, View } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import {
+  Ionicons,
+} from "@expo/vector-icons";
 
-// Tarjeta informativa para mostrar un mito junto con su realidad.
+import React from "react";
+
+import {
+  Text,
+  View,
+} from "react-native";
+
+import Animated, {
+  FadeInDown,
+} from "react-native-reanimated";
+
+import {
+  useThemeColor,
+} from "@/hooks/use-theme-color";
+
+
+// ==========================================================
+// COMPONENTE
+// ==========================================================
+
 export default function MitoRealidadCard() {
+
+  // ========================================================
+  // COLORES DEL TEMA
+  // ========================================================
+
+  const surfaceColor =
+    useThemeColor(
+      {},
+      "surface"
+    );
+
+
+  const textColor =
+    useThemeColor(
+      {},
+      "text"
+    );
+
+
+  const textSecondaryColor =
+    useThemeColor(
+      {},
+      "textSecondary"
+    );
+
+
+  const borderColor =
+    useThemeColor(
+      {},
+      "border"
+    );
+
+
+  const accentColor =
+    useThemeColor(
+      {},
+      "accent"
+    );
+
+
+  const accentSoftColor =
+    useThemeColor(
+      {},
+      "accentSoft"
+    );
+
+
+  const secondaryColor =
+    useThemeColor(
+      {},
+      "secondary"
+    );
+
+
+  const secondarySoftColor =
+    useThemeColor(
+      {},
+      "secondarySoft"
+    );
+
+
+  // ========================================================
+  // UI
+  // ========================================================
+
   return (
+
     <Animated.View
-      entering={FadeInDown.duration(500)}
-      className="overflow-hidden rounded-[22px] bg-white p-5 shadow-md"
+      entering={
+        FadeInDown.duration(
+          500
+        )
+      }
+
+      style={{
+        overflow:
+          "hidden",
+
+        padding:
+          20,
+
+        borderRadius:
+          22,
+
+        borderWidth:
+          1,
+
+        borderColor,
+
+        backgroundColor:
+          surfaceColor,
+
+        shadowColor:
+          "#000000",
+
+        shadowOffset: {
+          width:
+            0,
+
+          height:
+            2,
+        },
+
+        shadowOpacity:
+          0.08,
+
+        shadowRadius:
+          6,
+
+        elevation:
+          3,
+      }}
     >
-      {/* Apartado del mito con colores morados. */}
-      <View className="rounded-[18px] bg-[#F3EEFF] p-4">
-        <View className="flex-row items-center">
-          <View className="h-10 w-10 items-center justify-center rounded-full bg-white">
+
+      {/* =================================================
+          MITO
+      ================================================= */}
+
+      <View
+        style={{
+          padding:
+            16,
+
+          borderRadius:
+            18,
+
+          backgroundColor:
+            accentSoftColor,
+        }}
+      >
+
+        <View
+          style={{
+            flexDirection:
+              "row",
+
+            alignItems:
+              "center",
+          }}
+        >
+
+          <View
+            style={{
+              width:
+                40,
+
+              height:
+                40,
+
+              borderRadius:
+                20,
+
+              alignItems:
+                "center",
+
+              justifyContent:
+                "center",
+
+              backgroundColor:
+                surfaceColor,
+            }}
+          >
+
             <Ionicons
               name="bulb-outline"
               size={22}
-              color="#7C6EE6"
+              color={
+                accentColor
+              }
             />
+
           </View>
 
+
           <Text
-            className="ml-3 text-[13px] uppercase tracking-wide text-[#7466D9]"
             style={{
-              fontFamily: "Nunito-Bold",
+              marginLeft:
+                12,
+
+              fontFamily:
+                "Nunito-Bold",
+
+              fontSize:
+                13,
+
+              textTransform:
+                "uppercase",
+
+              letterSpacing:
+                0.7,
+
+              color:
+                accentColor,
             }}
           >
             Mito
           </Text>
+
         </View>
 
+
         <Text
-          className="mt-4 text-[17px] leading-6 text-slate-800"
           style={{
-            fontFamily: "Nunito-SemiBold",
+            marginTop:
+              16,
+
+            fontFamily:
+              "Nunito-SemiBold",
+
+            fontSize:
+              17,
+
+            lineHeight:
+              24,
+
+            color:
+              textColor,
           }}
         >
           “Hablar de salud mental significa que algo está mal conmigo.”
         </Text>
+
       </View>
 
-      {/* Apartado de la realidad con colores verdes. */}
-      <View className="mt-4 rounded-[18px] bg-[#EAF8F4] p-4">
-        <View className="flex-row items-center">
-          <View className="h-10 w-10 items-center justify-center rounded-full bg-white">
+
+      {/* =================================================
+          REALIDAD
+      ================================================= */}
+
+      <View
+        style={{
+          marginTop:
+            16,
+
+          padding:
+            16,
+
+          borderRadius:
+            18,
+
+          backgroundColor:
+            secondarySoftColor,
+        }}
+      >
+
+        <View
+          style={{
+            flexDirection:
+              "row",
+
+            alignItems:
+              "center",
+          }}
+        >
+
+          <View
+            style={{
+              width:
+                40,
+
+              height:
+                40,
+
+              borderRadius:
+                20,
+
+              alignItems:
+                "center",
+
+              justifyContent:
+                "center",
+
+              backgroundColor:
+                surfaceColor,
+            }}
+          >
+
             <Ionicons
               name="checkmark-circle-outline"
               size={23}
-              color="#5BC4AD"
+              color={
+                secondaryColor
+              }
             />
+
           </View>
 
+
           <Text
-            className="ml-3 text-[13px] uppercase tracking-wide text-[#49A994]"
             style={{
-              fontFamily: "Nunito-Bold",
+              marginLeft:
+                12,
+
+              fontFamily:
+                "Nunito-Bold",
+
+              fontSize:
+                13,
+
+              textTransform:
+                "uppercase",
+
+              letterSpacing:
+                0.7,
+
+              color:
+                secondaryColor,
             }}
           >
             Realidad
           </Text>
+
         </View>
 
+
         <Text
-          className="mt-4 text-[14px] leading-6 text-slate-600"
           style={{
-            fontFamily: "Nunito-Medium",
-            textAlign: "justify",
+            marginTop:
+              16,
+
+            fontFamily:
+              "Nunito-Medium",
+
+            fontSize:
+              14,
+
+            lineHeight:
+              24,
+
+            textAlign:
+              "justify",
+
+            color:
+              textSecondaryColor,
           }}
         >
           Cuidar nuestra salud mental también forma parte del bienestar. Conocer
           nuestras emociones puede ayudarnos a comprender mejor lo que sentimos.
         </Text>
+
       </View>
+
     </Animated.View>
+
   );
+
 }

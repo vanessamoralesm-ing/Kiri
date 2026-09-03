@@ -1,6 +1,13 @@
-import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import {
+  Ionicons,
+} from "@expo/vector-icons";
+
+import {
+  router,
+} from "expo-router";
+
 import React from "react";
+
 import {
   ScrollView,
   Text,
@@ -10,7 +17,14 @@ import {
 
 import CategoriaCard from "../../../components/educacion/CategoriaCard";
 
-// Categorías que después podrán obtenerse desde Supabase.
+import {
+  useThemeColor,
+} from "@/hooks/use-theme-color";
+
+
+
+// CATEGORÍAS
+
 const categorias = [
   {
     id: "Ansiedad",
@@ -44,138 +58,403 @@ const categorias = [
   },
 ];
 
+
+// EDUCACIÓN
+
 export default function EducacionScreen() {
-  // Abre la categoría seleccionada utilizando su id en la ruta dinámica.
-  const abrirCategoria = (id: string) => {
-    router.push(`/educacion/${id}` as any);
-  };
+
+  
+  // COLORES DEL TEMA
+  
+
+  const backgroundColor =
+    useThemeColor(
+      {},
+      "background"
+    );
+
+
+  const surfaceColor =
+    useThemeColor(
+      {},
+      "surface"
+    );
+
+
+  const surfaceSecondaryColor =
+    useThemeColor(
+      {},
+      "surfaceSecondary"
+    );
+
+
+  const textColor =
+    useThemeColor(
+      {},
+      "text"
+    );
+
+
+  const textSecondaryColor =
+    useThemeColor(
+      {},
+      "textSecondary"
+    );
+
+
+  const textMutedColor =
+    useThemeColor(
+      {},
+      "textMuted"
+    );
+
+
+  const primaryColor =
+    useThemeColor(
+      {},
+      "primary"
+    );
+
+
+  const primarySoftColor =
+    useThemeColor(
+      {},
+      "primarySoft"
+    );
+
+
+  const inputBackgroundColor =
+    useThemeColor(
+      {},
+      "inputBackground"
+    );
+
+
+  const inputBorderColor =
+    useThemeColor(
+      {},
+      "inputBorder"
+    );
+
+
+  const placeholderColor =
+    useThemeColor(
+      {},
+      "placeholder"
+    );
+
+
+  const iconColor =
+    useThemeColor(
+      {},
+      "icon"
+    );
+
+
+  const borderColor =
+    useThemeColor(
+      {},
+      "border"
+    );
+
+
+  
+  // NAVEGACIÓN
+  
+
+  function abrirCategoria(
+    id: string
+  ) {
+
+    router.push(
+      `/educacion/${id}` as any
+    );
+
+  }
+
+
+  
+  // UI
+  
 
   return (
+
     <ScrollView
-      className="flex-1 bg-slate-50"
-      showsVerticalScrollIndicator={false}
+      style={{
+        flex: 1,
+        backgroundColor,
+      }}
+
+      showsVerticalScrollIndicator={
+        false
+      }
+
       contentContainerStyle={{
-        paddingBottom: 130,
+        paddingBottom:
+          130,
       }}
     >
-      <View className="px-6 pt-12">
 
-        {/* Encabezado principal de Psicoeducación. */}
+      <View
+        style={{
+          paddingHorizontal:
+            24,
+
+          paddingTop:
+            48,
+        }}
+      >
+
+        {/*
+            ENCABEZADO
+        */}
+
         <View>
+
           <Text
-            className="text-[24px] text-blue-500"
             style={{
-              fontFamily: "Nunito-Bold",
+              fontFamily:
+                "Nunito-Bold",
+
+              fontSize:
+                24,
+
+              color:
+                primaryColor,
             }}
           >
             Biblioteca de Bienestar
           </Text>
 
+
           <Text
-            className="mt-2 text-[15px] leading-5 text-slate-500"
             style={{
-              fontFamily: "Nunito-Medium",
+              marginTop:
+                8,
+
+              fontFamily:
+                "Nunito-Medium",
+
+              fontSize:
+                15,
+
+              lineHeight:
+                20,
+
+              color:
+                textSecondaryColor,
             }}
           >
             Explora herramientas y conocimientos diseñados para acompañarte en
             tu camino hacia una mejor salud mental.
           </Text>
+
         </View>
 
-        {/* Buscador de contenido. */}
-        <View className="mt-7 flex-row items-center rounded-2xl bg-white px-4 shadow-md">
+
+        {/*
+            BUSCADOR
+        */}
+
+        <View
+          style={{
+            marginTop:
+              28,
+
+            minHeight:
+              56,
+
+            flexDirection:
+              "row",
+
+            alignItems:
+              "center",
+
+            paddingHorizontal:
+              16,
+
+            borderRadius:
+              16,
+
+            borderWidth:
+              1,
+
+            borderColor:
+              inputBorderColor,
+
+            backgroundColor:
+              inputBackgroundColor,
+
+            shadowColor:
+              "#000000",
+
+            shadowOffset: {
+              width: 0,
+              height: 2,
+            },
+
+            shadowOpacity:
+              0.08,
+
+            shadowRadius:
+              6,
+
+            elevation:
+              2,
+          }}
+        >
+
           <Ionicons
             name="search-outline"
             size={27}
-            color="#7C8799"
+            color={
+              iconColor
+            }
           />
+
 
           <TextInput
             placeholder="¿Qué tema te gustaría explorar hoy?"
-            placeholderTextColor="#A0A7B4"
-            className="ml-3 flex-1 py-4 text-[14px] text-slate-700"
+
+            placeholderTextColor={
+              placeholderColor
+            }
+
+            selectionColor={
+              primaryColor
+            }
+
             style={{
-              fontFamily: "Nunito-Medium",
+              flex:
+                1,
+
+              marginLeft:
+                12,
+
+              paddingVertical:
+                16,
+
+              fontFamily:
+                "Nunito-Medium",
+
+              fontSize:
+                14,
+
+              color:
+                textColor,
             }}
           />
+
         </View>
 
-        {/* Título de las categorías. */}
-        <View className="mb-5 mt-8">
+
+        {/* TÍTULO DE CATEGORÍAS*/}
+
+        <View
+          style={{
+            marginTop:
+              32,
+
+            marginBottom:
+              20,
+          }}
+        >
+
           <Text
-            className="text-[20px] text-slate-800"
             style={{
-              fontFamily: "Nunito-Bold",
+              fontFamily:
+                "Nunito-Bold",
+
+              fontSize:
+                20,
+
+              color:
+                textColor,
             }}
           >
             Explora por categoría
           </Text>
 
+
           <Text
-            className="mt-1 text-[15px] text-slate-400"
             style={{
-              fontFamily: "Nunito-SemiBold",
+              marginTop:
+                4,
+
+              fontFamily:
+                "Nunito-SemiBold",
+
+              fontSize:
+                15,
+
+              color:
+                textMutedColor,
             }}
           >
             Selecciona el tema sobre el que quieras aprender.
           </Text>
+
         </View>
 
-        {/* Tarjetas de categorías. */}
-        <View className="flex-row flex-wrap justify-between gap-y-7">
-          {categorias.map((categoria) => (
-            <View
-              key={categoria.id}
-              className="w-[48%]"
-            >
-              <CategoriaCard
-                titulo={categoria.titulo}
-                imagen={categoria.imagen}
-                onPress={() => abrirCategoria(categoria.id)}
-              />
-            </View>
-          ))}
-        </View>
 
-        {/* Mensaje final de orientación. */}
-        <View className="mt-10 rounded-[22px] bg-white p-5 shadow-sm">
-          <View className="flex-row items-start">
+        {/*
+            TARJETAS DE CATEGORÍAS
+        */}
 
-            <View className="h-11 w-11 items-center justify-center rounded-full bg-blue-50">
-              <Ionicons
-                name="leaf-outline"
-                size={22}
-                color="#4F8CFF"
-              />
-            </View>
+        <View
+          style={{
+            flexDirection:
+              "row",
 
-            <View className="ml-4 flex-1">
-              <Text
-                className="text-[18px] text-slate-800"
-                style={{
-                  fontFamily: "Nunito-Bold",
-                }}
-              >
-                Explora a tu ritmo
-              </Text>
+            flexWrap:
+              "wrap",
 
-              <Text
-                className="mt-1 text-[16px] leading-5 text-slate-500"
-                style={{
-                  fontFamily: "Nunito-Medium",
-                  textAlign: "justify",
-                }}
-              >
-                Cada categoría contiene información, mitos, realidades y
-                lecturas relacionadas para ayudarte a comprender mejor cada
-                tema.
-              </Text>
-            </View>
+            justifyContent:
+              "space-between",
 
-          </View>
+            rowGap:
+              28,
+          }}
+        >
+
+          {
+            categorias.map(
+              categoria => (
+
+                <View
+                  key={
+                    categoria.id
+                  }
+
+                  style={{
+                    width:
+                      "48%",
+                  }}
+                >
+
+                  <CategoriaCard
+                    titulo={
+                      categoria.titulo
+                    }
+
+                    onPress={() =>
+                      abrirCategoria(
+                        categoria.id
+                      )
+                    }
+                  />
+
+                </View>
+
+              )
+            )
+          }
+
         </View>
 
       </View>
+
     </ScrollView>
+
   );
 }
