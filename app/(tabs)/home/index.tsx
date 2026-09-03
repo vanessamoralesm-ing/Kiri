@@ -172,7 +172,11 @@ export default function HomeScreen() {
                 backgroundColor: "rgba(255,255,255,0.20)",
               }}
             >
-              <Ionicons name="trophy-outline" size={21} color="#FFFFFF" />
+              <Ionicons
+                name="trophy-outline"
+                size={21}
+                color="#FFFFFF"
+              />
             </View>
 
             <View style={{ flexShrink: 1 }}>
@@ -199,7 +203,11 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          <Ionicons name="chevron-forward" size={22} color="#FFFFFF" />
+          <Ionicons
+            name="chevron-forward"
+            size={22}
+            color="#FFFFFF"
+          />
         </TouchableOpacity>
 
         {/* MÓDULOS DE INGRESO RÁPIDO */}
@@ -300,10 +308,16 @@ export default function HomeScreen() {
               titulo="Realiza tu entrevista de bienestar"
               descripcion="Completa tu evaluación para recibir un plan personalizado."
               nombreIcono="heart-outline"
-              colorFondo={isDarkMode ? "bg-blue-950" : "bg-blue-100"}
+              colorFondo={
+                isDarkMode
+                  ? "bg-blue-950"
+                  : "bg-blue-100"
+              }
               colorIcono="#4F8EF7"
               colorTextoFlecha="#4F8EF7"
-              onPress={() => router.push("/(tabs)/entrevistas")}
+              onPress={() =>
+                router.push("/(tabs)/entrevistas")
+              }
             />
           )}
         </View>

@@ -105,7 +105,7 @@ const MAPA_ICONOS: Record<
 
 const RUTAS_VISIBLES = [
     "home",
-    "diario/index",
+    "diario",
     "educacion/index",
     "tecnicas/index",
     "perfil/index",
@@ -234,12 +234,17 @@ export function BarraNavegacionCurva({
     pathname ===
     "/adultos/";
 
+  const esNuevoRegistroDiario =
+    pathname === "/diario/nuevo" ||
+    pathname === "/diario/nuevo/";
+
 
   const esRutaSecundariaDeInicio =
     esListaCuestionarios ||
     esForoPrincipal ||
     esEntrevistaNinosPrincipal ||
-    esEntrevistaAdultosPrincipal;
+    esEntrevistaAdultosPrincipal ||
+    esNuevoRegistroDiario;
 
 
   // ========================================================
@@ -272,7 +277,6 @@ export function BarraNavegacionCurva({
     "adultos" &&
     segmentosRuta.length >=
     2;
-
 
   const ocultarBarra =
     estaDentroDeCuestionario ||
