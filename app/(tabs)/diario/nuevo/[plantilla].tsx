@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import {
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   Text,
   View,
 } from "react-native";
+
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -13,6 +16,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { OpcionEmocion } from "@/components/diario/OpcionEmocion";
 import { CampoPreguntaDiario } from "@/components/diario/CampoPreguntaDiario";
 import Button from "@/components/ui/Button";
+
 const EMOCIONES = [
   { nombre: "Alegría", emoji: "😊" },
   { nombre: "Tristeza", emoji: "😢" },
@@ -41,16 +45,12 @@ export default function NuevoAutorregistro() {
   const [ideaUtil, setIdeaUtil] = useState("");
 
   // Regresa a la lista de tipos de autorregistro.
-  // Regresa a la lista de tipos de autorregistro o al historial previo
+  // Regresa a la lista de tipos de autorregistro.
   const regresar = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace({
-        pathname: "/diario/nuevo" as never,
-        params: { origen },
-      });
-    }
+    router.replace({
+      pathname: "/diario/nuevo" as never,
+      params: { origen },
+    });
   };
 
   // La plantilla Diario Emocional
@@ -65,7 +65,17 @@ export default function NuevoAutorregistro() {
   }
 
   return (
-    <View className="flex-1 bg-[#F8FBFF]">
+    <KeyboardAvoidingView
+        className="flex-1 bg-[#F8FBFF]"
+        behavior={
+          Platform.OS === "ios"
+            ? "padding"
+            : Platform.OS === "android"
+            ? "height"
+            : undefined
+        }
+        keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
+      >
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -73,8 +83,9 @@ export default function NuevoAutorregistro() {
           paddingHorizontal: 16,
           paddingBottom: Math.max(insets.bottom + 130, 150),
         }}
-        keyboardShouldPersistTaps="handled"
-      >
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
         {/* Encabezado */}
         <Animated.View
           entering={FadeInDown.duration(400)}
@@ -88,11 +99,11 @@ export default function NuevoAutorregistro() {
           </Pressable>
 
           <View className="flex-1 px-3">
-            <Text className="font-nunito-bold text-[30px] font-[700] text-['#4F8EF7']">
+            <Text className="font-nunito-bold text-[30px] font-[700] text-[#4F8EF7]">
               Diario Emocional
             </Text>
 
-            <Text className="font-nunito-medium text-[16px] text-['#9096a3']">
+            <Text className="font-nunito-medium text-[16px] text-[#9096a3]">
               Tu espacio seguro para expresar lo que sientes
             </Text>
           </View>
@@ -141,7 +152,7 @@ export default function NuevoAutorregistro() {
           entering={FadeInDown.delay(200).duration(500)}
           className="mb-6"
         >
-          <Text className="mb-1 font-nunito-bold text-[20px] text-['#2D3748']">
+          <Text className="mb-1 font-nunito-bold text-[20px] text-[#2D3748]">
             ¿Cómo me siento hoy?
           </Text>
 
@@ -162,47 +173,47 @@ export default function NuevoAutorregistro() {
           </View>
         </Animated.View>
 
-        {/* Preguntas de reflexion */}
-        <Animated.View
-          entering={FadeInDown.delay(300).duration(500)}
-        >
-          <CampoPreguntaDiario
-            titulo="¿Qué me hizo sentir así?"
-            valor={motivo}
-            onChangeText={setMotivo}
-            placeholder="Cuéntanos qué ocurrió..."
-          />
+          {/* Preguntas de reflexion */}
+          <Animated.View
+            entering={FadeInDown.delay(300).duration(500)}
+          >
+            <CampoPreguntaDiario
+              titulo="¿Qué me hizo sentir así?"
+              valor={motivo}
+              onChangeText={setMotivo}
+              placeholder="Cuéntanos qué ocurrió..."
+            />
 
-          <CampoPreguntaDiario
-            titulo="¿Cómo reaccioné?"
-            valor={reaccion}
-            onChangeText={setReaccion}
-            placeholder="¿Qué hiciste o cómo respondiste?"
-          />
+            <CampoPreguntaDiario
+              titulo="¿Cómo reaccioné?"
+              valor={reaccion}
+              onChangeText={setReaccion}
+              placeholder="¿Qué hiciste o cómo respondiste?"
+            />
 
-          <CampoPreguntaDiario
-            titulo="Una idea útil"
-            valor={ideaUtil}
-            onChangeText={setIdeaUtil}
-            placeholder="¿Qué te gustaría recordar de esta experiencia?"
-          />
+            <CampoPreguntaDiario
+              titulo="Una idea útil"
+              valor={ideaUtil}
+              onChangeText={setIdeaUtil}
+              placeholder="¿Qué te gustaría recordar de esta experiencia?"
+            />
+          </Animated.View>
+
+          {/* Boton de guardar */}
+        <Animated.View entering={FadeInDown.delay(400).duration(500)} className="mt-3">
+            <Button
+              title="Guardar registro"
+              onPress={() => {
+                console.log({
+                  emocion,
+                  motivo,
+                  reaccion,
+                  ideaUtil,
+                });
+              }}
+            />
         </Animated.View>
-
-        {/* Boton de guardar */}
-       <Animated.View entering={FadeInDown.delay(400).duration(500)} className="mt-3">
-          <Button
-            title="Guardar registro"
-            onPress={() => {
-              console.log({
-                emocion,
-                motivo,
-                reaccion,
-                ideaUtil,
-              });
-            }}
-          />
-      </Animated.View>
-      </ScrollView>
-    </View>
+     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

@@ -215,7 +215,14 @@ export default function HomeScreen() {
           <TarjetaModulo
             titulo="Nuevo Registro en Diario"
             nombreIcono="book-outline"
-            onPress={() => router.push("/(tabs)/diario")}
+            onPress={() =>
+              router.push({
+                pathname: "/diario/nuevo" as never,
+                params: {
+                  origen: "home",
+                },
+              })
+            }
           />
           <TarjetaModulo
             titulo="Cuestionarios"
