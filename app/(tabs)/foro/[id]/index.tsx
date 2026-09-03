@@ -1,18 +1,7 @@
-import {
-    Ionicons,
-} from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
-import {
-    useLocalSearchParams,
-    useRouter,
-} from "expo-router";
-
-import React, {
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
     ActivityIndicator,
@@ -28,19 +17,12 @@ import {
     View,
 } from "react-native";
 
-import {
-    SafeAreaView,
-} from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import ComentarioCard from "@/components/foro/ComentarioCard";
 
-import {
-    useThemeColor,
-} from "@/hooks/use-theme-color";
-
-import {
-    useAuth,
-} from "@/services/authProvider";
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { useAuth } from "@/services/authProvider";
 
 import {
     crearComentario,
@@ -58,2168 +40,1033 @@ import type {
     TipoReaccion,
 } from "@/types/foro";
 
-
 // ==========================================================
 // COMPONENTE
 // ==========================================================
 
 export default function DetallePublicacionScreen() {
+    const router = useRouter();
 
-    const router =
-        useRouter();
+    const { id } = useLocalSearchParams<{
+        id: string;
+    }>();
 
+    const { profile, loading: authLoading } = useAuth();
 
-    const {
-        id,
-    } =
-        useLocalSearchParams<{
-            id: string;
-        }>();
-
-
-    const {
-        profile,
-        loading:
-        authLoading,
-    } =
-        useAuth();
-
-
-    // ========================================================
+    // ======================================================
     // ESTADOS
-    // ========================================================
+    // ======================================================
 
-    const [
-        publicacion,
-        setPublicacion,
-    ] =
-        useState<
-            PublicacionForo | null
-        >(
-            null
-        );
+    const [publicacion, setPublicacion] = useState<PublicacionForo | null>(null);
 
+    const [comentarios, setComentarios] = useState<ComentarioForo[]>([]);
 
-    const [
-        comentarios,
-        setComentarios,
-    ] =
-        useState<
-            ComentarioForo[]
-        >([]);
+    const [nuevoComentario, setNuevoComentario] = useState("");
 
+    const [cargando, setCargando] = useState(true);
 
-    const [
-        nuevoComentario,
-        setNuevoComentario,
-    ] =
-        useState(
-            ""
-        );
+    const [refrescando, setRefrescando] = useState(false);
 
+    const [publicandoComentario, setPublicandoComentario] = useState(false);
 
-    const [
-        cargando,
-        setCargando,
-    ] =
-        useState(
-            true
-        );
+    const [procesandoReaccion, setProcesandoReaccion] = useState(false);
 
+    const [error, setError] = useState<string | null>(null);
 
-    const [
-        refrescando,
-        setRefrescando,
-    ] =
-        useState(
-            false
-        );
-
-
-    const [
-        publicandoComentario,
-        setPublicandoComentario,
-    ] =
-        useState(
-            false
-        );
-
-
-    const [
-        procesandoReaccion,
-        setProcesandoReaccion,
-    ] =
-        useState(
-            false
-        );
-
-
-    const [
-        error,
-        setError,
-    ] =
-        useState<
-            string | null
-        >(
-            null
-        );
-
-
-    // ========================================================
+    // ======================================================
     // TEMA
-    // ========================================================
+    // ======================================================
 
-    const backgroundColor =
-        useThemeColor(
-            {},
-            "background"
-        );
+    const backgroundColor = useThemeColor({}, "background");
+    const surfaceColor = useThemeColor({}, "surface");
+    const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+    const borderColor = useThemeColor({}, "border");
+    const dividerColor = useThemeColor({}, "divider");
+    const textColor = useThemeColor({}, "text");
+    const textSecondaryColor = useThemeColor({}, "textSecondary");
+    const textMutedColor = useThemeColor({}, "textMuted");
+    const placeholderColor = useThemeColor({}, "placeholder");
+    const iconColor = useThemeColor({}, "icon");
+    const primaryColor = useThemeColor({}, "primary");
+    const primarySoftColor = useThemeColor({}, "primarySoft");
+    const accentColor = useThemeColor({}, "accent");
+    const accentSoftColor = useThemeColor({}, "accentSoft");
 
-
-    const surfaceColor =
-        useThemeColor(
-            {},
-            "surface"
-        );
-
-
-    const surfaceSecondaryColor =
-        useThemeColor(
-            {},
-            "surfaceSecondary"
-        );
-
-
-    const borderColor =
-        useThemeColor(
-            {},
-            "border"
-        );
-
-
-    const dividerColor =
-        useThemeColor(
-            {},
-            "divider"
-        );
-
-
-    const textColor =
-        useThemeColor(
-            {},
-            "text"
-        );
-
-
-    const textSecondaryColor =
-        useThemeColor(
-            {},
-            "textSecondary"
-        );
-
-
-    const textMutedColor =
-        useThemeColor(
-            {},
-            "textMuted"
-        );
-
-
-    const placeholderColor =
-        useThemeColor(
-            {},
-            "placeholder"
-        );
-
-
-    const iconColor =
-        useThemeColor(
-            {},
-            "icon"
-        );
-
-
-    const primaryColor =
-        useThemeColor(
-            {},
-            "primary"
-        );
-
-
-    const primarySoftColor =
-        useThemeColor(
-            {},
-            "primarySoft"
-        );
-
-
-    const accentColor =
-        useThemeColor(
-            {},
-            "accent"
-        );
-
-
-    const accentSoftColor =
-        useThemeColor(
-            {},
-            "accentSoft"
-        );
-
-
-    // ========================================================
+    // ======================================================
     // DATOS DERIVADOS
-    // ========================================================
+    // ======================================================
 
-    const nombreUsuario =
-        useMemo(
-            () => {
+    const nombreUsuario = useMemo(
+        () =>
+            publicacion?.usuario?.nombre_preferido?.trim() ||
+            publicacion?.usuario?.nombres?.trim() ||
+            "Usuario",
+        [publicacion],
+    );
 
-                return (
-                    publicacion
-                        ?.usuario
-                        ?.nombre_preferido
-                        ?.trim() ||
+    const reaccionActual = publicacion?.reaccion_usuario ?? null;
 
-                    publicacion
-                        ?.usuario
-                        ?.nombres
-                        ?.trim() ||
+    const reaccionMeGusta = reaccionActual === "me_gusta";
 
-                    "Usuario"
-                );
+    const totalReacciones = publicacion?.total_reacciones ?? 0;
 
-            },
-            [
-                publicacion,
-            ]
-        );
-
-
-    const reaccionActual =
-        publicacion
-            ?.reaccion_usuario ??
-        null;
-
-
-    const reaccionMeGusta =
-        reaccionActual ===
-        "me_gusta";
-
-
-    const totalReacciones =
-        publicacion
-            ?.total_reacciones ??
-        0;
-
-
-    // ========================================================
+    // ======================================================
     // FECHA
-    // ========================================================
+    // ======================================================
 
-    function formatearFecha(
-        fecha: string
-    ) {
+    function formatearFecha(fecha: string) {
+        const valor = new Date(fecha);
 
-        const valor =
-            new Date(
-                fecha
-            );
-
-
-        if (
-            Number.isNaN(
-                valor.getTime()
-            )
-        ) {
-
+        if (Number.isNaN(valor.getTime())) {
             return "";
-
         }
 
-
-        return valor.toLocaleDateString(
-            "es-NI",
-            {
-                day:
-                    "2-digit",
-
-                month:
-                    "long",
-
-                year:
-                    "numeric",
-
-                hour:
-                    "2-digit",
-
-                minute:
-                    "2-digit",
-            }
-        );
-
+        return valor.toLocaleDateString("es-NI", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
     }
 
-
-    // ========================================================
+    // ======================================================
     // CARGAR DETALLE
-    // ========================================================
+    // ======================================================
 
-    const cargarDetalle =
-        useCallback(
-            async (
-                mostrarCargaPrincipal =
-                    true
-            ) => {
+    const cargarDetalle = useCallback(
+        async (mostrarCargaPrincipal = true) => {
+            if (!id) {
+                return;
+            }
 
-                if (
-                    authLoading ||
-                    !id
-                ) {
+            try {
+                if (mostrarCargaPrincipal) {
+                    setCargando(true);
+                }
+
+                setError(null);
+
+                const [datosPublicacion, datosComentarios] = await Promise.all([
+                    obtenerPublicacionPorId(id, profile?.id_usuario),
+                    obtenerComentarios(id),
+                ]);
+
+                if (!datosPublicacion) {
+                    setPublicacion(null);
+                    setComentarios([]);
+
+                    setError("La publicación no está disponible.");
+
                     return;
                 }
 
+                setPublicacion(datosPublicacion);
+                setComentarios(datosComentarios);
+            } catch (e) {
+                console.error("Error cargando detalle de publicación:", e);
 
-                try {
-
-                    if (
-                        mostrarCargaPrincipal
-                    ) {
-
-                        setCargando(
-                            true
-                        );
-
-                    }
-
-
-                    setError(
-                        null
-                    );
-
-
-                    const [
-                        datosPublicacion,
-                        datosComentarios,
-                    ] =
-                        await Promise.all([
-
-                            obtenerPublicacionPorId(
-                                id,
-                                profile?.id_usuario
-                            ),
-
-                            obtenerComentarios(
-                                id
-                            ),
-
-                        ]);
-
-
-                    if (
-                        !datosPublicacion
-                    ) {
-
-                        setPublicacion(
-                            null
-                        );
-
-
-                        setComentarios(
-                            []
-                        );
-
-
-                        setError(
-                            "La publicación no está disponible."
-                        );
-
-
-                        return;
-
-                    }
-
-
-                    setPublicacion(
-                        datosPublicacion
-                    );
-
-
-                    setComentarios(
-                        datosComentarios
-                    );
-
-
-                } catch (
-                e
-                ) {
-
-                    console.error(
-                        "Error cargando detalle de publicación:",
-                        e
-                    );
-
-
-                    setError(
-                        e instanceof Error
-                            ? e.message
-                            : "No se pudo cargar la publicación."
-                    );
-
-
-                } finally {
-
-                    if (
-                        mostrarCargaPrincipal
-                    ) {
-
-                        setCargando(
-                            false
-                        );
-
-                    }
-
+                setError(
+                    e instanceof Error ? e.message : "No se pudo cargar la publicación.",
+                );
+            } finally {
+                if (mostrarCargaPrincipal) {
+                    setCargando(false);
                 }
-
-            },
-            [
-                authLoading,
-                id,
-                profile?.id_usuario,
-            ]
-        );
-
-
-    // ========================================================
-    // CARGA INICIAL
-    // ========================================================
-
-    useEffect(
-        () => {
-
-            cargarDetalle();
-
+            }
         },
-        [
-            cargarDetalle,
-        ]
+        [id, profile?.id_usuario],
     );
 
+    // ======================================================
+    // CARGA INICIAL
+    // ======================================================
 
-    // ========================================================
+    useEffect(() => {
+        if (authLoading) {
+            return;
+        }
+
+        if (!id) {
+            setError("No se recibió el identificador de la publicación.");
+
+            setCargando(false);
+
+            return;
+        }
+
+        cargarDetalle();
+    }, [authLoading, id, cargarDetalle]);
+
+    // ======================================================
     // REFRESH
-    // ========================================================
+    // ======================================================
 
-    const refrescar =
-        useCallback(
-            async () => {
+    const refrescar = useCallback(async () => {
+        if (authLoading || refrescando) {
+            return;
+        }
 
-                try {
+        try {
+            setRefrescando(true);
 
-                    setRefrescando(
-                        true
-                    );
+            await cargarDetalle(false);
+        } finally {
+            setRefrescando(false);
+        }
+    }, [authLoading, refrescando, cargarDetalle]);
 
-
-                    await cargarDetalle(
-                        false
-                    );
-
-
-                } finally {
-
-                    setRefrescando(
-                        false
-                    );
-
-                }
-
-            },
-            [
-                cargarDetalle,
-            ]
-        );
-
-
-    // ========================================================
+    // ======================================================
     // REACCIONAR
-    // ========================================================
+    // ======================================================
 
     async function manejarReaccion() {
-
-        if (
-            !publicacion ||
-            procesandoReaccion
-        ) {
+        if (!publicacion || procesandoReaccion) {
             return;
         }
 
+        if (!profile?.id_usuario) {
+            Alert.alert("Sesión requerida", "Debes iniciar sesión para reaccionar.");
 
-        if (
-            !profile?.id_usuario
-        ) {
+            return;
+        }
 
-            Alert.alert(
-                "Sesión requerida",
-                "Debes iniciar sesión para reaccionar."
+        const reaccionAnterior = publicacion.reaccion_usuario ?? null;
+
+        const totalAnterior = publicacion.total_reacciones ?? 0;
+
+        let nuevaReaccionLocal: TipoReaccion | null;
+
+        let nuevoTotal = totalAnterior;
+
+        if (reaccionAnterior === "me_gusta") {
+            nuevaReaccionLocal = null;
+
+            nuevoTotal = Math.max(0, totalAnterior - 1);
+        } else {
+            nuevaReaccionLocal = "me_gusta";
+
+            if (reaccionAnterior === null) {
+                nuevoTotal = totalAnterior + 1;
+            }
+        }
+
+        setPublicacion((actual) =>
+            actual
+                ? {
+                    ...actual,
+                    reaccion_usuario: nuevaReaccionLocal,
+                    total_reacciones: nuevoTotal,
+                }
+                : actual,
+        );
+
+        try {
+            setProcesandoReaccion(true);
+
+            const resultado = await reaccionarPublicacion(
+                publicacion.id_publicacion,
+                profile.id_usuario,
+                "me_gusta",
             );
 
-            return;
-
-        }
-
-
-        const reaccionAnterior =
-            publicacion.reaccion_usuario ??
-            null;
-
-
-        const totalAnterior =
-            publicacion.total_reacciones ??
-            0;
-
-
-        let nuevaReaccionLocal:
-            TipoReaccion | null;
-
-
-        let nuevoTotal =
-            totalAnterior;
-
-
-        if (
-            reaccionAnterior ===
-            "me_gusta"
-        ) {
-
-            nuevaReaccionLocal =
-                null;
-
-
-            nuevoTotal =
-                Math.max(
-                    0,
-                    totalAnterior - 1
-                );
-
-        } else {
-
-            nuevaReaccionLocal =
-                "me_gusta";
-
-
-            if (
-                reaccionAnterior ===
-                null
-            ) {
-
-                nuevoTotal =
-                    totalAnterior + 1;
-
-            }
-
-        }
-
-
-        setPublicacion(
-            actual =>
+            setPublicacion((actual) =>
                 actual
                     ? {
                         ...actual,
-
-                        reaccion_usuario:
-                            nuevaReaccionLocal,
-
-                        total_reacciones:
-                            nuevoTotal,
+                        reaccion_usuario: resultado,
                     }
-                    : actual
-        );
-
-
-        try {
-
-            setProcesandoReaccion(
-                true
+                    : actual,
             );
-
-
-            const resultado =
-                await reaccionarPublicacion(
-                    publicacion.id_publicacion,
-                    profile.id_usuario,
-                    "me_gusta"
-                );
-
-
-            setPublicacion(
-                actual =>
-                    actual
-                        ? {
-                            ...actual,
-
-                            reaccion_usuario:
-                                resultado,
-                        }
-                        : actual
+        } catch (e) {
+            setPublicacion((actual) =>
+                actual
+                    ? {
+                        ...actual,
+                        reaccion_usuario: reaccionAnterior,
+                        total_reacciones: totalAnterior,
+                    }
+                    : actual,
             );
-
-
-        } catch (
-        e
-        ) {
-
-            setPublicacion(
-                actual =>
-                    actual
-                        ? {
-                            ...actual,
-
-                            reaccion_usuario:
-                                reaccionAnterior,
-
-                            total_reacciones:
-                                totalAnterior,
-                        }
-                        : actual
-            );
-
 
             Alert.alert(
                 "No se pudo reaccionar",
                 e instanceof Error
                     ? e.message
-                    : "Ocurrió un error al registrar tu reacción."
+                    : "Ocurrió un error al registrar tu reacción.",
             );
-
-
         } finally {
-
-            setProcesandoReaccion(
-                false
-            );
-
+            setProcesandoReaccion(false);
         }
-
     }
 
-
-    // ========================================================
+    // ======================================================
     // CREAR COMENTARIO
-    // ========================================================
+    // ======================================================
 
     async function manejarPublicarComentario() {
-
-        if (
-            publicandoComentario
-        ) {
+        if (publicandoComentario) {
             return;
         }
 
+        if (!profile?.id_usuario) {
+            Alert.alert("Sesión requerida", "Debes iniciar sesión para comentar.");
 
-        if (
-            !profile?.id_usuario
-        ) {
-
-            Alert.alert(
-                "Sesión requerida",
-                "Debes iniciar sesión para comentar."
-            );
-
-            return;
-
-        }
-
-
-        if (
-            !id
-        ) {
             return;
         }
 
+        if (!id) {
+            return;
+        }
 
-        if (
-            !nuevoComentario.trim()
-        ) {
-
+        if (!nuevoComentario.trim()) {
             Alert.alert(
                 "Comentario vacío",
-                "Escribe algo antes de publicar tu comentario."
+                "Escribe algo antes de publicar tu comentario.",
             );
 
             return;
-
         }
 
-
         try {
+            setPublicandoComentario(true);
 
-            setPublicandoComentario(
-                true
+            const comentario = await crearComentario({
+                idPublicacion: id,
+                idUsuario: profile.id_usuario,
+                contenido: nuevoComentario,
+            });
+
+            setComentarios((actuales) => [...actuales, comentario]);
+
+            setNuevoComentario("");
+
+            setPublicacion((actual) =>
+                actual
+                    ? {
+                        ...actual,
+                        total_comentarios: (actual.total_comentarios ?? 0) + 1,
+                    }
+                    : actual,
             );
-
-
-            const comentario =
-                await crearComentario({
-                    idPublicacion:
-                        id,
-
-                    idUsuario:
-                        profile.id_usuario,
-
-                    contenido:
-                        nuevoComentario,
-                });
-
-
-            setComentarios(
-                actuales => [
-                    ...actuales,
-                    comentario,
-                ]
-            );
-
-
-            setNuevoComentario(
-                ""
-            );
-
-
-            setPublicacion(
-                actual =>
-                    actual
-                        ? {
-                            ...actual,
-
-                            total_comentarios:
-                                (
-                                    actual.total_comentarios ??
-                                    0
-                                ) + 1,
-                        }
-                        : actual
-            );
-
-
-        } catch (
-        e
-        ) {
-
+        } catch (e) {
             Alert.alert(
                 "No se pudo comentar",
                 e instanceof Error
                     ? e.message
-                    : "Ocurrió un error al publicar tu comentario."
+                    : "Ocurrió un error al publicar tu comentario.",
             );
-
-
         } finally {
-
-            setPublicandoComentario(
-                false
-            );
-
+            setPublicandoComentario(false);
         }
-
     }
 
-
-    // ========================================================
+    // ======================================================
     // ELIMINAR COMENTARIO
-    // ========================================================
+    // ======================================================
 
-    function manejarEliminarComentario(
-        comentario: ComentarioForo
-    ) {
-
-        if (
-            !profile?.id_usuario
-        ) {
+    function manejarEliminarComentario(comentario: ComentarioForo) {
+        if (!profile?.id_usuario) {
             return;
         }
-
 
         Alert.alert(
             "Eliminar comentario",
             "¿Seguro que deseas eliminar este comentario?",
             [
                 {
-                    text:
-                        "Cancelar",
-
-                    style:
-                        "cancel",
+                    text: "Cancelar",
+                    style: "cancel",
                 },
-
                 {
-                    text:
-                        "Eliminar",
+                    text: "Eliminar",
+                    style: "destructive",
 
-                    style:
-                        "destructive",
+                    onPress: async () => {
+                        try {
+                            await eliminarComentario(
+                                comentario.id_comentario,
+                                profile.id_usuario,
+                            );
 
-                    onPress:
-                        async () => {
+                            setComentarios((actuales) =>
+                                actuales.filter(
+                                    (item) => item.id_comentario !== comentario.id_comentario,
+                                ),
+                            );
 
-                            try {
-
-                                await eliminarComentario(
-                                    comentario.id_comentario,
-                                    profile.id_usuario
-                                );
-
-
-                                setComentarios(
-                                    actuales =>
-                                        actuales.filter(
-                                            item =>
-                                                item.id_comentario !==
-                                                comentario.id_comentario
-                                        )
-                                );
-
-
-                                setPublicacion(
-                                    actual =>
-                                        actual
-                                            ? {
-                                                ...actual,
-
-                                                total_comentarios:
-                                                    Math.max(
-                                                        0,
-                                                        (
-                                                            actual.total_comentarios ??
-                                                            0
-                                                        ) - 1
-                                                    ),
-                                            }
-                                            : actual
-                                );
-
-
-                            } catch (
-                            e
-                            ) {
-
-                                Alert.alert(
-                                    "No se pudo eliminar",
-                                    e instanceof Error
-                                        ? e.message
-                                        : "Ocurrió un error al eliminar el comentario."
-                                );
-
-                            }
-
-                        },
+                            setPublicacion((actual) =>
+                                actual
+                                    ? {
+                                        ...actual,
+                                        total_comentarios: Math.max(
+                                            0,
+                                            (actual.total_comentarios ?? 0) - 1,
+                                        ),
+                                    }
+                                    : actual,
+                            );
+                        } catch (e) {
+                            Alert.alert(
+                                "No se pudo eliminar",
+                                e instanceof Error
+                                    ? e.message
+                                    : "Ocurrió un error al eliminar el comentario.",
+                            );
+                        }
+                    },
                 },
-            ]
+            ],
         );
-
     }
 
-
-    // ========================================================
+    // ======================================================
     // EDITAR COMENTARIO
-    // ========================================================
+    // ======================================================
 
-    function manejarEditarComentario(
-        comentario: ComentarioForo
-    ) {
-
-        /*
-         * La edición todavía necesita una interfaz
-         * específica, por ejemplo un modal con TextInput.
-         *
-         * El servicio editarComentario() ya existe.
-         */
-
+    function manejarEditarComentario(_comentario: ComentarioForo) {
         Alert.alert(
             "Editar comentario",
-            "La edición del comentario se integrará en el siguiente paso."
+            "La edición del comentario se integrará en el siguiente paso.",
         );
-
     }
 
-
-    // ========================================================
+    // ======================================================
     // REPORTAR COMENTARIO
-    // ========================================================
+    // ======================================================
 
-    function manejarReportarComentario(
-        comentario: ComentarioForo
-    ) {
-
-        if (
-            !profile?.id_usuario
-        ) {
-
+    function manejarReportarComentario(comentario: ComentarioForo) {
+        if (!profile?.id_usuario) {
             Alert.alert(
                 "Sesión requerida",
-                "Debes iniciar sesión para reportar contenido."
+                "Debes iniciar sesión para reportar contenido.",
             );
 
             return;
-
         }
 
-
-        Alert.alert(
-            "Reportar comentario",
-            "Selecciona el motivo del reporte.",
-            [
-                {
-                    text:
-                        "Contenido inapropiado",
-
-                    onPress:
-                        () =>
-                            enviarReporteComentario(
-                                comentario,
-                                "contenido_inapropiado"
-                            ),
-                },
-
-                {
-                    text:
-                        "Acoso",
-
-                    onPress:
-                        () =>
-                            enviarReporteComentario(
-                                comentario,
-                                "acoso"
-                            ),
-                },
-
-                {
-                    text:
-                        "Spam",
-
-                    onPress:
-                        () =>
-                            enviarReporteComentario(
-                                comentario,
-                                "spam"
-                            ),
-                },
-
-                {
-                    text:
-                        "Cancelar",
-
-                    style:
-                        "cancel",
-                },
-            ]
-        );
-
+        Alert.alert("Reportar comentario", "Selecciona el motivo del reporte.", [
+            {
+                text: "Contenido inapropiado",
+                onPress: () =>
+                    enviarReporteComentario(comentario, "contenido_inapropiado"),
+            },
+            {
+                text: "Acoso",
+                onPress: () => enviarReporteComentario(comentario, "acoso"),
+            },
+            {
+                text: "Spam",
+                onPress: () => enviarReporteComentario(comentario, "spam"),
+            },
+            {
+                text: "Cancelar",
+                style: "cancel",
+            },
+        ]);
     }
-
 
     async function enviarReporteComentario(
         comentario: ComentarioForo,
-        motivo: MotivoReporte
+        motivo: MotivoReporte,
     ) {
-
-        if (
-            !profile?.id_usuario
-        ) {
+        if (!profile?.id_usuario) {
             return;
         }
 
-
         try {
-
             await crearReporte({
-                idUsuarioReporta:
-                    profile.id_usuario,
-
-                idComentario:
-                    comentario.id_comentario,
-
+                idUsuarioReporta: profile.id_usuario,
+                idComentario: comentario.id_comentario,
                 motivo,
             });
 
-
-            Alert.alert(
-                "Reporte enviado",
-                "Gracias. Revisaremos este contenido."
-            );
-
-
-        } catch (
-        e
-        ) {
-
+            Alert.alert("Reporte enviado", "Gracias. Revisaremos este contenido.");
+        } catch (e) {
             Alert.alert(
                 "No se pudo reportar",
                 e instanceof Error
                     ? e.message
-                    : "Ocurrió un error al enviar el reporte."
+                    : "Ocurrió un error al enviar el reporte.",
             );
-
         }
-
     }
 
-
-    // ========================================================
+    // ======================================================
     // CARGANDO
-    // ========================================================
+    // ======================================================
 
-    if (
-        cargando
-    ) {
-
+    if (authLoading || cargando) {
         return (
-
             <SafeAreaView
                 style={{
-                    flex:
-                        1,
-
+                    flex: 1,
                     backgroundColor,
                 }}
             >
-
                 <View
                     style={{
-                        flex:
-                            1,
-
-                        alignItems:
-                            "center",
-
-                        justifyContent:
-                            "center",
+                        flex: 1,
+                        alignItems: "center",
+                        justifyContent: "center",
                     }}
                 >
-
-                    <ActivityIndicator
-                        size="large"
-
-                        color={
-                            primaryColor
-                        }
-                    />
-
+                    <ActivityIndicator size="large" color={primaryColor} />
 
                     <Text
                         style={{
-                            marginTop:
-                                14,
-
-                            fontFamily:
-                                "Nunito-SemiBold",
-
-                            color:
-                                textSecondaryColor,
+                            marginTop: 14,
+                            fontFamily: "Nunito-SemiBold",
+                            color: textSecondaryColor,
                         }}
                     >
                         Cargando publicación...
                     </Text>
-
                 </View>
-
             </SafeAreaView>
-
         );
-
     }
 
-
-    // ========================================================
+    // ======================================================
     // ERROR
-    // ========================================================
+    // ======================================================
 
-    if (
-        error ||
-        !publicacion
-    ) {
-
+    if (error || !publicacion) {
         return (
-
             <SafeAreaView
                 style={{
-                    flex:
-                        1,
-
+                    flex: 1,
                     backgroundColor,
                 }}
             >
-
                 <View
                     style={{
-                        flex:
-                            1,
-
-                        paddingHorizontal:
-                            24,
-
-                        alignItems:
-                            "center",
-
-                        justifyContent:
-                            "center",
+                        flex: 1,
+                        paddingHorizontal: 24,
+                        alignItems: "center",
+                        justifyContent: "center",
                     }}
                 >
-
                     <Ionicons
                         name="alert-circle-outline"
                         size={52}
-
-                        color={
-                            textMutedColor
-                        }
+                        color={textMutedColor}
                     />
-
 
                     <Text
                         style={{
-                            marginTop:
-                                16,
-
-                            fontFamily:
-                                "Nunito-Bold",
-
-                            fontSize:
-                                20,
-
-                            textAlign:
-                                "center",
-
-                            color:
-                                textColor,
+                            marginTop: 16,
+                            fontFamily: "Nunito-Bold",
+                            fontSize: 20,
+                            textAlign: "center",
+                            color: textColor,
                         }}
                     >
                         No pudimos cargar esta publicación
                     </Text>
 
-
                     <Text
                         style={{
-                            marginTop:
-                                8,
-
-                            fontFamily:
-                                "Nunito-Medium",
-
-                            fontSize:
-                                14,
-
-                            lineHeight:
-                                21,
-
-                            textAlign:
-                                "center",
-
-                            color:
-                                textSecondaryColor,
+                            marginTop: 8,
+                            fontFamily: "Nunito-Medium",
+                            fontSize: 14,
+                            lineHeight: 21,
+                            textAlign: "center",
+                            color: textSecondaryColor,
                         }}
                     >
-                        {
-                            error ??
-                            "La publicación no está disponible."
-                        }
+                        {error ?? "La publicación no está disponible."}
                     </Text>
 
-
                     <Pressable
-                        onPress={() =>
-                            cargarDetalle()
-                        }
-
+                        onPress={() => cargarDetalle()}
                         style={{
-                            marginTop:
-                                24,
-
-                            minHeight:
-                                48,
-
-                            paddingHorizontal:
-                                22,
-
-                            borderRadius:
-                                16,
-
-                            flexDirection:
-                                "row",
-
-                            alignItems:
-                                "center",
-
-                            justifyContent:
-                                "center",
-
-                            backgroundColor:
-                                primaryColor,
+                            marginTop: 24,
+                            minHeight: 48,
+                            paddingHorizontal: 22,
+                            borderRadius: 16,
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backgroundColor: primaryColor,
                         }}
                     >
-
-                        <Ionicons
-                            name="refresh-outline"
-                            size={19}
-                            color="#FFFFFF"
-                        />
-
+                        <Ionicons name="refresh-outline" size={19} color="#FFFFFF" />
 
                         <Text
                             style={{
-                                marginLeft:
-                                    8,
-
-                                fontFamily:
-                                    "Nunito-Bold",
-
-                                color:
-                                    "#FFFFFF",
+                                marginLeft: 8,
+                                fontFamily: "Nunito-Bold",
+                                color: "#FFFFFF",
                             }}
                         >
                             Intentar nuevamente
                         </Text>
-
                     </Pressable>
-
                 </View>
-
             </SafeAreaView>
-
         );
-
     }
 
-
-    // ========================================================
+    // ======================================================
     // UI
-    // ========================================================
+    // ======================================================
 
     return (
-
         <SafeAreaView
             style={{
-                flex:
-                    1,
-
+                flex: 1,
                 backgroundColor,
             }}
         >
-
             <KeyboardAvoidingView
                 style={{
-                    flex:
-                        1,
+                    flex: 1,
                 }}
-
-                behavior={
-                    Platform.OS ===
-                        "ios"
-                        ? "padding"
-                        : undefined
-                }
+                behavior={Platform.OS === "ios" ? "padding" : undefined}
             >
-
-                {/* =================================================
-            HEADER
-        ================================================= */}
+                {/* ==================================================
+                    HEADER
+                ================================================== */}
 
                 <View
                     style={{
-                        minHeight:
-                            64,
-
-                        paddingHorizontal:
-                            18,
-
-                        flexDirection:
-                            "row",
-
-                        alignItems:
-                            "center",
-
-                        borderBottomWidth:
-                            1,
-
-                        borderBottomColor:
-                            dividerColor,
-
+                        minHeight: 64,
+                        paddingHorizontal: 18,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        borderBottomWidth: 1,
+                        borderBottomColor: dividerColor,
                         backgroundColor,
                     }}
                 >
-
                     <Pressable
-                        onPress={() =>
-                            router.back()
-                        }
-
+                        onPress={() => router.back()}
                         style={{
-                            width:
-                                44,
-
-                            height:
-                                44,
-
-                            alignItems:
-                                "center",
-
-                            justifyContent:
-                                "center",
+                            width: 44,
+                            height: 44,
+                            alignItems: "center",
+                            justifyContent: "center",
                         }}
                     >
-
-                        <Ionicons
-                            name="arrow-back"
-                            size={27}
-
-                            color={
-                                iconColor
-                            }
-                        />
-
+                        <Ionicons name="arrow-back" size={27} color={iconColor} />
                     </Pressable>
-
 
                     <Text
                         style={{
-                            flex:
-                                1,
-
-                            marginLeft:
-                                8,
-
-                            fontFamily:
-                                "Nunito-Bold",
-
-                            fontSize:
-                                22,
-
-                            color:
-                                textColor,
+                            flex: 1,
+                            marginLeft: 8,
+                            fontFamily: "Nunito-Bold",
+                            fontSize: 22,
+                            color: textColor,
                         }}
                     >
                         Publicación
                     </Text>
-
                 </View>
 
-
-                {/* =================================================
-            SCROLL
-        ================================================= */}
+                {/* ==================================================
+                    CONTENIDO
+                ================================================== */}
 
                 <ScrollView
-                    showsVerticalScrollIndicator={
-                        false
-                    }
-
+                    showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
-
                     refreshControl={
                         <RefreshControl
-                            refreshing={
-                                refrescando
-                            }
-
-                            onRefresh={
-                                refrescar
-                            }
-
-                            tintColor={
-                                primaryColor
-                            }
-
-                            colors={[
-                                primaryColor,
-                            ]}
+                            refreshing={refrescando}
+                            onRefresh={refrescar}
+                            tintColor={primaryColor}
+                            colors={[primaryColor]}
                         />
                     }
-
                     contentContainerStyle={{
-                        paddingHorizontal:
-                            20,
-
-                        paddingTop:
-                            20,
-
-                        paddingBottom:
-                            28,
+                        paddingHorizontal: 20,
+                        paddingTop: 20,
+                        paddingBottom: 28,
                     }}
                 >
-
-                    {/* =================================================
-              PUBLICACIÓN
-          ================================================= */}
+                    {/* ==================================================
+                        PUBLICACIÓN
+                    ================================================== */}
 
                     <View
                         style={{
-                            padding:
-                                20,
-
-                            borderRadius:
-                                24,
-
-                            borderWidth:
-                                1,
-
+                            padding: 20,
+                            borderRadius: 24,
+                            borderWidth: 1,
                             borderColor,
-
-                            backgroundColor:
-                                surfaceColor,
+                            backgroundColor: surfaceColor,
                         }}
                     >
-
-                        {/* ===============================================
-                AUTOR
-            =============================================== */}
+                        {/* AUTOR */}
 
                         <View
                             style={{
-                                flexDirection:
-                                    "row",
-
-                                alignItems:
-                                    "center",
+                                flexDirection: "row",
+                                alignItems: "center",
                             }}
                         >
-
-                            {
-                                publicacion.usuario
-                                    ?.foto_perfil
-
-                                    ? (
-
-                                        <Image
-                                            source={{
-                                                uri:
-                                                    publicacion.usuario.foto_perfil,
-                                            }}
-
-                                            style={{
-                                                width:
-                                                    50,
-
-                                                height:
-                                                    50,
-
-                                                borderRadius:
-                                                    25,
-
-                                                borderWidth:
-                                                    1,
-
-                                                borderColor,
-                                            }}
-                                        />
-
-                                    )
-
-                                    : (
-
-                                        <View
-                                            style={{
-                                                width:
-                                                    50,
-
-                                                height:
-                                                    50,
-
-                                                borderRadius:
-                                                    25,
-
-                                                alignItems:
-                                                    "center",
-
-                                                justifyContent:
-                                                    "center",
-
-                                                borderWidth:
-                                                    1,
-
-                                                borderColor,
-
-                                                backgroundColor:
-                                                    surfaceSecondaryColor,
-                                            }}
-                                        >
-
-                                            <Ionicons
-                                                name="person-outline"
-                                                size={24}
-
-                                                color={
-                                                    iconColor
-                                                }
-                                            />
-
-                                        </View>
-
-                                    )
-                            }
-
+                            {publicacion.usuario?.foto_perfil ? (
+                                <Image
+                                    source={{
+                                        uri: publicacion.usuario.foto_perfil,
+                                    }}
+                                    style={{
+                                        width: 50,
+                                        height: 50,
+                                        borderRadius: 25,
+                                        borderWidth: 1,
+                                        borderColor,
+                                    }}
+                                />
+                            ) : (
+                                <View
+                                    style={{
+                                        width: 50,
+                                        height: 50,
+                                        borderRadius: 25,
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        borderWidth: 1,
+                                        borderColor,
+                                        backgroundColor: surfaceSecondaryColor,
+                                    }}
+                                >
+                                    <Ionicons name="person-outline" size={24} color={iconColor} />
+                                </View>
+                            )}
 
                             <View
                                 style={{
-                                    flex:
-                                        1,
-
-                                    marginLeft:
-                                        13,
+                                    flex: 1,
+                                    marginLeft: 13,
                                 }}
                             >
-
                                 <Text
                                     style={{
-                                        fontFamily:
-                                            "Nunito-Bold",
-
-                                        fontSize:
-                                            16,
-
-                                        color:
-                                            textColor,
+                                        fontFamily: "Nunito-Bold",
+                                        fontSize: 16,
+                                        color: textColor,
                                     }}
                                 >
                                     {nombreUsuario}
                                 </Text>
 
-
                                 <Text
                                     style={{
-                                        marginTop:
-                                            2,
-
-                                        fontFamily:
-                                            "Nunito-Medium",
-
-                                        fontSize:
-                                            12,
-
-                                        color:
-                                            textMutedColor,
+                                        marginTop: 2,
+                                        fontFamily: "Nunito-Medium",
+                                        fontSize: 12,
+                                        color: textMutedColor,
                                     }}
                                 >
-                                    {
-                                        formatearFecha(
-                                            publicacion.fecha_publicacion
-                                        )
-                                    }
+                                    {formatearFecha(publicacion.fecha_publicacion)}
 
-                                    {
-                                        publicacion.editada
-                                            ? " · Editada"
-                                            : ""
-                                    }
+                                    {publicacion.editada ? " · Editada" : ""}
                                 </Text>
-
                             </View>
-
                         </View>
 
+                        {/* EMOCIONES */}
 
-                        {/* ===============================================
-                EMOCIONES
-            =============================================== */}
+                        {(publicacion.emociones ?? []).length > 0 && (
+                            <View
+                                style={{
+                                    marginTop: 18,
+                                    flexDirection: "row",
+                                    flexWrap: "wrap",
+                                    gap: 8,
+                                }}
+                            >
+                                {(publicacion.emociones ?? []).map((emocion) => (
+                                    <View
+                                        key={emocion.id_emocion_foro}
+                                        style={{
+                                            paddingHorizontal: 12,
+                                            paddingVertical: 5,
+                                            borderRadius: 999,
+                                            borderWidth: 1,
+                                            borderColor: accentColor,
+                                            backgroundColor: accentSoftColor,
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                fontFamily: "Nunito-Medium",
+                                                fontSize: 13,
+                                                color: accentColor,
+                                            }}
+                                        >
+                                            {emocion.nombre}
+                                        </Text>
+                                    </View>
+                                ))}
+                            </View>
+                        )}
 
-                        {
-                            (
-                                publicacion.emociones ??
-                                []
-                            ).length >
-                            0 && (
-
-                                <View
-                                    style={{
-                                        marginTop:
-                                            18,
-
-                                        flexDirection:
-                                            "row",
-
-                                        flexWrap:
-                                            "wrap",
-
-                                        gap:
-                                            8,
-                                    }}
-                                >
-
-                                    {
-                                        (
-                                            publicacion.emociones ??
-                                            []
-                                        ).map(
-                                            emocion => (
-
-                                                <View
-                                                    key={
-                                                        emocion.id_emocion_foro
-                                                    }
-
-                                                    style={{
-                                                        paddingHorizontal:
-                                                            12,
-
-                                                        paddingVertical:
-                                                            5,
-
-                                                        borderRadius:
-                                                            999,
-
-                                                        borderWidth:
-                                                            1,
-
-                                                        borderColor:
-                                                            accentColor,
-
-                                                        backgroundColor:
-                                                            accentSoftColor,
-                                                    }}
-                                                >
-
-                                                    <Text
-                                                        style={{
-                                                            fontFamily:
-                                                                "Nunito-Medium",
-
-                                                            fontSize:
-                                                                13,
-
-                                                            color:
-                                                                accentColor,
-                                                        }}
-                                                    >
-                                                        {
-                                                            emocion.nombre
-                                                        }
-                                                    </Text>
-
-                                                </View>
-
-                                            )
-                                        )
-                                    }
-
-                                </View>
-
-                            )
-                        }
-
-
-                        {/* ===============================================
-                TÍTULO
-            =============================================== */}
+                        {/* TÍTULO */}
 
                         <Text
                             style={{
-                                marginTop:
-                                    18,
-
-                                fontFamily:
-                                    "Nunito-Bold",
-
-                                fontSize:
-                                    22,
-
-                                lineHeight:
-                                    29,
-
-                                color:
-                                    textColor,
+                                marginTop: 18,
+                                fontFamily: "Nunito-Bold",
+                                fontSize: 22,
+                                lineHeight: 29,
+                                color: textColor,
                             }}
                         >
-                            {
-                                publicacion.titulo
-                            }
+                            {publicacion.titulo}
                         </Text>
 
-
-                        {/* ===============================================
-                CONTENIDO
-            =============================================== */}
+                        {/* CONTENIDO */}
 
                         <Text
                             style={{
-                                marginTop:
-                                    10,
-
-                                fontFamily:
-                                    "Nunito-Medium",
-
-                                fontSize:
-                                    16,
-
-                                lineHeight:
-                                    25,
-
-                                color:
-                                    textSecondaryColor,
+                                marginTop: 10,
+                                fontFamily: "Nunito-Medium",
+                                fontSize: 16,
+                                lineHeight: 25,
+                                color: textSecondaryColor,
                             }}
                         >
-                            {
-                                publicacion.contenido
-                            }
+                            {publicacion.contenido}
                         </Text>
 
-
-                        {/* ===============================================
-                ACCIONES
-            =============================================== */}
+                        {/* ACCIONES */}
 
                         <View
                             style={{
-                                marginTop:
-                                    22,
-
-                                paddingTop:
-                                    14,
-
-                                borderTopWidth:
-                                    1,
-
-                                borderTopColor:
-                                    dividerColor,
-
-                                flexDirection:
-                                    "row",
-
-                                alignItems:
-                                    "center",
+                                marginTop: 22,
+                                paddingTop: 14,
+                                borderTopWidth: 1,
+                                borderTopColor: dividerColor,
+                                flexDirection: "row",
+                                alignItems: "center",
                             }}
                         >
-
                             <Pressable
-                                disabled={
-                                    procesandoReaccion
-                                }
-
-                                onPress={
-                                    manejarReaccion
-                                }
-
+                                disabled={procesandoReaccion}
+                                onPress={manejarReaccion}
                                 style={{
-                                    minHeight:
-                                        42,
-
-                                    paddingHorizontal:
-                                        12,
-
-                                    borderRadius:
-                                        13,
-
-                                    flexDirection:
-                                        "row",
-
-                                    alignItems:
-                                        "center",
-
-                                    backgroundColor:
-                                        reaccionMeGusta
-                                            ? primarySoftColor
-                                            : "transparent",
+                                    minHeight: 42,
+                                    paddingHorizontal: 12,
+                                    borderRadius: 13,
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    backgroundColor: reaccionMeGusta
+                                        ? primarySoftColor
+                                        : "transparent",
                                 }}
                             >
-
                                 <Ionicons
-                                    name={
-                                        reaccionMeGusta
-                                            ? "heart"
-                                            : "heart-outline"
-                                    }
-
+                                    name={reaccionMeGusta ? "heart" : "heart-outline"}
                                     size={22}
-
-                                    color={
-                                        primaryColor
-                                    }
+                                    color={primaryColor}
                                 />
-
 
                                 <Text
                                     style={{
-                                        marginLeft:
-                                            7,
-
-                                        fontFamily:
-                                            "Nunito-SemiBold",
-
-                                        color:
-                                            primaryColor,
+                                        marginLeft: 7,
+                                        fontFamily: "Nunito-SemiBold",
+                                        color: primaryColor,
                                     }}
                                 >
-                                    {
-                                        totalReacciones
-                                    }
+                                    {totalReacciones}
                                 </Text>
-
                             </Pressable>
-
 
                             <View
                                 style={{
-                                    marginLeft:
-                                        14,
-
-                                    minHeight:
-                                        42,
-
-                                    paddingHorizontal:
-                                        12,
-
-                                    flexDirection:
-                                        "row",
-
-                                    alignItems:
-                                        "center",
+                                    marginLeft: 14,
+                                    minHeight: 42,
+                                    paddingHorizontal: 12,
+                                    flexDirection: "row",
+                                    alignItems: "center",
                                 }}
                             >
-
                                 <Ionicons
                                     name="chatbubble-outline"
                                     size={20}
-
-                                    color={
-                                        iconColor
-                                    }
+                                    color={iconColor}
                                 />
-
 
                                 <Text
                                     style={{
-                                        marginLeft:
-                                            7,
-
-                                        fontFamily:
-                                            "Nunito-Medium",
-
-                                        color:
-                                            textSecondaryColor,
+                                        marginLeft: 7,
+                                        fontFamily: "Nunito-Medium",
+                                        color: textSecondaryColor,
                                     }}
                                 >
-                                    {
-                                        comentarios.length
-                                    }
+                                    {comentarios.length}
                                 </Text>
-
                             </View>
-
                         </View>
-
                     </View>
 
-
-                    {/* =================================================
-              COMENTARIOS
-          ================================================= */}
-
-                    <Text
-                        style={{
-                            marginTop:
-                                30,
-
-                            marginBottom:
-                                16,
-
-                            fontFamily:
-                                "Nunito-Bold",
-
-                            fontSize:
-                                20,
-
-                            color:
-                                textColor,
-                        }}
-                    >
-                        Comentarios
-                    </Text>
-
-
-                    {
-                        comentarios.length ===
-                            0
-
-                            ? (
-
-                                <View
-                                    style={{
-                                        paddingVertical:
-                                            35,
-
-                                        alignItems:
-                                            "center",
-                                    }}
-                                >
-
-                                    <Ionicons
-                                        name="chatbubble-ellipses-outline"
-                                        size={38}
-
-                                        color={
-                                            textMutedColor
-                                        }
-                                    />
-
-
-                                    <Text
-                                        style={{
-                                            marginTop:
-                                                10,
-
-                                            fontFamily:
-                                                "Nunito-Medium",
-
-                                            fontSize:
-                                                14,
-
-                                            lineHeight:
-                                                21,
-
-                                            textAlign:
-                                                "center",
-
-                                            color:
-                                                textSecondaryColor,
-                                        }}
-                                    >
-                                        Aún no hay comentarios. Puedes ser la primera persona en responder.
-                                    </Text>
-
-                                </View>
-
-                            )
-
-                            : (
-
-                                comentarios.map(
-                                    comentario => {
-
-                                        const esPropio =
-                                            comentario.id_usuario ===
-                                            profile?.id_usuario;
-
-
-                                        return (
-
-                                            <ComentarioCard
-                                                key={
-                                                    comentario.id_comentario
-                                                }
-
-                                                comentario={
-                                                    comentario
-                                                }
-
-                                                esPropio={
-                                                    esPropio
-                                                }
-
-                                                onEditar={() =>
-                                                    manejarEditarComentario(
-                                                        comentario
-                                                    )
-                                                }
-
-                                                onEliminar={() =>
-                                                    manejarEliminarComentario(
-                                                        comentario
-                                                    )
-                                                }
-
-                                                onReportar={() =>
-                                                    manejarReportarComentario(
-                                                        comentario
-                                                    )
-                                                }
-                                            />
-
-                                        );
-
-                                    }
-                                )
-
-                            )
-                    }
-
-                </ScrollView>
-
-
-                {/* =================================================
-            NUEVO COMENTARIO
-        ================================================= */}
-
-                <View
-                    style={{
-                        paddingHorizontal:
-                            16,
-
-                        paddingTop:
-                            10,
-
-                        paddingBottom:
-                            12,
-
-                        borderTopWidth:
-                            1,
-
-                        borderTopColor:
-                            dividerColor,
-
-                        backgroundColor,
-                    }}
-                >
+                    {/* ==================================================
+                        COMENTARIOS
+                    ================================================== */}
 
                     <View
                         style={{
-                            minHeight:
-                                52,
-
-                            paddingLeft:
-                                16,
-
-                            paddingRight:
-                                6,
-
-                            borderRadius:
-                                18,
-
-                            borderWidth:
-                                1,
-
-                            borderColor,
-
-                            flexDirection:
-                                "row",
-
-                            alignItems:
-                                "center",
-
-                            backgroundColor:
-                                surfaceColor,
+                            marginTop: 30,
+                            marginBottom: 16,
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "space-between",
                         }}
                     >
-
-                        <TextInput
-                            value={
-                                nuevoComentario
-                            }
-
-                            onChangeText={
-                                setNuevoComentario
-                            }
-
-                            editable={
-                                !publicandoComentario
-                            }
-
-                            placeholder="Escribe un comentario..."
-
-                            placeholderTextColor={
-                                placeholderColor
-                            }
-
-                            selectionColor={
-                                primaryColor
-                            }
-
-                            multiline
-
-                            maxLength={
-                                1000
-                            }
-
+                        <Text
                             style={{
-                                flex:
-                                    1,
+                                fontFamily: "Nunito-Bold",
+                                fontSize: 20,
+                                color: textColor,
+                            }}
+                        >
+                            Comentarios
+                        </Text>
 
-                                maxHeight:
-                                    110,
+                        <Text
+                            style={{
+                                fontFamily: "Nunito-Medium",
+                                fontSize: 14,
+                                color: textMutedColor,
+                            }}
+                        >
+                            {comentarios.length}
+                        </Text>
+                    </View>
 
-                                paddingVertical:
-                                    12,
+                    {comentarios.length === 0 ? (
+                        <View
+                            style={{
+                                paddingVertical: 35,
+                                alignItems: "center",
+                            }}
+                        >
+                            <Ionicons
+                                name="chatbubble-ellipses-outline"
+                                size={38}
+                                color={textMutedColor}
+                            />
 
-                                fontFamily:
-                                    "Nunito-Medium",
+                            <Text
+                                style={{
+                                    marginTop: 10,
+                                    fontFamily: "Nunito-Medium",
+                                    fontSize: 14,
+                                    lineHeight: 21,
+                                    textAlign: "center",
+                                    color: textSecondaryColor,
+                                }}
+                            >
+                                Aún no hay comentarios. Puedes ser la primera persona en
+                                responder.
+                            </Text>
+                        </View>
+                    ) : (
+                        comentarios.map((comentario) => {
+                            const esPropio = comentario.id_usuario === profile?.id_usuario;
 
-                                fontSize:
-                                    15,
+                            return (
+                                <ComentarioCard
+                                    key={comentario.id_comentario}
+                                    comentario={comentario}
+                                    esPropio={esPropio}
+                                    onEditar={() => manejarEditarComentario(comentario)}
+                                    onEliminar={() => manejarEliminarComentario(comentario)}
+                                    onReportar={() => manejarReportarComentario(comentario)}
+                                />
+                            );
+                        })
+                    )}
+                </ScrollView>
 
-                                color:
-                                    textColor,
+                {/* ==================================================
+                    NUEVO COMENTARIO
+                ================================================== */}
+
+                <View
+                    style={{
+                        paddingHorizontal: 16,
+                        paddingTop: 10,
+                        paddingBottom: 12,
+                        borderTopWidth: 1,
+                        borderTopColor: dividerColor,
+                        backgroundColor,
+                    }}
+                >
+                    <View
+                        style={{
+                            minHeight: 52,
+                            paddingLeft: 16,
+                            paddingRight: 6,
+                            borderRadius: 18,
+                            borderWidth: 1,
+                            borderColor,
+                            flexDirection: "row",
+                            alignItems: "center",
+                            backgroundColor: surfaceColor,
+                        }}
+                    >
+                        <TextInput
+                            value={nuevoComentario}
+                            onChangeText={setNuevoComentario}
+                            editable={!publicandoComentario}
+                            placeholder="Escribe un comentario..."
+                            placeholderTextColor={placeholderColor}
+                            selectionColor={primaryColor}
+                            multiline
+                            maxLength={1000}
+                            style={{
+                                flex: 1,
+                                maxHeight: 110,
+                                paddingVertical: 12,
+                                fontFamily: "Nunito-Medium",
+                                fontSize: 15,
+                                color: textColor,
                             }}
                         />
 
-
                         <Pressable
-                            disabled={
-                                publicandoComentario ||
-                                !nuevoComentario.trim()
-                            }
-
-                            onPress={
-                                manejarPublicarComentario
-                            }
-
+                            disabled={publicandoComentario || !nuevoComentario.trim()}
+                            onPress={manejarPublicarComentario}
+                            accessibilityRole="button"
+                            accessibilityLabel="Publicar comentario"
                             style={{
-                                width:
-                                    44,
-
-                                height:
-                                    44,
-
-                                borderRadius:
-                                    15,
-
-                                alignItems:
-                                    "center",
-
-                                justifyContent:
-                                    "center",
-
+                                width: 44,
+                                height: 44,
+                                borderRadius: 15,
+                                alignItems: "center",
+                                justifyContent: "center",
                                 opacity:
-                                    (
-                                        publicandoComentario ||
-                                        !nuevoComentario.trim()
-                                    )
-                                        ? 0.45
-                                        : 1,
-
-                                backgroundColor:
-                                    primaryColor,
+                                    publicandoComentario || !nuevoComentario.trim() ? 0.45 : 1,
+                                backgroundColor: primaryColor,
                             }}
                         >
-
-                            {
-                                publicandoComentario
-
-                                    ? (
-
-                                        <ActivityIndicator
-                                            size="small"
-                                            color="#FFFFFF"
-                                        />
-
-                                    )
-
-                                    : (
-
-                                        <Ionicons
-                                            name="send"
-                                            size={20}
-                                            color="#FFFFFF"
-                                        />
-
-                                    )
-                            }
-
+                            {publicandoComentario ? (
+                                <ActivityIndicator size="small" color="#FFFFFF" />
+                            ) : (
+                                <Ionicons name="send" size={20} color="#FFFFFF" />
+                            )}
                         </Pressable>
-
                     </View>
 
+                    <Text
+                        style={{
+                            marginTop: 5,
+                            marginRight: 4,
+                            textAlign: "right",
+                            fontFamily: "Nunito-Medium",
+                            fontSize: 11,
+                            color: textMutedColor,
+                        }}
+                    >
+                        {nuevoComentario.length}/1000
+                    </Text>
                 </View>
-
             </KeyboardAvoidingView>
-
         </SafeAreaView>
-
     );
-
 }

@@ -1,26 +1,14 @@
-import {
-  Ionicons,
-} from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
-import {
-  router,
-} from "expo-router";
+import { router } from "expo-router";
 
 import React from "react";
 
-import {
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
 
 import CategoriaCard from "../../../components/educacion/CategoriaCard";
 
-import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
-
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 // ==========================================================
 // CATEGORÍAS
@@ -53,201 +41,107 @@ const categorias = [
   },
 ];
 
-
 // ==========================================================
 // EDUCACIÓN
 // ==========================================================
 
 export default function EducacionScreen() {
-
   // ========================================================
   // COLORES DEL TEMA
   // ========================================================
 
-  const backgroundColor =
-    useThemeColor(
-      {},
-      "background"
-    );
+  const backgroundColor = useThemeColor({}, "background");
 
+  const surfaceColor = useThemeColor({}, "surface");
 
-  const surfaceColor =
-    useThemeColor(
-      {},
-      "surface"
-    );
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
+  const textColor = useThemeColor({}, "text");
 
-  const surfaceSecondaryColor =
-    useThemeColor(
-      {},
-      "surfaceSecondary"
-    );
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
 
+  const textMutedColor = useThemeColor({}, "textMuted");
 
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
+  const primaryColor = useThemeColor({}, "primary");
 
+  const primarySoftColor = useThemeColor({}, "primarySoft");
 
-  const textSecondaryColor =
-    useThemeColor(
-      {},
-      "textSecondary"
-    );
+  const inputBackgroundColor = useThemeColor({}, "inputBackground");
 
+  const inputBorderColor = useThemeColor({}, "inputBorder");
 
-  const textMutedColor =
-    useThemeColor(
-      {},
-      "textMuted"
-    );
+  const placeholderColor = useThemeColor({}, "placeholder");
 
+  const iconColor = useThemeColor({}, "icon");
 
-  const primaryColor =
-    useThemeColor(
-      {},
-      "primary"
-    );
-
-
-  const primarySoftColor =
-    useThemeColor(
-      {},
-      "primarySoft"
-    );
-
-
-  const inputBackgroundColor =
-    useThemeColor(
-      {},
-      "inputBackground"
-    );
-
-
-  const inputBorderColor =
-    useThemeColor(
-      {},
-      "inputBorder"
-    );
-
-
-  const placeholderColor =
-    useThemeColor(
-      {},
-      "placeholder"
-    );
-
-
-  const iconColor =
-    useThemeColor(
-      {},
-      "icon"
-    );
-
-
-  const borderColor =
-    useThemeColor(
-      {},
-      "border"
-    );
-
+  const borderColor = useThemeColor({}, "border");
 
   // ========================================================
   // NAVEGACIÓN
   // ========================================================
 
-  function abrirCategoria(
-    id: string
-  ) {
-
-    router.push(
-      `/educacion/${id}` as any
-    );
-
+  function abrirCategoria(id: string) {
+    router.push(`/educacion/${id}` as any);
   }
-
 
   // ========================================================
   // UI
   // ========================================================
 
   return (
-
     <ScrollView
       style={{
         flex: 1,
         backgroundColor,
       }}
 
-      showsVerticalScrollIndicator={
-        false
-      }
+      showsVerticalScrollIndicator={false}
 
       contentContainerStyle={{
-        paddingBottom:
-          130,
+        paddingBottom: 130,
       }}
     >
-
       <View
         style={{
-          paddingHorizontal:
-            24,
+          paddingHorizontal: 24,
 
-          paddingTop:
-            48,
+          paddingTop: 48,
         }}
       >
-
         {/* =================================================
             ENCABEZADO
         ================================================= */}
 
         <View>
-
           <Text
             style={{
-              fontFamily:
-                "Nunito-Bold",
+              fontFamily: "Nunito-Bold",
 
-              fontSize:
-                24,
+              fontSize: 24,
 
-              color:
-                primaryColor,
+              color: primaryColor,
             }}
           >
             Biblioteca de Bienestar
           </Text>
 
-
           <Text
             style={{
-              marginTop:
-                8,
+              marginTop: 8,
 
-              fontFamily:
-                "Nunito-Medium",
+              fontFamily: "Nunito-Medium",
 
-              fontSize:
-                15,
+              fontSize: 15,
 
-              lineHeight:
-                20,
+              lineHeight: 20,
 
-              color:
-                textSecondaryColor,
+              color: textSecondaryColor,
             }}
           >
             Explora herramientas y conocimientos diseñados para acompañarte en
             tu camino hacia una mejor salud mental.
           </Text>
-
         </View>
-
 
         {/* =================================================
             BUSCADOR
@@ -255,95 +149,62 @@ export default function EducacionScreen() {
 
         <View
           style={{
-            marginTop:
-              28,
+            marginTop: 28,
 
-            minHeight:
-              56,
+            minHeight: 56,
 
-            flexDirection:
-              "row",
+            flexDirection: "row",
 
-            alignItems:
-              "center",
+            alignItems: "center",
 
-            paddingHorizontal:
-              16,
+            paddingHorizontal: 16,
 
-            borderRadius:
-              16,
+            borderRadius: 16,
 
-            borderWidth:
-              1,
+            borderWidth: 1,
 
-            borderColor:
-              inputBorderColor,
+            borderColor: inputBorderColor,
 
-            backgroundColor:
-              inputBackgroundColor,
+            backgroundColor: inputBackgroundColor,
 
-            shadowColor:
-              "#000000",
+            shadowColor: "#000000",
 
             shadowOffset: {
               width: 0,
               height: 2,
             },
 
-            shadowOpacity:
-              0.08,
+            shadowOpacity: 0.08,
 
-            shadowRadius:
-              6,
+            shadowRadius: 6,
 
-            elevation:
-              2,
+            elevation: 2,
           }}
         >
-
-          <Ionicons
-            name="search-outline"
-            size={27}
-            color={
-              iconColor
-            }
-          />
-
+          <Ionicons name="search-outline" size={27} color={iconColor} />
 
           <TextInput
             placeholder="¿Qué tema te gustaría explorar hoy?"
 
-            placeholderTextColor={
-              placeholderColor
-            }
+            placeholderTextColor={placeholderColor}
 
-            selectionColor={
-              primaryColor
-            }
+            selectionColor={primaryColor}
 
             style={{
-              flex:
-                1,
+              flex: 1,
 
-              marginLeft:
-                12,
+              marginLeft: 12,
 
-              paddingVertical:
-                16,
+              paddingVertical: 16,
 
-              fontFamily:
-                "Nunito-Medium",
+              fontFamily: "Nunito-Medium",
 
-              fontSize:
-                14,
+              fontSize: 14,
 
-              color:
-                textColor,
+              color: textColor,
             }}
           />
-
         </View>
-
 
         {/* =================================================
             TÍTULO DE CATEGORÍAS
@@ -351,50 +212,37 @@ export default function EducacionScreen() {
 
         <View
           style={{
-            marginTop:
-              32,
+            marginTop: 32,
 
-            marginBottom:
-              20,
+            marginBottom: 20,
           }}
         >
-
           <Text
             style={{
-              fontFamily:
-                "Nunito-Bold",
+              fontFamily: "Nunito-Bold",
 
-              fontSize:
-                20,
+              fontSize: 20,
 
-              color:
-                textColor,
+              color: textColor,
             }}
           >
             Explora por categoría
           </Text>
 
-
           <Text
             style={{
-              marginTop:
-                4,
+              marginTop: 4,
 
-              fontFamily:
-                "Nunito-SemiBold",
+              fontFamily: "Nunito-SemiBold",
 
-              fontSize:
-                15,
+              fontSize: 15,
 
-              color:
-                textMutedColor,
+              color: textMutedColor,
             }}
           >
             Selecciona el tema sobre el que quieras aprender.
           </Text>
-
         </View>
-
 
         {/* =================================================
             TARJETAS DE CATEGORÍAS
@@ -402,55 +250,31 @@ export default function EducacionScreen() {
 
         <View
           style={{
-            flexDirection:
-              "row",
+            flexDirection: "row",
 
-            flexWrap:
-              "wrap",
+            flexWrap: "wrap",
 
-            justifyContent:
-              "space-between",
+            justifyContent: "space-between",
 
-            rowGap:
-              28,
+            rowGap: 28,
           }}
         >
+          {categorias.map((categoria) => (
+            <View
+              key={categoria.id}
 
-          {
-            categorias.map(
-              categoria => (
+              style={{
+                width: "48%",
+              }}
+            >
+              <CategoriaCard
+                titulo={categoria.titulo}
 
-                <View
-                  key={
-                    categoria.id
-                  }
-
-                  style={{
-                    width:
-                      "48%",
-                  }}
-                >
-
-                  <CategoriaCard
-                    titulo={
-                      categoria.titulo
-                    }
-
-                    onPress={() =>
-                      abrirCategoria(
-                        categoria.id
-                      )
-                    }
-                  />
-
-                </View>
-
-              )
-            )
-          }
-
+                onPress={() => abrirCategoria(categoria.id)}
+              />
+            </View>
+          ))}
         </View>
-
 
         {/* =================================================
             MENSAJE FINAL
@@ -458,147 +282,99 @@ export default function EducacionScreen() {
 
         <View
           style={{
-            marginTop:
-              40,
+            marginTop: 40,
 
-            padding:
-              20,
+            padding: 20,
 
-            borderRadius:
-              22,
+            borderRadius: 22,
 
-            borderWidth:
-              1,
+            borderWidth: 1,
 
             borderColor,
 
-            backgroundColor:
-              surfaceColor,
+            backgroundColor: surfaceColor,
 
-            shadowColor:
-              "#000000",
+            shadowColor: "#000000",
 
             shadowOffset: {
               width: 0,
               height: 2,
             },
 
-            shadowOpacity:
-              0.06,
+            shadowOpacity: 0.06,
 
-            shadowRadius:
-              5,
+            shadowRadius: 5,
 
-            elevation:
-              2,
+            elevation: 2,
           }}
         >
-
           <View
             style={{
-              flexDirection:
-                "row",
+              flexDirection: "row",
 
-              alignItems:
-                "flex-start",
+              alignItems: "flex-start",
             }}
           >
-
             <View
               style={{
-                width:
-                  44,
+                width: 44,
 
-                height:
-                  44,
+                height: 44,
 
-                borderRadius:
-                  22,
+                borderRadius: 22,
 
-                alignItems:
-                  "center",
+                alignItems: "center",
 
-                justifyContent:
-                  "center",
+                justifyContent: "center",
 
-                backgroundColor:
-                  primarySoftColor,
+                backgroundColor: primarySoftColor,
               }}
             >
-
-              <Ionicons
-                name="leaf-outline"
-                size={22}
-                color={
-                  primaryColor
-                }
-              />
-
+              <Ionicons name="leaf-outline" size={22} color={primaryColor} />
             </View>
 
-
             <View
               style={{
-                flex:
-                  1,
+                flex: 1,
 
-                marginLeft:
-                  16,
+                marginLeft: 16,
               }}
             >
-
               <Text
                 style={{
-                  fontFamily:
-                    "Nunito-Bold",
+                  fontFamily: "Nunito-Bold",
 
-                  fontSize:
-                    18,
+                  fontSize: 18,
 
-                  color:
-                    textColor,
+                  color: textColor,
                 }}
               >
                 Explora a tu ritmo
               </Text>
 
-
               <Text
                 style={{
-                  marginTop:
-                    4,
+                  marginTop: 4,
 
-                  fontFamily:
-                    "Nunito-Medium",
+                  fontFamily: "Nunito-Medium",
 
-                  fontSize:
-                    16,
+                  fontSize: 16,
 
-                  lineHeight:
-                    21,
+                  lineHeight: 21,
 
-                  textAlign:
-                    "justify",
+                  textAlign: "justify",
 
-                  color:
-                    textSecondaryColor,
+                  color: textSecondaryColor,
                 }}
               >
                 Cada categoría contiene información, mitos, realidades y
                 lecturas relacionadas para ayudarte a comprender mejor cada
                 tema.
               </Text>
-
             </View>
-
           </View>
-
         </View>
-
       </View>
-
     </ScrollView>
-
   );
-
 }

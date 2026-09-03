@@ -1,7 +1,4 @@
-import React, {
-  useCallback,
-  useState,
-} from "react";
+import React, { useCallback, useState } from "react";
 
 import {
   ActivityIndicator,
@@ -22,13 +19,9 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
-import {
-  Ionicons,
-} from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
-import {
-  useFocusEffect,
-} from "expo-router";
+import { useFocusEffect } from "expo-router";
 
 import * as ImagePicker from "expo-image-picker";
 
@@ -42,18 +35,11 @@ import {
 
 import LogoutModal from "@/components/ui/LogoutModal";
 
-import {
-  styles,
-} from "@/styles/perfil.styles";
+import { styles } from "@/styles/perfil.styles";
 
-import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
+import { useThemeColor } from "@/hooks/use-theme-color";
 
-import {
-  useThemeMode,
-} from "@/contexts/ThemeModeContext";
-
+import { useThemeMode } from "@/contexts/ThemeModeContext";
 
 // ==========================================================
 // GÉNEROS
@@ -78,794 +64,366 @@ const GENEROS = [
   },
 ];
 
-
 // ==========================================================
 // COMPONENTE
 // ==========================================================
 
 export default function PerfilScreen() {
+  const { width } = useWindowDimensions();
 
-  const {
-    width,
-  } =
-    useWindowDimensions();
+  const insets = useSafeAreaInsets();
 
-
-  const insets =
-    useSafeAreaInsets();
-
-
-  const movil =
-    width < 600;
-
+  const movil = width < 600;
 
   // ========================================================
   // CONTROL GLOBAL DEL TEMA
   // ========================================================
 
-  const {
-    isDarkMode,
-    toggleDarkMode,
-  } =
-    useThemeMode();
-
+  const { isDarkMode, toggleDarkMode } = useThemeMode();
 
   // ========================================================
   // COLORES DEL TEMA
   // ========================================================
 
-  const backgroundColor =
-    useThemeColor(
-      {},
-      "background"
-    );
+  const backgroundColor = useThemeColor({}, "background");
 
+  const surfaceColor = useThemeColor({}, "surface");
 
-  const surfaceColor =
-    useThemeColor(
-      {},
-      "surface"
-    );
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
+  const borderColor = useThemeColor({}, "border");
 
-  const surfaceSecondaryColor =
-    useThemeColor(
-      {},
-      "surfaceSecondary"
-    );
+  const dividerColor = useThemeColor({}, "divider");
 
+  const textColor = useThemeColor({}, "text");
 
-  const borderColor =
-    useThemeColor(
-      {},
-      "border"
-    );
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
 
+  const textMutedColor = useThemeColor({}, "textMuted");
 
-  const dividerColor =
-    useThemeColor(
-      {},
-      "divider"
-    );
+  const primaryColor = useThemeColor({}, "primary");
 
+  const secondaryColor = useThemeColor({}, "secondary");
 
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
+  const primarySoftColor = useThemeColor({}, "primarySoft");
 
+  const inputBackgroundColor = useThemeColor({}, "inputBackground");
 
-  const textSecondaryColor =
-    useThemeColor(
-      {},
-      "textSecondary"
-    );
+  const inputBorderColor = useThemeColor({}, "inputBorder");
 
-
-  const textMutedColor =
-    useThemeColor(
-      {},
-      "textMuted"
-    );
-
-
-  const primaryColor =
-    useThemeColor(
-      {},
-      "primary"
-    );
-
-
-  const secondaryColor =
-    useThemeColor(
-      {},
-      "secondary"
-    );
-
-
-  const primarySoftColor =
-    useThemeColor(
-      {},
-      "primarySoft"
-    );
-
-
-  const inputBackgroundColor =
-    useThemeColor(
-      {},
-      "inputBackground"
-    );
-
-
-  const inputBorderColor =
-    useThemeColor(
-      {},
-      "inputBorder"
-    );
-
-
-  const iconColor =
-    useThemeColor(
-      {},
-      "icon"
-    );
-
+  const iconColor = useThemeColor({}, "icon");
 
   // ========================================================
   // ESTADOS
   // ========================================================
 
-  const [
-    perfil,
-    setPerfil,
-  ] =
-    useState<PerfilCompleto | null>(
-      null
-    );
+  const [perfil, setPerfil] = useState<PerfilCompleto | null>(null);
 
+  const [nombres, setNombres] = useState("");
 
-  const [
-    nombres,
-    setNombres,
-  ] =
-    useState("");
+  const [apellidos, setApellidos] = useState("");
 
+  const [nombrePreferido, setNombrePreferido] = useState("");
 
-  const [
-    apellidos,
-    setApellidos,
-  ] =
-    useState("");
+  const [telefono, setTelefono] = useState("");
 
+  const [fechaNacimiento, setFechaNacimiento] = useState("");
 
-  const [
-    nombrePreferido,
-    setNombrePreferido,
-  ] =
-    useState("");
+  const [genero, setGenero] = useState("");
 
+  const [mostrarGeneros, setMostrarGeneros] = useState(false);
 
-  const [
-    telefono,
-    setTelefono,
-  ] =
-    useState("");
+  const [mostrarPassword, setMostrarPassword] = useState(false);
 
+  const [nuevaPassword, setNuevaPassword] = useState("");
 
-  const [
-    fechaNacimiento,
-    setFechaNacimiento,
-  ] =
-    useState("");
+  const [confirmarPassword, setConfirmarPassword] = useState("");
 
+  const [verPassword, setVerPassword] = useState(false);
 
-  const [
-    genero,
-    setGenero,
-  ] =
-    useState("");
+  const [verConfirmacion, setVerConfirmacion] = useState(false);
 
+  const [cargando, setCargando] = useState(true);
 
-  const [
-    mostrarGeneros,
-    setMostrarGeneros,
-  ] =
-    useState(false);
+  const [guardando, setGuardando] = useState(false);
 
+  const [guardandoPassword, setGuardandoPassword] = useState(false);
 
-  const [
-    mostrarPassword,
-    setMostrarPassword,
-  ] =
-    useState(false);
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
 
-
-  const [
-    nuevaPassword,
-    setNuevaPassword,
-  ] =
-    useState("");
-
-
-  const [
-    confirmarPassword,
-    setConfirmarPassword,
-  ] =
-    useState("");
-
-
-  const [
-    verPassword,
-    setVerPassword,
-  ] =
-    useState(false);
-
-
-  const [
-    verConfirmacion,
-    setVerConfirmacion,
-  ] =
-    useState(false);
-
-
-  const [
-    cargando,
-    setCargando,
-  ] =
-    useState(true);
-
-
-  const [
-    guardando,
-    setGuardando,
-  ] =
-    useState(false);
-
-
-  const [
-    guardandoPassword,
-    setGuardandoPassword,
-  ] =
-    useState(false);
-
-
-  const [
-    subiendoFoto,
-    setSubiendoFoto,
-  ] =
-    useState(false);
-
-
-  const [
-    mostrarLogout,
-    setMostrarLogout,
-  ] =
-    useState(false);
-
+  const [mostrarLogout, setMostrarLogout] = useState(false);
 
   // ========================================================
   // CARGA
   // ========================================================
 
   useFocusEffect(
-    useCallback(
-      () => {
-
-        cargarPerfil();
-
-      },
-      []
-    )
+    useCallback(() => {
+      cargarPerfil();
+    }, []),
   );
 
-
   async function cargarPerfil() {
-
     try {
+      setCargando(true);
 
-      setCargando(
-        true
-      );
+      const datos = await obtenerPerfilCompleto();
 
+      setPerfil(datos);
 
-      const datos =
-        await obtenerPerfilCompleto();
+      setNombres(datos.nombres ?? "");
 
+      setApellidos(datos.apellidos ?? "");
 
-      setPerfil(
-        datos
-      );
+      setNombrePreferido(datos.nombre_preferido ?? "");
 
+      setTelefono(datos.telefono ?? "");
 
-      setNombres(
-        datos.nombres ??
-        ""
-      );
+      setFechaNacimiento(datos.fecha_nacimiento ?? "");
 
-
-      setApellidos(
-        datos.apellidos ??
-        ""
-      );
-
-
-      setNombrePreferido(
-        datos.nombre_preferido ??
-        ""
-      );
-
-
-      setTelefono(
-        datos.telefono ??
-        ""
-      );
-
-
-      setFechaNacimiento(
-        datos.fecha_nacimiento ??
-        ""
-      );
-
-
-      setGenero(
-        datos.genero ??
-        ""
-      );
-
-
+      setGenero(datos.genero ?? "");
     } catch (error) {
-
       Alert.alert(
         "No pudimos cargar tu perfil",
 
-        error instanceof Error
-          ? error.message
-          : "Inténtalo nuevamente."
+        error instanceof Error ? error.message : "Inténtalo nuevamente.",
       );
-
-
     } finally {
-
-      setCargando(
-        false
-      );
-
+      setCargando(false);
     }
-
   }
-
 
   // ========================================================
   // DATOS DERIVADOS
   // ========================================================
 
   const esIndependiente =
-    perfil
-      ?.rol_nombre
-      ?.trim()
-      .toLowerCase() ===
-    "independiente";
-
+    perfil?.rol_nombre?.trim().toLowerCase() === "independiente";
 
   const generoTexto =
-    GENEROS.find(
-      item =>
-        item.value ===
-        genero
-    )?.label ??
+    GENEROS.find((item) => item.value === genero)?.label ??
     "Selecciona una opción";
-
 
   // ========================================================
   // GUARDAR PERFIL
   // ========================================================
 
   async function guardarCambios() {
-
-    if (
-      !nombres.trim() ||
-      !apellidos.trim()
-    ) {
-
-      Alert.alert(
-        "Datos incompletos",
-        "Ingresa tus nombres y apellidos."
-      );
+    if (!nombres.trim() || !apellidos.trim()) {
+      Alert.alert("Datos incompletos", "Ingresa tus nombres y apellidos.");
 
       return;
-
     }
 
-
-    if (
-      fechaNacimiento &&
-      !/^\d{4}-\d{2}-\d{2}$/.test(
-        fechaNacimiento
-      )
-    ) {
-
-      Alert.alert(
-        "Fecha incorrecta",
-        "Utiliza el formato AAAA-MM-DD."
-      );
+    if (fechaNacimiento && !/^\d{4}-\d{2}-\d{2}$/.test(fechaNacimiento)) {
+      Alert.alert("Fecha incorrecta", "Utiliza el formato AAAA-MM-DD.");
 
       return;
-
     }
-
 
     try {
-
-      setGuardando(
-        true
-      );
-
+      setGuardando(true);
 
       await actualizarPerfil({
         nombres,
         apellidos,
 
-        nombre_preferido:
-          nombrePreferido,
+        nombre_preferido: nombrePreferido,
 
         telefono,
 
-        fecha_nacimiento:
-          fechaNacimiento,
+        fecha_nacimiento: fechaNacimiento,
 
         genero,
       });
 
-
       await cargarPerfil();
-
 
       Alert.alert(
         "Cambios guardados",
-        "Tu información fue actualizada correctamente."
+        "Tu información fue actualizada correctamente.",
       );
-
-
     } catch (error) {
-
       Alert.alert(
         "No se pudo guardar",
 
-        error instanceof Error
-          ? error.message
-          : "Inténtalo nuevamente."
+        error instanceof Error ? error.message : "Inténtalo nuevamente.",
       );
-
-
     } finally {
-
-      setGuardando(
-        false
-      );
-
+      setGuardando(false);
     }
-
   }
-
 
   // ========================================================
   // FOTO
   // ========================================================
 
   function seleccionarFoto() {
-
-    if (
-      Platform.OS === "web"
-    ) {
-
+    if (Platform.OS === "web") {
       abrirGaleria();
 
       return;
-
     }
 
+    Alert.alert("Foto de perfil", "Selecciona una opción", [
+      {
+        text: "Cámara",
 
-    Alert.alert(
-      "Foto de perfil",
-      "Selecciona una opción",
-      [
-        {
-          text:
-            "Cámara",
+        onPress: tomarFoto,
+      },
 
-          onPress:
-            tomarFoto,
-        },
+      {
+        text: "Galería",
 
-        {
-          text:
-            "Galería",
+        onPress: abrirGaleria,
+      },
 
-          onPress:
-            abrirGaleria,
-        },
+      {
+        text: "Cancelar",
 
-        {
-          text:
-            "Cancelar",
-
-          style:
-            "cancel",
-        },
-      ]
-    );
-
+        style: "cancel",
+      },
+    ]);
   }
-
 
   async function tomarFoto() {
+    const permiso = await ImagePicker.requestCameraPermissionsAsync();
 
-    const permiso =
-      await ImagePicker
-        .requestCameraPermissionsAsync();
-
-
-    if (
-      !permiso.granted
-    ) {
-
+    if (!permiso.granted) {
       Alert.alert(
         "Permiso necesario",
-        "Kiri necesita acceso a la cámara para tomar tu foto."
+        "Kiri necesita acceso a la cámara para tomar tu foto.",
       );
 
       return;
-
     }
 
+    const resultado = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
 
-    const resultado =
-      await ImagePicker
-        .launchCameraAsync({
-          allowsEditing:
-            true,
+      aspect: [1, 1],
 
-          aspect:
-            [1, 1],
+      quality: 0.8,
+    });
 
-          quality:
-            0.8,
-        });
-
-
-    if (
-      resultado.canceled
-    ) {
+    if (resultado.canceled) {
       return;
     }
 
-
-    await guardarFoto(
-      resultado.assets[0]
-    );
-
+    await guardarFoto(resultado.assets[0]);
   }
-
 
   async function abrirGaleria() {
+    const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    const permiso =
-      await ImagePicker
-        .requestMediaLibraryPermissionsAsync();
-
-
-    if (
-      !permiso.granted
-    ) {
-
+    if (!permiso.granted) {
       Alert.alert(
         "Permiso necesario",
-        "Kiri necesita acceso a tus imágenes para cambiar la foto de perfil."
+        "Kiri necesita acceso a tus imágenes para cambiar la foto de perfil.",
       );
 
       return;
-
     }
 
+    const resultado = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
 
-    const resultado =
-      await ImagePicker
-        .launchImageLibraryAsync({
-          mediaTypes:
-            ["images"],
+      allowsEditing: true,
 
-          allowsEditing:
-            true,
+      aspect: [1, 1],
 
-          aspect:
-            [1, 1],
+      quality: 0.8,
+    });
 
-          quality:
-            0.8,
-        });
-
-
-    if (
-      resultado.canceled
-    ) {
+    if (resultado.canceled) {
       return;
     }
 
-
-    await guardarFoto(
-      resultado.assets[0]
-    );
-
+    await guardarFoto(resultado.assets[0]);
   }
 
-
-  async function guardarFoto(
-    asset:
-      ImagePicker.ImagePickerAsset
-  ) {
-
+  async function guardarFoto(asset: ImagePicker.ImagePickerAsset) {
     try {
-
-      setSubiendoFoto(
-        true
-      );
-
+      setSubiendoFoto(true);
 
       await subirFotoPerfil(
         asset.uri,
 
-        asset.mimeType ??
-        "image/jpeg"
+        asset.mimeType ?? "image/jpeg",
       );
-
 
       await cargarPerfil();
 
-
-      Alert.alert(
-        "Foto actualizada",
-        "Tu foto de perfil fue actualizada."
-      );
-
-
+      Alert.alert("Foto actualizada", "Tu foto de perfil fue actualizada.");
     } catch (error) {
-
       Alert.alert(
         "No se pudo cambiar la foto",
 
-        error instanceof Error
-          ? error.message
-          : "Inténtalo nuevamente."
+        error instanceof Error ? error.message : "Inténtalo nuevamente.",
       );
-
-
     } finally {
-
-      setSubiendoFoto(
-        false
-      );
-
+      setSubiendoFoto(false);
     }
-
   }
-
 
   // ========================================================
   // CONTRASEÑA
   // ========================================================
 
   async function actualizarPassword() {
-
-    if (
-      !nuevaPassword ||
-      !confirmarPassword
-    ) {
-
-      Alert.alert(
-        "Datos incompletos",
-        "Completa ambos campos."
-      );
+    if (!nuevaPassword || !confirmarPassword) {
+      Alert.alert("Datos incompletos", "Completa ambos campos.");
 
       return;
-
     }
 
-
-    if (
-      nuevaPassword.length < 8
-    ) {
-
-      Alert.alert(
-        "Contraseña muy corta",
-        "Utiliza al menos 8 caracteres."
-      );
+    if (nuevaPassword.length < 8) {
+      Alert.alert("Contraseña muy corta", "Utiliza al menos 8 caracteres.");
 
       return;
-
     }
 
-
-    if (
-      nuevaPassword !==
-      confirmarPassword
-    ) {
-
+    if (nuevaPassword !== confirmarPassword) {
       Alert.alert(
         "Las contraseñas no coinciden",
-        "Verifica ambas contraseñas."
+        "Verifica ambas contraseñas.",
       );
 
       return;
-
     }
 
-
     try {
+      setGuardandoPassword(true);
 
-      setGuardandoPassword(
-        true
-      );
+      await cambiarPassword(nuevaPassword);
 
+      setNuevaPassword("");
 
-      await cambiarPassword(
-        nuevaPassword
-      );
+      setConfirmarPassword("");
 
-
-      setNuevaPassword(
-        ""
-      );
-
-
-      setConfirmarPassword(
-        ""
-      );
-
-
-      setMostrarPassword(
-        false
-      );
-
+      setMostrarPassword(false);
 
       Alert.alert(
         "Contraseña actualizada",
-        "Tu contraseña fue modificada correctamente."
+        "Tu contraseña fue modificada correctamente.",
       );
-
-
     } catch (error) {
-
       Alert.alert(
         "No se pudo actualizar",
 
-        error instanceof Error
-          ? error.message
-          : "Inténtalo nuevamente."
+        error instanceof Error ? error.message : "Inténtalo nuevamente.",
       );
-
-
     } finally {
-
-      setGuardandoPassword(
-        false
-      );
-
+      setGuardandoPassword(false);
     }
-
   }
-
 
   // ========================================================
   // CARGANDO
   // ========================================================
 
-  if (
-    cargando
-  ) {
-
+  if (cargando) {
     return (
-
       <SafeAreaView
         style={[
           styles.pantalla,
@@ -875,53 +433,32 @@ export default function PerfilScreen() {
           },
         ]}
       >
-
-        <View
-          style={
-            styles.centro
-          }
-        >
-
-          <ActivityIndicator
-            size="large"
-            color={
-              primaryColor
-            }
-          />
-
+        <View style={styles.centro}>
+          <ActivityIndicator size="large" color={primaryColor} />
 
           <Text
             style={[
               styles.textoCargando,
 
               {
-                color:
-                  textSecondaryColor,
+                color: textSecondaryColor,
               },
             ]}
           >
             Preparando tu perfil...
           </Text>
-
         </View>
-
       </SafeAreaView>
-
     );
-
   }
-
 
   // ========================================================
   // UI
   // ========================================================
 
   return (
-
     <SafeAreaView
-      edges={[
-        "top",
-      ]}
+      edges={["top"]}
 
       style={[
         styles.pantalla,
@@ -931,11 +468,8 @@ export default function PerfilScreen() {
         },
       ]}
     >
-
       <ScrollView
-        showsVerticalScrollIndicator={
-          false
-        }
+        showsVerticalScrollIndicator={false}
 
         keyboardShouldPersistTaps="handled"
 
@@ -943,190 +477,115 @@ export default function PerfilScreen() {
           styles.scroll,
 
           movil && {
-            paddingBottom:
-              Math.max(
-                insets.bottom +
-                120,
+            paddingBottom: Math.max(
+              insets.bottom + 120,
 
-                145
-              ),
+              145,
+            ),
           },
         ]}
       >
-
         {/* =================================================
             HEADER
         ================================================= */}
 
-        <View
-          style={
-            styles.header
-          }
-        >
-
+        <View style={styles.header}>
           <Text
             style={[
               styles.titulo,
 
               {
-                color:
-                  textColor,
+                color: textColor,
               },
             ]}
           >
             Mi perfil
           </Text>
 
-
           <Text
             style={[
               styles.subtitulo,
 
               {
-                color:
-                  textSecondaryColor,
+                color: textSecondaryColor,
               },
             ]}
           >
             Administra tu información y tu cuenta
           </Text>
-
         </View>
-
 
         {/* =================================================
             FOTO
         ================================================= */}
 
-        <View
-          style={
-            styles.fotoZona
-          }
-        >
-
+        <View style={styles.fotoZona}>
           <View
             style={[
               styles.avatar,
 
               {
-                backgroundColor:
-                  surfaceSecondaryColor,
+                backgroundColor: surfaceSecondaryColor,
 
                 borderColor,
               },
             ]}
           >
+            {perfil?.foto_url ? (
+              <Image
+                source={{
+                  uri: perfil.foto_url,
+                }}
 
-            {
-              perfil?.foto_url
-
-                ? (
-
-                  <Image
-                    source={{
-                      uri:
-                        perfil.foto_url,
-                    }}
-
-                    style={
-                      styles.foto
-                    }
-                  />
-
-                )
-
-                : (
-
-                  <Ionicons
-                    name="person"
-                    size={54}
-                    color={
-                      primaryColor
-                    }
-                  />
-
-                )
-            }
-
+                style={styles.foto}
+              />
+            ) : (
+              <Ionicons name="person" size={54} color={primaryColor} />
+            )}
           </View>
 
-
           <TouchableOpacity
-            activeOpacity={
-              0.75
-            }
+            activeOpacity={0.75}
 
-            disabled={
-              subiendoFoto
-            }
+            disabled={subiendoFoto}
 
-            onPress={
-              seleccionarFoto
-            }
+            onPress={seleccionarFoto}
 
             style={[
               styles.camara,
 
-              subiendoFoto &&
-              styles.deshabilitado,
+              subiendoFoto && styles.deshabilitado,
 
               {
-                backgroundColor:
-                  primaryColor,
+                backgroundColor: primaryColor,
               },
             ]}
           >
-
-            {
-              subiendoFoto
-
-                ? (
-
-                  <ActivityIndicator
-                    size="small"
-                    color="#FFFFFF"
-                  />
-
-                )
-
-                : (
-
-                  <Ionicons
-                    name="camera"
-                    size={17}
-                    color="#FFFFFF"
-                  />
-
-                )
-            }
-
+            {subiendoFoto ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Ionicons name="camera" size={17} color="#FFFFFF" />
+            )}
           </TouchableOpacity>
-
 
           <Text
             style={[
               styles.cambiarFoto,
 
               {
-                color:
-                  textSecondaryColor,
+                color: textSecondaryColor,
               },
             ]}
           >
             Toca la cámara para cambiar tu foto
           </Text>
-
         </View>
-
 
         {/* =================================================
             INFORMACIÓN PERSONAL
         ================================================= */}
 
-        <TituloSeccion>
-          INFORMACIÓN PERSONAL
-        </TituloSeccion>
-
+        <TituloSeccion>INFORMACIÓN PERSONAL</TituloSeccion>
 
         <Campo
           titulo="Nombres"
@@ -1136,7 +595,6 @@ export default function PerfilScreen() {
           icono="person-outline"
         />
 
-
         <Campo
           titulo="Apellidos"
           valor={apellidos}
@@ -1144,7 +602,6 @@ export default function PerfilScreen() {
           placeholder="Tus apellidos"
           icono="person-outline"
         />
-
 
         <Campo
           titulo="Nombre preferido"
@@ -1154,7 +611,6 @@ export default function PerfilScreen() {
           icono="happy-outline"
         />
 
-
         <Campo
           titulo="Fecha de nacimiento"
           valor={fechaNacimiento}
@@ -1163,7 +619,6 @@ export default function PerfilScreen() {
           icono="calendar-outline"
         />
 
-
         {/* Género */}
 
         <Text
@@ -1171,171 +626,106 @@ export default function PerfilScreen() {
             styles.label,
 
             {
-              color:
-                textColor,
+              color: textColor,
             },
           ]}
         >
           Género
         </Text>
 
-
         <TouchableOpacity
-          activeOpacity={
-            0.75
-          }
+          activeOpacity={0.75}
 
-          onPress={() =>
-            setMostrarGeneros(
-              actual =>
-                !actual
-            )
-          }
+          onPress={() => setMostrarGeneros((actual) => !actual)}
 
           style={[
             styles.input,
 
             {
-              backgroundColor:
-                inputBackgroundColor,
+              backgroundColor: inputBackgroundColor,
 
-              borderColor:
-                inputBorderColor,
+              borderColor: inputBorderColor,
             },
           ]}
         >
-
-          <Ionicons
-            name="people-outline"
-            size={19}
-            color={
-              primaryColor
-            }
-          />
-
+          <Ionicons name="people-outline" size={19} color={primaryColor} />
 
           <Text
             style={[
               styles.inputTexto,
 
               {
-                color:
-                  textColor,
+                color: textColor,
               },
             ]}
           >
             {generoTexto}
           </Text>
 
-
           <Ionicons
-            name={
-              mostrarGeneros
-                ? "chevron-up"
-                : "chevron-down"
-            }
+            name={mostrarGeneros ? "chevron-up" : "chevron-down"}
 
             size={18}
 
-            color={
-              iconColor
-            }
+            color={iconColor}
           />
-
         </TouchableOpacity>
 
-
-        {
-          mostrarGeneros && (
-
-            <View
-              style={[
-                styles.listaGenero,
-
-                {
-                  backgroundColor:
-                    surfaceColor,
-
-                  borderColor,
-                },
-              ]}
-            >
+        {mostrarGeneros && (
+          <View
+            style={[
+              styles.listaGenero,
 
               {
-                GENEROS.map(
-                  opcion => (
+                backgroundColor: surfaceColor,
 
-                    <TouchableOpacity
-                      key={
-                        opcion.value
-                      }
+                borderColor,
+              },
+            ]}
+          >
+            {GENEROS.map((opcion) => (
+              <TouchableOpacity
+                key={opcion.value}
 
-                      activeOpacity={
-                        0.7
-                      }
+                activeOpacity={0.7}
 
-                      onPress={() => {
+                onPress={() => {
+                  setGenero(opcion.value);
 
-                        setGenero(
-                          opcion.value
-                        );
+                  setMostrarGeneros(false);
+                }}
 
-                        setMostrarGeneros(
-                          false
-                        );
+                style={[
+                  styles.opcionGenero,
 
-                      }}
+                  {
+                    borderBottomColor: dividerColor,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.textoGenero,
 
-                      style={[
-                        styles.opcionGenero,
+                    {
+                      color: textColor,
+                    },
+                  ]}
+                >
+                  {opcion.label}
+                </Text>
 
-                        {
-                          borderBottomColor:
-                            dividerColor,
-                        },
-                      ]}
-                    >
-
-                      <Text
-                        style={[
-                          styles.textoGenero,
-
-                          {
-                            color:
-                              textColor,
-                          },
-                        ]}
-                      >
-                        {opcion.label}
-                      </Text>
-
-
-                      {
-                        genero ===
-                        opcion.value && (
-
-                          <Ionicons
-                            name="checkmark-circle"
-                            size={20}
-                            color={
-                              secondaryColor
-                            }
-                          />
-
-                        )
-                      }
-
-                    </TouchableOpacity>
-
-                  )
-                )
-              }
-
-            </View>
-
-          )
-        }
-
+                {genero === opcion.value && (
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={20}
+                    color={secondaryColor}
+                  />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
         <Campo
           titulo="Teléfono"
@@ -1346,29 +736,23 @@ export default function PerfilScreen() {
           keyboardType="phone-pad"
         />
 
-
         {/* =================================================
             CUENTA
         ================================================= */}
 
-        <TituloSeccion>
-          CUENTA
-        </TituloSeccion>
-
+        <TituloSeccion>CUENTA</TituloSeccion>
 
         <Text
           style={[
             styles.label,
 
             {
-              color:
-                textColor,
+              color: textColor,
             },
           ]}
         >
           Correo electrónico
         </Text>
-
 
         <View
           style={[
@@ -1376,142 +760,96 @@ export default function PerfilScreen() {
             styles.bloqueado,
 
             {
-              backgroundColor:
-                surfaceSecondaryColor,
+              backgroundColor: surfaceSecondaryColor,
 
               borderColor,
             },
           ]}
         >
-
-          <Ionicons
-            name="mail-outline"
-            size={19}
-            color={
-              primaryColor
-            }
-          />
-
+          <Ionicons name="mail-outline" size={19} color={primaryColor} />
 
           <Text
-            numberOfLines={
-              1
-            }
+            numberOfLines={1}
 
             style={[
               styles.inputTexto,
 
               {
-                color:
-                  textSecondaryColor,
+                color: textSecondaryColor,
               },
             ]}
           >
             {perfil?.correo}
           </Text>
 
-
-          <Ionicons
-            name="lock-closed-outline"
-            size={17}
-            color={
-              iconColor
-            }
-          />
-
+          <Ionicons name="lock-closed-outline" size={17} color={iconColor} />
         </View>
-
 
         {/* =================================================
             CUENTA E INSTITUCIÓN
         ================================================= */}
 
-        <TituloSeccion>
-          CUENTA E INSTITUCIÓN
-        </TituloSeccion>
-
+        <TituloSeccion>CUENTA E INSTITUCIÓN</TituloSeccion>
 
         <View
           style={[
             styles.tarjetaCuenta,
 
             {
-              backgroundColor:
-                surfaceColor,
+              backgroundColor: surfaceColor,
 
               borderColor,
             },
           ]}
         >
-
           <FilaInformacion
             icono="person-circle-outline"
 
-            color={
-              primaryColor
-            }
+            color={primaryColor}
 
             titulo="Tipo de cuenta"
 
-            valor={
-              perfil?.rol_nombre ??
-              "Sin rol"
-            }
+            valor={perfil?.rol_nombre ?? "Sin rol"}
           />
-
 
           <View
             style={[
               styles.separador,
 
               {
-                backgroundColor:
-                  dividerColor,
+                backgroundColor: dividerColor,
               },
             ]}
           />
 
-
           <FilaInformacion
             icono="school-outline"
 
-            color={
-              secondaryColor
-            }
+            color={secondaryColor}
 
             titulo="Institución"
 
-            valor={
-              perfil?.institucion_nombre ??
-              "Cuenta independiente"
-            }
+            valor={perfil?.institucion_nombre ?? "Cuenta independiente"}
           />
-
         </View>
-
 
         {/* =================================================
             APARIENCIA
         ================================================= */}
 
-        <TituloSeccion>
-          APARIENCIA
-        </TituloSeccion>
-
+        <TituloSeccion>APARIENCIA</TituloSeccion>
 
         <View
           style={[
             styles.opcionSeguridad,
 
             {
-              backgroundColor:
-                surfaceColor,
+              backgroundColor: surfaceColor,
 
               borderColor,
             },
           ]}
         >
-
           {/* Icono del tema */}
 
           <View
@@ -1519,617 +857,390 @@ export default function PerfilScreen() {
               styles.iconoCuenta,
 
               {
-                backgroundColor:
-                  primarySoftColor,
+                backgroundColor: primarySoftColor,
               },
             ]}
           >
-
             <Ionicons
-              name={
-                isDarkMode
-                  ? "moon"
-                  : "sunny-outline"
-              }
+              name={isDarkMode ? "moon" : "sunny-outline"}
 
               size={21}
 
-              color={
-                primaryColor
-              }
+              color={primaryColor}
             />
-
           </View>
-
 
           {/* Información */}
 
-          <View
-            style={
-              styles.flex
-            }
-          >
-
+          <View style={styles.flex}>
             <Text
               style={[
                 styles.valorCuenta,
 
                 {
-                  color:
-                    textColor,
+                  color: textColor,
                 },
               ]}
             >
               Modo oscuro
             </Text>
 
-
             <Text
               style={[
                 styles.labelCuenta,
 
                 {
-                  color:
-                    textSecondaryColor,
+                  color: textSecondaryColor,
                 },
               ]}
             >
-              {
-                isDarkMode
-                  ? "El tema oscuro está activado"
-                  : "El tema claro está activado"
-              }
+              {isDarkMode
+                ? "El tema oscuro está activado"
+                : "El tema claro está activado"}
             </Text>
-
           </View>
-
 
           {/* Interruptor */}
 
           <Switch
-            value={
-              isDarkMode
-            }
+            value={isDarkMode}
 
-            onValueChange={
-              toggleDarkMode
-            }
+            onValueChange={toggleDarkMode}
 
             trackColor={{
-              false:
-                surfaceSecondaryColor,
+              false: surfaceSecondaryColor,
 
-              true:
-                primarySoftColor,
+              true: primarySoftColor,
             }}
 
-            thumbColor={
-              isDarkMode
-                ? primaryColor
-                : textMutedColor
-            }
+            thumbColor={isDarkMode ? primaryColor : textMutedColor}
 
-            ios_backgroundColor={
-              surfaceSecondaryColor
-            }
+            ios_backgroundColor={surfaceSecondaryColor}
           />
-
         </View>
-
 
         {/* =================================================
             SEGURIDAD
         ================================================= */}
 
-        {
-          esIndependiente && (
+        {esIndependiente && (
+          <>
+            <TituloSeccion>SEGURIDAD</TituloSeccion>
 
-            <>
+            <TouchableOpacity
+              activeOpacity={0.75}
 
-              <TituloSeccion>
-                SEGURIDAD
-              </TituloSeccion>
+              onPress={() => setMostrarPassword((actual) => !actual)}
 
+              style={[
+                styles.opcionSeguridad,
 
-              <TouchableOpacity
-                activeOpacity={
-                  0.75
-                }
+                {
+                  backgroundColor: surfaceColor,
 
-                onPress={() =>
-                  setMostrarPassword(
-                    actual =>
-                      !actual
-                  )
-                }
-
+                  borderColor,
+                },
+              ]}
+            >
+              <View
                 style={[
-                  styles.opcionSeguridad,
+                  styles.iconoCuenta,
 
                   {
-                    backgroundColor:
-                      surfaceColor,
+                    backgroundColor: primarySoftColor,
+                  },
+                ]}
+              >
+                <Ionicons name="key-outline" size={20} color={primaryColor} />
+              </View>
+
+              <View style={styles.flex}>
+                <Text
+                  style={[
+                    styles.valorCuenta,
+
+                    {
+                      color: textColor,
+                    },
+                  ]}
+                >
+                  Cambiar contraseña
+                </Text>
+
+                <Text
+                  style={[
+                    styles.labelCuenta,
+
+                    {
+                      color: textSecondaryColor,
+                    },
+                  ]}
+                >
+                  Actualiza la contraseña de tu cuenta
+                </Text>
+              </View>
+
+              <Ionicons
+                name={mostrarPassword ? "chevron-up" : "chevron-down"}
+
+                size={19}
+
+                color={iconColor}
+              />
+            </TouchableOpacity>
+
+            {mostrarPassword && (
+              <View
+                style={[
+                  styles.passwordCard,
+
+                  {
+                    backgroundColor: surfaceColor,
 
                     borderColor,
                   },
                 ]}
               >
+                <PasswordInput
+                  titulo="Nueva contraseña"
 
-                <View
+                  valor={nuevaPassword}
+
+                  onChange={setNuevaPassword}
+
+                  visible={verPassword}
+
+                  onToggle={() => setVerPassword((actual) => !actual)}
+                />
+
+                <PasswordInput
+                  titulo="Confirmar contraseña"
+
+                  valor={confirmarPassword}
+
+                  onChange={setConfirmarPassword}
+
+                  visible={verConfirmacion}
+
+                  onToggle={() => setVerConfirmacion((actual) => !actual)}
+                />
+
+                <TouchableOpacity
+                  activeOpacity={0.8}
+
+                  disabled={guardandoPassword}
+
+                  onPress={actualizarPassword}
+
                   style={[
-                    styles.iconoCuenta,
+                    styles.botonPassword,
+
+                    guardandoPassword && styles.deshabilitado,
 
                     {
-                      backgroundColor:
-                        primarySoftColor,
+                      backgroundColor: primaryColor,
                     },
                   ]}
                 >
+                  {guardandoPassword ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <>
+                      <Ionicons
+                        name="shield-checkmark-outline"
+                        size={19}
+                        color="#FFFFFF"
+                      />
 
-                  <Ionicons
-                    name="key-outline"
-                    size={20}
-                    color={
-                      primaryColor
-                    }
-                  />
+                      <Text
+                        style={[
+                          styles.textoBotonPrincipal,
 
-                </View>
-
-
-                <View
-                  style={
-                    styles.flex
-                  }
-                >
-
-                  <Text
-                    style={[
-                      styles.valorCuenta,
-
-                      {
-                        color:
-                          textColor,
-                      },
-                    ]}
-                  >
-                    Cambiar contraseña
-                  </Text>
-
-
-                  <Text
-                    style={[
-                      styles.labelCuenta,
-
-                      {
-                        color:
-                          textSecondaryColor,
-                      },
-                    ]}
-                  >
-                    Actualiza la contraseña de tu cuenta
-                  </Text>
-
-                </View>
-
-
-                <Ionicons
-                  name={
-                    mostrarPassword
-                      ? "chevron-up"
-                      : "chevron-down"
-                  }
-
-                  size={19}
-
-                  color={
-                    iconColor
-                  }
-                />
-
-              </TouchableOpacity>
-
-
-              {
-                mostrarPassword && (
-
-                  <View
-                    style={[
-                      styles.passwordCard,
-
-                      {
-                        backgroundColor:
-                          surfaceColor,
-
-                        borderColor,
-                      },
-                    ]}
-                  >
-
-                    <PasswordInput
-                      titulo="Nueva contraseña"
-
-                      valor={
-                        nuevaPassword
-                      }
-
-                      onChange={
-                        setNuevaPassword
-                      }
-
-                      visible={
-                        verPassword
-                      }
-
-                      onToggle={() =>
-                        setVerPassword(
-                          actual =>
-                            !actual
-                        )
-                      }
-                    />
-
-
-                    <PasswordInput
-                      titulo="Confirmar contraseña"
-
-                      valor={
-                        confirmarPassword
-                      }
-
-                      onChange={
-                        setConfirmarPassword
-                      }
-
-                      visible={
-                        verConfirmacion
-                      }
-
-                      onToggle={() =>
-                        setVerConfirmacion(
-                          actual =>
-                            !actual
-                        )
-                      }
-                    />
-
-
-                    <TouchableOpacity
-                      activeOpacity={
-                        0.8
-                      }
-
-                      disabled={
-                        guardandoPassword
-                      }
-
-                      onPress={
-                        actualizarPassword
-                      }
-
-                      style={[
-                        styles.botonPassword,
-
-                        guardandoPassword &&
-                        styles.deshabilitado,
-
-                        {
-                          backgroundColor:
-                            primaryColor,
-                        },
-                      ]}
-                    >
-
-                      {
-                        guardandoPassword
-
-                          ? (
-
-                            <ActivityIndicator
-                              size="small"
-                              color="#FFFFFF"
-                            />
-
-                          )
-
-                          : (
-
-                            <>
-
-                              <Ionicons
-                                name="shield-checkmark-outline"
-                                size={19}
-                                color="#FFFFFF"
-                              />
-
-
-                              <Text
-                                style={[
-                                  styles.textoBotonPrincipal,
-
-                                  {
-                                    color:
-                                      "#FFFFFF",
-                                  },
-                                ]}
-                              >
-                                Actualizar contraseña
-                              </Text>
-
-                            </>
-
-                          )
-                      }
-
-                    </TouchableOpacity>
-
-                  </View>
-
-                )
-              }
-
-            </>
-
-          )
-        }
-
+                          {
+                            color: "#FFFFFF",
+                          },
+                        ]}
+                      >
+                        Actualizar contraseña
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+          </>
+        )}
 
         {/* =================================================
             PRIVACIDAD
         ================================================= */}
 
-        <TituloSeccion>
-          PRIVACIDAD
-        </TituloSeccion>
-
+        <TituloSeccion>PRIVACIDAD</TituloSeccion>
 
         <View
           style={[
             styles.privacidad,
 
             {
-              backgroundColor:
-                primarySoftColor,
+              backgroundColor: primarySoftColor,
 
               borderColor,
             },
           ]}
         >
-
           <View
             style={[
               styles.privacidadIcono,
 
               {
-                backgroundColor:
-                  surfaceColor,
+                backgroundColor: surfaceColor,
               },
             ]}
           >
-
             <Ionicons
               name="shield-checkmark-outline"
               size={24}
 
-              color={
-                primaryColor
-              }
+              color={primaryColor}
             />
-
           </View>
 
-
-          <View
-            style={
-              styles.flex
-            }
-          >
-
+          <View style={styles.flex}>
             <Text
               style={[
                 styles.privacidadTitulo,
 
                 {
-                  color:
-                    textColor,
+                  color: textColor,
                 },
               ]}
             >
               Privacidad de datos
             </Text>
 
-
             <Text
               style={[
                 styles.privacidadTexto,
 
                 {
-                  color:
-                    textSecondaryColor,
+                  color: textSecondaryColor,
                 },
               ]}
             >
-              Tu información personal se mantiene privada y se utiliza para personalizar tu experiencia dentro de Kiri.
+              Tu información personal se mantiene privada y se utiliza para
+              personalizar tu experiencia dentro de Kiri.
             </Text>
-
           </View>
-
         </View>
-
 
         {/* =================================================
             GUARDAR
         ================================================= */}
 
         <TouchableOpacity
-          activeOpacity={
-            0.8
-          }
+          activeOpacity={0.8}
 
-          disabled={
-            guardando
-          }
+          disabled={guardando}
 
-          onPress={
-            guardarCambios
-          }
+          onPress={guardarCambios}
 
           style={[
             styles.botonGuardar,
 
-            guardando &&
-            styles.deshabilitado,
+            guardando && styles.deshabilitado,
 
             {
-              backgroundColor:
-                primaryColor,
+              backgroundColor: primaryColor,
             },
           ]}
         >
+          {guardando ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <>
+              <Ionicons name="save-outline" size={20} color="#FFFFFF" />
 
-          {
-            guardando
+              <Text
+                style={[
+                  styles.textoBotonPrincipal,
 
-              ? (
-
-                <ActivityIndicator
-                  size="small"
-                  color="#FFFFFF"
-                />
-
-              )
-
-              : (
-
-                <>
-
-                  <Ionicons
-                    name="save-outline"
-                    size={20}
-                    color="#FFFFFF"
-                  />
-
-
-                  <Text
-                    style={[
-                      styles.textoBotonPrincipal,
-
-                      {
-                        color:
-                          "#FFFFFF",
-                      },
-                    ]}
-                  >
-                    Guardar cambios
-                  </Text>
-
-                </>
-
-              )
-          }
-
+                  {
+                    color: "#FFFFFF",
+                  },
+                ]}
+              >
+                Guardar cambios
+              </Text>
+            </>
+          )}
         </TouchableOpacity>
-
 
         {/* =================================================
             CERRAR SESIÓN
         ================================================= */}
 
         <TouchableOpacity
-          activeOpacity={
-            0.75
-          }
+          activeOpacity={0.75}
 
-          onPress={() =>
-            setMostrarLogout(
-              true
-            )
-          }
+          onPress={() => setMostrarLogout(true)}
 
           style={[
             styles.botonSalir,
 
             {
-              backgroundColor:
-                surfaceColor,
+              backgroundColor: surfaceColor,
 
               borderColor,
             },
           ]}
         >
-
           <Ionicons
             name="log-out-outline"
             size={21}
 
-            color={
-              iconColor
-            }
+            color={iconColor}
           />
-
 
           <Text
             style={[
               styles.textoSalir,
 
               {
-                color:
-                  textColor,
+                color: textColor,
               },
             ]}
           >
             Cerrar sesión
           </Text>
-
         </TouchableOpacity>
-
       </ScrollView>
 
-
       <LogoutModal
-        visible={
-          mostrarLogout
-        }
+        visible={mostrarLogout}
 
-        onClose={() =>
-          setMostrarLogout(
-            false
-          )
-        }
+        onClose={() => setMostrarLogout(false)}
       />
-
     </SafeAreaView>
-
   );
-
 }
-
 
 // ==========================================================
 // CAMPO
 // ==========================================================
 
 type CampoProps = {
-  titulo:
-  string;
+  titulo: string;
 
-  valor:
-  string;
+  valor: string;
 
-  onChange:
-  (texto: string) => void;
+  onChange: (texto: string) => void;
 
-  placeholder:
-  string;
+  placeholder: string;
 
-  icono:
-  keyof typeof Ionicons.glyphMap;
+  icono: keyof typeof Ionicons.glyphMap;
 
-  keyboardType?:
-  | "default"
-  | "phone-pad";
+  keyboardType?: "default" | "phone-pad";
 };
-
 
 function Campo({
   titulo,
@@ -2139,152 +1250,90 @@ function Campo({
   icono,
   keyboardType = "default",
 }: CampoProps) {
+  const textColor = useThemeColor({}, "text");
 
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
+  const primaryColor = useThemeColor({}, "primary");
 
+  const inputBackgroundColor = useThemeColor({}, "inputBackground");
 
-  const primaryColor =
-    useThemeColor(
-      {},
-      "primary"
-    );
+  const inputBorderColor = useThemeColor({}, "inputBorder");
 
-
-  const inputBackgroundColor =
-    useThemeColor(
-      {},
-      "inputBackground"
-    );
-
-
-  const inputBorderColor =
-    useThemeColor(
-      {},
-      "inputBorder"
-    );
-
-
-  const placeholderColor =
-    useThemeColor(
-      {},
-      "placeholder"
-    );
-
+  const placeholderColor = useThemeColor({}, "placeholder");
 
   return (
-
     <>
-
       <Text
         style={[
           styles.label,
 
           {
-            color:
-              textColor,
+            color: textColor,
           },
         ]}
       >
         {titulo}
       </Text>
 
-
       <View
         style={[
           styles.input,
 
           {
-            backgroundColor:
-              inputBackgroundColor,
+            backgroundColor: inputBackgroundColor,
 
-            borderColor:
-              inputBorderColor,
+            borderColor: inputBorderColor,
           },
         ]}
       >
-
         <Ionicons
-          name={
-            icono
-          }
+          name={icono}
 
           size={19}
 
-          color={
-            primaryColor
-          }
+          color={primaryColor}
         />
 
-
         <TextInput
-          value={
-            valor
-          }
+          value={valor}
 
-          onChangeText={
-            onChange
-          }
+          onChangeText={onChange}
 
-          placeholder={
-            placeholder
-          }
+          placeholder={placeholder}
 
-          placeholderTextColor={
-            placeholderColor
-          }
+          placeholderTextColor={placeholderColor}
 
-          selectionColor={
-            primaryColor
-          }
+          selectionColor={primaryColor}
 
-          keyboardType={
-            keyboardType
-          }
+          keyboardType={keyboardType}
 
           style={[
             styles.textInput,
 
             {
-              color:
-                textColor,
+              color: textColor,
             },
           ]}
         />
-
       </View>
-
     </>
-
   );
-
 }
-
 
 // ==========================================================
 // PASSWORD
 // ==========================================================
 
 type PasswordProps = {
-  titulo:
-  string;
+  titulo: string;
 
-  valor:
-  string;
+  valor: string;
 
-  onChange:
-  (valor: string) => void;
+  onChange: (valor: string) => void;
 
-  visible:
-  boolean;
+  visible: boolean;
 
-  onToggle:
-  () => void;
+  onToggle: () => void;
 };
-
 
 function PasswordInput({
   titulo,
@@ -2293,113 +1342,62 @@ function PasswordInput({
   visible,
   onToggle,
 }: PasswordProps) {
+  const textColor = useThemeColor({}, "text");
 
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
+  const iconColor = useThemeColor({}, "icon");
 
+  const primaryColor = useThemeColor({}, "primary");
 
-  const iconColor =
-    useThemeColor(
-      {},
-      "icon"
-    );
+  const inputBackgroundColor = useThemeColor({}, "inputBackground");
 
+  const inputBorderColor = useThemeColor({}, "inputBorder");
 
-  const primaryColor =
-    useThemeColor(
-      {},
-      "primary"
-    );
-
-
-  const inputBackgroundColor =
-    useThemeColor(
-      {},
-      "inputBackground"
-    );
-
-
-  const inputBorderColor =
-    useThemeColor(
-      {},
-      "inputBorder"
-    );
-
-
-  const placeholderColor =
-    useThemeColor(
-      {},
-      "placeholder"
-    );
-
+  const placeholderColor = useThemeColor({}, "placeholder");
 
   return (
-
     <>
-
       <Text
         style={[
           styles.label,
 
           {
-            color:
-              textColor,
+            color: textColor,
           },
         ]}
       >
         {titulo}
       </Text>
 
-
       <View
         style={[
           styles.input,
 
           {
-            backgroundColor:
-              inputBackgroundColor,
+            backgroundColor: inputBackgroundColor,
 
-            borderColor:
-              inputBorderColor,
+            borderColor: inputBorderColor,
           },
         ]}
       >
-
         <Ionicons
           name="lock-closed-outline"
           size={19}
 
-          color={
-            primaryColor
-          }
+          color={primaryColor}
         />
 
-
         <TextInput
-          value={
-            valor
-          }
+          value={valor}
 
-          onChangeText={
-            onChange
-          }
+          onChangeText={onChange}
 
-          secureTextEntry={
-            !visible
-          }
+          secureTextEntry={!visible}
 
           placeholder="••••••••"
 
-          placeholderTextColor={
-            placeholderColor
-          }
+          placeholderTextColor={placeholderColor}
 
-          selectionColor={
-            primaryColor
-          }
+          selectionColor={primaryColor}
 
           autoCapitalize="none"
 
@@ -2407,204 +1405,117 @@ function PasswordInput({
             styles.textInput,
 
             {
-              color:
-                textColor,
+              color: textColor,
             },
           ]}
         />
 
-
         <TouchableOpacity
-          activeOpacity={
-            0.7
-          }
+          activeOpacity={0.7}
 
-          onPress={
-            onToggle
-          }
+          onPress={onToggle}
         >
-
           <Ionicons
-            name={
-              visible
-                ? "eye-off-outline"
-                : "eye-outline"
-            }
+            name={visible ? "eye-off-outline" : "eye-outline"}
 
             size={19}
 
-            color={
-              iconColor
-            }
+            color={iconColor}
           />
-
         </TouchableOpacity>
-
       </View>
-
     </>
-
   );
-
 }
-
 
 // ==========================================================
 // FILA DE INFORMACIÓN
 // ==========================================================
 
 type FilaProps = {
-  icono:
-  keyof typeof Ionicons.glyphMap;
+  icono: keyof typeof Ionicons.glyphMap;
 
-  color:
-  string;
+  color: string;
 
-  titulo:
-  string;
+  titulo: string;
 
-  valor:
-  string;
+  valor: string;
 };
 
+function FilaInformacion({ icono, color, titulo, valor }: FilaProps) {
+  const textColor = useThemeColor({}, "text");
 
-function FilaInformacion({
-  icono,
-  color,
-  titulo,
-  valor,
-}: FilaProps) {
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
 
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
-
-
-  const textSecondaryColor =
-    useThemeColor(
-      {},
-      "textSecondary"
-    );
-
-
-  const surfaceSecondaryColor =
-    useThemeColor(
-      {},
-      "surfaceSecondary"
-    );
-
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
   return (
-
-    <View
-      style={
-        styles.filaCuenta
-      }
-    >
-
+    <View style={styles.filaCuenta}>
       <View
         style={[
           styles.iconoCuenta,
 
           {
-            backgroundColor:
-              surfaceSecondaryColor,
+            backgroundColor: surfaceSecondaryColor,
           },
         ]}
       >
-
         <Ionicons
-          name={
-            icono
-          }
+          name={icono}
 
           size={21}
 
-          color={
-            color
-          }
+          color={color}
         />
-
       </View>
 
-
-      <View
-        style={
-          styles.flex
-        }
-      >
-
+      <View style={styles.flex}>
         <Text
           style={[
             styles.labelCuenta,
 
             {
-              color:
-                textSecondaryColor,
+              color: textSecondaryColor,
             },
           ]}
         >
           {titulo}
         </Text>
 
-
         <Text
           style={[
             styles.valorCuenta,
 
             {
-              color:
-                textColor,
+              color: textColor,
             },
           ]}
         >
           {valor}
         </Text>
-
       </View>
-
     </View>
-
   );
-
 }
-
 
 // ==========================================================
 // TÍTULO DE SECCIÓN
 // ==========================================================
 
-function TituloSeccion({
-  children,
-}: {
-  children:
-  React.ReactNode;
-}) {
-
-  const primaryColor =
-    useThemeColor(
-      {},
-      "primary"
-    );
-
+function TituloSeccion({ children }: { children: React.ReactNode }) {
+  const primaryColor = useThemeColor({}, "primary");
 
   return (
-
     <Text
       style={[
         styles.seccionTitulo,
 
         {
-          color:
-            primaryColor,
+          color: primaryColor,
         },
       ]}
     >
       {children}
     </Text>
-
   );
-
 }

@@ -1,35 +1,16 @@
-import {
-  Ionicons,
-} from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
-import {
-  router,
-  useLocalSearchParams,
-} from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
-import React, {
-  useMemo,
-  useState,
-} from "react";
+import React, { useMemo, useState } from "react";
 
-import {
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
-import Animated, {
-  FadeInDown,
-} from "react-native-reanimated";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 import LecturaRecomendadaCard from "../../../components/educacion/LecturaRecomendadaCard";
 
-import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
-
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 // ==========================================================
 // LECTURAS
@@ -37,167 +18,126 @@ import {
 
 const lecturas = [
   {
-    id:
-      "que-es-la-ansiedad",
+    id: "que-es-la-ansiedad",
 
-    categoria:
-      "Ansiedad",
+    categoria: "Ansiedad",
 
-    tiempo:
-      "5 min de lectura",
+    tiempo: "5 min de lectura",
 
-    titulo:
-      "¿Qué es la ansiedad?",
+    titulo: "¿Qué es la ansiedad?",
 
     descripcion:
       "Conoce qué es la ansiedad, por qué aparece y cómo puede manifestarse en diferentes situaciones.",
   },
   {
-    id:
-      "reconocer-ansiedad",
+    id: "reconocer-ansiedad",
 
-    categoria:
-      "Ansiedad",
+    categoria: "Ansiedad",
 
-    tiempo:
-      "7 min de lectura",
+    tiempo: "7 min de lectura",
 
-    titulo:
-      "Cómo reconocer la ansiedad",
+    titulo: "Cómo reconocer la ansiedad",
 
     descripcion:
       "Aprende a identificar algunas señales físicas, emocionales y conductuales relacionadas con la ansiedad.",
   },
   {
-    id:
-      "comprender-autoestima",
+    id: "comprender-autoestima",
 
-    categoria:
-      "Autoestima",
+    categoria: "Autoestima",
 
-    tiempo:
-      "6 min de lectura",
+    tiempo: "6 min de lectura",
 
-    titulo:
-      "Comprendiendo la autoestima",
+    titulo: "Comprendiendo la autoestima",
 
     descripcion:
       "Conoce qué es la autoestima y cómo puede influir en la manera en que pensamos y actuamos.",
   },
   {
-    id:
-      "fortalecer-autoestima",
+    id: "fortalecer-autoestima",
 
-    categoria:
-      "Autoestima",
+    categoria: "Autoestima",
 
-    tiempo:
-      "7 min de lectura",
+    tiempo: "7 min de lectura",
 
-    titulo:
-      "Cómo fortalecer tu autoestima",
+    titulo: "Cómo fortalecer tu autoestima",
 
     descripcion:
       "Descubre pequeñas acciones que pueden ayudarte a construir una relación más saludable contigo.",
   },
   {
-    id:
-      "comprender-estres",
+    id: "comprender-estres",
 
-    categoria:
-      "Estrés",
+    categoria: "Estrés",
 
-    tiempo:
-      "5 min de lectura",
+    tiempo: "5 min de lectura",
 
-    titulo:
-      "Comprendiendo el estrés",
+    titulo: "Comprendiendo el estrés",
 
     descripcion:
       "Conoce por qué aparece el estrés y cuáles son algunas de las señales más comunes.",
   },
   {
-    id:
-      "manejar-estres",
+    id: "manejar-estres",
 
-    categoria:
-      "Estrés",
+    categoria: "Estrés",
 
-    tiempo:
-      "8 min de lectura",
+    tiempo: "8 min de lectura",
 
-    titulo:
-      "Estrategias para manejar el estrés",
+    titulo: "Estrategias para manejar el estrés",
 
     descripcion:
       "Conoce algunas estrategias que pueden ayudarte a afrontar situaciones estresantes.",
   },
   {
-    id:
-      "entender-procrastinacion",
+    id: "entender-procrastinacion",
 
-    categoria:
-      "Procrastinación",
+    categoria: "Procrastinación",
 
-    tiempo:
-      "6 min de lectura",
+    tiempo: "6 min de lectura",
 
-    titulo:
-      "¿Por qué procrastinamos?",
+    titulo: "¿Por qué procrastinamos?",
 
     descripcion:
       "Comprende algunas de las razones que pueden llevarnos a posponer nuestras responsabilidades.",
   },
   {
-    id:
-      "evitar-procrastinacion",
+    id: "evitar-procrastinacion",
 
-    categoria:
-      "Procrastinación",
+    categoria: "Procrastinación",
 
-    tiempo:
-      "7 min de lectura",
+    tiempo: "7 min de lectura",
 
-    titulo:
-      "Pequeños pasos para dejar de procrastinar",
+    titulo: "Pequeños pasos para dejar de procrastinar",
 
     descripcion:
       "Aprende estrategias sencillas para comenzar tus tareas y organizar mejor tu tiempo.",
   },
   {
-    id:
-      "comprender-soledad",
+    id: "comprender-soledad",
 
-    categoria:
-      "Soledad",
+    categoria: "Soledad",
 
-    tiempo:
-      "5 min de lectura",
+    tiempo: "5 min de lectura",
 
-    titulo:
-      "Comprendiendo la soledad",
+    titulo: "Comprendiendo la soledad",
 
     descripcion:
       "Conoce las diferencias entre estar solo y experimentar sentimientos de soledad.",
   },
   {
-    id:
-      "conexiones-saludables",
+    id: "conexiones-saludables",
 
-    categoria:
-      "Soledad",
+    categoria: "Soledad",
 
-    tiempo:
-      "7 min de lectura",
+    tiempo: "7 min de lectura",
 
-    titulo:
-      "Construyendo conexiones saludables",
+    titulo: "Construyendo conexiones saludables",
 
     descripcion:
       "Descubre algunas formas de fortalecer nuestras relaciones y crear vínculos significativos.",
   },
 ];
-
 
 // ==========================================================
 // CATEGORÍAS
@@ -213,926 +153,506 @@ const categorias = [
   "Depresión",
 ];
 
-
 // ==========================================================
 // COMPONENTE
 // ==========================================================
 
 export default function LecturasScreen() {
-
-  const {
-    categoria,
-  } =
-    useLocalSearchParams<{
-      categoria?: string;
-    }>();
-
+  const { categoria } = useLocalSearchParams<{
+    categoria?: string;
+  }>();
 
   // ========================================================
   // ESTADOS
   // ========================================================
 
-  const [
-    busqueda,
-    setBusqueda,
-  ] =
-    useState(
-      ""
-    );
+  const [busqueda, setBusqueda] = useState("");
 
-
-  const [
-    categoriaSeleccionada,
-    setCategoriaSeleccionada,
-  ] =
-    useState(
-      categoria ||
-      "Todas"
-    );
-
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(
+    categoria || "Todas",
+  );
 
   // ========================================================
   // COLORES DEL TEMA
   // ========================================================
 
-  const backgroundColor =
-    useThemeColor(
-      {},
-      "background"
-    );
+  const backgroundColor = useThemeColor({}, "background");
 
+  const surfaceColor = useThemeColor({}, "surface");
 
-  const surfaceColor =
-    useThemeColor(
-      {},
-      "surface"
-    );
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
+  const textColor = useThemeColor({}, "text");
 
-  const surfaceSecondaryColor =
-    useThemeColor(
-      {},
-      "surfaceSecondary"
-    );
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
 
+  const textMutedColor = useThemeColor({}, "textMuted");
 
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
+  const primaryColor = useThemeColor({}, "primary");
 
+  const primarySoftColor = useThemeColor({}, "primarySoft");
 
-  const textSecondaryColor =
-    useThemeColor(
-      {},
-      "textSecondary"
-    );
+  const inputBackgroundColor = useThemeColor({}, "inputBackground");
 
+  const inputBorderColor = useThemeColor({}, "inputBorder");
 
-  const textMutedColor =
-    useThemeColor(
-      {},
-      "textMuted"
-    );
+  const placeholderColor = useThemeColor({}, "placeholder");
 
+  const iconColor = useThemeColor({}, "icon");
 
-  const primaryColor =
-    useThemeColor(
-      {},
-      "primary"
-    );
+  const borderColor = useThemeColor({}, "border");
 
-
-  const primarySoftColor =
-    useThemeColor(
-      {},
-      "primarySoft"
-    );
-
-
-  const inputBackgroundColor =
-    useThemeColor(
-      {},
-      "inputBackground"
-    );
-
-
-  const inputBorderColor =
-    useThemeColor(
-      {},
-      "inputBorder"
-    );
-
-
-  const placeholderColor =
-    useThemeColor(
-      {},
-      "placeholder"
-    );
-
-
-  const iconColor =
-    useThemeColor(
-      {},
-      "icon"
-    );
-
-
-  const borderColor =
-    useThemeColor(
-      {},
-      "border"
-    );
-
-
-  const textOnPrimaryColor =
-    useThemeColor(
-      {},
-      "textOnPrimary"
-    );
-
+  const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
 
   // ========================================================
   // FILTRAR LECTURAS
   // ========================================================
 
-  const lecturasFiltradas =
-    useMemo(
-      () => {
+  const lecturasFiltradas = useMemo(() => {
+    return lecturas.filter((lectura) => {
+      const coincideCategoria =
+        categoriaSeleccionada === "Todas" ||
+        lectura.categoria === categoriaSeleccionada;
 
-        return lecturas.filter(
-          lectura => {
+      const textoBusqueda = busqueda.toLowerCase().trim();
 
-            const coincideCategoria =
-              categoriaSeleccionada ===
-                "Todas" ||
-              lectura.categoria ===
-                categoriaSeleccionada;
+      const coincideBusqueda =
+        textoBusqueda.length === 0 ||
+        lectura.titulo.toLowerCase().includes(textoBusqueda) ||
+        lectura.descripcion.toLowerCase().includes(textoBusqueda) ||
+        lectura.categoria.toLowerCase().includes(textoBusqueda);
 
-
-            const textoBusqueda =
-              busqueda
-                .toLowerCase()
-                .trim();
-
-
-            const coincideBusqueda =
-              textoBusqueda.length ===
-                0 ||
-
-              lectura.titulo
-                .toLowerCase()
-                .includes(
-                  textoBusqueda
-                ) ||
-
-              lectura.descripcion
-                .toLowerCase()
-                .includes(
-                  textoBusqueda
-                ) ||
-
-              lectura.categoria
-                .toLowerCase()
-                .includes(
-                  textoBusqueda
-                );
-
-
-            return (
-              coincideCategoria &&
-              coincideBusqueda
-            );
-
-          }
-        );
-
-      },
-      [
-        busqueda,
-        categoriaSeleccionada,
-      ]
-    );
-
+      return coincideCategoria && coincideBusqueda;
+    });
+  }, [busqueda, categoriaSeleccionada]);
 
   // ========================================================
   // UI
   // ========================================================
 
   return (
-
     <ScrollView
       style={{
-        flex:
-          1,
+        flex: 1,
 
         backgroundColor,
       }}
 
-      showsVerticalScrollIndicator={
-        false
-      }
+      showsVerticalScrollIndicator={false}
 
       contentContainerStyle={{
-        paddingBottom:
-          130,
+        paddingBottom: 130,
       }}
     >
-
       <View
         style={{
-          paddingHorizontal:
-            24,
+          paddingHorizontal: 24,
 
-          paddingTop:
-            48,
+          paddingTop: 48,
         }}
       >
-
         {/* =================================================
             BOTÓN VOLVER
         ================================================= */}
 
         <Pressable
-          onPress={() =>
-            router.back()
-          }
+          onPress={() => router.back()}
 
-          style={({
-            pressed,
-          }) => ({
-            width:
-              44,
+          style={({ pressed }) => ({
+            width: 44,
 
-            height:
-              44,
+            height: 44,
 
-            marginBottom:
-              20,
+            marginBottom: 20,
 
-            borderRadius:
-              22,
+            borderRadius: 22,
 
-            alignItems:
-              "center",
+            alignItems: "center",
 
-            justifyContent:
-              "center",
+            justifyContent: "center",
 
-            borderWidth:
-              1,
+            borderWidth: 1,
 
             borderColor,
 
-            backgroundColor:
-              surfaceColor,
+            backgroundColor: surfaceColor,
 
-            opacity:
-              pressed
-                ? 0.7
-                : 1,
+            opacity: pressed ? 0.7 : 1,
 
-            shadowColor:
-              "#000000",
+            shadowColor: "#000000",
 
             shadowOffset: {
-              width:
-                0,
+              width: 0,
 
-              height:
-                2,
+              height: 2,
             },
 
-            shadowOpacity:
-              0.06,
+            shadowOpacity: 0.06,
 
-            shadowRadius:
-              4,
+            shadowRadius: 4,
 
-            elevation:
-              2,
+            elevation: 2,
           })}
         >
-
-          <Ionicons
-            name="arrow-back"
-            size={23}
-            color={
-              iconColor
-            }
-          />
-
+          <Ionicons name="arrow-back" size={23} color={iconColor} />
         </Pressable>
-
 
         {/* =================================================
             ENCABEZADO
         ================================================= */}
 
-        <Animated.View
-          entering={
-            FadeInDown
-              .duration(
-                450
-              )
-          }
-        >
-
+        <Animated.View entering={FadeInDown.duration(450)}>
           <Text
             style={{
-              fontFamily:
-                "Nunito-Bold",
+              fontFamily: "Nunito-Bold",
 
-              fontSize:
-                27,
+              fontSize: 27,
 
-              color:
-                textColor,
+              color: textColor,
             }}
           >
             Lecturas recomendadas
           </Text>
 
-
           <Text
             style={{
-              marginTop:
-                8,
+              marginTop: 8,
 
-              fontFamily:
-                "Nunito-Medium",
+              fontFamily: "Nunito-Medium",
 
-              fontSize:
-                15,
+              fontSize: 15,
 
-              lineHeight:
-                24,
+              lineHeight: 24,
 
-              color:
-                textSecondaryColor,
+              color: textSecondaryColor,
             }}
           >
             Explora contenidos sobre bienestar emocional y encuentra lecturas
             relacionadas con los temas que más te interesan.
           </Text>
-
         </Animated.View>
-
 
         {/* =================================================
             BUSCADOR
         ================================================= */}
 
         <Animated.View
-          entering={
-            FadeInDown
-              .delay(
-                80
-              )
-              .duration(
-                450
-              )
-          }
+          entering={FadeInDown.delay(80).duration(450)}
 
           style={{
-            minHeight:
-              56,
+            minHeight: 56,
 
-            marginTop:
-              24,
+            marginTop: 24,
 
-            paddingHorizontal:
-              16,
+            paddingHorizontal: 16,
 
-            flexDirection:
-              "row",
+            flexDirection: "row",
 
-            alignItems:
-              "center",
+            alignItems: "center",
 
-            borderRadius:
-              16,
+            borderRadius: 16,
 
-            borderWidth:
-              1,
+            borderWidth: 1,
 
-            borderColor:
-              inputBorderColor,
+            borderColor: inputBorderColor,
 
-            backgroundColor:
-              inputBackgroundColor,
+            backgroundColor: inputBackgroundColor,
 
-            shadowColor:
-              "#000000",
+            shadowColor: "#000000",
 
             shadowOffset: {
-              width:
-                0,
+              width: 0,
 
-              height:
-                2,
+              height: 2,
             },
 
-            shadowOpacity:
-              0.05,
+            shadowOpacity: 0.05,
 
-            shadowRadius:
-              4,
+            shadowRadius: 4,
 
-            elevation:
-              2,
+            elevation: 2,
           }}
         >
-
-          <Ionicons
-            name="search-outline"
-            size={21}
-            color={
-              iconColor
-            }
-          />
-
+          <Ionicons name="search-outline" size={21} color={iconColor} />
 
           <TextInput
-            value={
-              busqueda
-            }
+            value={busqueda}
 
-            onChangeText={
-              setBusqueda
-            }
+            onChangeText={setBusqueda}
 
             placeholder="Buscar una lectura..."
 
-            placeholderTextColor={
-              placeholderColor
-            }
+            placeholderTextColor={placeholderColor}
 
-            selectionColor={
-              primaryColor
-            }
+            selectionColor={primaryColor}
 
             style={{
-              flex:
-                1,
+              flex: 1,
 
-              marginLeft:
-                12,
+              marginLeft: 12,
 
-              paddingVertical:
-                16,
+              paddingVertical: 16,
 
-              fontFamily:
-                "Nunito-Medium",
+              fontFamily: "Nunito-Medium",
 
-              fontSize:
-                15,
+              fontSize: 15,
 
-              color:
-                textColor,
+              color: textColor,
             }}
           />
 
+          {busqueda.length > 0 && (
+            <Pressable
+              hitSlop={8}
 
-          {
-            busqueda.length >
-              0 && (
-
-              <Pressable
-                hitSlop={
-                  8
-                }
-
-                onPress={() =>
-                  setBusqueda(
-                    ""
-                  )
-                }
-              >
-
-                <Ionicons
-                  name="close-circle"
-                  size={20}
-                  color={
-                    textMutedColor
-                  }
-                />
-
-              </Pressable>
-
-            )
-          }
-
+              onPress={() => setBusqueda("")}
+            >
+              <Ionicons name="close-circle" size={20} color={textMutedColor} />
+            </Pressable>
+          )}
         </Animated.View>
-
 
         {/* =================================================
             FILTROS
         ================================================= */}
 
         <Animated.View
-          entering={
-            FadeInDown
-              .delay(
-                140
-              )
-              .duration(
-                450
-              )
-          }
+          entering={FadeInDown.delay(140).duration(450)}
 
           style={{
-            marginTop:
-              24,
+            marginTop: 24,
           }}
         >
-
           <Text
             style={{
-              marginBottom:
-                12,
+              marginBottom: 12,
 
-              fontFamily:
-                "Nunito-SemiBold",
+              fontFamily: "Nunito-SemiBold",
 
-              fontSize:
-                17,
+              fontSize: 17,
 
-              color:
-                textColor,
+              color: textColor,
             }}
           >
             Categorías
           </Text>
 
-
           <ScrollView
             horizontal
 
-            showsHorizontalScrollIndicator={
-              false
-            }
+            showsHorizontalScrollIndicator={false}
           >
-
             <View
               style={{
-                flexDirection:
-                  "row",
+                flexDirection: "row",
 
-                gap:
-                  12,
+                gap: 12,
 
-                paddingRight:
-                  24,
+                paddingRight: 24,
               }}
             >
+              {categorias.map((item) => {
+                const estaSeleccionada = categoriaSeleccionada === item;
 
-              {
-                categorias.map(
-                  item => {
+                return (
+                  <Pressable
+                    key={item}
 
-                    const estaSeleccionada =
-                      categoriaSeleccionada ===
-                      item;
+                    onPress={() => setCategoriaSeleccionada(item)}
 
+                    style={({ pressed }) => ({
+                      paddingHorizontal: 16,
 
-                    return (
+                      paddingVertical: 10,
 
-                      <Pressable
-                        key={
-                          item
-                        }
+                      borderRadius: 999,
 
-                        onPress={() =>
-                          setCategoriaSeleccionada(
-                            item
-                          )
-                        }
+                      borderWidth: estaSeleccionada ? 0 : 1,
 
-                        style={({
-                          pressed,
-                        }) => ({
-                          paddingHorizontal:
-                            16,
+                      borderColor: borderColor,
 
-                          paddingVertical:
-                            10,
+                      backgroundColor: estaSeleccionada
+                        ? primaryColor
+                        : surfaceColor,
 
-                          borderRadius:
-                            999,
+                      opacity: pressed ? 0.75 : 1,
+                    })}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: "Nunito-SemiBold",
 
-                          borderWidth:
-                            estaSeleccionada
-                              ? 0
-                              : 1,
+                        fontSize: 13,
 
-                          borderColor:
-                            borderColor,
-
-                          backgroundColor:
-                            estaSeleccionada
-                              ? primaryColor
-                              : surfaceColor,
-
-                          opacity:
-                            pressed
-                              ? 0.75
-                              : 1,
-                        })}
-                      >
-
-                        <Text
-                          style={{
-                            fontFamily:
-                              "Nunito-SemiBold",
-
-                            fontSize:
-                              13,
-
-                            color:
-                              estaSeleccionada
-                                ? textOnPrimaryColor
-                                : textSecondaryColor,
-                          }}
-                        >
-                          {item}
-                        </Text>
-
-                      </Pressable>
-
-                    );
-
-                  }
-                )
-              }
-
+                        color: estaSeleccionada
+                          ? textOnPrimaryColor
+                          : textSecondaryColor,
+                      }}
+                    >
+                      {item}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
-
           </ScrollView>
-
         </Animated.View>
-
 
         {/* =================================================
             ENCABEZADO DE RESULTADOS
         ================================================= */}
 
         <Animated.View
-          entering={
-            FadeInDown
-              .delay(
-                200
-              )
-              .duration(
-                450
-              )
-          }
+          entering={FadeInDown.delay(200).duration(450)}
 
           style={{
-            marginTop:
-              32,
+            marginTop: 32,
 
-            marginBottom:
-              20,
+            marginBottom: 20,
 
-            flexDirection:
-              "row",
+            flexDirection: "row",
 
-            alignItems:
-              "flex-end",
+            alignItems: "flex-end",
 
-            justifyContent:
-              "space-between",
+            justifyContent: "space-between",
           }}
         >
-
           <View
             style={{
-              flex:
-                1,
+              flex: 1,
 
-              paddingRight:
-                12,
+              paddingRight: 12,
             }}
           >
-
             <Text
               style={{
-                fontFamily:
-                  "Nunito-SemiBold",
+                fontFamily: "Nunito-SemiBold",
 
-                fontSize:
-                  20,
+                fontSize: 20,
 
-                color:
-                  textColor,
+                color: textColor,
               }}
             >
-              {
-                categoriaSeleccionada ===
-                  "Todas"
-                  ? "Todas las lecturas"
-                  : categoriaSeleccionada
-              }
+              {categoriaSeleccionada === "Todas"
+                ? "Todas las lecturas"
+                : categoriaSeleccionada}
             </Text>
-
 
             <Text
               style={{
-                marginTop:
-                  4,
+                marginTop: 4,
 
-                fontFamily:
-                  "Nunito-Medium",
+                fontFamily: "Nunito-Medium",
 
-                fontSize:
-                  13,
+                fontSize: 13,
 
-                color:
-                  textMutedColor,
+                color: textMutedColor,
               }}
             >
               {lecturasFiltradas.length}{" "}
-              {
-                lecturasFiltradas.length ===
-                  1
-                  ? "lectura encontrada"
-                  : "lecturas encontradas"
-              }
+              {lecturasFiltradas.length === 1
+                ? "lectura encontrada"
+                : "lecturas encontradas"}
             </Text>
-
           </View>
-
         </Animated.View>
-
 
         {/* =================================================
             RESULTADOS
         ================================================= */}
 
-        {
-          lecturasFiltradas.length >
-            0
+        {lecturasFiltradas.length > 0 ? (
+          lecturasFiltradas.map((lectura) => (
+            <LecturaRecomendadaCard
+              key={lectura.id}
 
-            ? (
+              categoria={lectura.categoria}
 
-              lecturasFiltradas.map(
-                lectura => (
+              tiempo={lectura.tiempo}
 
-                  <LecturaRecomendadaCard
-                    key={
-                      lectura.id
-                    }
+              titulo={lectura.titulo}
 
-                    categoria={
-                      lectura.categoria
-                    }
+              descripcion={lectura.descripcion}
 
-                    tiempo={
-                      lectura.tiempo
-                    }
+              onPress={() => {
+                console.log("Lectura seleccionada:", lectura.id);
+              }}
+            />
+          ))
+        ) : (
+          <View
+            style={{
+              marginTop: 32,
 
-                    titulo={
-                      lectura.titulo
-                    }
+              paddingHorizontal: 24,
 
-                    descripcion={
-                      lectura.descripcion
-                    }
+              paddingVertical: 40,
 
-                    onPress={() => {
+              alignItems: "center",
 
-                      console.log(
-                        "Lectura seleccionada:",
-                        lectura.id
-                      );
+              borderRadius: 22,
 
-                    }}
-                  />
+              borderWidth: 1,
 
-                )
-              )
+              borderColor,
 
-            )
+              backgroundColor: surfaceColor,
+            }}
+          >
+            <View
+              style={{
+                width: 64,
 
-            : (
+                height: 64,
 
-              <View
-                style={{
-                  marginTop:
-                    32,
+                borderRadius: 32,
 
-                  paddingHorizontal:
-                    24,
+                alignItems: "center",
 
-                  paddingVertical:
-                    40,
+                justifyContent: "center",
 
-                  alignItems:
-                    "center",
+                backgroundColor: surfaceSecondaryColor,
+              }}
+            >
+              <Ionicons name="book-outline" size={29} color={textMutedColor} />
+            </View>
 
-                  borderRadius:
-                    22,
+            <Text
+              style={{
+                marginTop: 16,
 
-                  borderWidth:
-                    1,
+                fontFamily: "Nunito-SemiBold",
 
-                  borderColor,
+                fontSize: 17,
 
-                  backgroundColor:
-                    surfaceColor,
-                }}
-              >
+                textAlign: "center",
 
-                <View
-                  style={{
-                    width:
-                      64,
+                color: textColor,
+              }}
+            >
+              No encontramos lecturas
+            </Text>
 
-                    height:
-                      64,
+            <Text
+              style={{
+                marginTop: 8,
 
-                    borderRadius:
-                      32,
+                fontFamily: "Nunito-Medium",
 
-                    alignItems:
-                      "center",
+                fontSize: 14,
 
-                    justifyContent:
-                      "center",
+                lineHeight: 20,
 
-                    backgroundColor:
-                      surfaceSecondaryColor,
-                  }}
-                >
+                textAlign: "center",
 
-                  <Ionicons
-                    name="book-outline"
-                    size={29}
-                    color={
-                      textMutedColor
-                    }
-                  />
-
-                </View>
-
-
-                <Text
-                  style={{
-                    marginTop:
-                      16,
-
-                    fontFamily:
-                      "Nunito-SemiBold",
-
-                    fontSize:
-                      17,
-
-                    textAlign:
-                      "center",
-
-                    color:
-                      textColor,
-                  }}
-                >
-                  No encontramos lecturas
-                </Text>
-
-
-                <Text
-                  style={{
-                    marginTop:
-                      8,
-
-                    fontFamily:
-                      "Nunito-Medium",
-
-                    fontSize:
-                      14,
-
-                    lineHeight:
-                      20,
-
-                    textAlign:
-                      "center",
-
-                    color:
-                      textMutedColor,
-                  }}
-                >
-                  Intenta buscar otro tema o selecciona una categoría diferente.
-                </Text>
-
-              </View>
-
-            )
-        }
-
+                color: textMutedColor,
+              }}
+            >
+              Intenta buscar otro tema o selecciona una categoría diferente.
+            </Text>
+          </View>
+        )}
       </View>
-
     </ScrollView>
-
   );
-
 }
