@@ -34,7 +34,12 @@ export default function ModuloAdaptativoScreen() {
   });
 
   useEffect(() => {
-    if (authLoading || !profile) return;
+    if (authLoading) return;
+    if (!profile) {
+      setErrorPantalla("No pudimos cargar tus datos de perfil. Intenta nuevamente en unos segundos.");
+      setCargando(false);
+      return;
+    }
     cargar();
   }, [authLoading, profile, idEntrevista, codigoModulo]);
 

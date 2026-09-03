@@ -133,28 +133,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const loadProfile = async () => {
       try {
-        const { data, error } = await supabase
-          .from('usuario')
-          .select(`
-            *,
-            rol (
-              id_rol,
-              nombre,
-              descripcion
-            )
-          `)
-          .eq('id_usuario', user.id)
-          .single();
+        // Al registrarse, el trigger que crea public.usuario puede terminar
+        // unos instantes después de que Auth entregue la sesión. Reintentamos
+        // la lectura para no dejar la entrevista esperando un perfil nulo.
+        let data: UsuarioPerfil | null = null;
+        let error: Error | null = null;
+
+        for (let intento = 0; intento < 3 && !data; intento++) {
+          const resultado = await supabase
+            .from('usuario')
+            .select(`
+              *,
+              rol (
+                id_rol,
+                nombre,
+                descripcion
+              )
+            `)
+            .eq('id_usuario', user.id)
+            .maybeSingle();
+
+          data = resultado.data as UsuarioPerfil | null;
+          error = resultado.error;
+
+          if (!data && intento < 2) {
+            await new Promise((resolve) => setTimeout(resolve, 500));
+          }
+        }
 
         if (cancelled) return;
 
-        if (error) {
-          console.error('Error cargando public.usuario:', error.message);
+        if (error || !data) {
+          console.error('Error cargando public.usuario:', error?.message ?? 'Perfil no encontrado.');
           setProfile(null);
           return;
         }
 
-        setProfile(data as UsuarioPerfil);
+        setProfile(data);
       } catch (error) {
         if (!cancelled) {
           console.error('Error inesperado cargando perfil:', error);
