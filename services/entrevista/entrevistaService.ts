@@ -57,34 +57,21 @@ export async function obtenerEstadoInicialEntrevista(
   const user = await obtenerUsuarioActual();
   const plantilla = await obtenerPlantillaActiva(codigoPlantilla);
 
-  // 1. Verificar entrevista en progreso
-  const { data: entrevistaEnProgreso, error: errorEnProgreso } = await supabase
+  // 1. Verificar si ya completó la entrevista
+  const {
+    data: entrevistaCompletada,
+    error: errorCompletada,
+  } = await supabase
     .from("entrevista_realizada")
-    .select("id_entrevista, id_usuario, id_plantilla, estado, fecha_inicio, fecha_fin, fecha_actualizacion")
-    .eq("id_usuario", user.id)
-    .eq("id_plantilla", plantilla.id_plantilla)
-    .eq("estado", "en_progreso")
-    .order("fecha_actualizacion", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (errorEnProgreso) {
-    console.error("Error verificando entrevista en progreso:", errorEnProgreso);
-    throw new Error("No se pudo verificar el estado de la entrevista.");
-  }
-
-  if (entrevistaEnProgreso) {
-    return {
-      situacion: "en_progreso",
-      plantilla,
-      entrevista: entrevistaEnProgreso as EntrevistaRealizada,
-    };
-  }
-
-  // 2. Verificar entrevista completada
-  const { data: entrevistaCompletada, error: errorCompletada } = await supabase
-    .from("entrevista_realizada")
-    .select("id_entrevista, id_usuario, id_plantilla, estado, fecha_inicio, fecha_fin, fecha_actualizacion")
+    .select(`
+      id_entrevista,
+      id_usuario,
+      id_plantilla,
+      estado,
+      fecha_inicio,
+      fecha_fin,
+      fecha_actualizacion
+    `)
     .eq("id_usuario", user.id)
     .eq("id_plantilla", plantilla.id_plantilla)
     .eq("estado", "completada")
@@ -93,18 +80,71 @@ export async function obtenerEstadoInicialEntrevista(
     .maybeSingle();
 
   if (errorCompletada) {
-    console.error("Error verificando entrevista completada:", errorCompletada);
-    throw new Error("No se pudo verificar el historial de entrevistas.");
+    console.error(
+      "Error verificando entrevista completada:",
+      errorCompletada
+    );
+
+    throw new Error(
+      "No se pudo verificar el historial de entrevistas."
+    );
   }
 
+  // Ya realizó la entrevista inicial
   if (entrevistaCompletada) {
     return {
       situacion: "completada",
       plantilla,
-      entrevista: entrevistaCompletada as EntrevistaRealizada,
+      entrevista:
+        entrevistaCompletada as EntrevistaRealizada,
     };
   }
 
+  // 2. Verificar si dejó una entrevista en progreso
+  const {
+    data: entrevistaEnProgreso,
+    error: errorEnProgreso,
+  } = await supabase
+    .from("entrevista_realizada")
+    .select(`
+      id_entrevista,
+      id_usuario,
+      id_plantilla,
+      estado,
+      fecha_inicio,
+      fecha_fin,
+      fecha_actualizacion
+    `)
+    .eq("id_usuario", user.id)
+    .eq("id_plantilla", plantilla.id_plantilla)
+    .eq("estado", "en_progreso")
+    .order("fecha_actualizacion", {
+      ascending: false,
+    })
+    .limit(1)
+    .maybeSingle();
+
+  if (errorEnProgreso) {
+    console.error(
+      "Error verificando entrevista en progreso:",
+      errorEnProgreso
+    );
+
+    throw new Error(
+      "No se pudo verificar el estado de la entrevista."
+    );
+  }
+
+  if (entrevistaEnProgreso) {
+    return {
+      situacion: "en_progreso",
+      plantilla,
+      entrevista:
+        entrevistaEnProgreso as EntrevistaRealizada,
+    };
+  }
+
+  // 3. Nunca ha realizado la entrevista
   return {
     situacion: "sin_entrevista",
     plantilla,

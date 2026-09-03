@@ -109,7 +109,7 @@ export default function TarjetaEntradaDiario({
                   color={
                     index === 0
                       ? "#16A965"
-                      : "#7C4DDE"
+                      : "#4F8EF7"
                   }
                 />
 

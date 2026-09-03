@@ -1,5 +1,9 @@
-import { Ionicons } from "@expo/vector-icons";
+import {
+  Ionicons,
+} from "@expo/vector-icons";
+
 import React from "react";
+
 import {
   Image,
   ImageSourcePropType,
@@ -7,11 +11,21 @@ import {
   Text,
   View,
 } from "react-native";
+
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
+
+import {
+  useThemeColor,
+} from "@/hooks/use-theme-color";
+
+
+// ==========================================================
+// PROPS
+// ==========================================================
 
 type LecturaRecomendadaCardProps = {
   titulo: string;
@@ -23,6 +37,11 @@ type LecturaRecomendadaCardProps = {
   onPress?: () => void;
 };
 
+
+// ==========================================================
+// COMPONENTE
+// ==========================================================
+
 export default function LecturaRecomendadaCard({
   titulo,
   descripcion,
@@ -32,114 +51,485 @@ export default function LecturaRecomendadaCard({
   imagen,
   onPress,
 }: LecturaRecomendadaCardProps) {
-  // Controla la pequeña animación al presionar la lectura.
-  const escala = useSharedValue(1);
 
-  const estiloAnimado = useAnimatedStyle(() => ({
-    transform: [{ scale: escala.value }],
-  }));
+  // ========================================================
+  // ANIMACIÓN
+  // ========================================================
+
+  const escala =
+    useSharedValue(
+      1
+    );
+
+
+  const estiloAnimado =
+    useAnimatedStyle(
+      () => ({
+        transform: [
+          {
+            scale:
+              escala.value,
+          },
+        ],
+      })
+    );
+
+
+  // ========================================================
+  // COLORES DEL TEMA
+  // ========================================================
+
+  const surfaceColor =
+    useThemeColor(
+      {},
+      "surface"
+    );
+
+
+  const surfaceSecondaryColor =
+    useThemeColor(
+      {},
+      "surfaceSecondary"
+    );
+
+
+  const textColor =
+    useThemeColor(
+      {},
+      "text"
+    );
+
+
+  const textSecondaryColor =
+    useThemeColor(
+      {},
+      "textSecondary"
+    );
+
+
+  const textMutedColor =
+    useThemeColor(
+      {},
+      "textMuted"
+    );
+
+
+  const primaryColor =
+    useThemeColor(
+      {},
+      "primary"
+    );
+
+
+  const primarySoftColor =
+    useThemeColor(
+      {},
+      "primarySoft"
+    );
+
+
+  const iconColor =
+    useThemeColor(
+      {},
+      "icon"
+    );
+
+
+  const borderColor =
+    useThemeColor(
+      {},
+      "border"
+    );
+
+
+  // ========================================================
+  // UI
+  // ========================================================
 
   return (
+
     <Animated.View
-      style={estiloAnimado}
-      className="mb-5 overflow-hidden rounded-[22px] bg-white shadow-md"
+      style={[
+        estiloAnimado,
+        {
+          marginBottom:
+            20,
+
+          overflow:
+            "hidden",
+
+          borderRadius:
+            22,
+
+          borderWidth:
+            1,
+
+          borderColor,
+
+          backgroundColor:
+            surfaceColor,
+
+          shadowColor:
+            "#000000",
+
+          shadowOffset: {
+            width: 0,
+            height: 2,
+          },
+
+          shadowOpacity:
+            0.08,
+
+          shadowRadius:
+            6,
+
+          elevation:
+            3,
+        },
+      ]}
     >
+
       <Pressable
-        onPress={onPress}
+        onPress={
+          onPress
+        }
+
         onPressIn={() => {
-          escala.value = withSpring(0.98);
+
+          escala.value =
+            withSpring(
+              0.98
+            );
+
         }}
+
         onPressOut={() => {
-          escala.value = withSpring(1);
+
+          escala.value =
+            withSpring(
+              1
+            );
+
         }}
+
+        style={({
+          pressed,
+        }) => ({
+          opacity:
+            pressed
+              ? 0.95
+              : 1,
+        })}
       >
-        {/* Espacio reservado para la imagen principal de la lectura. */}
-        <View className="h-[155px] w-full items-center justify-center bg-gray-200">
-          {imagen ? (
-            <Image
-              source={imagen}
-              className="h-full w-full"
-              resizeMode="cover"
-            />
-          ) : (
-            <Ionicons
-              name="image-outline"
-              size={35}
-              color="#A8AFBC"
-            />
-          )}
+
+        {/* =================================================
+            IMAGEN PRINCIPAL
+        ================================================= */}
+
+        <View
+          style={{
+            width:
+              "100%",
+
+            height:
+              155,
+
+            alignItems:
+              "center",
+
+            justifyContent:
+              "center",
+
+            backgroundColor:
+              surfaceSecondaryColor,
+          }}
+        >
+
+          {
+            imagen
+
+              ? (
+
+                <Image
+                  source={
+                    imagen
+                  }
+
+                  style={{
+                    width:
+                      "100%",
+
+                    height:
+                      "100%",
+                  }}
+
+                  resizeMode="cover"
+                />
+
+              )
+
+              : (
+
+                <Ionicons
+                  name="image-outline"
+                  size={35}
+                  color={
+                    iconColor
+                  }
+                />
+
+              )
+          }
+
         </View>
 
-        <View className="p-5">
-          <View className="flex-row items-center">
-            <View className="rounded-full bg-blue-50 px-3 py-1">
+
+        {/* =================================================
+            CONTENIDO
+        ================================================= */}
+
+        <View
+          style={{
+            padding:
+              20,
+          }}
+        >
+
+          {/* =================================================
+              CATEGORÍA + TIEMPO
+          ================================================= */}
+
+          <View
+            style={{
+              flexDirection:
+                "row",
+
+              alignItems:
+                "center",
+
+              flexWrap:
+                "wrap",
+
+              gap:
+                12,
+            }}
+          >
+
+            {/* CATEGORÍA */}
+
+            <View
+              style={{
+                paddingHorizontal:
+                  12,
+
+                paddingVertical:
+                  4,
+
+                borderRadius:
+                  999,
+
+                backgroundColor:
+                  primarySoftColor,
+              }}
+            >
+
               <Text
-                className="text-[11px] uppercase text-blue-500"
                 style={{
-                  fontFamily: "Nunito-Bold",
+                  fontFamily:
+                    "Nunito-Bold",
+
+                  fontSize:
+                    11,
+
+                  textTransform:
+                    "uppercase",
+
+                  color:
+                    primaryColor,
                 }}
               >
                 {categoria}
               </Text>
+
             </View>
 
-            <View className="ml-3 flex-row items-center">
+
+            {/* TIEMPO */}
+
+            <View
+              style={{
+                flexDirection:
+                  "row",
+
+                alignItems:
+                  "center",
+              }}
+            >
+
               <Ionicons
                 name="time-outline"
                 size={14}
-                color="#8B95A5"
+                color={
+                  textMutedColor
+                }
               />
 
+
               <Text
-                className="ml-1 text-[12px] text-slate-400"
                 style={{
-                  fontFamily: "Nunito-Medium",
+                  marginLeft:
+                    4,
+
+                  fontFamily:
+                    "Nunito-Medium",
+
+                  fontSize:
+                    12,
+
+                  color:
+                    textMutedColor,
                 }}
               >
                 {tiempo}
               </Text>
+
             </View>
+
           </View>
 
+
+          {/* =================================================
+              TÍTULO
+          ================================================= */}
+
           <Text
-            className="mt-3 text-[19px] leading-6 text-slate-800"
             style={{
-              fontFamily: "Nunito-Bold",
+              marginTop:
+                12,
+
+              fontFamily:
+                "Nunito-Bold",
+
+              fontSize:
+                19,
+
+              lineHeight:
+                24,
+
+              color:
+                textColor,
             }}
           >
             {titulo}
           </Text>
 
+
+          {/* =================================================
+              DESCRIPCIÓN
+          ================================================= */}
+
           <Text
-            numberOfLines={3}
-            className="mt-2 text-[14px] leading-5 text-slate-500"
+            numberOfLines={
+              3
+            }
+
             style={{
-              fontFamily: "Nunito-Medium",
+              marginTop:
+                8,
+
+              fontFamily:
+                "Nunito-Medium",
+
+              fontSize:
+                14,
+
+              lineHeight:
+                20,
+
+              color:
+                textSecondaryColor,
             }}
           >
             {descripcion}
           </Text>
 
-          <View className="mt-5 flex-row items-center justify-between">
+
+          {/* =================================================
+              AUTOR + FLECHA
+          ================================================= */}
+
+          <View
+            style={{
+              marginTop:
+                20,
+
+              flexDirection:
+                "row",
+
+              alignItems:
+                "center",
+
+              justifyContent:
+                "space-between",
+            }}
+          >
+
             <Text
-              className="text-[12px] text-slate-400"
               style={{
-                fontFamily: "Nunito-Medium",
+                fontFamily:
+                  "Nunito-Medium",
+
+                fontSize:
+                  12,
+
+                color:
+                  textMutedColor,
               }}
             >
               Por {autor}
             </Text>
 
-            <View className="h-9 w-9 items-center justify-center rounded-full bg-blue-50">
+
+            <View
+              style={{
+                width:
+                  36,
+
+                height:
+                  36,
+
+                borderRadius:
+                  18,
+
+                alignItems:
+                  "center",
+
+                justifyContent:
+                  "center",
+
+                backgroundColor:
+                  primarySoftColor,
+              }}
+            >
+
               <Ionicons
                 name="arrow-forward"
                 size={18}
-                color="#4F8CFF"
+                color={
+                  primaryColor
+                }
               />
+
             </View>
+
           </View>
+
         </View>
+
       </Pressable>
+
     </Animated.View>
+
   );
+
 }

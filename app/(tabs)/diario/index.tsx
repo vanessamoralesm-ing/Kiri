@@ -99,7 +99,7 @@ export default function DiarioScreen() {
               <Ionicons
                 name="chevron-forward"
                 size={18}
-                color="#3478F6"
+                color="#4F8EF7"
               />
             </Pressable>
           </View>

@@ -232,7 +232,7 @@ export default function ResumenDiario({
             <Ionicons
               name="book-outline"
               size={30}
-              color="#7C4DDE"
+              color="#4F8EF7"
             />
           </View>
 

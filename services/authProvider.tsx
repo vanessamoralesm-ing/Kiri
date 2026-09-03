@@ -1,10 +1,24 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
+
 import type { ReactNode } from 'react';
+
 import { Platform } from 'react-native';
 import type { Session, User } from '@supabase/supabase-js';
+
 import * as Linking from 'expo-linking';
+
 import { supabase } from '@/lib/supabase';
-import type { SignUpInput, SignUpResult, UsuarioPerfil } from '@/types/auth';
+
+import type {
+  SignUpInput,
+  SignUpResult,
+  UsuarioPerfil,
+} from '@/types/auth';
 
 interface AuthContextType {
   session: Session | null;
