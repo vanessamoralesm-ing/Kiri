@@ -1,48 +1,53 @@
-import React from "react";
-
+import { TecnicasInicioInterface } from "@/components/tecnicas/TecnicasInterfaces";
 import {
-  Text,
-  View,
-} from "react-native";
-
-import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
-
+    obtenerTecnicasActivas,
+    TecnicaComplementaria,
+} from "@/services/tecnicas/tecnicasService";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useState } from "react";
 
 export default function TecnicasScreen() {
+  const router = useRouter();
 
-  const backgroundColor =
-    useThemeColor(
-      {},
-      "background"
-    );
+  const [tecnicas, setTecnicas] = useState<TecnicaComplementaria[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
+  const cargar = useCallback(async () => {
+    try {
+      setCargando(true);
+      setError(null);
 
+      const data = await obtenerTecnicasActivas();
+      setTecnicas(data);
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : "No pudimos cargar las técnicas.",
+      );
+    } finally {
+      setCargando(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      cargar();
+    }, [cargar]),
+  );
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor,
-      }}
-    >
-      <Text
-        style={{
-          fontFamily: "Nunito-Bold",
-          fontSize: 18,
-          color: textColor,
-        }}
-      >
-        Modulo Tecnicas
-      </Text>
-    </View>
+    <TecnicasInicioInterface
+      tecnicas={tecnicas}
+      cargando={cargando}
+      error={error}
+      onReintentar={cargar}
+      onAbrir={(id) =>
+        router.push({
+          pathname: "/(tecnica)/[id]" as any,
+          params: { id },
+        })
+      }
+      onHistorial={() => router.push("/(tabs)/tecnicas/historial" as any)}
+    />
   );
 }
