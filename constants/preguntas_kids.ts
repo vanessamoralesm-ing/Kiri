@@ -6,15 +6,21 @@ export const seccionesEntrevista = [
     titulo: "Conociendo al menor",
     preguntas: [
       {
-        texto: "¿Cómo observa el comportamiento de su hijo cuando está en casa?",
+        texto:
+          "¿Cómo observa el comportamiento de su hijo cuando está en casa?",
         tipoRespuesta: "estado",
-        opciones: ["Animado", "Triste", "Hiperactivo", "No obedece",],
+        opciones: ["Animado", "Triste", "Hiperactivo", "No obedece"],
       },
       {
         texto:
           "¿Cómo observa la conducta de su hijo cuando está en la escuela?",
         tipoRespuesta: "estado",
-        opciones: ["Animado", "Triste", "Hiperactivo", "Tiene problemas de comunicación"],
+        opciones: [
+          "Animado",
+          "Triste",
+          "Hiperactivo",
+          "Tiene problemas de comunicación",
+        ],
       },
       {
         texto:
@@ -56,37 +62,72 @@ export const seccionesEntrevista = [
       {
         texto: "¿Cómo le va con las tareas?",
         tipoRespuesta: "desempeno",
-        opciones: ["Muy bien", "Bien", "Regular", "Necesita ayuda para hacerlas"],
+        opciones: [
+          "Muy bien",
+          "Bien",
+          "Regular",
+          "Necesita ayuda para hacerlas",
+        ],
       },
       {
         texto: "¿Cómo se lleva con su maestra o maestro?",
         tipoRespuesta: "relacion",
-        opciones: ["Muy bien", "Regular", "Se siente mal o con temor", "Se muestra desobediente"],
+        opciones: [
+          "Muy bien",
+          "Regular",
+          "Se siente mal o con temor",
+          "Se muestra desobediente",
+        ],
       },
       {
         texto: "¿Cómo se relaciona con sus compañeros?",
         tipoRespuesta: "relacion",
-        opciones: ["No tiene problema con relacionarse", "Regular", "Discute o pelea con ellos", "No se relaciona"],
+        opciones: [
+          "No tiene problema con relacionarse",
+          "Regular",
+          "Discute o pelea con ellos",
+          "No se relaciona",
+        ],
       },
       {
         texto: "¿Hace amigos con facilidad?",
         tipoRespuesta: "frecuencia",
-        opciones: ["Sí, sin problemas", "A veces si, y a veces no", "Le cuesta un poco", "Nunca"],
+        opciones: [
+          "Sí, sin problemas",
+          "A veces si, y a veces no",
+          "Le cuesta un poco",
+          "Nunca",
+        ],
       },
       {
         texto: "¿Cómo se relaciona con los niños de otro sexo?",
         tipoRespuesta: "relacion",
-        opciones: ["Muy bien", "Raras veces se relaciona", "Prefiere jugar solo", "Tiene dificultades"],
+        opciones: [
+          "Muy bien",
+          "Raras veces se relaciona",
+          "Prefiere jugar solo",
+          "Tiene dificultades",
+        ],
       },
       {
         texto: "¿Se mete frecuentemente en peleas?",
         tipoRespuesta: "frecuencia",
-        opciones: ["Nunca", "A veces", "Cuando lo molestan o insultan", "Con frecuencia"],
+        opciones: [
+          "Nunca",
+          "A veces",
+          "Cuando lo molestan o insultan",
+          "Con frecuencia",
+        ],
       },
       {
         texto: "¿Sobre qué aspectos de la vida pregunta con mayor frecuencia?",
         tipoRespuesta: "frecuencia",
-        opciones: ["El futuro", "Lo que observa", "Sexualidad", "Familiares, Amigos, o personas" ],
+        opciones: [
+          "El futuro",
+          "Lo que observa",
+          "Sexualidad",
+          "Familiares, Amigos, o personas",
+        ],
       },
       {
         texto: "¿Qué tan bien se baña, se viste, come y duerme actualmente?",
@@ -106,7 +147,7 @@ export const seccionesEntrevista = [
           "Mirar television o usar pantallas",
           "Dibujar, pintar o hacer manualidades",
           "Ayudar en las tareas de la casa",
-        ]
+        ],
       },
       {
         texto: "¿Qué actividades no le gusta realizar?",
@@ -116,19 +157,18 @@ export const seccionesEntrevista = [
           "Recoger y ordenar sus juguetes",
           "Comer alimentos saludables (verduras, frutas)",
           "Despertarse temprano para la escuela",
-        ]
+        ],
       },
       {
-          texto: "¿Qué tipo de deportes le gustan?",
-          tipoRespuesta: "autonomia",
-          opciones: [
-            "Fútbol, Básquetbol, Vóleibol, Natación o Gimnasia",
-            "Taekwondo, Boxeo, Ajedrez, Skate o Patinaje ",
-            "Prefiere juegos físicos libres (correr, saltar, atrapadas)",
-            "No le gusta practicar ningún deporte",
-
-          ]
-        },
+        texto: "¿Qué tipo de deportes le gustan?",
+        tipoRespuesta: "autonomia",
+        opciones: [
+          "Fútbol, Básquetbol, Vóleibol, Natación o Gimnasia",
+          "Taekwondo, Boxeo, Ajedrez, Skate o Patinaje ",
+          "Prefiere juegos físicos libres (correr, saltar, atrapadas)",
+          "No le gusta practicar ningún deporte",
+        ],
+      },
       {
         texto: "¿Qué programas de televisión o contenido audiovisual mira?",
         tipoRespuesta: "autonomia",
@@ -137,7 +177,7 @@ export const seccionesEntrevista = [
           "Videos de YouTubers o Videojuegos",
           "Películas, Series de acción o documentales",
           "No ve televisión ni contenidos audiovisuales",
-        ]
+        ],
       },
     ],
   },
@@ -153,48 +193,48 @@ export const seccionesEntrevista = [
           "Estar en casa tranquilo",
           "Los videojuegos",
           "Destacar en la escuela, tener buenas notas",
-        ]
+        ],
       },
       {
         texto: "¿Qué situaciones suelen poner triste a su hijo?",
         tipoRespuesta: "estado",
-        opciones:[
+        opciones: [
           "Sentirse rechazado",
           "Estar aburrido, solo o cuando le quiten las pantallas",
           "Peleas familiares",
           "No obtener buenos resultados",
-        ]
+        ],
       },
       {
         texto:
           "¿Qué situaciones suelen hacer que su hijo se enoje o se frustre?",
         tipoRespuesta: "autonomia",
-        opciones:[
+        opciones: [
           "Cuando se le imponen límites o reglas",
           "Tener que dejar sus actividades favoritas por obligaciones",
           "El aburrimiento o no usar tecnología",
           "No poder resolver un problema, tarea o reto por sí mismo",
-        ]
+        ],
       },
       {
         texto: "¿Qué cosas le ocasionan miedo?",
         tipoRespuesta: "frecuencia",
-        opciones:[
+        opciones: [
           "La oscuridad, tormentas, monstruos o animales",
           "Las burlas, críticas o el rechazo",
           "Separarse de su familia",
           "El entorno escolar",
-        ]
+        ],
       },
       {
         texto: "Cuando tiene un problema, ¿a quién busca para sentirse mejor?",
         tipoRespuesta: "relacion",
-        opciones:[
+        opciones: [
           "A sus padres",
           "Hermanos o familiares",
           "A maestros",
           "A nadie, se aísla",
-        ]
+        ],
       },
       {
         texto: "¿Ha notado que prefiere estar solo/a más de lo habitual?",

@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -32,7 +41,8 @@ const OPCIONES_EDAD = [
 
 export default function RangoEdadPantalla() {
   const router = useRouter();
-  const [opcionSeleccionada, setOpcionSeleccionada] = useState<RangoEdad | null>(null);
+  const [opcionSeleccionada, setOpcionSeleccionada] =
+    useState<RangoEdad | null>(null);
   const [cargando, setCargando] = useState(false);
 
   const manejarContinuar = async () => {
@@ -51,7 +61,7 @@ export default function RangoEdadPantalla() {
       const entrevista = await crearEntrevista();
 
       router.replace(
-        `/(entrevista)/jovenes-adultos/${entrevista.id_entrevista}/generales`
+        `/(entrevista)/jovenes-adultos/${entrevista.id_entrevista}/generales`,
       );
     } catch (error) {
       console.error("Error creando entrevista:", error);
@@ -69,7 +79,10 @@ export default function RangoEdadPantalla() {
 
   return (
     <SafeAreaView style={styles.pantalla}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.contenedor}>
           <View style={styles.cabecera}>
             <Logo />
@@ -78,7 +91,8 @@ export default function RangoEdadPantalla() {
           <View style={styles.seccionTitulo}>
             <Text style={styles.titulo}>¿Cuál es tu rango de edad?</Text>
             <Text style={styles.subtitulo}>
-              Esto nos ayuda a ofrecerte una experiencia adaptada a tu etapa de vida.
+              Esto nos ayuda a ofrecerte una experiencia adaptada a tu etapa de
+              vida.
             </Text>
           </View>
 
@@ -92,13 +106,22 @@ export default function RangoEdadPantalla() {
                   activeOpacity={0.8}
                   disabled={cargando}
                   onPress={() => setOpcionSeleccionada(opcion.id)}
-                  style={[styles.tarjeta, seleccionada && styles.tarjetaSeleccionada]}
+                  style={[
+                    styles.tarjeta,
+                    seleccionada && styles.tarjetaSeleccionada,
+                  ]}
                 >
-                  <Image source={opcion.imagen} style={styles.imagenOpcion} resizeMode="contain" />
+                  <Image
+                    source={opcion.imagen}
+                    style={styles.imagenOpcion}
+                    resizeMode="contain"
+                  />
 
                   <View style={styles.infoTexto}>
                     <Text style={styles.tituloOpcion}>{opcion.titulo}</Text>
-                    <Text style={styles.subtituloOpcion}>{opcion.subtitulo}</Text>
+                    <Text style={styles.subtituloOpcion}>
+                      {opcion.subtitulo}
+                    </Text>
                   </View>
                 </TouchableOpacity>
               );
@@ -107,7 +130,11 @@ export default function RangoEdadPantalla() {
 
           <View style={styles.zonaBoton}>
             {cargando && (
-              <ActivityIndicator size="small" color="#4F8EF7" style={styles.cargando} />
+              <ActivityIndicator
+                size="small"
+                color="#4F8EF7"
+                style={styles.cargando}
+              />
             )}
 
             <Button
@@ -130,13 +157,32 @@ export default function RangoEdadPantalla() {
 const styles = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: "transparent" },
   scroll: { flexGrow: 1 },
-  contenedor: { flex: 1, paddingHorizontal: 20, paddingTop: 15, paddingBottom: 30 },
+  contenedor: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 15,
+    paddingBottom: 30,
+  },
 
   cabecera: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
 
   seccionTitulo: { alignItems: "center", marginTop: 15, marginBottom: 25 },
-  titulo: { fontSize: 34, lineHeight: 42, fontFamily: "Nunito-Bold", color: "#4F8EF7", textAlign: "center", marginBottom: 12 },
-  subtitulo: { fontSize: 17, lineHeight: 24, fontFamily: "Nunito-Medium", color: "#5B7083", textAlign: "center", paddingHorizontal: 15 },
+  titulo: {
+    fontSize: 34,
+    lineHeight: 42,
+    fontFamily: "Nunito-Bold",
+    color: "#4F8EF7",
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  subtitulo: {
+    fontSize: 17,
+    lineHeight: 24,
+    fontFamily: "Nunito-Medium",
+    color: "#5B7083",
+    textAlign: "center",
+    paddingHorizontal: 15,
+  },
 
   contenedorTarjetas: { gap: 18, marginBottom: 35 },
 
@@ -160,11 +206,25 @@ const styles = StyleSheet.create({
   tarjetaSeleccionada: { borderColor: "#4F8EF7", backgroundColor: "#F0F5FF" },
   imagenOpcion: { width: 65, height: 70, marginRight: 16 },
   infoTexto: { flex: 1 },
-  tituloOpcion: { fontSize: 20, fontFamily: "Nunito-Bold", color: "#2D3748", marginBottom: 4 },
-  subtituloOpcion: { fontSize: 16, fontFamily: "Nunito-Medium", color: "#64748B" },
+  tituloOpcion: {
+    fontSize: 20,
+    fontFamily: "Nunito-Bold",
+    color: "#2D3748",
+    marginBottom: 4,
+  },
+  subtituloOpcion: {
+    fontSize: 16,
+    fontFamily: "Nunito-Medium",
+    color: "#64748B",
+  },
 
   zonaBoton: { marginTop: "auto" },
   cargando: { marginBottom: 10 },
-  botonContinuar: { height: 56, borderRadius: 16, backgroundColor: "#4F8EF7", marginBottom: 20 },
+  botonContinuar: {
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: "#4F8EF7",
+    marginBottom: 20,
+  },
   botonDeshabilitado: { opacity: 0.6 },
 });

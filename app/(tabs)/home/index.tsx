@@ -1,15 +1,6 @@
-import {
-  Ionicons,
-} from "@expo/vector-icons";
-
-import {
-  useTheme,
-} from "@react-navigation/native";
-
-import {
-  useRouter,
-} from "expo-router";
-
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import React from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,8 +13,16 @@ import { useResumenBienestar } from "@/hooks/useResumenBienestar";
 
 // COLORES VISUALES DE RECOMENDACIONES
 const COLORES_RECOMENDACION = [
-  { fondoClaro: "bg-purple-100", fondoOscuro: "bg-purple-950", icono: "#8B5CF6" },
-  { fondoClaro: "bg-emerald-100", fondoOscuro: "bg-emerald-950", icono: "#10B981" },
+  {
+    fondoClaro: "bg-purple-100",
+    fondoOscuro: "bg-purple-950",
+    icono: "#8B5CF6",
+  },
+  {
+    fondoClaro: "bg-emerald-100",
+    fondoOscuro: "bg-emerald-950",
+    icono: "#10B981",
+  },
   { fondoClaro: "bg-blue-100", fondoOscuro: "bg-blue-950", icono: "#4F8EF7" },
   { fondoClaro: "bg-amber-100", fondoOscuro: "bg-amber-950", icono: "#F59E0B" },
 ];
@@ -91,7 +90,6 @@ export default function HomeScreen() {
               >
                 5
               </Text>
-
               <Text
                 style={{
                   marginLeft: 4,
@@ -116,9 +114,7 @@ export default function HomeScreen() {
                     alignItems: "center",
                     justifyContent: "center",
                     backgroundColor:
-                      index < 5
-                        ? "#7BBF9A"
-                        : "rgba(255,255,255,0.22)",
+                      index < 5 ? "#7BBF9A" : "rgba(255,255,255,0.22)",
                   }}
                 >
                   <Text
@@ -193,7 +189,6 @@ export default function HomeScreen() {
               >
                 Mi Progreso
               </Text>
-
               <Text
                 numberOfLines={2}
                 style={{
@@ -220,46 +215,27 @@ export default function HomeScreen() {
           <TarjetaModulo
             titulo="Nuevo Registro en Diario"
             nombreIcono="book-outline"
-            onPress={() =>
-              router.push({
-                pathname: "/diario/nuevo" as never,
-                params: {
-                  origen: "home",
-                },
-              })
-            }
+            onPress={() => router.push("/(tabs)/diario")}
           />
-
           <TarjetaModulo
             titulo="Cuestionarios"
             nombreIcono="document-text-outline"
-            onPress={() =>
-              router.push("/(tabs)/cuestionarios")
-            }
+            onPress={() => router.push("/(tabs)/cuestionarios")}
           />
-
           <TarjetaModulo
             titulo="Ir a Foro Comunitario"
             nombreIcono="megaphone-outline"
-            onPress={() =>
-              router.push("/(tabs)/foro")
-            }
+            onPress={() => router.push("/(tabs)/foro")}
           />
-
           <TarjetaModulo
             titulo="Entrevista de Bienestar"
             nombreIcono="heart-outline"
-            onPress={() =>
-              router.push("/(tabs)/entrevistas")
-            }
+            onPress={() => router.push("/(tabs)/entrevistas")}
           />
-
           <TarjetaModulo
             titulo="Técnicas Complementarias"
             nombreIcono="clipboard-outline"
-            onPress={() =>
-              router.push("/(tabs)/tecnicas")
-            }
+            onPress={() => router.push("/(tabs)/tecnicas")}
           />
         </View>
 
@@ -276,69 +252,57 @@ export default function HomeScreen() {
               Plan recomendado
             </Text>
 
-            {resumen?.id_entrevista &&
-              resumen.actividades.length > 0 && (
-                <TouchableOpacity
-                  onPress={() =>
-                    router.push({
-                      pathname:
-                        "/(tabs)/entrevistas/[id]/plan",
-                      params: {
-                        id: resumen.id_entrevista,
-                      },
-                    })
-                  }
+            {resumen?.id_entrevista && resumen.actividades.length > 0 && (
+              <TouchableOpacity
+                onPress={() =>
+                  router.push({
+                    pathname: "/(tabs)/entrevistas/[id]/plan",
+                    params: { id: resumen.id_entrevista },
+                  })
+                }
+              >
+                <Text
+                  style={{
+                    fontFamily: "Nunito-SemiBold",
+                    fontSize: 12,
+                    color: primaryColor,
+                  }}
                 >
-                  <Text
-                    style={{
-                      fontFamily: "Nunito-SemiBold",
-                      fontSize: 12,
-                      color: primaryColor,
-                    }}
-                  >
-                    Ver más
-                  </Text>
-                </TouchableOpacity>
-              )}
+                  Ver más
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* RECOMENDACIONES */}
           {resumen?.actividades?.length ? (
-            resumen.actividades
-              .slice(0, 4)
-              .map((actividad, index) => {
-                const color =
-                  COLORES_RECOMENDACION[
-                    index % COLORES_RECOMENDACION.length
-                  ];
+            resumen.actividades.slice(0, 4).map((actividad, index) => {
+              const color =
+                COLORES_RECOMENDACION[index % COLORES_RECOMENDACION.length];
+              const fondoRecomendacion = isDarkMode
+                ? color.fondoOscuro
+                : color.fondoClaro;
 
-                const fondoRecomendacion = isDarkMode
-                  ? color.fondoOscuro
-                  : color.fondoClaro;
-
-                return (
-                  <TarjetaRecomendacion
-                    key={actividad.codigo}
-                    titulo={actividad.titulo}
-                    descripcion={actividad.descripcion}
-                    nombreIcono={
-                      actividad.icono as keyof typeof Ionicons.glyphMap
-                    }
-                    colorFondo={fondoRecomendacion}
-                    colorIcono={color.icono}
-                    colorTextoFlecha={color.icono}
-                    onPress={() =>
-                      router.push({
-                        pathname:
-                          "/(tabs)/entrevistas/[id]/plan",
-                        params: {
-                          id: resumen.id_entrevista,
-                        },
-                      })
-                    }
-                  />
-                );
-              })
+              return (
+                <TarjetaRecomendacion
+                  key={actividad.codigo}
+                  titulo={actividad.titulo}
+                  descripcion={actividad.descripcion}
+                  nombreIcono={
+                    actividad.icono as keyof typeof Ionicons.glyphMap
+                  }
+                  colorFondo={fondoRecomendacion}
+                  colorIcono={color.icono}
+                  colorTextoFlecha={color.icono}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(tabs)/entrevistas/[id]/plan",
+                      params: { id: resumen.id_entrevista },
+                    })
+                  }
+                />
+              );
+            })
           ) : (
             <TarjetaRecomendacion
               titulo="Realiza tu entrevista de bienestar"

@@ -1,133 +1,60 @@
 import React from "react";
 
-import {
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import {
-  useRouter,
-} from "expo-router";
+import { useRouter } from "expo-router";
 
-import {
-  SafeAreaView,
-} from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import Button from "@/components/ui/Button";
 import Logo from "@/components/ui/Logo_izq";
 
-import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
-
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 // ==========================================================
 // PANTALLA
 // ==========================================================
 
 export default function BienvenidaEntrevista() {
-
-  const router =
-    useRouter();
-
+  const router = useRouter();
 
   // ========================================================
   // COLORES DEL TEMA
   // ========================================================
 
-  const backgroundColor =
-    useThemeColor(
-      {},
-      "background"
-    );
+  const backgroundColor = useThemeColor({}, "background");
 
+  const surfaceColor = useThemeColor({}, "surface");
 
-  const surfaceColor =
-    useThemeColor(
-      {},
-      "surface"
-    );
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
+  const borderColor = useThemeColor({}, "border");
 
-  const surfaceSecondaryColor =
-    useThemeColor(
-      {},
-      "surfaceSecondary"
-    );
+  const dividerColor = useThemeColor({}, "divider");
 
+  const textColor = useThemeColor({}, "text");
 
-  const borderColor =
-    useThemeColor(
-      {},
-      "border"
-    );
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
 
+  const textMutedColor = useThemeColor({}, "textMuted");
 
-  const dividerColor =
-    useThemeColor(
-      {},
-      "divider"
-    );
+  const primaryColor = useThemeColor({}, "primary");
 
-
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
-
-
-  const textSecondaryColor =
-    useThemeColor(
-      {},
-      "textSecondary"
-    );
-
-
-  const textMutedColor =
-    useThemeColor(
-      {},
-      "textMuted"
-    );
-
-
-  const primaryColor =
-    useThemeColor(
-      {},
-      "primary"
-    );
-
-
-  const primarySoftColor =
-    useThemeColor(
-      {},
-      "primarySoft"
-    );
-
+  const primarySoftColor = useThemeColor({}, "primarySoft");
 
   // ========================================================
   // NAVEGACIÓN
   // ========================================================
 
-  const continuar =
-    () => {
-
-      router.push(
-        "/(entrevista)/rango_edad"
-      );
-
-    };
-
+  const continuar = () => {
+    router.push("/(entrevista)/rango_edad");
+  };
 
   // ========================================================
   // UI
   // ========================================================
 
   return (
-
     <SafeAreaView
       style={[
         styles.pantalla,
@@ -137,77 +64,45 @@ export default function BienvenidaEntrevista() {
         },
       ]}
     >
-
       <ScrollView
-        contentContainerStyle={
-          styles.scroll
-        }
+        contentContainerStyle={styles.scroll}
 
-        showsVerticalScrollIndicator={
-          false
-        }
+        showsVerticalScrollIndicator={false}
       >
-
-        <View
-          style={
-            styles.contenedor
-          }
-        >
-
+        <View style={styles.contenedor}>
           {/* =================================================
               CABECERA
           ================================================= */}
 
-          <View
-            style={
-              styles.cabecera
-            }
-          >
-
+          <View style={styles.cabecera}>
             <Logo />
-
           </View>
-
 
           {/* =================================================
               CONTENIDO
           ================================================= */}
 
-          <View
-            style={
-              styles.contenido
-            }
-          >
-
+          <View style={styles.contenido}>
             <View
               style={[
                 styles.tarjeta,
 
                 {
-                  backgroundColor:
-                    surfaceColor,
+                  backgroundColor: surfaceColor,
 
                   borderColor,
                 },
               ]}
             >
-
               {/* Mascota */}
 
               <Image
-                source={
-                  require(
-                    "@/assets/images/mascota.png"
-                  )
-                }
+                source={require("@/assets/images/mascota.png")}
 
-                style={
-                  styles.mascota
-                }
+                style={styles.mascota}
 
                 resizeMode="contain"
               />
-
 
               {/* Etiqueta */}
 
@@ -216,27 +111,22 @@ export default function BienvenidaEntrevista() {
                   styles.etiqueta,
 
                   {
-                    backgroundColor:
-                      primarySoftColor,
+                    backgroundColor: primarySoftColor,
                   },
                 ]}
               >
-
                 <Text
                   style={[
                     styles.textoEtiqueta,
 
                     {
-                      color:
-                        primaryColor,
+                      color: primaryColor,
                     },
                   ]}
                 >
                   Tu espacio de bienestar
                 </Text>
-
               </View>
-
 
               {/* Título */}
 
@@ -245,14 +135,12 @@ export default function BienvenidaEntrevista() {
                   styles.titulo,
 
                   {
-                    color:
-                      textColor,
+                    color: textColor,
                   },
                 ]}
               >
                 Tu bienestar emocional comienza con un pequeño paso.
               </Text>
-
 
               {/* Descripción */}
 
@@ -261,32 +149,28 @@ export default function BienvenidaEntrevista() {
                   styles.descripcion,
 
                   {
-                    color:
-                      textSecondaryColor,
+                    color: textSecondaryColor,
                   },
                 ]}
               >
-                Nos alegra que hayas decidido dedicar un momento para cuidar de ti.
-                En Kiri encontrarás un espacio seguro donde podrás comprender mejor
-                tus emociones, fortalecer hábitos saludables y descubrir herramientas
-                que te acompañen en tu bienestar.
+                Nos alegra que hayas decidido dedicar un momento para cuidar de
+                ti. En Kiri encontrarás un espacio seguro donde podrás
+                comprender mejor tus emociones, fortalecer hábitos saludables y
+                descubrir herramientas que te acompañen en tu bienestar.
               </Text>
-
 
               <Text
                 style={[
                   styles.descripcion,
 
                   {
-                    color:
-                      textSecondaryColor,
+                    color: textSecondaryColor,
                   },
                 ]}
               >
-                Antes de comenzar, queremos conocerte un poco más para ofrecerte una
-                experiencia adaptada a tu etapa de vida.
+                Antes de comenzar, queremos conocerte un poco más para ofrecerte
+                una experiencia adaptada a tu etapa de vida.
               </Text>
-
 
               {/* Información */}
 
@@ -295,54 +179,38 @@ export default function BienvenidaEntrevista() {
                   styles.informacion,
 
                   {
-                    backgroundColor:
-                      surfaceSecondaryColor,
+                    backgroundColor: surfaceSecondaryColor,
 
                     borderColor,
                   },
                 ]}
               >
-
-                <Text
-                  style={
-                    styles.iconoInformacion
-                  }
-                >
-                  💙
-                </Text>
-
+                <Text style={styles.iconoInformacion}>💙</Text>
 
                 <Text
                   style={[
                     styles.textoInformacion,
 
                     {
-                      color:
-                        textSecondaryColor,
+                      color: textSecondaryColor,
                     },
                   ]}
                 >
-
                   <Text
                     style={[
                       styles.negrita,
 
                       {
-                        color:
-                          textColor,
+                        color: textColor,
                       },
                     ]}
                   >
                     Recuerda:{" "}
                   </Text>
-
-                  no buscamos juzgarte ni diagnosticarte; queremos acompañarte en el
-                  camino hacia un mayor bienestar.
-
+                  no buscamos juzgarte ni diagnosticarte; queremos acompañarte
+                  en el camino hacia un mayor bienestar.
                 </Text>
-
               </View>
-
 
               {/* Privacidad */}
 
@@ -351,242 +219,214 @@ export default function BienvenidaEntrevista() {
                   styles.privacidad,
 
                   {
-                    borderTopColor:
-                      dividerColor,
+                    borderTopColor: dividerColor,
                   },
                 ]}
               >
-
                 <Text
                   style={[
                     styles.privacidadTitulo,
 
                     {
-                      color:
-                        textColor,
+                      color: textColor,
                     },
                   ]}
                 >
                   Tu información es importante
                 </Text>
 
-
                 <Text
                   style={[
                     styles.privacidadTexto,
 
                     {
-                      color:
-                        textMutedColor,
+                      color: textMutedColor,
                     },
                   ]}
                 >
                   Responde con tranquilidad y de la manera más sincera posible.
                 </Text>
-
               </View>
-
             </View>
-
           </View>
-
 
           {/* =================================================
               BOTÓN
           ================================================= */}
 
-          <View
-            style={
-              styles.zonaBoton
-            }
-          >
-
+          <View style={styles.zonaBoton}>
             <Button
               title="Continuar  ➔"
               variant="primary"
-              onPress={
-                continuar
-              }
-              style={
-                styles.boton
-              }
+              onPress={continuar}
+              style={styles.boton}
             />
-
           </View>
-
         </View>
-
       </ScrollView>
-
     </SafeAreaView>
-
   );
-
 }
-
 
 // ==========================================================
 // ESTILOS
 // ==========================================================
 
-const styles =
-  StyleSheet.create({
+const styles = StyleSheet.create({
+  pantalla: {
+    flex: 1,
+  },
 
-    pantalla: {
-      flex: 1,
+  scroll: {
+    flexGrow: 1,
+  },
+
+  contenedor: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 30,
+  },
+
+  cabecera: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+
+  contenido: {
+    flex: 1,
+    justifyContent: "center",
+  },
+
+  tarjeta: {
+    borderRadius: 26,
+    paddingHorizontal: 25,
+    paddingTop: 34,
+    paddingBottom: 26,
+
+    borderWidth: 1,
+
+    position: "relative",
+
+    shadowColor: "#000000",
+
+    shadowOffset: {
+      width: 0,
+      height: 5,
     },
 
-    scroll: {
-      flexGrow: 1,
-    },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
 
-    contenedor: {
-      flex: 1,
-      paddingHorizontal: 20,
-      paddingTop: 12,
-      paddingBottom: 30,
-    },
+    elevation: 4,
+  },
 
-    cabecera: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: 12,
-    },
+  mascota: {
+    position: "absolute",
 
-    contenido: {
-      flex: 1,
-      justifyContent: "center",
-    },
+    width: 100,
+    height: 130,
 
-    tarjeta: {
-      borderRadius: 26,
-      paddingHorizontal: 25,
-      paddingTop: 34,
-      paddingBottom: 26,
+    right: 4,
+    top: -50,
+  },
 
-      borderWidth: 1,
+  etiqueta: {
+    alignSelf: "flex-start",
 
-      position: "relative",
+    paddingHorizontal: 13,
+    paddingVertical: 7,
 
-      shadowColor: "#000000",
+    borderRadius: 20,
 
-      shadowOffset: {
-        width: 0,
-        height: 5,
-      },
+    marginBottom: 17,
+  },
 
-      shadowOpacity: 0.1,
-      shadowRadius: 12,
+  textoEtiqueta: {
+    fontSize: 13,
+    fontFamily: "Nunito-Bold",
+  },
 
-      elevation: 4,
-    },
+  titulo: {
+    maxWidth: "85%",
 
-    mascota: {
-      position: "absolute",
+    fontSize: 27,
+    lineHeight: 34,
 
-      width: 100,
-      height: 130,
+    fontFamily: "Nunito-Bold",
 
-      right: 4,
-      top: -50,
-    },
+    marginBottom: 20,
+  },
 
-    etiqueta: {
-      alignSelf: "flex-start",
+  descripcion: {
+    fontSize: 16,
+    lineHeight: 24,
 
-      paddingHorizontal: 13,
-      paddingVertical: 7,
+    fontFamily: "Nunito-Medium",
 
-      borderRadius: 20,
+    marginBottom: 14,
+  },
 
-      marginBottom: 17,
-    },
+  informacion: {
+    flexDirection: "row",
 
-    textoEtiqueta: {
-      fontSize: 13,
-      fontFamily: "Nunito-Bold",
-    },
+    borderRadius: 18,
 
-    titulo: {
-      maxWidth: "85%",
+    borderWidth: 1,
 
-      fontSize: 27,
-      lineHeight: 34,
+    paddingHorizontal: 15,
+    paddingVertical: 15,
 
-      fontFamily: "Nunito-Bold",
+    marginTop: 8,
+  },
 
-      marginBottom: 20,
-    },
+  iconoInformacion: {
+    fontSize: 18,
+    marginRight: 10,
+  },
 
-    descripcion: {
-      fontSize: 16,
-      lineHeight: 24,
+  textoInformacion: {
+    flex: 1,
 
-      fontFamily: "Nunito-Medium",
+    fontSize: 14,
+    lineHeight: 21,
 
-      marginBottom: 14,
-    },
+    fontFamily: "Nunito-Medium",
+  },
 
-    informacion: {
-      flexDirection: "row",
+  negrita: {
+    fontFamily: "Nunito-Bold",
+  },
 
-      borderRadius: 18,
+  privacidad: {
+    borderTopWidth: 1,
 
-      borderWidth: 1,
+    marginTop: 20,
+    paddingTop: 17,
+  },
 
-      paddingHorizontal: 15,
-      paddingVertical: 15,
+  privacidadTitulo: {
+    fontSize: 14,
 
-      marginTop: 8,
-    },
+    fontFamily: "Nunito-Bold",
 
-    iconoInformacion: {
-      fontSize: 18,
-      marginRight: 10,
-    },
+    marginBottom: 4,
+  },
 
-    textoInformacion: {
-      flex: 1,
+  privacidadTexto: {
+    fontSize: 13,
+    lineHeight: 19,
 
-      fontSize: 14,
-      lineHeight: 21,
+    fontFamily: "Nunito-Medium",
+  },
 
-      fontFamily: "Nunito-Medium",
-    },
+  zonaBoton: {
+    marginTop: 25,
+  },
 
-    negrita: {
-      fontFamily: "Nunito-Bold",
-    },
-
-    privacidad: {
-      borderTopWidth: 1,
-
-      marginTop: 20,
-      paddingTop: 17,
-    },
-
-    privacidadTitulo: {
-      fontSize: 14,
-
-      fontFamily: "Nunito-Bold",
-
-      marginBottom: 4,
-    },
-
-    privacidadTexto: {
-      fontSize: 13,
-      lineHeight: 19,
-
-      fontFamily: "Nunito-Medium",
-    },
-
-    zonaBoton: {
-      marginTop: 25,
-    },
-
-    boton: {
-      height: 56,
-      borderRadius: 16,
-    },
-
-  });
+  boton: {
+    height: 56,
+    borderRadius: 16,
+  },
+});

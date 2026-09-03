@@ -16,7 +16,7 @@ import {
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { seccionesEntrevista } from "./preguntas_kids";
+import { seccionesEntrevista } from "../../../constants/preguntas_kids";
 
 // Mostramos solamente una pregunta en cada pantalla.
 const PREGUNTAS_POR_PANTALLA = 1;
