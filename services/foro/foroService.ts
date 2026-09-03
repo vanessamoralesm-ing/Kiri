@@ -1,6 +1,4 @@
-import {
-    supabase,
-} from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 import type {
     ComentarioForo,
@@ -25,32 +23,15 @@ import type {
 // ==========================================================
 
 const TABLAS = {
-    usuario:
-        "usuario",
-
-    publicacion:
-        "publicacion",
-
-    comentario:
-        "comentario",
-
-    reaccion:
-        "reaccion",
-
-    emocion:
-        "emocion_foro",
-
-    publicacionEmocion:
-        "publicacion_emocion_foro",
-
-    reporte:
-        "reporte",
-
-    preguntaSemana:
-        "pregunta_semana",
-
-    respuestaPreguntaSemana:
-        "respuesta_pregunta_semana",
+    usuario: "usuario",
+    publicacion: "publicacion",
+    comentario: "comentario",
+    reaccion: "reaccion",
+    emocion: "emocion_foro",
+    publicacionEmocion: "publicacion_emocion_foro",
+    reporte: "reporte",
+    preguntaSemana: "pregunta_semana",
+    respuestaPreguntaSemana: "respuesta_pregunta_semana",
 } as const;
 
 
@@ -58,27 +39,15 @@ const TABLAS = {
 // STORAGE
 // ==========================================================
 
-/*
- * IMPORTANTE:
- *
- * Cambia "avatars" únicamente si tu bucket
- * de Supabase Storage tiene otro nombre.
- */
-
-const BUCKET_FOTO_PERFIL =
-    "avatars";
+const BUCKET_FOTO_PERFIL = "avatars";
 
 
 // ==========================================================
 // HELPERS
 // ==========================================================
 
-function limpiarTexto(
-    valor: string
-): string {
-
+function limpiarTexto(valor: string): string {
     return valor.trim();
-
 }
 
 
@@ -89,107 +58,47 @@ function quitarDuplicados(
     return [
         ...new Set(
             valores.filter(
-                valor =>
-                    Boolean(
-                        valor
-                    )
+                (valor) => Boolean(valor)
             )
         ),
     ];
-
 }
 
 
 // ==========================================================
-// OBTENER URL DE FOTO DE PERFIL
+// FOTO DE PERFIL
 // ==========================================================
 
 function obtenerUrlFotoPerfil(
-    ruta:
-        string |
-        null |
-        undefined
+    ruta: string | null | undefined
 ): string | null {
 
-    if (
-        !ruta
-    ) {
-
+    if (!ruta) {
         return null;
-
     }
 
+    const rutaLimpia = ruta.trim();
 
-    const rutaLimpia =
-        ruta.trim();
-
-
-    if (
-        !rutaLimpia
-    ) {
-
+    if (!rutaLimpia) {
         return null;
-
     }
 
-
-    // ========================================================
-    // YA ES UNA URL COMPLETA
-    // ========================================================
-
     if (
-        rutaLimpia.startsWith(
-            "http://"
-        ) ||
-        rutaLimpia.startsWith(
-            "https://"
-        )
+        rutaLimpia.startsWith("http://") ||
+        rutaLimpia.startsWith("https://")
     ) {
-
         return rutaLimpia;
-
     }
-
-
-    // ========================================================
-    // QUITAR "/" AL INICIO
-    // ========================================================
 
     const rutaStorage =
-        rutaLimpia.replace(
-            /^\/+/,
-            ""
-        );
+        rutaLimpia.replace(/^\/+/, "");
 
+    const { data } =
+        supabase.storage
+            .from(BUCKET_FOTO_PERFIL)
+            .getPublicUrl(rutaStorage);
 
-    // ========================================================
-    // GENERAR URL PÚBLICA
-    // ========================================================
-
-    const {
-        data,
-    } =
-        supabase
-            .storage
-            .from(
-                BUCKET_FOTO_PERFIL
-            )
-            .getPublicUrl(
-                rutaStorage
-            );
-
-
-    if (
-        !data?.publicUrl
-    ) {
-
-        return null;
-
-    }
-
-
-    return data.publicUrl;
-
+    return data?.publicUrl ?? null;
 }
 
 
@@ -202,35 +111,18 @@ async function obtenerUsuariosPorIds(
 ): Promise<Map<string, UsuarioForo>> {
 
     const ids =
-        quitarDuplicados(
-            idsUsuarios
-        );
-
+        quitarDuplicados(idsUsuarios);
 
     const mapa =
-        new Map<
-            string,
-            UsuarioForo
-        >();
+        new Map<string, UsuarioForo>();
 
-
-    if (
-        ids.length === 0
-    ) {
-
+    if (ids.length === 0) {
         return mapa;
-
     }
 
-
-    const {
-        data,
-        error,
-    } =
+    const { data, error } =
         await supabase
-            .from(
-                TABLAS.usuario
-            )
+            .from(TABLAS.usuario)
             .select(`
                 id_usuario,
                 nombres,
@@ -238,67 +130,37 @@ async function obtenerUsuariosPorIds(
                 nombre_preferido,
                 foto_perfil
             `)
-            .in(
-                "id_usuario",
-                ids
-            );
+            .in("id_usuario", ids);
 
-
-    if (
-        error
-    ) {
-
+    if (error) {
         console.error(
             "Error obteniendo usuarios del foro:",
             error
         );
 
-
         throw new Error(
             "No se pudieron cargar los usuarios del foro."
         );
-
     }
 
+    (data ?? []).forEach((usuario) => {
 
-    (
-        data ??
-        []
-    ).forEach(
-        usuario => {
-
-            const fotoPerfil =
-                obtenerUrlFotoPerfil(
-                    usuario.foto_perfil
-                );
-
-
-            mapa.set(
-                usuario.id_usuario,
-                {
-                    id_usuario:
-                        usuario.id_usuario,
-
-                    nombres:
-                        usuario.nombres,
-
-                    apellidos:
-                        usuario.apellidos,
-
-                    nombre_preferido:
-                        usuario.nombre_preferido,
-
-                    foto_perfil:
-                        fotoPerfil,
-                }
-            );
-
-        }
-    );
-
+        mapa.set(
+            usuario.id_usuario,
+            {
+                id_usuario: usuario.id_usuario,
+                nombres: usuario.nombres,
+                apellidos: usuario.apellidos,
+                nombre_preferido: usuario.nombre_preferido,
+                foto_perfil:
+                    obtenerUrlFotoPerfil(
+                        usuario.foto_perfil
+                    ),
+            }
+        );
+    });
 
     return mapa;
-
 }
 
 
@@ -307,16 +169,11 @@ async function obtenerUsuariosPorIds(
 // ==========================================================
 
 export async function obtenerEmocionesActivas():
-    Promise<EmocionForo[]> {
+Promise<EmocionForo[]> {
 
-    const {
-        data,
-        error,
-    } =
+    const { data, error } =
         await supabase
-            .from(
-                TABLAS.emocion
-            )
+            .from(TABLAS.emocion)
             .select(`
                 id_emocion_foro,
                 nombre,
@@ -324,41 +181,23 @@ export async function obtenerEmocionesActivas():
                 estado,
                 fecha_registro
             `)
-            .eq(
-                "estado",
-                true
-            )
-            .order(
-                "nombre",
-                {
-                    ascending:
-                        true,
-                }
-            );
+            .eq("estado", true)
+            .order("nombre", {
+                ascending: true,
+            });
 
-
-    if (
-        error
-    ) {
-
+    if (error) {
         console.error(
             "Error obteniendo emociones del foro:",
             error
         );
 
-
         throw new Error(
             "No se pudieron cargar las emociones del foro."
         );
-
     }
 
-
-    return (
-        data ??
-        []
-    ) as EmocionForo[];
-
+    return (data ?? []) as EmocionForo[];
 }
 
 
@@ -371,95 +210,56 @@ async function obtenerEmocionesDePublicaciones(
 ): Promise<Map<string, EmocionForo[]>> {
 
     const mapa =
-        new Map<
-            string,
-            EmocionForo[]
-        >();
-
+        new Map<string, EmocionForo[]>();
 
     const ids =
-        quitarDuplicados(
-            idsPublicaciones
-        );
+        quitarDuplicados(idsPublicaciones);
 
-
-    if (
-        ids.length === 0
-    ) {
-
+    if (ids.length === 0) {
         return mapa;
-
     }
 
-
     const {
-        data:
-            relaciones,
-        error:
-            relacionesError,
+        data: relaciones,
+        error: relacionesError,
     } =
         await supabase
-            .from(
-                TABLAS.publicacionEmocion
-            )
+            .from(TABLAS.publicacionEmocion)
             .select(`
                 id_publicacion,
                 id_emocion_foro
             `)
-            .in(
-                "id_publicacion",
-                ids
-            );
+            .in("id_publicacion", ids);
 
-
-    if (
-        relacionesError
-    ) {
-
+    if (relacionesError) {
         console.error(
             "Error obteniendo relaciones publicación-emoción:",
             relacionesError
         );
 
-
         throw new Error(
             "No se pudieron cargar las emociones de las publicaciones."
         );
-
     }
-
 
     const idsEmociones =
         quitarDuplicados(
-            (
-                relaciones ??
-                []
-            ).map(
-                relacion =>
+            (relaciones ?? []).map(
+                (relacion) =>
                     relacion.id_emocion_foro
             )
         );
 
-
-    if (
-        idsEmociones.length === 0
-    ) {
-
+    if (idsEmociones.length === 0) {
         return mapa;
-
     }
 
-
     const {
-        data:
-            emociones,
-        error:
-            emocionesError,
+        data: emociones,
+        error: emocionesError,
     } =
         await supabase
-            .from(
-                TABLAS.emocion
-            )
+            .from(TABLAS.emocion)
             .select(`
                 id_emocion_foro,
                 nombre,
@@ -472,90 +272,52 @@ async function obtenerEmocionesDePublicaciones(
                 idsEmociones
             );
 
-
-    if (
-        emocionesError
-    ) {
-
+    if (emocionesError) {
         console.error(
             "Error obteniendo emociones:",
             emocionesError
         );
 
-
         throw new Error(
             "No se pudieron cargar las emociones."
         );
-
     }
 
-
     const mapaEmociones =
-        new Map<
-            string,
-            EmocionForo
-        >();
+        new Map<string, EmocionForo>();
 
+    (emociones ?? []).forEach((emocion) => {
+        mapaEmociones.set(
+            emocion.id_emocion_foro,
+            emocion as EmocionForo
+        );
+    });
 
-    (
-        emociones ??
-        []
-    ).forEach(
-        emocion => {
+    (relaciones ?? []).forEach((relacion) => {
 
-            mapaEmociones.set(
-                emocion.id_emocion_foro,
-                emocion as EmocionForo
+        const emocion =
+            mapaEmociones.get(
+                relacion.id_emocion_foro
             );
 
+        if (!emocion) {
+            return;
         }
-    );
 
+        const actuales =
+            mapa.get(
+                relacion.id_publicacion
+            ) ?? [];
 
-    (
-        relaciones ??
-        []
-    ).forEach(
-        relacion => {
+        actuales.push(emocion);
 
-            const emocion =
-                mapaEmociones.get(
-                    relacion.id_emocion_foro
-                );
-
-
-            if (
-                !emocion
-            ) {
-
-                return;
-
-            }
-
-
-            const actuales =
-                mapa.get(
-                    relacion.id_publicacion
-                ) ??
-                [];
-
-
-            actuales.push(
-                emocion
-            );
-
-
-            mapa.set(
-                relacion.id_publicacion,
-                actuales
-            );
-
-        }
-    );
-
+        mapa.set(
+            relacion.id_publicacion,
+            actuales
+        );
+    });
 
     return mapa;
-
 }
 
 
@@ -569,195 +331,123 @@ async function obtenerDatosSocialesPublicaciones(
 ) {
 
     const mapaReacciones =
-        new Map<
-            string,
-            number
-        >();
-
+        new Map<string, number>();
 
     const mapaComentarios =
-        new Map<
-            string,
-            number
-        >();
-
+        new Map<string, number>();
 
     const mapaReaccionUsuario =
-        new Map<
-            string,
-            TipoReaccion
-        >();
-
+        new Map<string, TipoReaccion>();
 
     const ids =
-        quitarDuplicados(
-            idsPublicaciones
-        );
+        quitarDuplicados(idsPublicaciones);
 
-
-    if (
-        ids.length === 0
-    ) {
-
+    if (ids.length === 0) {
         return {
             mapaReacciones,
             mapaComentarios,
             mapaReaccionUsuario,
         };
-
     }
 
 
-    // ========================================================
+    // ======================================================
     // REACCIONES
-    // ========================================================
+    // ======================================================
 
     const {
-        data:
-            reacciones,
-        error:
-            reaccionesError,
+        data: reacciones,
+        error: reaccionesError,
     } =
         await supabase
-            .from(
-                TABLAS.reaccion
-            )
+            .from(TABLAS.reaccion)
             .select(`
                 id_publicacion,
                 id_usuario,
                 tipo_reaccion
             `)
-            .in(
-                "id_publicacion",
-                ids
-            );
+            .in("id_publicacion", ids);
 
-
-    if (
-        reaccionesError
-    ) {
-
+    if (reaccionesError) {
         console.error(
             "Error obteniendo reacciones:",
             reaccionesError
         );
 
-
         throw new Error(
             "No se pudieron cargar las reacciones del foro."
         );
-
     }
 
+    (reacciones ?? []).forEach((reaccion) => {
 
-    (
-        reacciones ??
-        []
-    ).forEach(
-        reaccion => {
+        const totalActual =
+            mapaReacciones.get(
+                reaccion.id_publicacion
+            ) ?? 0;
 
-            const totalActual =
-                mapaReacciones.get(
-                    reaccion.id_publicacion
-                ) ??
-                0;
+        mapaReacciones.set(
+            reaccion.id_publicacion,
+            totalActual + 1
+        );
 
-
-            mapaReacciones.set(
+        if (
+            idUsuarioActual &&
+            reaccion.id_usuario === idUsuarioActual
+        ) {
+            mapaReaccionUsuario.set(
                 reaccion.id_publicacion,
-                totalActual + 1
+                reaccion.tipo_reaccion as TipoReaccion
             );
-
-
-            if (
-                idUsuarioActual &&
-                reaccion.id_usuario ===
-                idUsuarioActual
-            ) {
-
-                mapaReaccionUsuario.set(
-                    reaccion.id_publicacion,
-                    reaccion.tipo_reaccion as TipoReaccion
-                );
-
-            }
-
         }
-    );
+    });
 
 
-    // ========================================================
+    // ======================================================
     // COMENTARIOS
-    // ========================================================
+    // ======================================================
 
     const {
-        data:
-            comentarios,
-        error:
-            comentariosError,
+        data: comentarios,
+        error: comentariosError,
     } =
         await supabase
-            .from(
-                TABLAS.comentario
-            )
+            .from(TABLAS.comentario)
             .select(`
                 id_publicacion
             `)
-            .in(
-                "id_publicacion",
-                ids
-            )
-            .eq(
-                "estado",
-                "activo"
-            );
+            .in("id_publicacion", ids)
+            .eq("estado", "activo");
 
-
-    if (
-        comentariosError
-    ) {
-
+    if (comentariosError) {
         console.error(
             "Error obteniendo comentarios:",
             comentariosError
         );
 
-
         throw new Error(
             "No se pudieron cargar los comentarios del foro."
         );
-
     }
 
+    (comentarios ?? []).forEach((comentario) => {
 
-    (
-        comentarios ??
-        []
-    ).forEach(
-        comentario => {
+        const totalActual =
+            mapaComentarios.get(
+                comentario.id_publicacion
+            ) ?? 0;
 
-            const totalActual =
-                mapaComentarios.get(
-                    comentario.id_publicacion
-                ) ??
-                0;
-
-
-            mapaComentarios.set(
-                comentario.id_publicacion,
-                totalActual + 1
-            );
-
-        }
-    );
-
+        mapaComentarios.set(
+            comentario.id_publicacion,
+            totalActual + 1
+        );
+    });
 
     return {
         mapaReacciones,
         mapaComentarios,
         mapaReaccionUsuario,
     };
-
 }
 
 
@@ -769,14 +459,9 @@ export async function obtenerPublicaciones(
     idUsuarioActual?: string
 ): Promise<PublicacionForo[]> {
 
-    const {
-        data,
-        error,
-    } =
+    const { data, error } =
         await supabase
-            .from(
-                TABLAS.publicacion
-            )
+            .from(TABLAS.publicacion)
             .select(`
                 id_publicacion,
                 id_usuario,
@@ -787,129 +472,86 @@ export async function obtenerPublicaciones(
                 estado,
                 editada
             `)
-            .eq(
-                "estado",
-                "activa"
-            )
-            .order(
-                "fecha_publicacion",
-                {
-                    ascending:
-                        false,
-                }
-            );
+            .eq("estado", "activa")
+            .order("fecha_publicacion", {
+                ascending: false,
+            });
 
-
-    if (
-        error
-    ) {
-
+    if (error) {
         console.error(
             "Error obteniendo publicaciones:",
             error
         );
 
-
         throw new Error(
             "No se pudieron cargar las publicaciones del foro."
         );
-
     }
-
 
     const publicaciones =
-        (
-            data ??
-            []
-        ) as PublicacionForo[];
+        (data ?? []) as PublicacionForo[];
 
-
-    if (
-        publicaciones.length === 0
-    ) {
-
+    if (publicaciones.length === 0) {
         return [];
-
     }
-
 
     const idsPublicaciones =
         publicaciones.map(
-            publicacion =>
+            (publicacion) =>
                 publicacion.id_publicacion
         );
 
-
     const idsUsuarios =
         publicaciones.map(
-            publicacion =>
+            (publicacion) =>
                 publicacion.id_usuario
         );
-
 
     const [
         usuarios,
         emociones,
         datosSociales,
-    ] =
-        await Promise.all([
-            obtenerUsuariosPorIds(
-                idsUsuarios
-            ),
-
-            obtenerEmocionesDePublicaciones(
-                idsPublicaciones
-            ),
-
-            obtenerDatosSocialesPublicaciones(
-                idsPublicaciones,
-                idUsuarioActual
-            ),
-        ]);
-
+    ] = await Promise.all([
+        obtenerUsuariosPorIds(idsUsuarios),
+        obtenerEmocionesDePublicaciones(
+            idsPublicaciones
+        ),
+        obtenerDatosSocialesPublicaciones(
+            idsPublicaciones,
+            idUsuarioActual
+        ),
+    ]);
 
     return publicaciones.map(
-        publicacion => ({
+        (publicacion) => ({
             ...publicacion,
 
             usuario:
                 usuarios.get(
                     publicacion.id_usuario
-                ) ??
-                null,
+                ) ?? null,
 
             emociones:
                 emociones.get(
                     publicacion.id_publicacion
-                ) ??
-                [],
+                ) ?? [],
 
             total_reacciones:
-                datosSociales
-                    .mapaReacciones
-                    .get(
-                        publicacion.id_publicacion
-                    ) ??
-                0,
+                datosSociales.mapaReacciones.get(
+                    publicacion.id_publicacion
+                ) ?? 0,
 
             total_comentarios:
-                datosSociales
-                    .mapaComentarios
-                    .get(
-                        publicacion.id_publicacion
-                    ) ??
-                0,
+                datosSociales.mapaComentarios.get(
+                    publicacion.id_publicacion
+                ) ?? 0,
 
             reaccion_usuario:
-                datosSociales
-                    .mapaReaccionUsuario
-                    .get(
-                        publicacion.id_publicacion
-                    ) ??
-                null,
+                datosSociales.mapaReaccionUsuario.get(
+                    publicacion.id_publicacion
+                ) ?? null,
         })
     );
-
 }
 
 
@@ -922,14 +564,9 @@ export async function obtenerPublicacionPorId(
     idUsuarioActual?: string
 ): Promise<PublicacionForo | null> {
 
-    const {
-        data,
-        error,
-    } =
+    const { data, error } =
         await supabase
-            .from(
-                TABLAS.publicacion
-            )
+            .from(TABLAS.publicacion)
             .select(`
                 id_publicacion,
                 id_usuario,
@@ -944,61 +581,40 @@ export async function obtenerPublicacionPorId(
                 "id_publicacion",
                 idPublicacion
             )
-            .eq(
-                "estado",
-                "activa"
-            )
+            .eq("estado", "activa")
             .maybeSingle();
 
-
-    if (
-        error
-    ) {
-
+    if (error) {
         console.error(
             "Error obteniendo publicación:",
             error
         );
 
-
         throw new Error(
             "No se pudo cargar la publicación."
         );
-
     }
 
-
-    if (
-        !data
-    ) {
-
+    if (!data) {
         return null;
-
     }
-
 
     const [
         usuarios,
         emociones,
         datosSociales,
-    ] =
-        await Promise.all([
-            obtenerUsuariosPorIds([
-                data.id_usuario,
-            ]),
-
-            obtenerEmocionesDePublicaciones([
-                data.id_publicacion,
-            ]),
-
-            obtenerDatosSocialesPublicaciones(
-                [
-                    data.id_publicacion,
-                ],
-                idUsuarioActual
-            ),
-        ]);
-
+    ] = await Promise.all([
+        obtenerUsuariosPorIds([
+            data.id_usuario,
+        ]),
+        obtenerEmocionesDePublicaciones([
+            data.id_publicacion,
+        ]),
+        obtenerDatosSocialesPublicaciones(
+            [data.id_publicacion],
+            idUsuarioActual
+        ),
+    ]);
 
     return {
         ...(data as PublicacionForo),
@@ -1006,40 +622,28 @@ export async function obtenerPublicacionPorId(
         usuario:
             usuarios.get(
                 data.id_usuario
-            ) ??
-            null,
+            ) ?? null,
 
         emociones:
             emociones.get(
                 data.id_publicacion
-            ) ??
-            [],
+            ) ?? [],
 
         total_reacciones:
-            datosSociales
-                .mapaReacciones
-                .get(
-                    data.id_publicacion
-                ) ??
-            0,
+            datosSociales.mapaReacciones.get(
+                data.id_publicacion
+            ) ?? 0,
 
         total_comentarios:
-            datosSociales
-                .mapaComentarios
-                .get(
-                    data.id_publicacion
-                ) ??
-            0,
+            datosSociales.mapaComentarios.get(
+                data.id_publicacion
+            ) ?? 0,
 
         reaccion_usuario:
-            datosSociales
-                .mapaReaccionUsuario
-                .get(
-                    data.id_publicacion
-                ) ??
-            null,
+            datosSociales.mapaReaccionUsuario.get(
+                data.id_publicacion
+            ) ?? null,
     };
-
 }
 
 
@@ -1053,67 +657,38 @@ export async function crearPublicacion({
     contenido,
     emociones = [],
 }: CrearPublicacionInput):
-    Promise<PublicacionForo> {
+Promise<PublicacionForo> {
 
     const tituloLimpio =
-        limpiarTexto(
-            titulo
-        );
-
+        limpiarTexto(titulo);
 
     const contenidoLimpio =
-        limpiarTexto(
-            contenido
-        );
+        limpiarTexto(contenido);
 
-
-    if (
-        !tituloLimpio
-    ) {
-
+    if (!tituloLimpio) {
         throw new Error(
             "Debes escribir un título."
         );
-
     }
 
-
-    if (
-        !contenidoLimpio
-    ) {
-
+    if (!contenidoLimpio) {
         throw new Error(
             "Debes escribir el contenido de la publicación."
         );
-
     }
 
-
     const {
-        data:
-            publicacion,
-        error:
-            publicacionError,
+        data: publicacion,
+        error: publicacionError,
     } =
         await supabase
-            .from(
-                TABLAS.publicacion
-            )
+            .from(TABLAS.publicacion)
             .insert({
-                id_usuario:
-                    idUsuario,
-
-                titulo:
-                    tituloLimpio,
-
-                contenido:
-                    contenidoLimpio,
-
-                estado:
-                    "activa",
-
-                editada:
-                    false,
+                id_usuario: idUsuario,
+                titulo: tituloLimpio,
+                contenido: contenidoLimpio,
+                estado: "activa",
+                editada: false,
             })
             .select(`
                 id_publicacion,
@@ -1127,37 +702,25 @@ export async function crearPublicacion({
             `)
             .single();
 
-
-    if (
-        publicacionError
-    ) {
-
+    if (publicacionError) {
         console.error(
             "Error creando publicación:",
             publicacionError
         );
 
-
         throw new Error(
             "No se pudo crear la publicación."
         );
-
     }
 
-
     const emocionesUnicas =
-        quitarDuplicados(
-            emociones
-        );
+        quitarDuplicados(emociones);
 
-
-    if (
-        emocionesUnicas.length > 0
-    ) {
+    if (emocionesUnicas.length > 0) {
 
         const relaciones =
             emocionesUnicas.map(
-                idEmocion => ({
+                (idEmocion) => ({
                     id_publicacion:
                         publicacion.id_publicacion,
 
@@ -1166,34 +729,21 @@ export async function crearPublicacion({
                 })
             );
 
-
-        const {
-            error:
-                emocionesError,
-        } =
+        const { error: emocionesError } =
             await supabase
                 .from(
                     TABLAS.publicacionEmocion
                 )
-                .insert(
-                    relaciones
-                );
+                .insert(relaciones);
 
-
-        if (
-            emocionesError
-        ) {
-
+        if (emocionesError) {
             console.error(
                 "Error guardando emociones:",
                 emocionesError
             );
 
-
             await supabase
-                .from(
-                    TABLAS.publicacion
-                )
+                .from(TABLAS.publicacion)
                 .delete()
                 .eq(
                     "id_publicacion",
@@ -1204,15 +754,11 @@ export async function crearPublicacion({
                     idUsuario
                 );
 
-
             throw new Error(
                 "No se pudo completar la creación de la publicación."
             );
-
         }
-
     }
-
 
     const resultado =
         await obtenerPublicacionPorId(
@@ -1220,20 +766,13 @@ export async function crearPublicacion({
             idUsuario
         );
 
-
-    if (
-        !resultado
-    ) {
-
+    if (!resultado) {
         throw new Error(
             "La publicación fue creada, pero no se pudo recuperar."
         );
-
     }
 
-
     return resultado;
-
 }
 
 
@@ -1248,59 +787,33 @@ export async function editarPublicacion({
     contenido,
     emociones,
 }: EditarPublicacionInput):
-    Promise<void> {
+Promise<void> {
 
     const tituloLimpio =
-        limpiarTexto(
-            titulo
-        );
-
+        limpiarTexto(titulo);
 
     const contenidoLimpio =
-        limpiarTexto(
-            contenido
-        );
+        limpiarTexto(contenido);
 
-
-    if (
-        !tituloLimpio
-    ) {
-
+    if (!tituloLimpio) {
         throw new Error(
             "Debes escribir un título."
         );
-
     }
 
-
-    if (
-        !contenidoLimpio
-    ) {
-
+    if (!contenidoLimpio) {
         throw new Error(
             "Debes escribir el contenido de la publicación."
         );
-
     }
 
-
-    const {
-        error,
-    } =
+    const { error } =
         await supabase
-            .from(
-                TABLAS.publicacion
-            )
+            .from(TABLAS.publicacion)
             .update({
-                titulo:
-                    tituloLimpio,
-
-                contenido:
-                    contenidoLimpio,
-
-                editada:
-                    true,
-
+                titulo: tituloLimpio,
+                contenido: contenidoLimpio,
+                editada: true,
                 fecha_actualizacion:
                     new Date().toISOString(),
             })
@@ -1313,32 +826,20 @@ export async function editarPublicacion({
                 idUsuario
             );
 
-
-    if (
-        error
-    ) {
-
+    if (error) {
         console.error(
             "Error editando publicación:",
             error
         );
 
-
         throw new Error(
             "No se pudo editar la publicación."
         );
-
     }
 
+    if (emociones !== undefined) {
 
-    if (
-        emociones !== undefined
-    ) {
-
-        const {
-            error:
-                eliminarError,
-        } =
+        const { error: eliminarError } =
             await supabase
                 .from(
                     TABLAS.publicacionEmocion
@@ -1349,45 +850,30 @@ export async function editarPublicacion({
                     idPublicacion
                 );
 
-
-        if (
-            eliminarError
-        ) {
-
+        if (eliminarError) {
             console.error(
                 "Error eliminando emociones anteriores:",
                 eliminarError
             );
 
-
             throw new Error(
                 "La publicación fue actualizada, pero no se pudieron actualizar sus emociones."
             );
-
         }
 
-
         const emocionesUnicas =
-            quitarDuplicados(
-                emociones
-            );
+            quitarDuplicados(emociones);
 
+        if (emocionesUnicas.length > 0) {
 
-        if (
-            emocionesUnicas.length > 0
-        ) {
-
-            const {
-                error:
-                    insertarError,
-            } =
+            const { error: insertarError } =
                 await supabase
                     .from(
                         TABLAS.publicacionEmocion
                     )
                     .insert(
                         emocionesUnicas.map(
-                            idEmocion => ({
+                            (idEmocion) => ({
                                 id_publicacion:
                                     idPublicacion,
 
@@ -1397,27 +883,18 @@ export async function editarPublicacion({
                         )
                     );
 
-
-            if (
-                insertarError
-            ) {
-
+            if (insertarError) {
                 console.error(
                     "Error insertando nuevas emociones:",
                     insertarError
                 );
 
-
                 throw new Error(
                     "La publicación fue actualizada, pero no se pudieron guardar sus emociones."
                 );
-
             }
-
         }
-
     }
-
 }
 
 
@@ -1430,17 +907,11 @@ export async function eliminarPublicacion(
     idUsuario: string
 ): Promise<void> {
 
-    const {
-        error,
-    } =
+    const { error } =
         await supabase
-            .from(
-                TABLAS.publicacion
-            )
+            .from(TABLAS.publicacion)
             .update({
-                estado:
-                    "eliminada",
-
+                estado: "eliminada",
                 fecha_actualizacion:
                     new Date().toISOString(),
             })
@@ -1453,23 +924,16 @@ export async function eliminarPublicacion(
                 idUsuario
             );
 
-
-    if (
-        error
-    ) {
-
+    if (error) {
         console.error(
             "Error eliminando publicación:",
             error
         );
 
-
         throw new Error(
             "No se pudo eliminar la publicación."
         );
-
     }
-
 }
 
 
@@ -1481,14 +945,9 @@ export async function obtenerComentarios(
     idPublicacion: string
 ): Promise<ComentarioForo[]> {
 
-    const {
-        data,
-        error,
-    } =
+    const { data, error } =
         await supabase
-            .from(
-                TABLAS.comentario
-            )
+            .from(TABLAS.comentario)
             .select(`
                 id_comentario,
                 id_publicacion,
@@ -1503,73 +962,47 @@ export async function obtenerComentarios(
                 "id_publicacion",
                 idPublicacion
             )
-            .eq(
-                "estado",
-                "activo"
-            )
-            .order(
-                "fecha_comentario",
-                {
-                    ascending:
-                        true,
-                }
-            );
+            .eq("estado", "activo")
+            .order("fecha_comentario", {
+                ascending: true,
+            });
 
-
-    if (
-        error
-    ) {
-
+    if (error) {
         console.error(
             "Error obteniendo comentarios:",
             error
         );
 
-
         throw new Error(
             "No se pudieron cargar los comentarios."
         );
-
     }
-
 
     const comentarios =
-        (
-            data ??
-            []
-        ) as ComentarioForo[];
+        (data ?? []) as ComentarioForo[];
 
-
-    if (
-        comentarios.length === 0
-    ) {
-
+    if (comentarios.length === 0) {
         return [];
-
     }
-
 
     const usuarios =
         await obtenerUsuariosPorIds(
             comentarios.map(
-                comentario =>
+                (comentario) =>
                     comentario.id_usuario
             )
         );
 
-
     return comentarios.map(
-        comentario => ({
+        (comentario) => ({
             ...comentario,
 
             usuario:
                 usuarios.get(
                     comentario.id_usuario
-                ) ??
-                null,
+                ) ?? null,
         })
     );
-
 }
 
 
@@ -1582,48 +1015,26 @@ export async function crearComentario({
     idUsuario,
     contenido,
 }: CrearComentarioInput):
-    Promise<ComentarioForo> {
+Promise<ComentarioForo> {
 
     const contenidoLimpio =
-        limpiarTexto(
-            contenido
-        );
+        limpiarTexto(contenido);
 
-
-    if (
-        !contenidoLimpio
-    ) {
-
+    if (!contenidoLimpio) {
         throw new Error(
             "Escribe un comentario antes de publicarlo."
         );
-
     }
 
-
-    const {
-        data,
-        error,
-    } =
+    const { data, error } =
         await supabase
-            .from(
-                TABLAS.comentario
-            )
+            .from(TABLAS.comentario)
             .insert({
-                id_publicacion:
-                    idPublicacion,
-
-                id_usuario:
-                    idUsuario,
-
-                contenido:
-                    contenidoLimpio,
-
-                estado:
-                    "activo",
-
-                editada:
-                    false,
+                id_publicacion: idPublicacion,
+                id_usuario: idUsuario,
+                contenido: contenidoLimpio,
+                estado: "activo",
+                editada: false,
             })
             .select(`
                 id_comentario,
@@ -1637,40 +1048,29 @@ export async function crearComentario({
             `)
             .single();
 
-
-    if (
-        error
-    ) {
-
+    if (error) {
         console.error(
             "Error creando comentario:",
             error
         );
 
-
         throw new Error(
             "No se pudo publicar el comentario."
         );
-
     }
-
 
     const usuarios =
         await obtenerUsuariosPorIds([
             idUsuario,
         ]);
 
-
     return {
         ...(data as ComentarioForo),
 
         usuario:
-            usuarios.get(
-                idUsuario
-            ) ??
+            usuarios.get(idUsuario) ??
             null,
     };
-
 }
 
 
@@ -1683,39 +1083,23 @@ export async function editarComentario({
     idUsuario,
     contenido,
 }: EditarComentarioInput):
-    Promise<void> {
+Promise<void> {
 
     const contenidoLimpio =
-        limpiarTexto(
-            contenido
-        );
+        limpiarTexto(contenido);
 
-
-    if (
-        !contenidoLimpio
-    ) {
-
+    if (!contenidoLimpio) {
         throw new Error(
             "El comentario no puede quedar vacío."
         );
-
     }
 
-
-    const {
-        error,
-    } =
+    const { error } =
         await supabase
-            .from(
-                TABLAS.comentario
-            )
+            .from(TABLAS.comentario)
             .update({
-                contenido:
-                    contenidoLimpio,
-
-                editada:
-                    true,
-
+                contenido: contenidoLimpio,
+                editada: true,
                 fecha_actualizacion:
                     new Date().toISOString(),
             })
@@ -1728,23 +1112,16 @@ export async function editarComentario({
                 idUsuario
             );
 
-
-    if (
-        error
-    ) {
-
+    if (error) {
         console.error(
             "Error editando comentario:",
             error
         );
 
-
         throw new Error(
             "No se pudo editar el comentario."
         );
-
     }
-
 }
 
 
@@ -1757,17 +1134,11 @@ export async function eliminarComentario(
     idUsuario: string
 ): Promise<void> {
 
-    const {
-        error,
-    } =
+    const { error } =
         await supabase
-            .from(
-                TABLAS.comentario
-            )
+            .from(TABLAS.comentario)
             .update({
-                estado:
-                    "eliminado",
-
+                estado: "eliminado",
                 fecha_actualizacion:
                     new Date().toISOString(),
             })
@@ -1780,23 +1151,16 @@ export async function eliminarComentario(
                 idUsuario
             );
 
-
-    if (
-        error
-    ) {
-
+    if (error) {
         console.error(
             "Error eliminando comentario:",
             error
         );
 
-
         throw new Error(
             "No se pudo eliminar el comentario."
         );
-
     }
-
 }
 
 
@@ -1811,15 +1175,11 @@ export async function reaccionarPublicacion(
 ): Promise<TipoReaccion | null> {
 
     const {
-        data:
-            reaccionActual,
-        error:
-            buscarError,
+        data: reaccionActual,
+        error: buscarError,
     } =
         await supabase
-            .from(
-                TABLAS.reaccion
-            )
+            .from(TABLAS.reaccion)
             .select(`
                 id_reaccion,
                 tipo_reaccion
@@ -1834,40 +1194,30 @@ export async function reaccionarPublicacion(
             )
             .maybeSingle();
 
-
-    if (
-        buscarError
-    ) {
-
+    if (buscarError) {
         console.error(
             "Error buscando reacción:",
             buscarError
         );
 
-
         throw new Error(
             "No se pudo procesar la reacción."
         );
-
     }
 
 
-    // ========================================================
+    // ======================================================
     // MISMA REACCIÓN -> QUITAR
-    // ========================================================
+    // ======================================================
 
     if (
         reaccionActual?.tipo_reaccion ===
         tipoReaccion
     ) {
 
-        const {
-            error,
-        } =
+        const { error } =
             await supabase
-                .from(
-                    TABLAS.reaccion
-                )
+                .from(TABLAS.reaccion)
                 .delete()
                 .eq(
                     "id_reaccion",
@@ -1878,44 +1228,30 @@ export async function reaccionarPublicacion(
                     idUsuario
                 );
 
-
-        if (
-            error
-        ) {
-
+        if (error) {
             console.error(
                 "Error eliminando reacción:",
                 error
             );
 
-
             throw new Error(
                 "No se pudo quitar la reacción."
             );
-
         }
 
-
         return null;
-
     }
 
 
-    // ========================================================
+    // ======================================================
     // CAMBIAR REACCIÓN
-    // ========================================================
+    // ======================================================
 
-    if (
-        reaccionActual
-    ) {
+    if (reaccionActual) {
 
-        const {
-            error,
-        } =
+        const { error } =
             await supabase
-                .from(
-                    TABLAS.reaccion
-                )
+                .from(TABLAS.reaccion)
                 .update({
                     tipo_reaccion:
                         tipoReaccion,
@@ -1929,72 +1265,46 @@ export async function reaccionarPublicacion(
                     idUsuario
                 );
 
-
-        if (
-            error
-        ) {
-
+        if (error) {
             console.error(
                 "Error actualizando reacción:",
                 error
             );
 
-
             throw new Error(
                 "No se pudo cambiar la reacción."
             );
-
         }
 
-
         return tipoReaccion;
-
     }
 
 
-    // ========================================================
+    // ======================================================
     // NUEVA REACCIÓN
-    // ========================================================
+    // ======================================================
 
-    const {
-        error:
-            insertarError,
-    } =
+    const { error: insertarError } =
         await supabase
-            .from(
-                TABLAS.reaccion
-            )
+            .from(TABLAS.reaccion)
             .insert({
-                id_publicacion:
-                    idPublicacion,
-
-                id_usuario:
-                    idUsuario,
-
-                tipo_reaccion:
-                    tipoReaccion,
+                id_publicacion: idPublicacion,
+                id_usuario: idUsuario,
+                tipo_reaccion: tipoReaccion,
             });
 
-
-    if (
-        insertarError
-    ) {
-
+    if (insertarError) {
         console.error(
             "Error creando reacción:",
             insertarError
         );
 
-
         throw new Error(
             "No se pudo registrar la reacción."
         );
-
     }
 
-
     return tipoReaccion;
-
 }
 
 
@@ -2009,45 +1319,32 @@ export async function crearReporte({
     motivo,
     descripcion = null,
 }: CrearReporteInput):
-    Promise<void> {
+Promise<void> {
 
     if (
         !idPublicacion &&
         !idComentario
     ) {
-
         throw new Error(
             "Debes indicar la publicación o comentario que deseas reportar."
         );
-
     }
-
 
     if (
         idPublicacion &&
         idComentario
     ) {
-
         throw new Error(
             "Un reporte debe corresponder a una publicación o a un comentario, no a ambos."
         );
-
     }
 
-
     const descripcionLimpia =
-        descripcion
-            ?.trim() ||
-        null;
+        descripcion?.trim() || null;
 
-
-    const {
-        error,
-    } =
+    const { error } =
         await supabase
-            .from(
-                TABLAS.reporte
-            )
+            .from(TABLAS.reporte)
             .insert({
                 id_usuario_reporta:
                     idUsuarioReporta,
@@ -2067,23 +1364,16 @@ export async function crearReporte({
                     "pendiente",
             });
 
-
-    if (
-        error
-    ) {
-
+    if (error) {
         console.error(
             "Error creando reporte:",
             error
         );
 
-
         throw new Error(
             "No se pudo enviar el reporte."
         );
-
     }
-
 }
 
 
@@ -2091,13 +1381,8 @@ export async function crearReporte({
 // PREGUNTA DE LA SEMANA
 // ==========================================================
 
-
-// ==========================================================
-// OBTENER PREGUNTA DE LA SEMANA
-// ==========================================================
-
 export async function obtenerPreguntaSemanaActiva():
-    Promise<PreguntaSemanaForo | null> {
+Promise<PreguntaSemanaForo | null> {
 
     /*
      * Por ahora se obtiene la pregunta más reciente.
@@ -2107,14 +1392,9 @@ export async function obtenerPreguntaSemanaActiva():
      * correctamente la administración de preguntas.
      */
 
-    const {
-        data,
-        error,
-    } =
+    const { data, error } =
         await supabase
-            .from(
-                TABLAS.preguntaSemana
-            )
+            .from(TABLAS.preguntaSemana)
             .select(`
                 id_pregunta_semana,
                 pregunta,
@@ -2122,47 +1402,28 @@ export async function obtenerPreguntaSemanaActiva():
                 fecha_fin,
                 estado
             `)
-            .order(
-                "fecha_inicio",
-                {
-                    ascending:
-                        false,
-                }
-            )
-            .limit(
-                1
-            )
+            .order("fecha_inicio", {
+                ascending: false,
+            })
+            .limit(1)
             .maybeSingle();
 
-
-    if (
-        error
-    ) {
-
+    if (error) {
         console.error(
             "Error obteniendo pregunta de la semana:",
             error
         );
 
-
         throw new Error(
             "No se pudo cargar la pregunta de la semana."
         );
-
     }
 
-
-    if (
-        !data
-    ) {
-
+    if (!data) {
         return null;
-
     }
-
 
     return data as PreguntaSemanaForo;
-
 }
 
 
@@ -2175,76 +1436,51 @@ export async function responderPreguntaSemana({
     idUsuario,
     respuesta,
 }: CrearRespuestaPreguntaSemanaInput):
-    Promise<RespuestaPreguntaSemanaForo> {
+Promise<RespuestaPreguntaSemanaForo> {
 
     const respuestaLimpia =
-        limpiarTexto(
-            respuesta
-        );
+        limpiarTexto(respuesta);
 
 
-    // ========================================================
+    // ======================================================
     // VALIDACIONES
-    // ========================================================
+    // ======================================================
 
-    if (
-        !idPreguntaSemana
-    ) {
-
+    if (!idPreguntaSemana) {
         throw new Error(
             "La pregunta de la semana no es válida."
         );
-
     }
 
-
-    if (
-        !idUsuario
-    ) {
-
+    if (!idUsuario) {
         throw new Error(
             "No se pudo identificar al usuario."
         );
-
     }
 
-
-    if (
-        !respuestaLimpia
-    ) {
-
+    if (!respuestaLimpia) {
         throw new Error(
             "Escribe una respuesta antes de enviarla."
         );
-
     }
 
-
-    if (
-        respuestaLimpia.length > 500
-    ) {
-
+    if (respuestaLimpia.length > 500) {
         throw new Error(
             "La respuesta no puede superar los 500 caracteres."
         );
-
     }
 
 
-    // ========================================================
+    // ======================================================
     // VERIFICAR PREGUNTA
-    // ========================================================
+    // ======================================================
 
     const {
-        data:
-            pregunta,
-        error:
-            preguntaError,
+        data: pregunta,
+        error: preguntaError,
     } =
         await supabase
-            .from(
-                TABLAS.preguntaSemana
-            )
+            .from(TABLAS.preguntaSemana)
             .select(`
                 id_pregunta_semana,
                 estado,
@@ -2257,59 +1493,40 @@ export async function responderPreguntaSemana({
             )
             .maybeSingle();
 
-
-    if (
-        preguntaError
-    ) {
-
+    if (preguntaError) {
         console.error(
             "Error verificando pregunta semanal:",
             preguntaError
         );
 
-
         throw new Error(
             "No se pudo verificar la pregunta de la semana."
         );
-
     }
 
-
-    if (
-        !pregunta
-    ) {
-
+    if (!pregunta) {
         throw new Error(
             "Esta pregunta ya no está disponible."
         );
-
     }
 
-
-    if (
-        pregunta.estado !== true
-    ) {
-
+    if (pregunta.estado !== true) {
         throw new Error(
             "Esta pregunta ya no está activa."
         );
-
     }
 
 
-    // ========================================================
+    // ======================================================
     // VALIDAR FECHAS
-    // ========================================================
+    // ======================================================
 
-    const ahora =
-        new Date();
-
+    const ahora = new Date();
 
     const fechaInicio =
         new Date(
             pregunta.fecha_inicio
         );
-
 
     const fechaFin =
         pregunta.fecha_fin
@@ -2318,69 +1535,47 @@ export async function responderPreguntaSemana({
             )
             : null;
 
-
     if (
         Number.isNaN(
             fechaInicio.getTime()
         )
     ) {
-
         throw new Error(
             "La fecha de inicio de la pregunta no es válida."
         );
-
     }
 
-
-    if (
-        ahora < fechaInicio
-    ) {
-
+    if (ahora < fechaInicio) {
         throw new Error(
             "Esta pregunta todavía no está disponible."
         );
-
     }
 
-
-    if (
-        fechaFin
-    ) {
+    if (fechaFin) {
 
         if (
             Number.isNaN(
                 fechaFin.getTime()
             )
         ) {
-
             throw new Error(
                 "La fecha de finalización de la pregunta no es válida."
             );
-
         }
 
-
-        if (
-            ahora > fechaFin
-        ) {
-
+        if (ahora > fechaFin) {
             throw new Error(
                 "El período para responder esta pregunta ya terminó."
             );
-
         }
-
     }
 
 
-    // ========================================================
+    // ======================================================
     // INSERTAR RESPUESTA
-    // ========================================================
+    // ======================================================
 
-    const {
-        data,
-        error,
-    } =
+    const { data, error } =
         await supabase
             .from(
                 TABLAS.respuestaPreguntaSemana
@@ -2404,26 +1599,18 @@ export async function responderPreguntaSemana({
             `)
             .single();
 
-
-    if (
-        error
-    ) {
-
+    if (error) {
         console.error(
             "Error guardando respuesta semanal:",
             error
         );
 
-
         throw new Error(
             "No se pudo guardar tu respuesta."
         );
-
     }
 
-
     return data as RespuestaPreguntaSemanaForo;
-
 }
 
 
@@ -2440,16 +1627,10 @@ export async function obtenerRespuestasPreguntaSemanaUsuario(
         !idPreguntaSemana ||
         !idUsuario
     ) {
-
         return [];
-
     }
 
-
-    const {
-        data,
-        error,
-    } =
+    const { data, error } =
         await supabase
             .from(
                 TABLAS.respuestaPreguntaSemana
@@ -2469,37 +1650,24 @@ export async function obtenerRespuestasPreguntaSemanaUsuario(
                 "id_usuario",
                 idUsuario
             )
-            .order(
-                "fecha_respuesta",
-                {
-                    ascending:
-                        false,
-                }
-            );
+            .order("fecha_respuesta", {
+                ascending: false,
+            });
 
-
-    if (
-        error
-    ) {
-
+    if (error) {
         console.error(
             "Error obteniendo respuestas del usuario:",
             error
         );
 
-
         throw new Error(
             "No se pudieron consultar tus respuestas."
         );
-
     }
 
-
     return (
-        data ??
-        []
+        data ?? []
     ) as RespuestaPreguntaSemanaForo[];
-
 }
 
 
@@ -2511,19 +1679,11 @@ export async function obtenerRespuestasPreguntaSemana(
     idPreguntaSemana: string
 ): Promise<RespuestaPreguntaSemanaConUsuario[]> {
 
-    if (
-        !idPreguntaSemana
-    ) {
-
+    if (!idPreguntaSemana) {
         return [];
-
     }
 
-
-    const {
-        data,
-        error,
-    } =
+    const { data, error } =
         await supabase
             .from(
                 TABLAS.respuestaPreguntaSemana
@@ -2539,67 +1699,46 @@ export async function obtenerRespuestasPreguntaSemana(
                 "id_pregunta_semana",
                 idPreguntaSemana
             )
-            .order(
-                "fecha_respuesta",
-                {
-                    ascending:
-                        false,
-                }
-            );
+            .order("fecha_respuesta", {
+                ascending: false,
+            });
 
-
-    if (
-        error
-    ) {
-
+    if (error) {
         console.error(
             "Error obteniendo respuestas de la semana:",
             error
         );
 
-
         throw new Error(
             "No se pudieron cargar las respuestas."
         );
-
     }
-
 
     const respuestas =
         (
-            data ??
-            []
+            data ?? []
         ) as RespuestaPreguntaSemanaForo[];
 
-
-    if (
-        respuestas.length === 0
-    ) {
-
+    if (respuestas.length === 0) {
         return [];
-
     }
-
 
     const usuarios =
         await obtenerUsuariosPorIds(
             respuestas.map(
-                respuesta =>
+                (respuesta) =>
                     respuesta.id_usuario
             )
         );
 
-
     return respuestas.map(
-        respuesta => ({
+        (respuesta) => ({
             ...respuesta,
 
             usuario:
                 usuarios.get(
                     respuesta.id_usuario
-                ) ??
-                null,
+                ) ?? null,
         })
     );
-
 }

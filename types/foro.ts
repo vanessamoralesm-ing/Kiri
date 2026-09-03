@@ -1,5 +1,5 @@
 // ==========================================================
-// ESTADOS
+// ESTADOS Y TIPOS
 // ==========================================================
 
 export type EstadoPublicacion =
@@ -7,18 +7,15 @@ export type EstadoPublicacion =
     | "oculta"
     | "eliminada";
 
-
 export type EstadoComentario =
     | "activo"
     | "oculto"
     | "eliminado";
 
-
 export type TipoReaccion =
     | "me_gusta"
     | "apoyo"
     | "me_importa";
-
 
 export type MotivoReporte =
     | "contenido_inapropiado"
@@ -27,7 +24,6 @@ export type MotivoReporte =
     | "informacion_falsa"
     | "otro";
 
-
 export type EstadoReporte =
     | "pendiente"
     | "revisado"
@@ -35,35 +31,27 @@ export type EstadoReporte =
 
 
 // ==========================================================
-// EMOCIÓN DEL FORO
+// EMOCIÓN
 // ==========================================================
 
 export interface EmocionForo {
     id_emocion_foro: string;
-
     nombre: string;
-
     descripcion: string | null;
-
     estado: boolean;
-
     fecha_registro: string;
 }
 
 
 // ==========================================================
-// USUARIO DEL FORO
+// USUARIO
 // ==========================================================
 
 export interface UsuarioForo {
     id_usuario: string;
-
     nombres: string;
-
     apellidos: string;
-
     nombre_preferido: string | null;
-
     foto_perfil: string | null;
 }
 
@@ -74,27 +62,21 @@ export interface UsuarioForo {
 
 export interface PublicacionForo {
     id_publicacion: string;
-
     id_usuario: string;
 
     titulo: string;
-
     contenido: string;
 
     fecha_publicacion: string;
-
     fecha_actualizacion: string;
 
     estado: EstadoPublicacion;
-
     editada: boolean;
 
     usuario?: UsuarioForo | null;
-
     emociones?: EmocionForo[];
 
     total_reacciones?: number;
-
     total_comentarios?: number;
 
     reaccion_usuario?: TipoReaccion | null;
@@ -107,19 +89,15 @@ export interface PublicacionForo {
 
 export interface ComentarioForo {
     id_comentario: string;
-
     id_publicacion: string;
-
     id_usuario: string;
 
     contenido: string;
 
     fecha_comentario: string;
-
     fecha_actualizacion: string;
 
     estado: EstadoComentario;
-
     editada: boolean;
 
     usuario?: UsuarioForo | null;
@@ -132,13 +110,10 @@ export interface ComentarioForo {
 
 export interface ReaccionForo {
     id_reaccion: string;
-
     id_usuario: string;
-
     id_publicacion: string;
 
     tipo_reaccion: TipoReaccion;
-
     fecha_reaccion: string;
 }
 
@@ -149,21 +124,16 @@ export interface ReaccionForo {
 
 export interface ReporteForo {
     id_reporte: string;
-
     id_usuario_reporta: string;
 
     id_publicacion: string | null;
-
     id_comentario: string | null;
 
     motivo: MotivoReporte;
-
     descripcion: string | null;
-
     estado: EstadoReporte;
 
     fecha_reporte: string;
-
     fecha_revision: string | null;
 }
 
@@ -174,11 +144,9 @@ export interface ReporteForo {
 
 export interface PreguntaSemanaForo {
     id_pregunta_semana: string;
-
     pregunta: string;
 
     fecha_inicio: string;
-
     fecha_fin: string | null;
 
     estado: boolean;
@@ -186,19 +154,22 @@ export interface PreguntaSemanaForo {
 
 
 // ==========================================================
-// RESPUESTA A PREGUNTA DE LA SEMANA
+// RESPUESTAS DE LA PREGUNTA SEMANAL
 // ==========================================================
 
 export interface RespuestaPreguntaSemanaForo {
     id_respuesta: string;
-
     id_pregunta_semana: string;
-
     id_usuario: string;
 
     respuesta: string;
-
     fecha_respuesta: string;
+}
+
+export interface RespuestaPreguntaSemanaConUsuario
+    extends RespuestaPreguntaSemanaForo {
+
+    usuario?: UsuarioForo | null;
 }
 
 
@@ -208,24 +179,16 @@ export interface RespuestaPreguntaSemanaForo {
 
 export interface CrearPublicacionInput {
     idUsuario: string;
-
     titulo: string;
-
     contenido: string;
-
     emociones?: string[];
 }
 
-
 export interface EditarPublicacionInput {
     idPublicacion: string;
-
     idUsuario: string;
-
     titulo: string;
-
     contenido: string;
-
     emociones?: string[];
 }
 
@@ -236,18 +199,13 @@ export interface EditarPublicacionInput {
 
 export interface CrearComentarioInput {
     idPublicacion: string;
-
     idUsuario: string;
-
     contenido: string;
 }
 
-
 export interface EditarComentarioInput {
     idComentario: string;
-
     idUsuario: string;
-
     contenido: string;
 }
 
@@ -258,31 +216,19 @@ export interface EditarComentarioInput {
 
 export interface CrearReporteInput {
     idUsuarioReporta: string;
-
     idPublicacion?: string | null;
-
     idComentario?: string | null;
-
     motivo: MotivoReporte;
-
     descripcion?: string | null;
 }
 
 
 // ==========================================================
-// INPUT DE RESPUESTA A PREGUNTA DE LA SEMANA
+// INPUT DE RESPUESTA SEMANAL
 // ==========================================================
 
 export interface CrearRespuestaPreguntaSemanaInput {
     idPreguntaSemana: string;
-
     idUsuario: string;
-
     respuesta: string;
-}
-
-export interface RespuestaPreguntaSemanaConUsuario
-    extends RespuestaPreguntaSemanaForo {
-
-    usuario?: UsuarioForo | null;
 }

@@ -1,261 +1,33 @@
 import OpcionRespuesta from "@/components/cuestionarios/OpcionRespuesta";
 import ProgresoCuestionario from "@/components/cuestionarios/ProgresoCuestionario";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { supabase } from "@/lib/supabase";
+
+import {
+    completarEjecucion, guardarRespuestaTest, guardarResultadoSubescala, guardarResultadoTest, obtenerBaremosPorTest, obtenerOCrearEjecucion,
+    obtenerPreguntasConOpciones, obtenerRangosPorBaremo, obtenerRespuestasEjecucion, obtenerSubescalasPorTest, obtenerTestPorCodigo, obtenerUsuarioCuestionario,
+} from "@/services/cuestionarios/cuestionarios.service";
+
+import type { OpcionRespuestaTest, PreguntaTestConOpciones, RespuestaSeleccionada, UsuarioCuestionario } from "@/services/cuestionarios/cuestionarios.service";
+
+import type { RangoBaremo, SubescalaTest, Test } from "@/types/cuestionarios";
+
+import {
+    buscarRango, calcularPuntajeDirecto, calcularPuntajeSubescala, evaluarValidezInstrumento, obtenerValorBaremo, seleccionarBaremo,
+    transformarPuntajeTotal
+} from "@/utils/cuestionarios/cuestionarioUtils";
 
 import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
 
-import {
-    useLocalSearchParams,
-    useRouter,
-} from "expo-router";
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "react-native";
 
-import React, {
-    useEffect,
-    useRef,
-    useState,
-} from "react";
 
-import {
-    ActivityIndicator,
-    Alert,
-    Pressable,
-    ScrollView,
-    Text,
-    View,
-} from "react-native";
-
+// ==========================================================
+// CONFIGURACIÓN
+// ==========================================================
 
 const PREGUNTAS_POR_PAGINA = 4;
-
-
-// ==========================================================
-// TIPOS
-// ==========================================================
-
-interface Test {
-    id_test: string;
-    codigo: string;
-    nombre: string;
-
-    descripcion:
-        string | null;
-
-    instrucciones:
-        string | null;
-
-    poblacion_objetivo:
-        string | null;
-
-    tipo_aplicacion:
-        | "autoadministrado"
-        | "profesional";
-
-    tiene_subescalas:
-        boolean;
-
-    version:
-        string | null;
-
-    estado:
-        boolean;
-}
-
-
-interface Usuario {
-    id_usuario: string;
-
-    fecha_nacimiento:
-        string | null;
-
-    genero:
-        string | null;
-
-    estado:
-        string;
-}
-
-
-interface Subescala {
-    id_subescala: string;
-    id_test: string;
-    codigo: string;
-    nombre: string;
-
-    descripcion:
-        string | null;
-
-    orden:
-        number;
-
-    incluye_total:
-        boolean;
-}
-
-
-interface OpcionTestDB {
-    id_opcion: string;
-    id_pregunta: string;
-    codigo: string;
-    etiqueta: string;
-
-    valor_puntaje:
-        number |
-        string |
-        null;
-
-    orden:
-        number;
-
-    estado:
-        boolean;
-}
-
-
-interface OpcionRespuestaTest {
-    id: string;
-    codigo: string;
-    texto: string;
-
-    valor:
-        number | null;
-
-    orden:
-        number;
-}
-
-
-interface PreguntaTest {
-    id_pregunta: string;
-    id_test: string;
-
-    id_subescala:
-        string | null;
-
-    codigo:
-        string;
-
-    enunciado:
-        string;
-
-    descripcion_apoyo:
-        string | null;
-
-    tipo_pregunta:
-        | "opcion_unica"
-        | "opcion_multiple"
-        | "texto"
-        | "numero"
-        | "escala";
-
-    orden:
-        number;
-
-    obligatoria:
-        boolean;
-
-    puntua:
-        boolean;
-
-    es_observacional:
-        boolean;
-
-    permite_comentario:
-        boolean;
-
-    estado:
-        boolean;
-
-    opciones:
-        OpcionRespuestaTest[];
-}
-
-
-interface RespuestaSeleccionada {
-    idOpcion: string;
-
-    valor:
-        number | null;
-}
-
-
-interface EjecucionTest {
-    id_ejecucion: string;
-    id_usuario: string;
-    id_test: string;
-
-    estado:
-        | "en_progreso"
-        | "completado"
-        | "abandonado";
-}
-
-
-interface Baremo {
-    id_baremo: string;
-    id_test: string;
-    codigo: string;
-    nombre: string;
-
-    poblacion:
-        string | null;
-
-    sexo_aplicable:
-        string | null;
-
-    edad_minima:
-        number | null;
-
-    edad_maxima:
-        number | null;
-
-    tipo_valor:
-        | "puntaje_directo"
-        | "puntaje_total"
-        | "percentil"
-        | "puntaje_t"
-        | "eneatipo";
-
-    version:
-        string | null;
-
-    fuente:
-        string | null;
-}
-
-
-interface RangoBaremo {
-    id_rango: string;
-    id_baremo: string;
-
-    id_subescala:
-        string | null;
-
-    nivel:
-        string;
-
-    valor_minimo:
-        number |
-        string |
-        null;
-
-    valor_maximo:
-        number |
-        string |
-        null;
-
-    interpretacion:
-        string | null;
-
-    orden:
-        number;
-}
-
-
-interface ResultadoGuardado {
-    id_resultado: string;
-    id_ejecucion: string;
-}
 
 
 // ==========================================================
@@ -264,141 +36,65 @@ interface ResultadoGuardado {
 
 export default function CuestionarioDetalle() {
 
-    const router =
-        useRouter();
+    const router = useRouter();
+
+    const { id } = useLocalSearchParams<{
+        id: string;
+    }>();
 
 
     // ======================================================
     // TEMA
     // ======================================================
 
-    const backgroundColor =
-        useThemeColor({}, "background");
-
-    const surfaceColor =
-        useThemeColor({}, "surface");
-
-    const surfaceSecondaryColor =
-        useThemeColor({}, "surfaceSecondary");
-
-    const textColor =
-        useThemeColor({}, "text");
-
-    const textSecondaryColor =
-        useThemeColor({}, "textSecondary");
-
-    const borderColor =
-        useThemeColor({}, "border");
-
-    const primaryColor =
-        useThemeColor({}, "primary");
-
-    const primarySoftColor =
-        useThemeColor({}, "primarySoft");
-
-    const accentColor =
-        useThemeColor({}, "accent");
-
-    const warningColor =
-        useThemeColor({}, "warning");
-
-    const disabledColor =
-        useThemeColor({}, "disabled");
+    const backgroundColor = useThemeColor({}, "background");
+    const surfaceColor = useThemeColor({}, "surface");
+    const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+    const textColor = useThemeColor({}, "text");
+    const textSecondaryColor = useThemeColor({}, "textSecondary");
+    const borderColor = useThemeColor({}, "border");
+    const primaryColor = useThemeColor({}, "primary");
+    const primarySoftColor = useThemeColor({}, "primarySoft");
+    const accentColor = useThemeColor({}, "accent");
+    const warningColor = useThemeColor({}, "warning");
+    const disabledColor = useThemeColor({}, "disabled");
 
 
     // ======================================================
-    // SCROLL
+    // REFERENCIAS
     // ======================================================
 
-    const scrollViewRef =
-        useRef<ScrollView>(null);
-
-
-    const { id } =
-        useLocalSearchParams<{
-            id: string;
-        }>();
+    const scrollViewRef = useRef<ScrollView>(null);
 
 
     // ======================================================
     // ESTADOS
     // ======================================================
 
-    const [
-        cuestionario,
-        setCuestionario,
-    ] = useState<Test | null>(
-        null
-    );
+    const [cuestionario, setCuestionario] =
+        useState<Test | null>(null);
 
+    const [usuario, setUsuario] =
+        useState<UsuarioCuestionario | null>(null);
 
-    const [
-        usuario,
-        setUsuario,
-    ] = useState<Usuario | null>(
-        null
-    );
+    const [preguntas, setPreguntas] =
+        useState<PreguntaTestConOpciones[]>([]);
 
+    const [subescalas, setSubescalas] =
+        useState<SubescalaTest[]>([]);
 
-    const [
-        preguntas,
-        setPreguntas,
-    ] = useState<PreguntaTest[]>(
-        []
-    );
+    const [respuestas, setRespuestas] =
+        useState<Record<string, RespuestaSeleccionada>>({});
 
+    const [idEjecucion, setIdEjecucion] =
+        useState<string | null>(null);
 
-    const [
-        subescalas,
-        setSubescalas,
-    ] = useState<Subescala[]>(
-        []
-    );
+    const [paginaActual, setPaginaActual] = useState(0);
+    const [cargando, setCargando] = useState(true);
+    const [finalizando, setFinalizando] = useState(false);
 
-
-    const [
-        respuestas,
-        setRespuestas,
-    ] = useState<
-        Record<
-            string,
-            RespuestaSeleccionada
-        >
-    >({});
-
-
-    const [
-        idEjecucion,
-        setIdEjecucion,
-    ] = useState<string | null>(
-        null
-    );
-
-
-    const [
-        paginaActual,
-        setPaginaActual,
-    ] = useState(0);
-
-
-    const [
-        cargando,
-        setCargando,
-    ] = useState(true);
-
-
-    const [
-        finalizando,
-        setFinalizando,
-    ] = useState(false);
-
-
-    const [
-        error,
-        setError,
-    ] = useState<string | null>(
-        null
-    );
+    const [error, setError] =
+        useState<string | null>(null);
 
 
     // ======================================================
@@ -417,2072 +113,430 @@ export default function CuestionarioDetalle() {
 
 
     // ======================================================
-    // VOLVER ARRIBA AL CAMBIAR DE PÁGINA
+    // SCROLL AL CAMBIAR DE PÁGINA
     // ======================================================
 
     useEffect(() => {
 
-        requestAnimationFrame(
-            () => {
-
-                scrollViewRef.current
-                    ?.scrollTo({
-                        y: 0,
-                        animated: true,
-                    });
-
-            }
-        );
+        requestAnimationFrame(() => {
+            scrollViewRef.current?.scrollTo({
+                y: 0,
+                animated: true,
+            });
+        });
 
     }, [paginaActual]);
-
-
-    // ======================================================
-    // CALCULAR EDAD
-    // ======================================================
-
-    const calcularEdad =
-        (
-            fechaNacimiento:
-                string | null
-        ): number | null => {
-
-            if (!fechaNacimiento) {
-                return null;
-            }
-
-
-            const nacimiento =
-                new Date(
-                    `${fechaNacimiento}T00:00:00`
-                );
-
-
-            if (
-                Number.isNaN(
-                    nacimiento.getTime()
-                )
-            ) {
-                return null;
-            }
-
-
-            const hoy =
-                new Date();
-
-
-            let edad =
-                hoy.getFullYear() -
-                nacimiento.getFullYear();
-
-
-            const diferenciaMes =
-                hoy.getMonth() -
-                nacimiento.getMonth();
-
-
-            if (
-                diferenciaMes < 0 ||
-                (
-                    diferenciaMes === 0 &&
-                    hoy.getDate() <
-                    nacimiento.getDate()
-                )
-            ) {
-                edad--;
-            }
-
-
-            return edad;
-
-        };
-
-
-    // ======================================================
-    // USUARIO ACTUAL
-    // ======================================================
-
-    const obtenerUsuarioActual =
-        async (): Promise<Usuario> => {
-
-            const {
-                data: {
-                    user,
-                },
-
-                error:
-                    authError,
-
-            } =
-                await supabase
-                    .auth
-                    .getUser();
-
-
-            if (authError) {
-                throw authError;
-            }
-
-
-            if (!user) {
-
-                throw new Error(
-                    "Debes iniciar sesión para responder este cuestionario."
-                );
-
-            }
-
-
-            const {
-                data,
-
-                error:
-                    usuarioError,
-
-            } = await supabase
-
-                .from("usuario")
-
-                .select(`
-                    id_usuario,
-                    fecha_nacimiento,
-                    genero,
-                    estado
-                `)
-
-                .eq(
-                    "id_usuario",
-                    user.id
-                )
-
-                .maybeSingle();
-
-
-            if (usuarioError) {
-                throw usuarioError;
-            }
-
-
-            if (!data) {
-
-                throw new Error(
-                    "No fue posible encontrar tu perfil de usuario."
-                );
-
-            }
-
-
-            if (
-                data.estado !==
-                "activo"
-            ) {
-
-                throw new Error(
-                    "La cuenta no se encuentra activa."
-                );
-
-            }
-
-
-            return (
-                data as Usuario
-            );
-
-        };
-
-
-    // ======================================================
-    // EJECUCIÓN
-    // ======================================================
-
-    const obtenerOCrearEjecucion =
-        async (
-            idUsuario:
-                string,
-
-            idTest:
-                string
-        ): Promise<EjecucionTest> => {
-
-            const {
-                data:
-                    existente,
-
-                error:
-                    errorExistente,
-
-            } = await supabase
-
-                .from(
-                    "ejecucion_test"
-                )
-
-                .select(`
-                    id_ejecucion,
-                    id_usuario,
-                    id_test,
-                    estado
-                `)
-
-                .eq(
-                    "id_usuario",
-                    idUsuario
-                )
-
-                .eq(
-                    "id_test",
-                    idTest
-                )
-
-                .eq(
-                    "estado",
-                    "en_progreso"
-                )
-
-                .maybeSingle();
-
-
-            if (errorExistente) {
-                throw errorExistente;
-            }
-
-
-            if (existente) {
-
-                return (
-                    existente as EjecucionTest
-                );
-
-            }
-
-
-            const {
-                data:
-                    nueva,
-
-                error:
-                    errorNueva,
-
-            } = await supabase
-
-                .from(
-                    "ejecucion_test"
-                )
-
-                .insert({
-                    id_usuario:
-                        idUsuario,
-
-                    id_test:
-                        idTest,
-
-                    estado:
-                        "en_progreso",
-                })
-
-                .select(`
-                    id_ejecucion,
-                    id_usuario,
-                    id_test,
-                    estado
-                `)
-
-                .single();
-
-
-            if (errorNueva) {
-                throw errorNueva;
-            }
-
-
-            return (
-                nueva as EjecucionTest
-            );
-
-        };
 
 
     // ======================================================
     // CARGAR CUESTIONARIO
     // ======================================================
 
-    const cargarCuestionario =
-        async () => {
+    const cargarCuestionario = async () => {
 
-            try {
+        if (!id) {
+            return;
+        }
 
-                setCargando(true);
-                setError(null);
+        try {
 
-
-                // ==================================================
-                // TEST
-                // ==================================================
-
-                const {
-                    data:
-                        testData,
-
-                    error:
-                        testError,
-
-                } = await supabase
-
-                    .from("test")
-
-                    .select(`
-                        id_test,
-                        codigo,
-                        nombre,
-                        descripcion,
-                        instrucciones,
-                        poblacion_objetivo,
-                        tipo_aplicacion,
-                        tiene_subescalas,
-                        version,
-                        estado
-                    `)
-
-                    .eq(
-                        "codigo",
-                        id
-                    )
-
-                    .eq(
-                        "estado",
-                        true
-                    )
-
-                    .maybeSingle();
+            setCargando(true);
+            setError(null);
 
 
-                if (testError) {
-                    throw testError;
-                }
+            // ==========================================
+            // TEST
+            // ==========================================
+
+            const test =
+                await obtenerTestPorCodigo(id);
+
+            if (!test) {
+                throw new Error(
+                    "El cuestionario solicitado no se encuentra disponible."
+                );
+            }
 
 
-                if (!testData) {
+            // ==========================================
+            // USUARIO
+            // ==========================================
 
-                    throw new Error(
-                        "El cuestionario solicitado no se encuentra disponible."
-                    );
-
-                }
-
-
-                const test =
-                    testData as Test;
+            const usuarioActual =
+                await obtenerUsuarioCuestionario();
 
 
-                setCuestionario(
-                    test
+            // ==========================================
+            // EJECUCIÓN
+            // ==========================================
+
+            const ejecucion =
+                await obtenerOCrearEjecucion(
+                    usuarioActual.id_usuario,
+                    test.id_test
                 );
 
 
-                // ==================================================
-                // USUARIO
-                // ==================================================
+            // ==========================================
+            // DATOS DEL CUESTIONARIO
+            // ==========================================
 
-                const usuarioActual =
-                    await obtenerUsuarioActual();
-
-
-                setUsuario(
-                    usuarioActual
-                );
-
-
-                // ==================================================
-                // EJECUCIÓN
-                // ==================================================
-
-                const ejecucion =
-                    await obtenerOCrearEjecucion(
-                        usuarioActual.id_usuario,
-                        test.id_test
-                    );
+            const [
+                subescalasObtenidas,
+                preguntasObtenidas,
+                respuestasExistentes,
+            ] = await Promise.all([
+                obtenerSubescalasPorTest(test.id_test),
+                obtenerPreguntasConOpciones(test.id_test),
+                obtenerRespuestasEjecucion(ejecucion.id_ejecucion),
+            ]);
 
 
-                setIdEjecucion(
-                    ejecucion.id_ejecucion
-                );
+            // ==========================================
+            // RECUPERAR RESPUESTAS
+            // ==========================================
 
+            const respuestasRecuperadas:
+                Record<string, RespuestaSeleccionada> = {};
 
-                // ==================================================
-                // SUBESCALAS
-                // ==================================================
+            for (const respuesta of respuestasExistentes) {
 
-                const {
-                    data:
-                        subescalasData,
-
-                    error:
-                        subescalasError,
-
-                } = await supabase
-
-                    .from("subescala")
-
-                    .select(`
-                        id_subescala,
-                        id_test,
-                        codigo,
-                        nombre,
-                        descripcion,
-                        orden,
-                        incluye_total
-                    `)
-
-                    .eq(
-                        "id_test",
-                        test.id_test
-                    )
-
-                    .eq(
-                        "estado",
-                        true
-                    )
-
-                    .order(
-                        "orden",
-                        {
-                            ascending:
-                                true,
-                        }
-                    );
-
-
-                if (subescalasError) {
-                    throw subescalasError;
+                if (!respuesta.id_opcion) {
+                    continue;
                 }
 
+                const pregunta =
+                    preguntasObtenidas.find(
+                        (item) =>
+                            item.id_pregunta === respuesta.id_pregunta
+                    );
 
-                const subescalasPreparadas =
-                    (
-                        subescalasData ??
-                        []
-                    ) as Subescala[];
+                const opcion =
+                    pregunta?.opciones.find(
+                        (item) =>
+                            item.id === respuesta.id_opcion
+                    );
+
+                if (pregunta && opcion) {
+                    respuestasRecuperadas[
+                        pregunta.id_pregunta
+                    ] = {
+                        idOpcion: opcion.id,
+                        valor: opcion.valor,
+                    };
+                }
+            }
 
 
-                setSubescalas(
-                    subescalasPreparadas
+            // ==========================================
+            // ACTUALIZAR ESTADO
+            // ==========================================
+
+            setCuestionario(test);
+            setUsuario(usuarioActual);
+            setIdEjecucion(ejecucion.id_ejecucion);
+            setSubescalas(subescalasObtenidas);
+            setPreguntas(preguntasObtenidas);
+            setRespuestas(respuestasRecuperadas);
+            setPaginaActual(0);
+
+        } catch (error) {
+
+            console.error(
+                "Error cargando cuestionario:",
+                error
+            );
+
+            setError(
+                error instanceof Error
+                    ? error.message
+                    : "No fue posible cargar el cuestionario."
+            );
+
+        } finally {
+
+            setCargando(false);
+        }
+    };
+
+
+    // ======================================================
+    // SELECCIONAR RESPUESTA
+    // ======================================================
+
+    const seleccionarRespuesta = async (
+        pregunta: PreguntaTestConOpciones,
+        opcion: OpcionRespuestaTest
+    ) => {
+
+        if (!idEjecucion) {
+            return;
+        }
+
+        const respuestaAnterior =
+            respuestas[pregunta.id_pregunta];
+
+
+        // ==========================================
+        // ACTUALIZACIÓN OPTIMISTA
+        // ==========================================
+
+        setRespuestas((anteriores) => ({
+            ...anteriores,
+
+            [pregunta.id_pregunta]: {
+                idOpcion: opcion.id,
+                valor: opcion.valor,
+            },
+        }));
+
+
+        try {
+
+            await guardarRespuestaTest({
+                idEjecucion,
+                idPregunta: pregunta.id_pregunta,
+                idOpcion: opcion.id,
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Error guardando respuesta:",
+                error
+            );
+
+
+            // ======================================
+            // RESTAURAR RESPUESTA ANTERIOR
+            // ======================================
+
+            setRespuestas((anteriores) => {
+
+                const copia = {
+                    ...anteriores,
+                };
+
+                if (respuestaAnterior) {
+                    copia[pregunta.id_pregunta] =
+                        respuestaAnterior;
+                } else {
+                    delete copia[pregunta.id_pregunta];
+                }
+
+                return copia;
+            });
+
+            Alert.alert(
+                "No se pudo guardar",
+                "La respuesta no pudo guardarse. Inténtalo nuevamente."
+            );
+        }
+    };
+
+
+    // ======================================================
+    // FINALIZAR CUESTIONARIO
+    // ======================================================
+
+    const finalizarCuestionario = async () => {
+
+        if (
+            !cuestionario ||
+            !usuario ||
+            !idEjecucion ||
+            finalizando
+        ) {
+            return;
+        }
+
+        try {
+
+            setFinalizando(true);
+
+
+            // ==========================================
+            // 1. PUNTAJES
+            // ==========================================
+
+            const puntajeDirecto =
+                calcularPuntajeDirecto(
+                    preguntas,
+                    respuestas,
+                    subescalas
+                );
+
+            const puntajeTotal =
+                transformarPuntajeTotal(
+                    cuestionario.codigo,
+                    puntajeDirecto
                 );
 
 
-                // ==================================================
-                // PREGUNTAS + OPCIONES
-                // ==================================================
+            // ==========================================
+            // 2. VALIDEZ
+            // ==========================================
 
-                const {
-                    data:
-                        preguntasData,
-
-                    error:
-                        preguntasError,
-
-                } = await supabase
-
-                    .from(
-                        "pregunta_test"
-                    )
-
-                    .select(`
-                        id_pregunta,
-                        id_test,
-                        id_subescala,
-                        codigo,
-                        enunciado,
-                        descripcion_apoyo,
-                        tipo_pregunta,
-                        orden,
-                        obligatoria,
-                        puntua,
-                        es_observacional,
-                        permite_comentario,
-                        estado,
-
-                        opcion_test (
-                            id_opcion,
-                            id_pregunta,
-                            codigo,
-                            etiqueta,
-                            valor_puntaje,
-                            orden,
-                            estado
-                        )
-                    `)
-
-                    .eq(
-                        "id_test",
-                        test.id_test
-                    )
-
-                    .eq(
-                        "estado",
-                        true
-                    )
-
-                    .eq(
-                        "opcion_test.estado",
-                        true
-                    )
-
-                    .order(
-                        "orden",
-                        {
-                            ascending:
-                                true,
-                        }
-                    );
+            const {
+                esValido,
+                observaciones,
+            } = evaluarValidezInstrumento(
+                cuestionario,
+                subescalas,
+                preguntas,
+                respuestas
+            );
 
 
-                if (preguntasError) {
-                    throw preguntasError;
-                }
+            // ==========================================
+            // 3. BAREMO
+            // ==========================================
 
-
-                const preguntasPreparadas =
-                    (
-                        preguntasData ??
-                        []
-                    ).map(
-                        (
-                            pregunta
-                        ) => {
-
-                            const opciones =
-                                (
-                                    (
-                                        pregunta
-                                            .opcion_test ??
-                                        []
-                                    ) as OpcionTestDB[]
-                                )
-
-                                    .filter(
-                                        opcion =>
-                                            opcion.estado
-                                    )
-
-                                    .sort(
-                                        (
-                                            a,
-                                            b
-                                        ) =>
-                                            a.orden -
-                                            b.orden
-                                    )
-
-                                    .map(
-                                        (
-                                            opcion
-                                        ): OpcionRespuestaTest => ({
-
-                                            id:
-                                                opcion.id_opcion,
-
-                                            codigo:
-                                                opcion.codigo,
-
-                                            texto:
-                                                opcion.etiqueta,
-
-                                            valor:
-                                                opcion.valor_puntaje ===
-                                                null
-
-                                                    ? null
-
-                                                    : Number(
-                                                        opcion.valor_puntaje
-                                                    ),
-
-                                            orden:
-                                                opcion.orden,
-
-                                        })
-                                    );
-
-
-                            return {
-
-                                id_pregunta:
-                                    pregunta.id_pregunta,
-
-                                id_test:
-                                    pregunta.id_test,
-
-                                id_subescala:
-                                    pregunta.id_subescala,
-
-                                codigo:
-                                    pregunta.codigo,
-
-                                enunciado:
-                                    pregunta.enunciado,
-
-                                descripcion_apoyo:
-                                    pregunta.descripcion_apoyo,
-
-                                tipo_pregunta:
-                                    pregunta.tipo_pregunta,
-
-                                orden:
-                                    pregunta.orden,
-
-                                obligatoria:
-                                    pregunta.obligatoria,
-
-                                puntua:
-                                    pregunta.puntua,
-
-                                es_observacional:
-                                    pregunta.es_observacional,
-
-                                permite_comentario:
-                                    pregunta.permite_comentario,
-
-                                estado:
-                                    pregunta.estado,
-
-                                opciones,
-
-                            };
-
-                        }
-                    ) as PreguntaTest[];
-
-
-                setPreguntas(
-                    preguntasPreparadas
+            const baremos =
+                await obtenerBaremosPorTest(
+                    cuestionario.id_test
                 );
 
+            const baremo =
+                seleccionarBaremo(
+                    baremos,
+                    usuario.fecha_nacimiento,
+                    usuario.genero
+                );
 
-                // ==================================================
-                // RESPUESTAS EXISTENTES
-                // ==================================================
+            let rangos: RangoBaremo[] = [];
+            let rangoGlobal: RangoBaremo | null = null;
 
-                const {
-                    data:
-                        respuestasData,
+            if (baremo) {
 
-                    error:
-                        respuestasError,
-
-                } = await supabase
-
-                    .from(
-                        "respuesta_test"
-                    )
-
-                    .select(`
-                        id_pregunta,
-                        id_opcion,
-                        valor_numerico
-                    `)
-
-                    .eq(
-                        "id_ejecucion",
-                        ejecucion.id_ejecucion
+                rangos =
+                    await obtenerRangosPorBaremo(
+                        baremo.id_baremo
                     );
 
+                const valorBaremo =
+                    obtenerValorBaremo(
+                        baremo,
+                        puntajeDirecto,
+                        puntajeTotal
+                    );
 
-                if (respuestasError) {
-                    throw respuestasError;
+                if (valorBaremo !== null) {
+                    rangoGlobal =
+                        buscarRango(
+                            rangos,
+                            valorBaremo,
+                            null
+                        );
                 }
+            }
 
 
-                const recuperadas:
-                    Record<
-                        string,
-                        RespuestaSeleccionada
-                    > = {};
+            // ==========================================
+            // 4. RESULTADO PRINCIPAL
+            // ==========================================
+
+            const resultado =
+                await guardarResultadoTest({
+                    idEjecucion,
+                    puntajeDirecto,
+                    puntajeTotal,
+                    nivel: rangoGlobal?.nivel ?? null,
+                    interpretacion:
+                        rangoGlobal?.interpretacion ?? null,
+                    esValido,
+                    observaciones,
+                    idBaremo: baremo?.id_baremo ?? null,
+                    idRangoBaremo:
+                        rangoGlobal?.id_rango ?? null,
+                });
 
 
-                for (
-                    const respuesta of
-                    respuestasData ??
-                    []
-                ) {
+            // ==========================================
+            // 5. RESULTADOS DE SUBESCALAS
+            // ==========================================
 
-                    if (
-                        !respuesta.id_opcion
-                    ) {
+            if (cuestionario.tiene_subescalas) {
+
+                for (const subescala of subescalas) {
+
+                    const tienePreguntas =
+                        preguntas.some(
+                            (pregunta) =>
+                                pregunta.id_subescala ===
+                                subescala.id_subescala &&
+                                pregunta.puntua
+                        );
+
+                    if (!tienePreguntas) {
                         continue;
                     }
 
-
-                    const pregunta =
-                        preguntasPreparadas.find(
-                            item =>
-                                item.id_pregunta ===
-                                respuesta.id_pregunta
-                        );
-
-
-                    const opcion =
-                        pregunta
-                            ?.opciones
-                            .find(
-                                item =>
-                                    item.id ===
-                                    respuesta.id_opcion
-                            );
-
-
-                    if (
-                        pregunta &&
-                        opcion
-                    ) {
-
-                        recuperadas[
-                            pregunta.id_pregunta
-                        ] = {
-
-                            idOpcion:
-                                opcion.id,
-
-                            valor:
-                                opcion.valor,
-
-                        };
-
-                    }
-
-                }
-
-
-                setRespuestas(
-                    recuperadas
-                );
-
-
-                setPaginaActual(0);
-
-
-            } catch (error) {
-
-                console.error(
-                    "Error cargando cuestionario:",
-                    error
-                );
-
-
-                setError(
-                    error instanceof Error
-
-                        ? error.message
-
-                        : "No fue posible cargar el cuestionario."
-                );
-
-
-            } finally {
-
-                setCargando(false);
-
-            }
-
-        };
-
-
-    // ======================================================
-    // GUARDAR RESPUESTA
-    // ======================================================
-
-    const seleccionarRespuesta =
-        async (
-            pregunta:
-                PreguntaTest,
-
-            opcion:
-                OpcionRespuestaTest
-        ) => {
-
-            if (!idEjecucion) {
-                return;
-            }
-
-
-            const respuestaAnterior =
-                respuestas[
-                    pregunta.id_pregunta
-                ];
-
-
-            // Actualización optimista
-
-            setRespuestas(
-                anteriores => ({
-
-                    ...anteriores,
-
-                    [pregunta.id_pregunta]: {
-
-                        idOpcion:
-                            opcion.id,
-
-                        valor:
-                            opcion.valor,
-
-                    },
-
-                })
-            );
-
-
-            try {
-
-                const {
-                    error:
-                        guardarError,
-
-                } = await supabase
-
-                    .from(
-                        "respuesta_test"
-                    )
-
-                    .upsert(
-                        {
-                            id_ejecucion:
-                                idEjecucion,
-
-                            id_pregunta:
-                                pregunta.id_pregunta,
-
-                            id_opcion:
-                                opcion.id,
-
-                            texto_respuesta:
-                                null,
-
-                            valor_numerico:
-                                null,
-                        },
-                        {
-                            onConflict:
-                                "id_ejecucion,id_pregunta",
-                        }
-                    );
-
-
-                if (guardarError) {
-                    throw guardarError;
-                }
-
-
-            } catch (error) {
-
-                console.error(
-                    "Error guardando respuesta:",
-                    error
-                );
-
-
-                // Restaurar estado anterior
-
-                setRespuestas(
-                    anteriores => {
-
-                        const copia = {
-                            ...anteriores,
-                        };
-
-
-                        if (respuestaAnterior) {
-
-                            copia[
-                                pregunta.id_pregunta
-                            ] =
-                                respuestaAnterior;
-
-                        } else {
-
-                            delete copia[
-                                pregunta.id_pregunta
-                            ];
-
-                        }
-
-
-                        return copia;
-
-                    }
-                );
-
-
-                Alert.alert(
-                    "No se pudo guardar",
-                    "La respuesta no pudo guardarse. Inténtalo nuevamente."
-                );
-
-            }
-
-        };
-
-
-    // ======================================================
-    // SUBESCALA DE UNA PREGUNTA
-    // ======================================================
-
-    const obtenerSubescalaPregunta =
-        (
-            pregunta:
-                PreguntaTest
-        ) => {
-
-            if (
-                !pregunta.id_subescala
-            ) {
-                return null;
-            }
-
-
-            return (
-                subescalas.find(
-                    subescala =>
-                        subescala.id_subescala ===
-                        pregunta.id_subescala
-                ) ??
-                null
-            );
-
-        };
-
-
-    // ======================================================
-    // ¿LA PREGUNTA ENTRA AL TOTAL?
-    // ======================================================
-
-    const incluirPreguntaEnTotal =
-        (
-            pregunta:
-                PreguntaTest
-        ) => {
-
-            if (
-                !pregunta.puntua
-            ) {
-                return false;
-            }
-
-
-            const subescala =
-                obtenerSubescalaPregunta(
-                    pregunta
-                );
-
-
-            // Preguntas sin subescala
-            if (!subescala) {
-                return true;
-            }
-
-
-            return (
-                subescala.incluye_total
-            );
-
-        };
-
-
-    // ======================================================
-    // PUNTAJE DIRECTO GLOBAL
-    // ======================================================
-
-    const calcularPuntajeDirecto =
-        () => {
-
-            return preguntas.reduce(
-                (
-                    total,
-                    pregunta
-                ) => {
-
-                    if (
-                        !incluirPreguntaEnTotal(
-                            pregunta
-                        )
-                    ) {
-                        return total;
-                    }
-
-
-                    return (
-                        total +
-                        (
-                            respuestas[
-                                pregunta.id_pregunta
-                            ]?.valor ??
-                            0
-                        )
-                    );
-
-                },
-                0
-            );
-
-        };
-
-
-    // ======================================================
-    // PUNTAJE POR SUBESCALA
-    // ======================================================
-
-    const calcularPuntajeSubescala =
-        (
-            idSubescala:
-                string
-        ) => {
-
-            return preguntas
-
-                .filter(
-                    pregunta =>
-                        pregunta.id_subescala ===
-                            idSubescala &&
-                        pregunta.puntua
-                )
-
-                .reduce(
-                    (
-                        total,
-                        pregunta
-                    ) => {
-
-                        return (
-                            total +
-                            (
-                                respuestas[
-                                    pregunta.id_pregunta
-                                ]?.valor ??
-                                0
-                            )
-                        );
-
-                    },
-                    0
-                );
-
-        };
-
-
-    // ======================================================
-    // TRANSFORMACIÓN DEL PUNTAJE TOTAL
-    // ======================================================
-
-    const transformarPuntajeTotal =
-        (
-            codigoTest:
-                string,
-
-            puntajeDirecto:
-                number
-        ) => {
-
-            /*
-             * COOPERSMITH
-             *
-             * Las áreas puntuables suman un máximo
-             * directo de 50.
-             *
-             * La puntuación global se multiplica
-             * por 2 para expresarse sobre 100.
-             */
-
-            if (
-                codigoTest ===
-                    "COOPERSMITH_NINOS" ||
-                codigoTest ===
-                    "COOPERSMITH_ADULTOS"
-            ) {
-
-                return (
-                    puntajeDirecto *
-                    2
-                );
-
-            }
-
-
-            /*
-             * Para el resto de instrumentos,
-             * por defecto:
-             *
-             * puntaje_total =
-             * puntaje_directo
-             */
-
-            return puntajeDirecto;
-
-        };
-
-
-    // ======================================================
-    // EVALUAR VALIDEZ
-    // ======================================================
-
-    const evaluarValidezInstrumento =
-        (
-            test:
-                Test
-        ) => {
-
-            let esValido =
-                true;
-
-
-            let observaciones:
-                string | null =
-                null;
-
-
-            /*
-             * ==================================================
-             * COOPERSMITH FORMA ESCOLAR
-             * ==================================================
-             *
-             * Escala L:
-             *
-             * > 5 = falta de consistencia.
-             */
-
-            if (
-                test.codigo ===
-                "COOPERSMITH_NINOS"
-            ) {
-
-                const escalaMentiras =
-                    subescalas.find(
-                        subescala =>
-                            subescala.codigo ===
-                            "L"
-                    );
-
-
-                if (escalaMentiras) {
-
-                    const puntajeMentiras =
+                    const puntajeSubescala =
                         calcularPuntajeSubescala(
-                            escalaMentiras.id_subescala
+                            subescala.id_subescala,
+                            preguntas,
+                            respuestas
                         );
 
-
-                    if (
-                        puntajeMentiras >
-                        5
-                    ) {
-
-                        esValido =
-                            false;
-
-
-                        observaciones =
-                            `La Escala de Mentiras obtuvo ${puntajeMentiras} puntos. ` +
-                            "De acuerdo con la regla del instrumento, una puntuación superior a 5 indica falta de consistencia en las respuestas.";
-
-                    }
-
-                }
-
-            }
-
-
-            /*
-             * IMPORTANTE:
-             *
-             * La pauta adulta compartida identifica
-             * una escala M asociada a los ítems de
-             * consistencia, pero la documentación
-             * proporcionada no especifica expresamente
-             * el punto de invalidación.
-             *
-             * Por ello no aplicamos automáticamente
-             * > 5 en adultos.
-             */
-
-
-            return {
-                esValido,
-                observaciones,
-            };
-
-        };
-
-
-    // ======================================================
-    // SELECCIONAR BAREMO
-    // ======================================================
-
-    const seleccionarBaremo =
-        async (): Promise<Baremo | null> => {
-
-            if (
-                !cuestionario ||
-                !usuario
-            ) {
-                return null;
-            }
-
-
-            const {
-                data,
-
-                error:
-                    baremoError,
-
-            } = await supabase
-
-                .from(
-                    "baremo_test"
-                )
-
-                .select(`
-                    id_baremo,
-                    id_test,
-                    codigo,
-                    nombre,
-                    poblacion,
-                    sexo_aplicable,
-                    edad_minima,
-                    edad_maxima,
-                    tipo_valor,
-                    version,
-                    fuente
-                `)
-
-                .eq(
-                    "id_test",
-                    cuestionario.id_test
-                )
-
-                .eq(
-                    "estado",
-                    true
-                );
-
-
-            if (baremoError) {
-                throw baremoError;
-            }
-
-
-            const baremos =
-                (
-                    data ??
-                    []
-                ) as Baremo[];
-
-
-            if (
-                baremos.length ===
-                0
-            ) {
-                return null;
-            }
-
-
-            const edad =
-                calcularEdad(
-                    usuario.fecha_nacimiento
-                );
-
-
-            const genero =
-                usuario.genero
-                    ?.trim()
-                    .toLowerCase();
-
-
-            const candidatos =
-                baremos.filter(
-                    baremo => {
-
-                        // Edad mínima
-
-                        const cumpleEdadMinima =
-                            baremo.edad_minima ===
-                                null ||
-                            edad === null ||
-                            edad >=
-                                baremo.edad_minima;
-
-
-                        // Edad máxima
-
-                        const cumpleEdadMaxima =
-                            baremo.edad_maxima ===
-                                null ||
-                            edad === null ||
-                            edad <=
-                                baremo.edad_maxima;
-
-
-                        // Sexo
-
-                        const sexoBaremo =
-                            baremo
-                                .sexo_aplicable
-                                ?.trim()
-                                .toLowerCase();
-
-
-                        const cumpleSexo =
-                            !sexoBaremo ||
-                            sexoBaremo ===
-                                "todos" ||
-                            !genero ||
-                            sexoBaremo ===
-                                genero;
-
-
-                        return (
-                            cumpleEdadMinima &&
-                            cumpleEdadMaxima &&
-                            cumpleSexo
-                        );
-
-                    }
-                );
-
-
-            if (
-                candidatos.length ===
-                0
-            ) {
-                return null;
-            }
-
-
-            /*
-             * Elegimos el baremo más específico.
-             *
-             * Sexo específico = +2
-             * Edad mínima = +1
-             * Edad máxima = +1
-             */
-
-            candidatos.sort(
-                (
-                    a,
-                    b
-                ) => {
-
-                    const obtenerEspecificidad =
-                        (
-                            baremo:
-                                Baremo
-                        ) => {
-
-                            let puntos =
-                                0;
-
-
-                            if (
-                                baremo.sexo_aplicable &&
-                                baremo.sexo_aplicable
-                                    .toLowerCase() !==
-                                "todos"
-                            ) {
-
-                                puntos +=
-                                    2;
-
-                            }
-
-
-                            if (
-                                baremo.edad_minima !==
-                                null
-                            ) {
-
-                                puntos++;
-
-                            }
-
-
-                            if (
-                                baremo.edad_maxima !==
-                                null
-                            ) {
-
-                                puntos++;
-
-                            }
-
-
-                            return puntos;
-
-                        };
-
-
-                    return (
-                        obtenerEspecificidad(
-                            b
-                        ) -
-                        obtenerEspecificidad(
-                            a
-                        )
-                    );
-
-                }
-            );
-
-
-            return (
-                candidatos[0]
-            );
-
-        };
-
-
-    // ======================================================
-    // CARGAR RANGOS
-    // ======================================================
-
-    const cargarRangos =
-        async (
-            idBaremo:
-                string
-        ): Promise<RangoBaremo[]> => {
-
-            const {
-                data,
-
-                error:
-                    rangoError,
-
-            } = await supabase
-
-                .from(
-                    "rango_baremo"
-                )
-
-                .select(`
-                    id_rango,
-                    id_baremo,
-                    id_subescala,
-                    nivel,
-                    valor_minimo,
-                    valor_maximo,
-                    interpretacion,
-                    orden
-                `)
-
-                .eq(
-                    "id_baremo",
-                    idBaremo
-                )
-
-                .eq(
-                    "estado",
-                    true
-                )
-
-                .order(
-                    "orden",
-                    {
-                        ascending:
-                            true,
-                    }
-                );
-
-
-            if (rangoError) {
-                throw rangoError;
-            }
-
-
-            return (
-                data ??
-                []
-            ) as RangoBaremo[];
-
-        };
-
-
-    // ======================================================
-    // BUSCAR RANGO
-    // ======================================================
-
-    const buscarRango =
-        (
-            rangos:
-                RangoBaremo[],
-
-            valor:
-                number,
-
-            idSubescala:
-                string | null
-        ) => {
-
-            return (
-                rangos.find(
-                    rango => {
-
-                        const mismoAmbito =
-                            idSubescala ===
-                            null
-
-                                ? rango.id_subescala ===
-                                    null
-
-                                : rango.id_subescala ===
-                                    idSubescala;
-
-
-                        if (!mismoAmbito) {
-                            return false;
-                        }
-
-
-                        const minimo =
-                            rango.valor_minimo ===
-                            null
-
-                                ? null
-
-                                : Number(
-                                    rango.valor_minimo
-                                );
-
-
-                        const maximo =
-                            rango.valor_maximo ===
-                            null
-
-                                ? null
-
-                                : Number(
-                                    rango.valor_maximo
-                                );
-
-
-                        const cumpleMinimo =
-                            minimo === null ||
-                            valor >= minimo;
-
-
-                        const cumpleMaximo =
-                            maximo === null ||
-                            valor <= maximo;
-
-
-                        return (
-                            cumpleMinimo &&
-                            cumpleMaximo
-                        );
-
-                    }
-                ) ??
-                null
-            );
-
-        };
-
-
-    // ======================================================
-    // VALOR QUE DEBE USAR EL BAREMO
-    // ======================================================
-
-    const obtenerValorBaremo =
-        (
-            baremo:
-                Baremo,
-
-            puntajeDirecto:
-                number,
-
-            puntajeTotal:
-                number
-        ): number | null => {
-
-            switch (
-                baremo.tipo_valor
-            ) {
-
-                case "puntaje_directo":
-
-                    return puntajeDirecto;
-
-
-                case "puntaje_total":
-
-                    return puntajeTotal;
-
-
-                /*
-                 * Estos tres requieren una verdadera
-                 * conversión normativa.
-                 *
-                 * NO se debe utilizar directamente
-                 * puntaje_total como si fuera percentil,
-                 * T o eneatipo.
-                 */
-
-                case "percentil":
-                case "puntaje_t":
-                case "eneatipo":
-
-                    return null;
-
-
-                default:
-
-                    return null;
-
-            }
-
-        };
-
-
-    // ======================================================
-    // GUARDAR RESULTADO
-    // ======================================================
-
-    const guardarResultado =
-        async ({
-            puntajeDirecto,
-            puntajeTotal,
-            nivel,
-            interpretacion,
-            esValido,
-            observaciones,
-            idBaremo,
-            idRangoBaremo,
-        }: {
-            puntajeDirecto:
-                number;
-
-            puntajeTotal:
-                number;
-
-            nivel:
-                string | null;
-
-            interpretacion:
-                string | null;
-
-            esValido:
-                boolean;
-
-            observaciones:
-                string | null;
-
-            idBaremo:
-                string | null;
-
-            idRangoBaremo:
-                string | null;
-        }): Promise<ResultadoGuardado> => {
-
-            if (!idEjecucion) {
-
-                throw new Error(
-                    "No existe una ejecución activa."
-                );
-
-            }
-
-
-            const {
-                data,
-
-                error:
-                    resultadoError,
-
-            } = await supabase
-
-                .from(
-                    "resultado_test"
-                )
-
-                .upsert(
-                    {
-                        id_ejecucion:
-                            idEjecucion,
-
-                        puntaje_directo:
-                            puntajeDirecto,
-
-                        puntaje_total:
-                            puntajeTotal,
-
-                        nivel_cualitativo:
-                            nivel,
-
-                        interpretacion_texto:
-                            interpretacion,
-
-                        es_valido:
-                            esValido,
-
-                        observaciones:
-                            observaciones,
-
-                        id_baremo:
-                            idBaremo,
-
-                        id_rango_baremo:
-                            idRangoBaremo,
-
-                        tipo_finalizacion:
-                            "completa",
-                    },
-                    {
-                        onConflict:
-                            "id_ejecucion",
-                    }
-                )
-
-                .select(`
-                    id_resultado,
-                    id_ejecucion
-                `)
-
-                .single();
-
-
-            if (resultadoError) {
-                throw resultadoError;
-            }
-
-
-            return (
-                data as ResultadoGuardado
-            );
-
-        };
-
-
-    // ======================================================
-    // FINALIZAR
-    // ======================================================
-
-    const finalizarCuestionario =
-        async () => {
-
-            if (
-                !cuestionario ||
-                !idEjecucion ||
-                finalizando
-            ) {
-                return;
-            }
-
-
-            try {
-
-                setFinalizando(true);
-
-
-                // ==================================================
-                // 1. PUNTAJES
-                // ==================================================
-
-                const puntajeDirecto =
-                    calcularPuntajeDirecto();
-
-
-                const puntajeTotal =
-                    transformarPuntajeTotal(
-                        cuestionario.codigo,
-                        puntajeDirecto
-                    );
-
-
-                // ==================================================
-                // 2. VALIDEZ
-                // ==================================================
-
-                const {
-                    esValido,
-                    observaciones,
-                } =
-                    evaluarValidezInstrumento(
-                        cuestionario
-                    );
-
-
-                // ==================================================
-                // 3. BAREMO
-                // ==================================================
-
-                const baremo =
-                    await seleccionarBaremo();
-
-
-                let rangos:
-                    RangoBaremo[] =
-                    [];
-
-
-                let rangoGlobal:
-                    RangoBaremo | null =
-                    null;
-
-
-                if (baremo) {
-
-                    rangos =
-                        await cargarRangos(
-                            baremo.id_baremo
-                        );
-
-
-                    const valorBaremo =
-                        obtenerValorBaremo(
-                            baremo,
-                            puntajeDirecto,
-                            puntajeTotal
-                        );
-
-
-                    if (
-                        valorBaremo !==
-                        null
-                    ) {
-
-                        rangoGlobal =
-                            buscarRango(
+                    const rangoSubescala =
+                        baremo
+                            ? buscarRango(
                                 rangos,
-                                valorBaremo,
-                                null
-                            );
-
-                    }
-
-                }
-
-
-                // ==================================================
-                // 4. RESULTADO PRINCIPAL
-                // ==================================================
-
-                const resultado =
-                    await guardarResultado({
-
-                        puntajeDirecto,
-
-                        puntajeTotal,
-
-                        nivel:
-                            rangoGlobal?.nivel ??
-                            null,
-
-                        interpretacion:
-                            rangoGlobal?.interpretacion ??
-                            null,
-
-                        esValido,
-
-                        observaciones,
-
-                        idBaremo:
-                            baremo?.id_baremo ??
-                            null,
-
-                        idRangoBaremo:
-                            rangoGlobal?.id_rango ??
-                            null,
-
-                    });
-
-
-                // ==================================================
-                // 5. RESULTADOS DE SUBESCALAS
-                // ==================================================
-
-                if (
-                    cuestionario.tiene_subescalas &&
-                    subescalas.length >
-                        0
-                ) {
-
-                    for (
-                        const subescala of
-                        subescalas
-                    ) {
-
-                        const preguntasSubescala =
-                            preguntas.filter(
-                                pregunta =>
-                                    pregunta.id_subescala ===
-                                        subescala.id_subescala &&
-                                    pregunta.puntua
-                            );
-
-
-                        if (
-                            preguntasSubescala.length ===
-                            0
-                        ) {
-                            continue;
-                        }
-
-
-                        const puntajeSubescala =
-                            calcularPuntajeSubescala(
+                                puntajeSubescala,
                                 subescala.id_subescala
-                            );
-
-
-                        /*
-                         * La puntuación de las subescalas
-                         * de Coopersmith se mantiene directa.
-                         *
-                         * Ejemplos escolares:
-                         *
-                         * General 0–26
-                         * Social  0–8
-                         * Hogar   0–8
-                         * Escuela 0–8
-                         * Mentiras 0–8
-                         */
-
-                        const rangoSubescala =
-                            baremo
-
-                                ? buscarRango(
-                                    rangos,
-                                    puntajeSubescala,
-                                    subescala.id_subescala
-                                )
-
-                                : null;
-
-
-                        const {
-                            error:
-                                subResultadoError,
-
-                        } = await supabase
-
-                            .from(
-                                "resultado_subescala"
                             )
+                            : null;
 
-                            .upsert(
-                                {
-                                    id_resultado:
-                                        resultado.id_resultado,
-
-                                    id_subescala:
-                                        subescala.id_subescala,
-
-                                    puntaje_directo:
-                                        puntajeSubescala,
-
-                                    puntaje_transformado:
-                                        null,
-
-                                    nivel_cualitativo:
-                                        rangoSubescala
-                                            ?.nivel ??
-                                        null,
-
-                                    interpretacion_texto:
-                                        rangoSubescala
-                                            ?.interpretacion ??
-                                        null,
-                                },
-                                {
-                                    onConflict:
-                                        "id_resultado,id_subescala",
-                                }
-                            );
-
-
-                        if (
-                            subResultadoError
-                        ) {
-                            throw subResultadoError;
-                        }
-
-                    }
-
+                    await guardarResultadoSubescala({
+                        idResultado: resultado.id_resultado,
+                        idSubescala: subescala.id_subescala,
+                        puntajeDirecto: puntajeSubescala,
+                        nivel:
+                            rangoSubescala?.nivel ?? null,
+                        interpretacion:
+                            rangoSubescala?.interpretacion ?? null,
+                    });
                 }
-
-
-                // ==================================================
-                // 6. COMPLETAR EJECUCIÓN
-                // ==================================================
-
-                const {
-                    error:
-                        completarError,
-
-                } = await supabase
-
-                    .from(
-                        "ejecucion_test"
-                    )
-
-                    .update({
-                        estado:
-                            "completado",
-
-                        fecha_fin:
-                            new Date()
-                                .toISOString(),
-                    })
-
-                    .eq(
-                        "id_ejecucion",
-                        idEjecucion
-                    );
-
-
-                if (completarError) {
-                    throw completarError;
-                }
-
-
-                // ==================================================
-                // 7. IR A RESULTADO
-                // ==================================================
-
-                router.replace({
-
-                    pathname:
-                        "/cuestionarios/[id]/resultado",
-
-                    params: {
-
-                        id:
-                            cuestionario.codigo,
-
-                        idResultado:
-                            resultado.id_resultado,
-
-                    },
-
-                } as any);
-
-
-            } catch (error) {
-
-                console.error(
-                    "Error finalizando cuestionario:",
-                    error
-                );
-
-
-                Alert.alert(
-                    "No se pudo finalizar",
-                    "No fue posible guardar correctamente el resultado. Inténtalo nuevamente."
-                );
-
-
-            } finally {
-
-                setFinalizando(false);
-
             }
 
-        };
+
+            // ==========================================
+            // 6. COMPLETAR EJECUCIÓN
+            // ==========================================
+
+            await completarEjecucion(idEjecucion);
+
+
+            // ==========================================
+            // 7. RESULTADO
+            // ==========================================
+
+            router.replace({
+                pathname: "/cuestionarios/[id]/resultado",
+                params: {
+                    id: cuestionario.codigo,
+                    idResultado: resultado.id_resultado,
+                },
+            } as any);
+
+        } catch (error) {
+
+            console.error(
+                "Error finalizando cuestionario:",
+                error
+            );
+
+            Alert.alert(
+                "No se pudo finalizar",
+                "No fue posible guardar correctamente el resultado. Inténtalo nuevamente."
+            );
+
+        } finally {
+
+            setFinalizando(false);
+        }
+    };
 
 
     // ======================================================
@@ -2495,105 +549,71 @@ export default function CuestionarioDetalle() {
             PREGUNTAS_POR_PAGINA
         );
 
-
     const indiceInicial =
         paginaActual *
         PREGUNTAS_POR_PAGINA;
 
-
     const preguntasPagina =
         preguntas.slice(
             indiceInicial,
-            indiceInicial +
-                PREGUNTAS_POR_PAGINA
+            indiceInicial + PREGUNTAS_POR_PAGINA
         );
-
 
     const todasRespondidasEnPagina =
         preguntasPagina.every(
-            pregunta =>
+            (pregunta) =>
                 !pregunta.obligatoria ||
                 respuestas[
-                    pregunta.id_pregunta
+                pregunta.id_pregunta
                 ] !== undefined
         );
-
 
     const todasRespondidas =
         preguntas.every(
-            pregunta =>
+            (pregunta) =>
                 !pregunta.obligatoria ||
                 respuestas[
-                    pregunta.id_pregunta
+                pregunta.id_pregunta
                 ] !== undefined
         );
 
 
     // ======================================================
-    // AVANZAR
+    // NAVEGACIÓN
     // ======================================================
 
-    const avanzar =
-        () => {
+    const avanzar = () => {
 
-            if (
-                !todasRespondidasEnPagina
-            ) {
-                return;
-            }
+        if (!todasRespondidasEnPagina) {
+            return;
+        }
 
+        if (paginaActual < totalPaginas - 1) {
+            setPaginaActual(
+                (pagina) => pagina + 1
+            );
 
-            if (
-                paginaActual <
-                totalPaginas - 1
-            ) {
+            return;
+        }
 
-                setPaginaActual(
-                    pagina =>
-                        pagina + 1
-                );
-
-
-                return;
-
-            }
+        if (todasRespondidas) {
+            finalizarCuestionario();
+        }
+    };
 
 
-            if (todasRespondidas) {
+    const retroceder = () => {
 
-                finalizarCuestionario();
+        if (paginaActual > 0) {
+            setPaginaActual(
+                (pagina) => pagina - 1
+            );
 
-            }
+            return;
+        }
 
-        };
-
-
-    // ======================================================
-    // RETROCEDER
-    // ======================================================
-
-    const retroceder =
-        () => {
-
-            if (
-                paginaActual >
-                0
-            ) {
-
-                setPaginaActual(
-                    pagina =>
-                        pagina - 1
-                );
-
-
-                return;
-
-            }
-
-
-            router.back();
-
-        };
+        router.back();
+    };
 
 
     // ======================================================
@@ -2603,7 +623,6 @@ export default function CuestionarioDetalle() {
     if (cargando) {
 
         return (
-
             <View
                 style={{
                     flex: 1,
@@ -2612,35 +631,23 @@ export default function CuestionarioDetalle() {
                     justifyContent: "center",
                 }}
             >
-
                 <ActivityIndicator
                     size="large"
                     color={primaryColor}
                 />
 
-
                 <Text
                     style={{
-                        fontFamily:
-                            "Nunito-Medium",
-
-                        fontSize:
-                            15,
-
-                        color:
-                            textSecondaryColor,
-
-                        marginTop:
-                            12,
+                        marginTop: 12,
+                        fontFamily: "Nunito-Medium",
+                        fontSize: 15,
+                        color: textSecondaryColor,
                     }}
                 >
                     Cargando cuestionario...
                 </Text>
-
             </View>
-
         );
-
     }
 
 
@@ -2648,103 +655,62 @@ export default function CuestionarioDetalle() {
     // ERROR
     // ======================================================
 
-    if (
-        error ||
-        !cuestionario
-    ) {
+    if (error || !cuestionario) {
 
         return (
-
             <View
                 style={{
                     flex: 1,
+                    paddingHorizontal: 24,
                     backgroundColor,
                     alignItems: "center",
                     justifyContent: "center",
-                    paddingHorizontal: 24,
                 }}
             >
-
                 <Ionicons
                     name="alert-circle-outline"
                     size={50}
                     color={accentColor}
                 />
 
-
                 <Text
                     style={{
-                        fontFamily:
-                            "Nunito-Bold",
-
-                        fontSize:
-                            19,
-
-                        lineHeight:
-                            25,
-
-                        color:
-                            textColor,
-
-                        textAlign:
-                            "center",
-
-                        marginTop:
-                            12,
+                        marginTop: 12,
+                        fontFamily: "Nunito-Bold",
+                        fontSize: 19,
+                        lineHeight: 25,
+                        color: textColor,
+                        textAlign: "center",
                     }}
                 >
-
                     {
                         error ??
                         "Cuestionario no encontrado."
                     }
-
                 </Text>
 
-
                 <Pressable
-                    onPress={() =>
-                        router.back()
-                    }
+                    onPress={() => router.back()}
                     style={{
-                        backgroundColor:
-                            primaryColor,
-
-                        paddingHorizontal:
-                            24,
-
-                        paddingVertical:
-                            12,
-
-                        borderRadius:
-                            12,
-
-                        marginTop:
-                            20,
+                        marginTop: 20,
+                        paddingHorizontal: 24,
+                        paddingVertical: 12,
+                        borderRadius: 12,
+                        backgroundColor: primaryColor,
                     }}
                 >
-
                     <Text
                         style={{
-                            fontFamily:
-                                "Nunito-SemiBold",
-
-                            fontSize:
-                                14,
-
-                            color:
-                                "#FFFFFF",
+                            fontFamily: "Nunito-SemiBold",
+                            fontSize: 14,
+                            color: "#FFFFFF",
                         }}
                     >
                         Volver
                     </Text>
-
                 </Pressable>
-
             </View>
-
         );
-
     }
 
 
@@ -2752,95 +718,58 @@ export default function CuestionarioDetalle() {
     // SIN PREGUNTAS
     // ======================================================
 
-    if (
-        preguntas.length ===
-        0
-    ) {
+    if (preguntas.length === 0) {
 
         return (
-
             <View
                 style={{
                     flex: 1,
+                    paddingHorizontal: 24,
                     backgroundColor,
                     alignItems: "center",
                     justifyContent: "center",
-                    paddingHorizontal: 24,
                 }}
             >
-
                 <Ionicons
                     name="document-text-outline"
                     size={50}
                     color={accentColor}
                 />
 
-
                 <Text
                     style={{
-                        fontFamily:
-                            "Nunito-Bold",
-
-                        fontSize:
-                            19,
-
-                        color:
-                            textColor,
-
-                        textAlign:
-                            "center",
-
-                        marginTop:
-                            12,
+                        marginTop: 12,
+                        fontFamily: "Nunito-Bold",
+                        fontSize: 19,
+                        color: textColor,
+                        textAlign: "center",
                     }}
                 >
                     Este cuestionario aún no contiene preguntas.
                 </Text>
 
-
                 <Pressable
-                    onPress={() =>
-                        router.back()
-                    }
+                    onPress={() => router.back()}
                     style={{
-                        backgroundColor:
-                            primaryColor,
-
-                        paddingHorizontal:
-                            24,
-
-                        paddingVertical:
-                            12,
-
-                        borderRadius:
-                            12,
-
-                        marginTop:
-                            20,
+                        marginTop: 20,
+                        paddingHorizontal: 24,
+                        paddingVertical: 12,
+                        borderRadius: 12,
+                        backgroundColor: primaryColor,
                     }}
                 >
-
                     <Text
                         style={{
-                            fontFamily:
-                                "Nunito-SemiBold",
-
-                            fontSize:
-                                14,
-
-                            color:
-                                "#FFFFFF",
+                            fontFamily: "Nunito-SemiBold",
+                            fontSize: 14,
+                            color: "#FFFFFF",
                         }}
                     >
                         Volver
                     </Text>
-
                 </Pressable>
-
             </View>
-
         );
-
     }
 
 
@@ -2849,47 +778,27 @@ export default function CuestionarioDetalle() {
     // ======================================================
 
     return (
-
         <View
             style={{
                 flex: 1,
                 backgroundColor,
             }}
         >
-
             <ScrollView
-
-                ref={
-                    scrollViewRef
-                }
-
+                ref={scrollViewRef}
                 style={{
                     flex: 1,
                 }}
-
                 contentContainerStyle={{
-                    paddingHorizontal:
-                        20,
-
-                    paddingTop:
-                        18,
-
-                    paddingBottom:
-                        120,
+                    paddingHorizontal: 20,
+                    paddingTop: 18,
+                    paddingBottom: 120,
                 }}
-
-                showsVerticalScrollIndicator={
-                    false
-                }
-
+                showsVerticalScrollIndicator={false}
                 bounces={false}
-
                 overScrollMode="never"
-
                 keyboardShouldPersistTaps="handled"
-
             >
-
 
                 {/* ==================================================
                     ENCABEZADO
@@ -2898,54 +807,29 @@ export default function CuestionarioDetalle() {
                 <View className="flex-row items-center mb-5">
 
                     <Pressable
-
-                        onPress={
-                            retroceder
-                        }
-
-                        disabled={
-                            finalizando
-                        }
-
+                        onPress={retroceder}
+                        disabled={finalizando}
                         className="w-10 h-10 items-center justify-center"
-
                     >
-
                         <Ionicons
                             name="arrow-back-outline"
                             size={24}
                             color={textSecondaryColor}
                         />
-
                     </Pressable>
-
 
                     <Text
                         numberOfLines={1}
                         style={{
-                            flex:
-                                1,
-
-                            fontFamily:
-                                "Nunito-Bold",
-
-                            fontSize:
-                                18,
-
-                            color:
-                                textColor,
-
-                            marginLeft:
-                                8,
+                            flex: 1,
+                            marginLeft: 8,
+                            fontFamily: "Nunito-Bold",
+                            fontSize: 18,
+                            color: textColor,
                         }}
                     >
-
-                        {
-                            cuestionario.nombre
-                        }
-
+                        {cuestionario.nombre}
                     </Text>
-
                 </View>
 
 
@@ -2954,26 +838,10 @@ export default function CuestionarioDetalle() {
                 ================================================== */}
 
                 <ProgresoCuestionario
-
-                    paginaActual={
-                        paginaActual +
-                        1
-                    }
-
-                    totalPaginas={
-                        totalPaginas
-                    }
-
-                    respondidas={
-                        Object.keys(
-                            respuestas
-                        ).length
-                    }
-
-                    totalPreguntas={
-                        preguntas.length
-                    }
-
+                    paginaActual={paginaActual + 1}
+                    totalPaginas={totalPaginas}
+                    respondidas={Object.keys(respuestas).length}
+                    totalPreguntas={preguntas.length}
                 />
 
 
@@ -2982,33 +850,19 @@ export default function CuestionarioDetalle() {
                 ================================================== */}
 
                 {
-                    paginaActual ===
-                        0 &&
-                    cuestionario
-                        .instrucciones && (
+                    paginaActual === 0 &&
+                    cuestionario.instrucciones && (
 
                         <View
                             style={{
-                                backgroundColor:
-                                    primarySoftColor,
-
-                                borderRadius:
-                                    16,
-
-                                padding:
-                                    16,
-
-                                marginBottom:
-                                    28,
-
-                                borderWidth:
-                                    1,
-
-                                borderColor:
-                                    borderColor,
+                                marginBottom: 28,
+                                padding: 16,
+                                borderRadius: 16,
+                                borderWidth: 1,
+                                borderColor,
+                                backgroundColor: primarySoftColor,
                             }}
                         >
-
                             <View className="flex-row items-start">
 
                                 <Ionicons
@@ -3017,40 +871,21 @@ export default function CuestionarioDetalle() {
                                     color={primaryColor}
                                 />
 
-
                                 <Text
                                     style={{
-                                        flex:
-                                            1,
-
-                                        fontFamily:
-                                            "Nunito-Medium",
-
-                                        fontSize:
-                                            13,
-
-                                        lineHeight:
-                                            19,
-
-                                        color:
-                                            textSecondaryColor,
-
-                                        marginLeft:
-                                            8,
+                                        flex: 1,
+                                        marginLeft: 8,
+                                        fontFamily: "Nunito-Medium",
+                                        fontSize: 13,
+                                        lineHeight: 19,
+                                        color: textSecondaryColor,
                                     }}
                                 >
-
-                                    {
-                                        cuestionario
-                                            .instrucciones
-                                    }
-
+                                    {cuestionario.instrucciones}
                                 </Text>
 
                             </View>
-
                         </View>
-
                     )
                 }
 
@@ -3071,153 +906,81 @@ export default function CuestionarioDetalle() {
                                 index +
                                 1;
 
-
                             return (
-
                                 <View
-                                    key={
-                                        pregunta.id_pregunta
-                                    }
+                                    key={pregunta.id_pregunta}
                                     className="mb-9"
                                 >
-
-                                    {/* Pregunta */}
-
                                     <Text
                                         style={{
-                                            fontFamily:
-                                                "Nunito-Bold",
-
-                                            fontSize:
-                                                21,
-
-                                            lineHeight:
-                                                28,
-
-                                            color:
-                                                textColor,
+                                            fontFamily: "Nunito-Bold",
+                                            fontSize: 21,
+                                            lineHeight: 28,
+                                            color: textColor,
                                         }}
                                     >
-
-                                        {
-                                            numeroPregunta
-                                        }
-                                        .{" "}
-
-                                        {
-                                            pregunta.enunciado
-                                        }
-
+                                        {numeroPregunta}.{" "}
+                                        {pregunta.enunciado}
                                     </Text>
 
-
-                                    {/* Descripción */}
 
                                     {
                                         pregunta.descripcion_apoyo && (
 
                                             <Text
                                                 style={{
-                                                    fontFamily:
-                                                        "Nunito-Medium",
-
-                                                    fontSize:
-                                                        13,
-
-                                                    lineHeight:
-                                                        18,
-
-                                                    color:
-                                                        textSecondaryColor,
-
-                                                    marginTop:
-                                                        10,
-
-                                                    marginBottom:
-                                                        10,
-
-                                                    textAlign:
-                                                        "center",
+                                                    marginTop: 10,
+                                                    marginBottom: 10,
+                                                    fontFamily: "Nunito-Medium",
+                                                    fontSize: 13,
+                                                    lineHeight: 18,
+                                                    color: textSecondaryColor,
+                                                    textAlign: "center",
                                                 }}
                                             >
-
-                                                {
-                                                    pregunta
-                                                        .descripcion_apoyo
-                                                }
-
+                                                {pregunta.descripcion_apoyo}
                                             </Text>
-
                                         )
                                     }
 
 
-                                    {/* Opciones */}
-
                                     <View className="mt-5">
 
                                         {
-                                            pregunta.opciones.length >
-                                                0
+                                            pregunta.opciones.length > 0
 
-                                                ? (
+                                                ? pregunta.opciones.map(
+                                                    (opcion) => (
 
-                                                    pregunta.opciones.map(
-                                                        opcion => (
-
-                                                            <OpcionRespuesta
-
-                                                                key={
-                                                                    opcion.id
-                                                                }
-
-                                                                texto={
-                                                                    opcion.texto
-                                                                }
-
-                                                                seleccionada={
-                                                                    respuestas[
-                                                                        pregunta.id_pregunta
-                                                                    ]
-                                                                        ?.idOpcion ===
-                                                                    opcion.id
-                                                                }
-
-                                                                onPress={() =>
-                                                                    seleccionarRespuesta(
-                                                                        pregunta,
-                                                                        opcion
-                                                                    )
-                                                                }
-
-                                                            />
-
-                                                        )
+                                                        <OpcionRespuesta
+                                                            key={opcion.id}
+                                                            texto={opcion.texto}
+                                                            seleccionada={
+                                                                respuestas[
+                                                                    pregunta.id_pregunta
+                                                                ]?.idOpcion ===
+                                                                opcion.id
+                                                            }
+                                                            onPress={() =>
+                                                                seleccionarRespuesta(
+                                                                    pregunta,
+                                                                    opcion
+                                                                )
+                                                            }
+                                                        />
                                                     )
-
                                                 )
 
                                                 : (
-
                                                     <View
                                                         style={{
-                                                            backgroundColor:
-                                                                surfaceColor,
-
-                                                            borderWidth:
-                                                                1,
-
-                                                            borderColor:
-                                                                warningColor,
-
-                                                            borderRadius:
-                                                                16,
-
-                                                            padding:
-                                                                16,
+                                                            padding: 16,
+                                                            borderWidth: 1,
+                                                            borderColor: warningColor,
+                                                            borderRadius: 16,
+                                                            backgroundColor: surfaceColor,
                                                         }}
                                                     >
-
                                                         <View className="flex-row items-start">
 
                                                             <Ionicons
@@ -3226,46 +989,27 @@ export default function CuestionarioDetalle() {
                                                                 color={warningColor}
                                                             />
 
-
                                                             <Text
                                                                 style={{
-                                                                    flex:
-                                                                        1,
-
-                                                                    fontFamily:
-                                                                        "Nunito-Medium",
-
-                                                                    fontSize:
-                                                                        13,
-
-                                                                    lineHeight:
-                                                                        18,
-
-                                                                    color:
-                                                                        textSecondaryColor,
-
-                                                                    marginLeft:
-                                                                        8,
+                                                                    flex: 1,
+                                                                    marginLeft: 8,
+                                                                    fontFamily: "Nunito-Medium",
+                                                                    fontSize: 13,
+                                                                    lineHeight: 18,
+                                                                    color: textSecondaryColor,
                                                                 }}
                                                             >
-
                                                                 Esta pregunta no tiene opciones de respuesta disponibles.
-
                                                             </Text>
 
                                                         </View>
-
                                                     </View>
-
                                                 )
                                         }
 
                                     </View>
-
                                 </View>
-
                             );
-
                         }
                     )
                 }
@@ -3277,199 +1021,108 @@ export default function CuestionarioDetalle() {
 
                 <View className="flex-row gap-4 mt-3">
 
-
-                    {/* Anterior */}
-
                     <Pressable
-
-                        onPress={
-                            retroceder
-                        }
-
-                        disabled={
-                            finalizando
-                        }
-
+                        onPress={retroceder}
+                        disabled={finalizando}
                         style={{
-                            flex:
-                                1,
-
-                            backgroundColor:
-                                surfaceSecondaryColor,
-
-                            borderRadius:
-                                12,
-
-                            paddingVertical:
-                                16,
-
-                            flexDirection:
-                                "row",
-
-                            alignItems:
-                                "center",
-
-                            justifyContent:
-                                "center",
-
-                            borderWidth:
-                                1,
-
-                            borderColor:
-                                borderColor,
+                            flex: 1,
+                            paddingVertical: 16,
+                            borderRadius: 12,
+                            borderWidth: 1,
+                            borderColor,
+                            backgroundColor: surfaceSecondaryColor,
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "center",
                         }}
-
                     >
-
                         <Ionicons
                             name="arrow-back-outline"
                             size={16}
                             color={textSecondaryColor}
                         />
 
-
                         <Text
                             style={{
-                                fontFamily:
-                                    "Nunito-SemiBold",
-
-                                fontSize:
-                                    14,
-
-                                color:
-                                    textSecondaryColor,
-
-                                marginLeft:
-                                    5,
+                                marginLeft: 5,
+                                fontFamily: "Nunito-SemiBold",
+                                fontSize: 14,
+                                color: textSecondaryColor,
                             }}
                         >
                             Anterior
                         </Text>
-
                     </Pressable>
 
 
-                    {/* Siguiente / Finalizar */}
-
                     <Pressable
-
                         disabled={
                             !todasRespondidasEnPagina ||
                             finalizando
                         }
-
-                        onPress={
-                            avanzar
-                        }
-
+                        onPress={avanzar}
                         style={{
-                            flex:
-                                1.5,
-
-                            borderRadius:
-                                12,
-
-                            paddingVertical:
-                                16,
-
-                            flexDirection:
-                                "row",
-
-                            alignItems:
-                                "center",
-
-                            justifyContent:
-                                "center",
-
+                            flex: 1.5,
+                            paddingVertical: 16,
+                            borderRadius: 12,
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "center",
                             backgroundColor:
                                 todasRespondidasEnPagina &&
-                                !finalizando
-
+                                    !finalizando
                                     ? primaryColor
-
                                     : disabledColor,
                         }}
-
                     >
-
                         {
                             finalizando
 
                                 ? (
-
                                     <ActivityIndicator
                                         size="small"
                                         color="#FFFFFF"
                                     />
-
                                 )
 
                                 : (
-
                                     <>
-
                                         <Text
                                             style={{
-                                                fontFamily:
-                                                    "Nunito-SemiBold",
-
-                                                fontSize:
-                                                    14,
-
-                                                color:
-                                                    "#FFFFFF",
+                                                fontFamily: "Nunito-SemiBold",
+                                                fontSize: 14,
+                                                color: "#FFFFFF",
                                             }}
                                         >
-
                                             {
                                                 paginaActual ===
-                                                totalPaginas -
-                                                    1
-
+                                                    totalPaginas - 1
                                                     ? "Finalizar"
-
                                                     : "Siguiente"
                                             }
-
                                         </Text>
 
-
                                         <Ionicons
-
                                             name={
                                                 paginaActual ===
-                                                totalPaginas -
-                                                    1
-
+                                                    totalPaginas - 1
                                                     ? "checkmark-outline"
-
                                                     : "arrow-forward-outline"
                                             }
-
                                             size={16}
-
                                             color="#FFFFFF"
-
                                             style={{
-                                                marginLeft:
-                                                    5,
+                                                marginLeft: 5,
                                             }}
-
                                         />
-
                                     </>
-
                                 )
                         }
-
                     </Pressable>
 
                 </View>
 
             </ScrollView>
-
         </View>
-
     );
-
 }
