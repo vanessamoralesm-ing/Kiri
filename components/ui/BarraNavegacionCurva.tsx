@@ -16,6 +16,7 @@ import {
 
 import {
   usePathname,
+   useRouter,
 } from "expo-router";
 
 import Svg, {
@@ -105,9 +106,9 @@ const MAPA_ICONOS: Record<
 
 const RUTAS_VISIBLES = [
     "home",
-    "diario/index",
+    "diario",
     "educacion/index",
-    "tecnicas/index",
+    "tecnicas",
     "perfil/index",
 ];
 
@@ -134,6 +135,9 @@ export function BarraNavegacionCurva({
 
   const pathname =
     usePathname();
+
+  const router =
+    useRouter();//Lo agregue para la navegacion del diario ya que no deseo que se guarde el estado anterior donde estuvo el usuario
 
 
   const translateX =
@@ -234,12 +238,22 @@ export function BarraNavegacionCurva({
     pathname ===
     "/adultos/";
 
+  const esNuevoRegistroDiario =
+    pathname === "/diario/nuevo" ||
+    pathname === "/diario/nuevo/";
+
+  const estaDentroDePlantillaDiario =
+    segmentosRuta[0] === "diario" &&
+    segmentosRuta[1] === "nuevo" &&
+    segmentosRuta.length >= 3;
+
 
   const esRutaSecundariaDeInicio =
     esListaCuestionarios ||
     esForoPrincipal ||
     esEntrevistaNinosPrincipal ||
-    esEntrevistaAdultosPrincipal;
+    esEntrevistaAdultosPrincipal ||
+    esNuevoRegistroDiario;
 
 
   // ========================================================
@@ -273,12 +287,12 @@ export function BarraNavegacionCurva({
     segmentosRuta.length >=
     2;
 
-
   const ocultarBarra =
     estaDentroDeCuestionario ||
     estaDentroDeForo ||
     estaDentroEntrevistaNinos ||
-    estaDentroEntrevistaAdultos;
+    estaDentroEntrevistaAdultos ||
+     estaDentroDePlantillaDiario;
 
 
   // ========================================================
@@ -754,6 +768,15 @@ export function BarraNavegacionCurva({
                   // ==========================================
                   // NAVEGACIÓN NORMAL
                   // ==========================================
+                  
+                  // Cuando se pulsa Diario desde la barra,
+                  // siempre regresamos a su pantalla principal.
+                  // Esto evita que se conserve una plantilla
+                  // que el usuario habia abierto anteriormente.
+                  if (nombreLimpio === "diario") {
+                    router.replace("/(tabs)/diario" as never);
+                    return;
+                  }
 
                   if (
                     !tieneFocusReal

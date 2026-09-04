@@ -33,7 +33,7 @@ export default function LayoutPestanas() {
       />
 
       <Tabs.Screen
-        name="diario/index"
+        name="diario"
         options={{
           title: "Diario",
         }}
@@ -47,7 +47,7 @@ export default function LayoutPestanas() {
       />
 
       <Tabs.Screen
-        name="tecnicas/index"
+        name="tecnicas"
         options={{
           title: "Técnicas",
         }}

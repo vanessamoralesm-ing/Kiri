@@ -1,15 +1,15 @@
-import { TecnicasInicioInterface } from "@/components/tecnicas/TecnicasInterfaces";
+import { HistorialTecnicasInterface } from "@/components/tecnicas/TecnicasInterfaces";
 import {
-    obtenerTecnicasActivas,
-    TecnicaComplementaria,
+    obtenerHistorialTecnicas,
+    RegistroTecnica,
 } from "@/services/tecnicas/tecnicasService";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 
-export default function TecnicasScreen() {
+export default function HistorialTecnicas() {
   const router = useRouter();
 
-  const [tecnicas, setTecnicas] = useState<TecnicaComplementaria[]>([]);
+  const [registros, setRegistros] = useState<RegistroTecnica[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,11 +18,11 @@ export default function TecnicasScreen() {
       setCargando(true);
       setError(null);
 
-      const data = await obtenerTecnicasActivas();
-      setTecnicas(data);
+      const data = await obtenerHistorialTecnicas();
+      setRegistros(data);
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : "No pudimos cargar las técnicas.",
+        e instanceof Error ? e.message : "No pudimos cargar tu historial.",
       );
     } finally {
       setCargando(false);
@@ -36,18 +36,12 @@ export default function TecnicasScreen() {
   );
 
   return (
-    <TecnicasInicioInterface
-      tecnicas={tecnicas}
+    <HistorialTecnicasInterface
+      registros={registros}
       cargando={cargando}
       error={error}
+      onVolver={() => router.back()}
       onReintentar={cargar}
-      onAbrir={(id) =>
-        router.push({
-          pathname: "/(tecnica)/[id]" as any,
-          params: { id },
-        })
-      }
-      onHistorial={() => router.push("/(tabs)/tecnicas/historial" as any)}
     />
   );
 }
