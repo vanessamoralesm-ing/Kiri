@@ -240,6 +240,11 @@ function RootNavigation() {
       <Stack.Screen name="(tabs)" />
 
       <Stack.Screen name="(entrevista)" />
+
+      <Stack.Screen name="(tecnica)" />
+
+      <Stack.Screen name="(superadmin)" />
+      
     </Stack>
   );
 }
