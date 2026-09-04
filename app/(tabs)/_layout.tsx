@@ -69,7 +69,7 @@ export default function LayoutPestanas() {
       />
 
       <Tabs.Screen
-        name="tecnicas/index"
+        name="tecnicas"
         options={{
           title: "Técnicas",
         }}
