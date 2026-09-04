@@ -42,29 +42,29 @@ export default function TarjetaBienvenidaDiario({
     <Animated.View
       entering={FadeInDown.duration(450)}
     >
-      {/* Saludo */}
+      {/* Texto de Bienvenida Actualizado */}
       <View className="mb-5">
-        <Text className="font-nunito-bold text-[28px] text-[#1E293B]">
-          Hola,{" "}
+        <Text className="font-nunito-bold text-[24px] leading-[32px] text-[#1E293B]">
+          ¿Qué agregarás hoy a tu{"\n"}Diario,{" "}
           <Text className="text-[#3478F6]">
             {nombre}
-          </Text>{" "}
+          </Text>?
         </Text>
 
         <Text className="mt-3 max-w-[92%] font-nunito-medium text-[15px] leading-[22px] text-[#64748B]">
-          ¿Cómo te sientes hoy? Tómate un momento para reconocer
-          tus emociones, pensamientos y experiencias.
+          Tómate un momento para reconocer tus emociones,
+          pensamientos y experiencias.
         </Text>
       </View>
 
-      {/* Boton Nuevo Registro */}
+      {/* Boton Nuevo Registro (Sin cambios) */}
       <Animated.View
         style={estiloAnimado}
       >
         <Pressable
           onPress={onNuevoRegistro}
           onPressIn={() => {
-            escala.value = withSpring(0.85);
+            escala.value = withSpring(0.95); // Ajustado levemente para que no se vea tan pequeño al presionar
           }}
           onPressOut={() => {
             escala.value = withSpring(1);

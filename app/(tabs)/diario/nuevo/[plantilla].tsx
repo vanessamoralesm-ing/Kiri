@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -7,7 +8,6 @@ import {
   Text,
   View,
 } from "react-native";
-
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -16,6 +16,10 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { OpcionEmocion } from "@/components/diario/OpcionEmocion";
 import { CampoPreguntaDiario } from "@/components/diario/CampoPreguntaDiario";
 import Button from "@/components/ui/Button";
+
+// Importaciones del servicio y autenticacion
+import { useAuth } from "@/services/authProvider";
+import { guardarDiarioEmocionalService } from "@/services/diario/autorregistro.service";
 
 const EMOCIONES = [
   { nombre: "Alegría", emoji: "😊" },
@@ -33,19 +37,19 @@ const EMOCIONES = [
 export default function NuevoAutorregistro() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { user } = useAuth(); // Extrae la sesión actual del usuario
 
   const { plantilla, origen } = useLocalSearchParams<{
     plantilla?: string;
     origen?: string;
   }>();
 
+  const [guardando, setGuardando] = useState(false);
   const [emocion, setEmocion] = useState("");
   const [motivo, setMotivo] = useState("");
   const [reaccion, setReaccion] = useState("");
   const [ideaUtil, setIdeaUtil] = useState("");
 
-  // Regresa a la lista de tipos de autorregistro.
-  // Regresa a la lista de tipos de autorregistro.
   const regresar = () => {
     router.replace({
       pathname: "/diario/nuevo" as never,
@@ -53,7 +57,38 @@ export default function NuevoAutorregistro() {
     });
   };
 
-  // La plantilla Diario Emocional
+  const guardarRegistro = async () => {
+    if (!user?.id) {
+      Alert.alert("Error", "No se encontró una sesión de usuario activa.");
+      return;
+    }
+
+    if (!emocion) {
+      Alert.alert("Atención", "Por favor selecciona una emoción antes de guardar.");
+      return;
+    }
+
+    try {
+      setGuardando(true);
+
+      await guardarDiarioEmocionalService({
+        idUsuario: user.id,
+        emocionNombre: emocion,
+        motivo,
+        reaccion,
+        ideaUtil,
+      });
+
+      Alert.alert("¡Éxito!", "Tu diario ha sido guardado correctamente.", [
+        { text: "OK", onPress: regresar },
+      ]);
+    } catch (error: any) {
+      Alert.alert("Error al guardar", error.message || "Ocurrió un error inesperado.");
+    } finally {
+      setGuardando(false);
+    }
+  };
+
   if (plantilla !== "emocional") {
     return (
       <View className="flex-1 items-center justify-center bg-[#F8FBFF] px-6">
@@ -66,16 +101,16 @@ export default function NuevoAutorregistro() {
 
   return (
     <KeyboardAvoidingView
-        className="flex-1 bg-[#F8FBFF]"
-        behavior={
-          Platform.OS === "ios"
-            ? "padding"
-            : Platform.OS === "android"
-            ? "height"
-            : undefined
-        }
-        keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
-      >
+      className="flex-1 bg-[#F8FBFF]"
+      behavior={
+        Platform.OS === "ios"
+          ? "padding"
+          : Platform.OS === "android"
+          ? "height"
+          : undefined
+      }
+      keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
+    >
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -83,9 +118,9 @@ export default function NuevoAutorregistro() {
           paddingHorizontal: 16,
           paddingBottom: Math.max(insets.bottom + 130, 150),
         }}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-        >
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
         {/* Encabezado */}
         <Animated.View
           entering={FadeInDown.duration(400)}
@@ -118,12 +153,10 @@ export default function NuevoAutorregistro() {
           entering={FadeInDown.delay(100).duration(500)}
           className="relative mb-7 min-h-[185px] overflow-hidden rounded-[24px] bg-[#E9F1FF] px-6 py-6"
         >
-          {/* Decoraciones de fondo */}
           <View className="absolute -right-8 -top-10 h-36 w-36 rounded-full bg-[#D9E5FF]" />
           <View className="absolute -bottom-12 right-16 h-32 w-32 rounded-full bg-[#E8DFFF]" />
           <View className="absolute -left-8 bottom-[-35px] h-28 w-28 rounded-full bg-[#F7E0EF]" />
 
-          {/* Pequeños detalles decorativos */}
           <View className="absolute right-24 top-8 h-3 w-3 rounded-full bg-[#AFC7F5]" />
           <View className="absolute right-12 bottom-8 h-2 w-2 rounded-full bg-[#BFA9E8]" />
 
@@ -137,7 +170,6 @@ export default function NuevoAutorregistro() {
             </Text>
           </View>
 
-          {/* Ilustracion sencilla mientras colocamos el asset definitivo */}
           <View className="absolute bottom-5 right-5 h-[115px] w-[115px] items-center justify-center rounded-[28px] bg-[#7EA8EE] rotate-[-5deg]">
             <View className="h-[85px] w-[65px] items-center justify-center rounded-xl bg-[#5E8FE4]">
               <Ionicons name="heart" size={34} color="white" />
@@ -173,47 +205,39 @@ export default function NuevoAutorregistro() {
           </View>
         </Animated.View>
 
-          {/* Preguntas de reflexion */}
-          <Animated.View
-            entering={FadeInDown.delay(300).duration(500)}
-          >
-            <CampoPreguntaDiario
-              titulo="¿Qué me hizo sentir así?"
-              valor={motivo}
-              onChangeText={setMotivo}
-              placeholder="Cuéntanos qué ocurrió..."
-            />
+        {/* Preguntas de reflexion */}
+        <Animated.View entering={FadeInDown.delay(300).duration(500)}>
+          <CampoPreguntaDiario
+            titulo="¿Qué me hizo sentir así?"
+            valor={motivo}
+            onChangeText={setMotivo}
+            placeholder="Cuéntanos qué ocurrió..."
+          />
 
-            <CampoPreguntaDiario
-              titulo="¿Cómo reaccioné?"
-              valor={reaccion}
-              onChangeText={setReaccion}
-              placeholder="¿Qué hiciste o cómo respondiste?"
-            />
+          <CampoPreguntaDiario
+            titulo="¿Cómo reaccioné?"
+            valor={reaccion}
+            onChangeText={setReaccion}
+            placeholder="¿Qué hiciste o cómo respondiste?"
+          />
 
-            <CampoPreguntaDiario
-              titulo="Una idea útil"
-              valor={ideaUtil}
-              onChangeText={setIdeaUtil}
-              placeholder="¿Qué te gustaría recordar de esta experiencia?"
-            />
-          </Animated.View>
-
-          {/* Boton de guardar */}
-        <Animated.View entering={FadeInDown.delay(400).duration(500)} className="mt-3">
-            <Button
-              title="Guardar registro"
-              onPress={() => {
-                console.log({
-                  emocion,
-                  motivo,
-                  reaccion,
-                  ideaUtil,
-                });
-              }}
-            />
+          <CampoPreguntaDiario
+            titulo="Una idea útil"
+            valor={ideaUtil}
+            onChangeText={setIdeaUtil}
+            placeholder="¿Qué te gustaría recordar de esta experiencia?"
+          />
         </Animated.View>
-     </ScrollView>
+
+        {/* Boton de guardar */}
+        <Animated.View entering={FadeInDown.delay(400).duration(500)} className="mt-3">
+          <Button
+            title={guardando ? "Guardando..." : "Guardar registro"}
+            onPress={guardarRegistro}
+            disabled={guardando}
+          />
+        </Animated.View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }

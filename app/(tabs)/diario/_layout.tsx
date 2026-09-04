@@ -15,6 +15,7 @@ export default function DiarioLayout() {
       <Stack.Screen name="nuevo" />
 
       <Stack.Screen name="[id]" />
+      <Stack.Screen name="historial" />
     </Stack>
   );
 }
