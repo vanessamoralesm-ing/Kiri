@@ -1,3 +1,4 @@
+//Le pertenece a index.tsx de [id]
 import React, {
   useEffect,
 } from "react";
