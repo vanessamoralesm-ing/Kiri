@@ -549,7 +549,7 @@ export default function LecturasScreen() {
                 textColor,
             }}
           >
-            Lecturas recomendadas
+            Biblioteca
           </Text>
 
 
@@ -566,7 +566,8 @@ export default function LecturasScreen() {
 
               lineHeight:
                 24,
-
+              textAlign:
+                "justify",
               color:
                 textSecondaryColor,
             }}

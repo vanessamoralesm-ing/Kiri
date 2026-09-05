@@ -20,32 +20,44 @@ const categorias = [
   {
     id: "Ansiedad",
     titulo: "Ansiedad",
-    imagen: require("../../../assets/images_educacion/ansiedad_kiri.png"),
+    imagen: require(
+      "../../../assets/images_educacion/ansiedad_kiri.png"
+    ),
   },
   {
     id: "Autoestima",
     titulo: "Autoestima",
-    imagen: require("../../../assets/images_educacion/autoestima_kiri.png"),
+    imagen: require(
+      "../../../assets/images_educacion/autoestima_kiri.png"
+    ),
   },
   {
     id: "Estres",
     titulo: "Estrés",
-    imagen: require("../../../assets/images_educacion/kiri_estres.png"),
+    imagen: require(
+      "../../../assets/images_educacion/kiri_estres.png"
+    ),
   },
   {
     id: "Procrastinacion",
     titulo: "Procrastinación",
-    imagen: require("../../../assets/images_educacion/procrastinacion_kiri.png"),
+    imagen: require(
+      "../../../assets/images_educacion/procrastinacion_kiri.png"
+    ),
   },
   {
     id: "Soledad",
     titulo: "Soledad",
-    imagen: require("../../../assets/images_educacion/kiri_solito.png"),
+    imagen: require(
+      "../../../assets/images_educacion/kiri_solito.png"
+    ),
   },
   {
     id: "Depresion",
     titulo: "Depresión",
-    imagen: require("../../../assets/images_educacion/depresion_kiri.png"),
+    imagen: require(
+      "../../../assets/images_educacion/depresion_kiri.png"
+    ),
   },
 ];
 
@@ -61,6 +73,11 @@ export default function EducacionScreen() {
   const backgroundColor = useThemeColor(
     {},
     "background"
+  );
+
+  const surfaceColor = useThemeColor(
+    {},
+    "surface"
   );
 
   const textColor = useThemeColor(
@@ -83,6 +100,11 @@ export default function EducacionScreen() {
     "primary"
   );
 
+  const primarySoftColor = useThemeColor(
+    {},
+    "primarySoft"
+  );
+
   const inputBackgroundColor = useThemeColor(
     {},
     "inputBackground"
@@ -101,6 +123,11 @@ export default function EducacionScreen() {
   const iconColor = useThemeColor(
     {},
     "icon"
+  );
+
+  const borderColor = useThemeColor(
+    {},
+    "border"
   );
 
   // ========================================================
@@ -134,7 +161,10 @@ export default function EducacionScreen() {
           paddingTop: 48,
         }}
       >
-        {/* ENCABEZADO */}
+
+        {/* ==================================================
+            ENCABEZADO
+            ================================================== */}
 
         <View>
           <Text
@@ -161,7 +191,9 @@ export default function EducacionScreen() {
           </Text>
         </View>
 
-        {/* BUSCADOR */}
+        {/* ==================================================
+            BUSCADOR
+            ================================================== */}
 
         <View
           style={{
@@ -205,7 +237,9 @@ export default function EducacionScreen() {
           />
         </View>
 
-        {/* TÍTULO DE CATEGORÍAS */}
+        {/* ==================================================
+            TÍTULO DE CATEGORÍAS
+            ================================================== */}
 
         <View
           style={{
@@ -235,7 +269,9 @@ export default function EducacionScreen() {
           </Text>
         </View>
 
-        {/* TARJETAS DE CATEGORÍAS */}
+        {/* ==================================================
+            TARJETAS DE CATEGORÍAS
+            ================================================== */}
 
         <View
           style={{
@@ -250,6 +286,8 @@ export default function EducacionScreen() {
               key={categoria.id}
               style={{
                 width: "48%",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <CategoriaCard
@@ -261,6 +299,96 @@ export default function EducacionScreen() {
               />
             </View>
           ))}
+        </View>
+
+        {/* ==================================================
+            MENSAJE FINAL DE ORIENTACIÓN
+            ================================================== */}
+
+        <View
+          style={{
+            marginTop: 40,
+            padding: 20,
+
+            borderRadius: 22,
+            borderWidth: 1,
+            borderColor,
+
+            backgroundColor: "#F0F9FF",
+
+            shadowColor: "#000000",
+
+            shadowOffset: {
+              width: 0,
+              height: 2,
+            },
+
+            shadowOpacity: 0.06,
+            shadowRadius: 5,
+            elevation: 2,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "flex-start",
+            }}
+          >
+
+            {/* ICONO */}
+
+            <View
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: primarySoftColor,
+              }}
+            >
+              <Ionicons
+                name="leaf-outline"
+                size={22}
+                color={primaryColor}
+              />
+            </View>
+
+            {/* TEXTO */}
+
+            <View
+              style={{
+                flex: 1,
+                marginLeft: 16,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: "Nunito-Bold",
+                  fontSize: 16,
+                  color: textColor,
+                }}
+              >
+                Explora a tu ritmo
+              </Text>
+
+              <Text
+                style={{
+                  marginTop: 4,
+                  textAlign: "justify",
+                  fontFamily: "Nunito-SemiBold",
+                  fontSize: 14,
+                  lineHeight: 20,
+                  color: textSecondaryColor,
+                }}
+              >
+                Cada categoría contiene información, mitos, realidades y
+                lecturas relacionadas para ayudarte a comprender mejor cada
+                tema.
+              </Text>
+            </View>
+
+          </View>
         </View>
       </View>
     </ScrollView>

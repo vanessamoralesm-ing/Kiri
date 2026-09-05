@@ -274,6 +274,56 @@ const contenidoCategorias = {
       },
     ],
   },
+
+  Depresion: {
+    titulo:
+      "Depresión",
+
+    descripcion:
+      "La depresión es una condición de salud mental que puede afectar de manera persistente el estado de ánimo, los pensamientos, la energía y la forma en que una persona realiza sus actividades cotidianas. Comprender sus señales y hablar de ellas con claridad puede facilitar la búsqueda de apoyo adecuado.",
+
+    mito:
+      "“La depresión es solo tristeza y se supera con fuerza de voluntad.”",
+
+    realidad:
+      "La depresión no es simplemente un momento de tristeza ni una falta de voluntad. Puede incluir pérdida de interés o placer, cambios en el sueño o el apetito, cansancio, dificultad para concentrarse y sentimientos de desesperanza. Su intensidad y duración varían entre personas, y cuando estos síntomas interfieren con la vida diaria es importante buscar orientación de un profesional de la salud mental.",
+
+    lecturas: [
+      {
+        id:
+          "comprender-depresion",
+
+        categoria:
+          "Depresión",
+
+        tiempo:
+          "7 min de lectura",
+
+        titulo:
+          "Comprendiendo la depresión",
+
+        descripcion:
+          "Conoce qué es la depresión, algunas de sus manifestaciones más frecuentes y por qué no debe confundirse con una tristeza pasajera.",
+      },
+      {
+        id:
+          "apoyo-ante-depresion",
+
+        categoria:
+          "Depresión",
+
+        tiempo:
+          "8 min de lectura",
+
+        titulo:
+          "Cuándo y cómo buscar apoyo",
+
+        descripcion:
+          "Aprende a reconocer cuándo el malestar emocional requiere atención y qué formas de apoyo profesional y social pueden acompañar el proceso de recuperación.",
+      },
+    ],
+  },
+
 };
 
 
@@ -632,7 +682,7 @@ export default function CategoriaScreen() {
                 8,
 
               fontFamily:
-                "Nunito-Medium",
+                "Nunito-SemiBold",
 
               fontSize:
                 15,
@@ -942,7 +992,7 @@ export default function CategoriaScreen() {
                     16,
 
                   fontFamily:
-                    "Nunito-Medium",
+                    "Nunito-SemiBold",
 
                   fontSize:
                     14,

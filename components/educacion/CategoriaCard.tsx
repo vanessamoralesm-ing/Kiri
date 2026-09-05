@@ -35,7 +35,6 @@ export default function CategoriaCard({
   imagen,
   onPress,
 }: CategoriaCardProps) {
-
   // ======
   // ANIMACIÓN
   // ======
@@ -52,26 +51,18 @@ export default function CategoriaCard({
     };
   });
 
-  // ======
+  // ========================================================
   // COLORES DEL TEMA
-  // ======
+  // ========================================================
+  const surfaceColor = useThemeColor({}, "surface");
 
-  const surfaceColor = useThemeColor(
-    {},
-    "surface"
-  );
+  const textColor = useThemeColor({}, "text");
 
-  const textColor = useThemeColor(
-    {},
-    "text"
-  );
+  const borderColor = useThemeColor({}, "border");
 
-  const borderColor = useThemeColor(
-    {},
-    "border"
-  );
-
-  // UI //
+  // ========================================================
+  // UI
+  // ========================================================
 
   return (
     <Animated.View
@@ -123,44 +114,51 @@ export default function CategoriaCard({
           elevation: 3,
         })}
       >
-
-        {/*IMAGEN*/}
+        {/* ==================================================
+            IMAGEN
+            ================================================== */}
 
         <View
           style={{
-            width: 130,
+            width: "100%",
 
-            height: 120,
+            height: 100,
+
+            marginBottom: 8,
 
             alignItems: "center",
 
             justifyContent: "center",
-
-            alignSelf: "center",
-
-            marginBottom: 18,
-
-            overflow: "hidden",
-
-            borderRadius: 16,
           }}
         >
           {imagen && (
             <Image
               source={imagen}
-              style={{
-                width: "100%",
 
-                height: "100%",
+              style={{
+                width: 110,
+
+                height: 100,
 
                 alignSelf: "center",
+
+                // Mueve visualmente la imagen
+                // ligeramente hacia la derecha.
+                transform: [
+                  {
+                    translateX: 8,
+                  },
+                ],
               }}
-              resizeMode="cover"
+
+              resizeMode="contain"
             />
           )}
         </View>
 
-        {/*TÍTULO*/}
+        {/* ==================================================
+            TÍTULO
+            ================================================== */}
 
         <Text
           style={{
@@ -175,7 +173,6 @@ export default function CategoriaCard({
         >
           {titulo}
         </Text>
-
       </Pressable>
     </Animated.View>
   );
