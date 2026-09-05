@@ -1,18 +1,12 @@
 import React from "react";
 
-import {
-  Pressable,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, Text, View } from "react-native";
 
-import {
-  Ionicons,
-} from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
-import Animated, {
-  FadeInDown,
-} from "react-native-reanimated";
+import Animated, { FadeInDown } from "react-native-reanimated";
+
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 interface TarjetaEntradaDiarioProps {
   fecha: string;
@@ -29,19 +23,52 @@ export default function TarjetaEntradaDiario({
   emociones,
   onPress,
 }: TarjetaEntradaDiarioProps) {
+  // ======================================================
+  // TEMA
+  // ======================================================
+
+  const surfaceColor = useThemeColor({}, "surface");
+
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+
+  const borderColor = useThemeColor({}, "border");
+
+  const textColor = useThemeColor({}, "text");
+
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
+
+  const textMutedColor = useThemeColor({}, "textMuted");
+
+  const primaryColor = useThemeColor({}, "primary");
+
+  const primarySoftColor = useThemeColor({}, "primarySoft");
+
+  const secondaryColor = useThemeColor({}, "secondary");
+
+  const secondarySoftColor = useThemeColor({}, "secondarySoft");
+
+  const accentColor = useThemeColor({}, "accent");
+
+  const accentSoftColor = useThemeColor({}, "accentSoft");
+
+  // ======================================================
+  // UI
+  // ======================================================
+
   return (
-    <Animated.View
-      entering={
-        FadeInDown
-          .delay(200)
-          .duration(450)
-      }
-    >
+    <Animated.View entering={FadeInDown.delay(200).duration(450)}>
       <Pressable
         onPress={onPress}
-        className="rounded-[24px] border border-[#EEF1F5] bg-white p-5 active:opacity-90"
-        style={{
+        style={({ pressed }) => ({
+          padding: 20,
+          borderRadius: 24,
+          borderWidth: 1,
+          borderColor,
+          backgroundColor: surfaceColor,
+          opacity: pressed ? 0.9 : 1,
+
           elevation: 2,
+
           shadowColor: "#000000",
           shadowOffset: {
             width: 0,
@@ -49,82 +76,137 @@ export default function TarjetaEntradaDiario({
           },
           shadowOpacity: 0.06,
           shadowRadius: 8,
-        }}
+        })}
       >
-        {/* Fecha y opciones */}
-        <View className="flex-row items-start justify-between">
-          <View className="rounded-full bg-[#F3EDFF] px-3 py-1">
-            <Text className="font-nunito-medium text-[12px] text-[#7C4DDE]">
+        {/* ==================================================
+                    FECHA Y OPCIONES
+                ================================================== */}
+
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+          }}
+        >
+          <View
+            style={{
+              paddingHorizontal: 12,
+              paddingVertical: 4,
+              borderRadius: 999,
+              backgroundColor: accentSoftColor,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: "Nunito-Medium",
+                fontSize: 12,
+                color: accentColor,
+              }}
+            >
               {fecha}
             </Text>
           </View>
 
           <Pressable
             hitSlop={8}
-            className="h-8 w-8 items-center justify-center"
+            style={({ pressed }) => ({
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: pressed ? surfaceSecondaryColor : "transparent",
+            })}
           >
             <Ionicons
               name="ellipsis-vertical"
               size={20}
-              color="#94A3B8"
+              color={textMutedColor}
             />
           </Pressable>
         </View>
 
-        {/* titulo */}
-        <Text className="mt-4 font-nunito-bold text-[19px] text-[#1E293B]">
+        {/* ==================================================
+                    TÍTULO
+                ================================================== */}
+
+        <Text
+          style={{
+            marginTop: 16,
+            fontFamily: "Nunito-Bold",
+            fontSize: 19,
+            color: textColor,
+          }}
+        >
           {titulo}
         </Text>
 
-        {/* Contenido */}
+        {/* ==================================================
+                    CONTENIDO
+                ================================================== */}
+
         <Text
-          className="mt-2 font-nunito-medium text-[14px] leading-[21px] text-[#64748B]"
           numberOfLines={3}
+          style={{
+            marginTop: 8,
+            fontFamily: "Nunito-Medium",
+            fontSize: 14,
+            lineHeight: 21,
+            color: textSecondaryColor,
+          }}
         >
           {contenido}
         </Text>
 
-        {/* Emociones */}
-        <View className="mt-4 flex-row flex-wrap gap-2">
-          {emociones.map(
-            (
-              emocion,
-              index
-            ) => (
+        {/* ==================================================
+                    EMOCIONES
+                ================================================== */}
+
+        <View
+          style={{
+            marginTop: 16,
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: 8,
+          }}
+        >
+          {emociones.map((emocion, index) => {
+            const esPrimera = index === 0;
+
+            return (
               <View
                 key={`${emocion}-${index}`}
-                className={
-                  index === 0
-                    ? "flex-row items-center rounded-full bg-[#E4F8EC] px-3 py-2"
-                    : "flex-row items-center rounded-full bg-[#F1EAFF] px-3 py-2"
-                }
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  borderRadius: 999,
+                  backgroundColor: esPrimera
+                    ? secondarySoftColor
+                    : primarySoftColor,
+                }}
               >
                 <Ionicons
-                  name={
-                    index === 0
-                      ? "leaf-outline"
-                      : "sparkles-outline"
-                  }
+                  name={esPrimera ? "leaf-outline" : "sparkles-outline"}
                   size={20}
-                  color={
-                    index === 0
-                      ? "#16A965"
-                      : "#4F8EF7"
-                  }
+                  color={esPrimera ? secondaryColor : primaryColor}
                 />
 
                 <Text
-                  className={
-                    index === 0
-                      ? "ml-1 font-nunito-semibold text-[12px] text-[#16A965]"
-                      : "ml-1 font-nunito-semibold text-[12px] text-[#7C4DDE]"
-                  }
+                  style={{
+                    marginLeft: 4,
+                    fontFamily: "Nunito-SemiBold",
+                    fontSize: 12,
+                    color: esPrimera ? secondaryColor : primaryColor,
+                  }}
                 >
                   {emocion}
                 </Text>
               </View>
-            )
-          )}
+            );
+          })}
         </View>
       </Pressable>
     </Animated.View>
