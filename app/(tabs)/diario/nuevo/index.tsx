@@ -1,307 +1,133 @@
 import React from "react";
-
-import {
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
-
-import {
-  router,
-} from "expo-router";
-
-import {
-  Ionicons,
-} from "@expo/vector-icons";
-
-import {
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
-
-import Animated, {
-  FadeInDown,
-} from "react-native-reanimated";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 import TarjetaPlantillaAutorregistro from "@/components/diario/TarjetaPlantillaAutorregistro";
 
-export default function NuevoAutorregistroScreen() {
-  // Obtiene los espacios seguros del dispositivo.
-  // Nos ayuda especialmente con la parte inferior.
-  const insets =
-    useSafeAreaInsets();
+export default function NuevoRegistro() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
 
-  // Regresa a la pantalla anterior.
+  // Obtenemos desde donde llego el usuario.
+  const { origen } = useLocalSearchParams<{
+    origen?: string;
+  }>();
+
+  // Regresa al lugar desde donde se abrió "Nuevo Registro".
   const regresar = () => {
-    router.back();
+    if (origen === "home") {
+      router.replace("/(tabs)/home" as never);
+      return;
+    }
+
+    router.replace("/(tabs)/diario" as never);
   };
 
-  // Abre la plantilla seleccionada.
-  const seleccionarPlantilla = (
-    plantilla: string
-  ) => {
-    router.push(
-      `/diario/nuevo/${plantilla}` as never
-    );
+  // Abre la plantilla seleccionada y conserva el origen.
+  const seleccionarPlantilla = (plantilla: string) => {
+    router.push({
+      pathname: `/diario/nuevo/${plantilla}` as never,
+      params: {
+        origen,
+      },
+    });
   };
 
   return (
-    <View
-      className="
-        flex-1
-        bg-[#F8FAFC]
-      "
-    >
+    <View className="flex-1 bg-[#F8FBFF]">
       <ScrollView
-        // Hace que el ScrollView ocupe todo
-        // el espacio disponible de la pantalla.
         className="flex-1"
-
-        // Oculta la barra lateral de desplazamiento.
         showsVerticalScrollIndicator={false}
-
-        // Permite tocar elementos aun cuando
-        // posteriormente existan campos de texto.
-        keyboardShouldPersistTaps="handled"
-
-        // Espacio interno de todo el contenido.
         contentContainerStyle={{
+          paddingTop: 16,
           paddingHorizontal: 20,
-          paddingTop: 20,
-
-          // Dejamos espacio suficiente porque
-          // la barra de navegación inferior
-          // se dibuja encima del contenido.
-          paddingBottom: Math.max(
-            insets.bottom + 110,
-            130
-          ),
+          paddingBottom: Math.max(insets.bottom + 120, 140),
         }}
       >
-        {/* =====================================================
-            ENCABEZADO
-        ====================================================== */}
-
-        <View
-          className="
-            flex-row
-            items-center
-          "
+        {/* Boton para regresar al lugar de origen */}
+        <Pressable
+          onPress={regresar}
+          className="mb-5 h-11 w-11 items-center justify-center rounded-full bg-white"
         >
-          <Pressable
-            onPress={regresar}
-            hitSlop={10}
-            className="
-              h-11
-              w-11
-              items-center
-              justify-center
-              rounded-full
-              bg-white
-              active:opacity-70
-            "
-          >
-            <Ionicons
-              name="arrow-back"
-              size={23}
-              color="#475569"
-            />
-          </Pressable>
+          <Ionicons name="arrow-back" size={22} color="#243B63" />
+        </Pressable>
 
-          <Text
-            className="
-              ml-3
-              font-nunito-semibold
-              text-[18px]
-              text-[#1E293B]
-            "
-          >
-            Nuevo Registro
-          </Text>
-        </View>
-
-
-        {/* =====================================================
-            PRESENTACIÓN
-        ====================================================== */}
-
+        {/* Encabezado */}
         <Animated.View
-          entering={
-            FadeInDown
-              .duration(400)
-          }
-          className="
-            mt-6
-            rounded-[24px]
-            bg-[#EAF2FF]
-            p-5
-          "
+          entering={FadeInDown.duration(400)}
+          className="mb-7"
         >
-          {/* Icono */}
-          <View
-            className="
-              h-12
-              w-12
-              items-center
-              justify-center
-              rounded-full
-              bg-[#D8E7FF]
-            "
-          >
-            <Ionicons
-              name="journal-outline"
-              size={25}
-              color="#3478F6"
-            />
-          </View>
-
-          {/* Pregunta principal */}
-          <Text
-            className="
-              mt-4
-              font-nunito-bold
-              text-[21px]
-              text-[#1E293B]
-            "
-          >
+          <Text className="font-nunito-bold text-3xl text-[#243B63]">
             ¿Qué quieres registrar hoy?
           </Text>
 
-          {/* Explicación */}
-          <Text
-            className="
-              mt-2
-              font-nunito-medium
-              text-[14px]
-              leading-[20px]
-              text-[#64748B]
-            "
-          >
-            Elige el tipo de autorregistro que mejor se adapte
-            a lo que deseas explorar en este momento.
+          <Text className="mt-2 font-nunito-medium text-base leading-6 text-[#7A89A3]">
+            Elige el tipo de autorregistro que mejor se adapte a lo que
+            quieres expresar.
           </Text>
         </Animated.View>
 
-
-        {/* =====================================================
-            PLANTILLAS DISPONIBLES
-        ====================================================== */}
-
-        <Animated.View
-          entering={
-            FadeInDown
-              .delay(100)
-              .duration(400)
-          }
-          className="mt-6"
-        >
-          <Text
-            className="
-              mb-4
-              font-nunito-semibold
-              text-[16px]
-              text-[#334155]
-            "
-          >
-            Autorregistros disponibles
-          </Text>
-
-
-          {/* Diario emocional */}
+        {/* Diario emocional */}
+        <Animated.View entering={FadeInDown.delay(100).duration(400)}>
           <TarjetaPlantillaAutorregistro
             titulo="Diario emocional"
-            descripcion="Reconoce cómo te sentiste, qué ocurrió y qué pensamientos estuvieron presentes."
+            descripcion="Reconoce lo que sientes, qué lo provocó y cómo reaccionaste."
             icono="heart-outline"
-            color="#3478F6"
-            fondoIcono="#E8F1FF"
-            onPress={() =>
-              seleccionarPlantilla(
-                "emocional"
-              )
-            }
-          />
-
-
-          {/* Observando pensamientos */}
-          <TarjetaPlantillaAutorregistro
-            titulo="Observando mis pensamientos"
-            descripcion="Explora una situación, tus sentimientos, pensamientos y la forma en que reaccionaste."
-            icono="bulb-outline"
-            color="#8B5CF6"
-            fondoIcono="#F1EAFF"
-            onPress={() =>
-              seleccionarPlantilla(
-                "pensamientos"
-              )
-            }
-          />
-
-
-          {/* ABC */}
-          <TarjetaPlantillaAutorregistro
-            titulo="Autorregistro ABC"
-            descripcion="Relaciona una situación con tus pensamientos, emociones y respuestas."
-            icono="git-branch-outline"
-            color="#16A965"
-            fondoIcono="#E5F8EE"
-            onPress={() =>
-              seleccionarPlantilla(
-                "abc"
-              )
-            }
+            color="#6C8FE3"
+            fondoIcono="#E7EEFF"
+            onPress={() => seleccionarPlantilla("emocional")}
           />
         </Animated.View>
 
+        {/* Observando mis pensamientos */}
+        <Animated.View entering={FadeInDown.delay(200).duration(400)}>
+          <TarjetaPlantillaAutorregistro
+            titulo="Observando mis pensamientos"
+            descripcion="Observa una situación, tus pensamientos, sentimientos y reacciones."
+            icono="bulb-outline"
+            color="#9B82D9"
+            fondoIcono="#F0EAFF"
+            onPress={() => seleccionarPlantilla("pensamientos")}
+          />
+        </Animated.View>
 
-        {/* =====================================================
-            MENSAJE DE APOYO
-        ====================================================== */}
+        {/* Autorregistro ABC */}
+        <Animated.View entering={FadeInDown.delay(300).duration(400)}>
+          <TarjetaPlantillaAutorregistro
+            titulo="Autorregistro ABCDE"
+            descripcion="Reflexiona sobre una situación, tus creencias y nuevas formas de responder."
+            icono="leaf-outline"
+            color="#6FA58A"
+            fondoIcono="#E8F5EE"
+            onPress={() => seleccionarPlantilla("abc")}
+          />
+        </Animated.View>
 
+        {/* Mensaje de apoyo */}
         <Animated.View
-          entering={
-            FadeInDown
-              .delay(200)
-              .duration(400)
-          }
-          className="
-            mt-2
-            flex-row
-            items-start
-            rounded-[20px]
-            bg-[#FFF7E8]
-            p-4
-          "
+          entering={FadeInDown.delay(400).duration(400)}
+          className="mt-3 rounded-3xl border border-[#E7EAF2] bg-white px-5 py-5"
         >
-          <View
-            className="
-              h-9
-              w-9
-              items-center
-              justify-center
-              rounded-full
-              bg-[#FFE9BE]
-            "
-          >
-            <Ionicons
-              name="information-circle-outline"
-              size={21}
-              color="#D98B16"
-            />
+          <View className="mb-2 flex-row items-center">
+            <View className="mr-3 h-9 w-9 items-center justify-center rounded-full bg-[#FFF1F5]">
+              <Ionicons
+                name="heart-outline"
+                size={19}
+                color="#D58BA5"
+              />
+            </View>
+
+            <Text className="font-nunito-bold text-base text-[#243B63]">
+              Un espacio para ti
+            </Text>
           </View>
 
-          <Text
-            className="
-              ml-3
-              flex-1
-              font-nunito-medium
-              text-[13px]
-              leading-[19px]
-              text-[#7C6543]
-            "
-          >
-            No existe una forma correcta o incorrecta de hacerlo.
-            Elige el autorregistro que mejor represente lo que
-            necesitas explorar hoy.
+          <Text className="font-nunito-medium text-sm leading-5 text-[#7A89A3]">
+            No existe una forma correcta o incorrecta de registrar lo que
+            sientes. Escribe desde tu propia experiencia.
           </Text>
         </Animated.View>
       </ScrollView>

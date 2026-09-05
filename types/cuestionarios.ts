@@ -24,6 +24,40 @@ export interface Test {
 
 
 // ==========================================================
+// SUBESCALAS
+// ==========================================================
+
+export interface SubescalaTest {
+    id_subescala: string;
+    id_test: string;
+    codigo: string;
+    nombre: string;
+    descripcion: string | null;
+    orden: number;
+    incluye_total: boolean;
+    estado: boolean;
+}
+
+
+// ==========================================================
+// OPCIONES
+// ==========================================================
+
+export interface OpcionTest {
+    id_opcion: string;
+    id_pregunta: string;
+    codigo: string;
+    etiqueta: string;
+
+    valor_puntaje:
+        number | string | null;
+
+    orden: number;
+    estado: boolean;
+}
+
+
+// ==========================================================
 // PREGUNTAS
 // ==========================================================
 
@@ -88,6 +122,7 @@ export type TipoValorBaremo =
 
 export interface BaremoTest {
     id_baremo: string;
+    id_test: string;
     codigo: string;
     nombre: string;
     descripcion: string | null;
@@ -98,6 +133,7 @@ export interface BaremoTest {
     tipo_valor: TipoValorBaremo;
     version: string | null;
     fuente: string | null;
+    estado: boolean;
 }
 
 
@@ -157,7 +193,7 @@ export interface ResultadoTest {
 
 
 // ==========================================================
-// SUBESCALAS
+// RESULTADOS DE SUBESCALAS
 // ==========================================================
 
 export interface SubescalaRelacion {

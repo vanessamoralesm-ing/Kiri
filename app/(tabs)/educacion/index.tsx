@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React from "react";
+
 import {
   ScrollView,
   Text,
@@ -390,6 +391,7 @@ export default function EducacionScreen() {
 
           </View>
         </View>
+
       </View>
     </ScrollView>
   );
