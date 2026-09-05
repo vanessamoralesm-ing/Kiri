@@ -1,45 +1,98 @@
-import React from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React from "react";
+
+import { Pressable, ScrollView, Text, View } from "react-native";
+
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import TarjetaPlantillaAutorregistro from "@/components/diario/TarjetaPlantillaAutorregistro";
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 export default function NuevoRegistro() {
   const router = useRouter();
+
   const insets = useSafeAreaInsets();
 
-  // Obtenemos desde donde llego el usuario.
+  // ======================================================
+  // PARÁMETROS
+  // ======================================================
+
   const { origen } = useLocalSearchParams<{
     origen?: string;
   }>();
 
-  // Regresa al lugar desde donde se abrió "Nuevo Registro".
+  // ======================================================
+  // TEMA
+  // ======================================================
+
+  const backgroundColor = useThemeColor({}, "background");
+
+  const surfaceColor = useThemeColor({}, "surface");
+
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+
+  const borderColor = useThemeColor({}, "border");
+
+  const textColor = useThemeColor({}, "text");
+
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
+
+  const textMutedColor = useThemeColor({}, "textMuted");
+
+  const primaryColor = useThemeColor({}, "primary");
+
+  const primarySoftColor = useThemeColor({}, "primarySoft");
+
+  const secondaryColor = useThemeColor({}, "secondary");
+
+  const secondarySoftColor = useThemeColor({}, "secondarySoft");
+
+  const accentColor = useThemeColor({}, "accent");
+
+  const accentSoftColor = useThemeColor({}, "accentSoft");
+
+  // ======================================================
+  // NAVEGACIÓN
+  // ======================================================
+
   const regresar = () => {
     if (origen === "home") {
       router.replace("/(tabs)/home" as never);
+
       return;
     }
 
     router.replace("/(tabs)/diario" as never);
   };
 
-  // Abre la plantilla seleccionada y conserva el origen.
   const seleccionarPlantilla = (plantilla: string) => {
     router.push({
       pathname: `/diario/nuevo/${plantilla}` as never,
+
       params: {
         origen,
       },
     });
   };
 
+  // ======================================================
+  // UI
+  // ======================================================
+
   return (
-    <View className="flex-1 bg-[#F8FBFF]">
+    <View
+      style={{
+        flex: 1,
+        backgroundColor,
+      }}
+    >
       <ScrollView
-        className="flex-1"
+        style={{
+          flex: 1,
+        }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingTop: 16,
@@ -47,85 +100,162 @@ export default function NuevoRegistro() {
           paddingBottom: Math.max(insets.bottom + 120, 140),
         }}
       >
-        {/* Boton para regresar al lugar de origen */}
+        {/* ==================================================
+                    REGRESAR
+                ================================================== */}
+
         <Pressable
           onPress={regresar}
-          className="mb-5 h-11 w-11 items-center justify-center rounded-full bg-white"
+          style={({ pressed }) => ({
+            width: 44,
+            height: 44,
+            marginBottom: 20,
+            borderRadius: 22,
+            borderWidth: 1,
+            borderColor,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
+          })}
         >
-          <Ionicons name="arrow-back" size={22} color="#243B63" />
+          <Ionicons name="arrow-back" size={22} color={textColor} />
         </Pressable>
 
-        {/* Encabezado */}
+        {/* ==================================================
+                    ENCABEZADO
+                ================================================== */}
+
         <Animated.View
           entering={FadeInDown.duration(400)}
-          className="mb-7"
+          style={{
+            marginBottom: 28,
+          }}
         >
-          <Text className="font-nunito-bold text-3xl text-[#243B63]">
+          <Text
+            style={{
+              fontFamily: "Nunito-Bold",
+              fontSize: 30,
+              color: textColor,
+            }}
+          >
             ¿Qué quieres registrar hoy?
           </Text>
 
-          <Text className="mt-2 font-nunito-medium text-base leading-6 text-[#7A89A3]">
-            Elige el tipo de autorregistro que mejor se adapte a lo que
-            quieres expresar.
+          <Text
+            style={{
+              marginTop: 8,
+              fontFamily: "Nunito-Medium",
+              fontSize: 16,
+              lineHeight: 24,
+              color: textSecondaryColor,
+            }}
+          >
+            Elige el tipo de autorregistro que mejor se adapte a lo que quieres
+            expresar.
           </Text>
         </Animated.View>
 
-        {/* Diario emocional */}
+        {/* ==================================================
+                    DIARIO EMOCIONAL
+                ================================================== */}
+
         <Animated.View entering={FadeInDown.delay(100).duration(400)}>
           <TarjetaPlantillaAutorregistro
             titulo="Diario emocional"
             descripcion="Reconoce lo que sientes, qué lo provocó y cómo reaccionaste."
             icono="heart-outline"
-            color="#6C8FE3"
-            fondoIcono="#E7EEFF"
+            color={primaryColor}
+            fondoIcono={primarySoftColor}
             onPress={() => seleccionarPlantilla("emocional")}
           />
         </Animated.View>
 
-        {/* Observando mis pensamientos */}
+        {/* ==================================================
+                    PENSAMIENTOS
+                ================================================== */}
+
         <Animated.View entering={FadeInDown.delay(200).duration(400)}>
           <TarjetaPlantillaAutorregistro
             titulo="Observando mis pensamientos"
             descripcion="Observa una situación, tus pensamientos, sentimientos y reacciones."
             icono="bulb-outline"
-            color="#9B82D9"
-            fondoIcono="#F0EAFF"
+            color={accentColor}
+            fondoIcono={accentSoftColor}
             onPress={() => seleccionarPlantilla("pensamientos")}
           />
         </Animated.View>
 
-        {/* Autorregistro ABC */}
+        {/* ==================================================
+                    ABCDE
+                ================================================== */}
+
         <Animated.View entering={FadeInDown.delay(300).duration(400)}>
           <TarjetaPlantillaAutorregistro
             titulo="Autorregistro ABCDE"
             descripcion="Reflexiona sobre una situación, tus creencias y nuevas formas de responder."
             icono="leaf-outline"
-            color="#6FA58A"
-            fondoIcono="#E8F5EE"
+            color={secondaryColor}
+            fondoIcono={secondarySoftColor}
             onPress={() => seleccionarPlantilla("abc")}
           />
         </Animated.View>
 
-        {/* Mensaje de apoyo */}
+        {/* ==================================================
+                    MENSAJE DE APOYO
+                ================================================== */}
+
         <Animated.View
           entering={FadeInDown.delay(400).duration(400)}
-          className="mt-3 rounded-3xl border border-[#E7EAF2] bg-white px-5 py-5"
+          style={{
+            marginTop: 12,
+            paddingHorizontal: 20,
+            paddingVertical: 20,
+            borderRadius: 24,
+            borderWidth: 1,
+            borderColor,
+            backgroundColor: surfaceColor,
+          }}
         >
-          <View className="mb-2 flex-row items-center">
-            <View className="mr-3 h-9 w-9 items-center justify-center rounded-full bg-[#FFF1F5]">
-              <Ionicons
-                name="heart-outline"
-                size={19}
-                color="#D58BA5"
-              />
+          <View
+            style={{
+              marginBottom: 8,
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                marginRight: 12,
+                borderRadius: 18,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: primarySoftColor,
+              }}
+            >
+              <Ionicons name="heart-outline" size={19} color={primaryColor} />
             </View>
 
-            <Text className="font-nunito-bold text-base text-[#243B63]">
+            <Text
+              style={{
+                fontFamily: "Nunito-Bold",
+                fontSize: 16,
+                color: textColor,
+              }}
+            >
               Un espacio para ti
             </Text>
           </View>
 
-          <Text className="font-nunito-medium text-sm leading-5 text-[#7A89A3]">
+          <Text
+            style={{
+              fontFamily: "Nunito-Medium",
+              fontSize: 14,
+              lineHeight: 20,
+              color: textMutedColor,
+            }}
+          >
             No existe una forma correcta o incorrecta de registrar lo que
             sientes. Escribe desde tu propia experiencia.
           </Text>

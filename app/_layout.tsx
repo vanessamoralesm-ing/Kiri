@@ -1,16 +1,16 @@
-import "../global.css";
-import React, { useEffect } from "react";
 import { ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack, usePathname, useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import React, { useEffect } from "react";
 import "react-native-reanimated";
+import "../global.css";
 
 import AnimatedLogo from "@/components/ui/AnimatedLogo";
-import { AuthProvider, useAuth } from "@/services/authProvider";
 import { KiriDarkTheme, KiriLightTheme } from "@/constants/theme";
 import { ThemeModeProvider, useThemeMode } from "@/contexts/ThemeModeContext";
+import { AuthProvider, useAuth } from "@/services/authProvider";
 import { obtenerEstadoInicialEntrevista } from "@/services/entrevista/entrevistaService";
 
 SplashScreen.preventAutoHideAsync();
