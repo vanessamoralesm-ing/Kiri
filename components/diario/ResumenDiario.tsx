@@ -1,8 +1,15 @@
-import React, { useEffect } from "react";
+import React, {
+  useEffect,
+} from "react";
 
-import { Text, View } from "react-native";
+import {
+  Text,
+  View,
+} from "react-native";
 
-import { Ionicons } from "@expo/vector-icons";
+import {
+  Ionicons,
+} from "@expo/vector-icons";
 
 import Animated, {
   FadeInDown,
@@ -13,8 +20,6 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { useThemeColor } from "@/hooks/use-theme-color";
-
 interface ResumenDiarioProps {
   diasRacha: number;
   totalEntradas: number;
@@ -24,273 +29,259 @@ export default function ResumenDiario({
   diasRacha,
   totalEntradas,
 }: ResumenDiarioProps) {
-  // ======================================================
-  // TEMA
-  // ======================================================
+  // Controla el movimiento vertical de la llama
+  const movimientoLlama =
+    useSharedValue(0);
 
-  const surfaceColor = useThemeColor({}, "surface");
-
-  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
-
-  const borderColor = useThemeColor({}, "border");
-
-  const textColor = useThemeColor({}, "text");
-
-  const textSecondaryColor = useThemeColor({}, "textSecondary");
-
-  const textMutedColor = useThemeColor({}, "textMuted");
-
-  const primaryColor = useThemeColor({}, "primary");
-
-  const primarySoftColor = useThemeColor({}, "primarySoft");
-
-  const accentColor = useThemeColor({}, "accent");
-
-  const accentSoftColor = useThemeColor({}, "accentSoft");
-
-  // ======================================================
-  // ANIMACIÓN
-  // ======================================================
-
-  const movimientoLlama = useSharedValue(0);
-
-  const rotacionLlama = useSharedValue(0);
+  // Controla una pequeña inclinacion de la llama
+  const rotacionLlama =
+    useSharedValue(0);
 
   useEffect(() => {
-    movimientoLlama.value = withRepeat(
-      withSequence(
-        withTiming(-4, {
-          duration: 700,
-        }),
-        withTiming(0, {
-          duration: 700,
-        }),
-      ),
-      -1,
-      true,
-    );
+    // La llama sube y baja suavemente
+    movimientoLlama.value =
+      withRepeat(
+        withSequence(
+          withTiming(-4, {
+            duration: 700,
+          }),
 
-    rotacionLlama.value = withRepeat(
-      withSequence(
-        withTiming(-5, {
-          duration: 600,
-        }),
-        withTiming(5, {
-          duration: 600,
-        }),
-        withTiming(0, {
-          duration: 600,
-        }),
-      ),
-      -1,
-      true,
-    );
-  }, [movimientoLlama, rotacionLlama]);
+          withTiming(0, {
+            duration: 700,
+          })
+        ),
+        -1,
+        true
+      );
 
-  const estiloLlama = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateY: movimientoLlama.value,
-      },
-      {
-        rotate: `${rotacionLlama.value}deg`,
-      },
-    ],
-  }));
+    // La llama se inclina ligeramente de un lado al otro
+    rotacionLlama.value =
+      withRepeat(
+        withSequence(
+          withTiming(-5, {
+            duration: 600,
+          }),
 
-  // ======================================================
-  // COLORES DECORATIVOS
-  // ======================================================
+          withTiming(5, {
+            duration: 600,
+          }),
 
-  const colorRacha = "#F59E0B";
+          withTiming(0, {
+            duration: 600,
+          })
+        ),
+        -1,
+        true
+      );
+  }, [
+    movimientoLlama,
+    rotacionLlama,
+  ]);
 
-  const fondoRacha = surfaceSecondaryColor;
+  // Estilo animado que recibe la llama
+  const estiloLlama =
+    useAnimatedStyle(() => ({
+      transform: [
+        {
+          translateY:
+            movimientoLlama.value,
+        },
 
-  const fondoIconoRacha = "rgba(245, 158, 11, 0.14)";
-
-  const bordeRacha = "rgba(245, 158, 11, 0.28)";
-
-  const colorDecoracionRacha = "#F59E0B";
-
-  const fondoEntradas = surfaceSecondaryColor;
-
-  const fondoIconoEntradas = accentSoftColor;
-
-  const bordeEntradas = borderColor;
-
-  // ======================================================
-  // UI
-  // ======================================================
+        {
+          rotate: `${rotacionLlama.value}deg`,
+        },
+      ],
+    }));
 
   return (
     <Animated.View
-      entering={FadeInDown.delay(100).duration(450)}
-      style={{
-        marginTop: 20,
-        flexDirection: "row",
-        gap: 12,
-      }}
+      entering={
+        FadeInDown
+          .delay(100)
+          .duration(450)
+      }
+      className="
+        mt-5
+        flex-row
+        gap-3
+      "
     >
-      {/* ==================================================
-                RACHA
-            ================================================== */}
+      {/* Apartado de la racha */}
 
       <View
-        style={{
-          flex: 1,
-          overflow: "hidden",
-          padding: 16,
-          borderRadius: 22,
-          borderWidth: 1,
-          borderColor: bordeRacha,
-          backgroundColor: fondoRacha,
-        }}
+        className="
+          flex-1
+          overflow-hidden
+          rounded-[22px]
+          border
+          border-[#FFD59A]
+          bg-[#FFF4E5]
+          p-4
+        "
       >
+        {/* Icono y titulo */}
         <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-          }}
+          className="
+            flex-row
+            items-center
+          "
         >
+          {/* modulo racha */}
           <View
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: fondoIconoRacha,
-            }}
+            className="
+              h-[48px]
+              w-[48px]
+              items-center
+              justify-center
+              rounded-full
+              bg-[#FFE1B3]
+            "
           >
-            <Animated.View style={estiloLlama}>
-              <Ionicons name="flame" size={35} color={colorRacha} />
+            {/* Llama animada */}
+            <Animated.View
+              style={estiloLlama}
+            >
+              <Ionicons
+                name="flame"
+                size={35}
+                color="#F59E0B"
+              />
             </Animated.View>
           </View>
 
           <Text
-            style={{
-              marginLeft: 12,
-              fontFamily: "Nunito-Bold",
-              fontSize: 20,
-              color: textColor,
-            }}
+            className="
+              ml-3
+              font-nunito-bold
+              text-[20px]
+              text-[#475569]
+            "
           >
             Racha
           </Text>
         </View>
 
+        {/* Cantidad de dias */}
         <Text
-          style={{
-            marginTop: 16,
-            fontFamily: "Nunito-Bold",
-            fontSize: 28,
-            color: colorRacha,
-          }}
+          className="
+            mt-4
+            font-nunito-bold
+            text-[28px]
+            text-[#F59E0B]
+          "
         >
           {diasRacha} días
         </Text>
 
+        {/* Mensaje */}
         <Text
-          style={{
-            marginTop: 4,
-            fontFamily: "Nunito-Medium",
-            fontSize: 13,
-            color: textSecondaryColor,
-          }}
+          className="
+            mt-1
+            font-nunito-medium
+            text-[13px]
+            text-[#64748B]
+          "
         >
           ¡Sigue así!
         </Text>
 
+        {/* Decoracion de fondo */}
         <Ionicons
           name="flame-outline"
           size={65}
-          color={colorDecoracionRacha}
+          color="#FFD89B"
           style={{
             position: "absolute",
             right: -8,
             bottom: -10,
-            opacity: 0.16,
+            opacity: 0.45,
           }}
         />
       </View>
 
-      {/* ==================================================
-                ENTRADAS
-            ================================================== */}
+      {/*Entradas*/}
 
       <View
-        style={{
-          flex: 1,
-          overflow: "hidden",
-          padding: 16,
-          borderRadius: 22,
-          borderWidth: 1,
-          borderColor: bordeEntradas,
-          backgroundColor: fondoEntradas,
-        }}
+        className="
+          flex-1
+          overflow-hidden
+          rounded-[22px]
+          border
+          border-[#E5DCFF]
+          bg-[#F3EDFF]
+          p-4
+        "
       >
+        {/* Icono y titulo */}
         <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-          }}
+          className="
+            flex-row
+            items-center
+          "
         >
           <View
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: fondoIconoEntradas,
-            }}
+            className="
+              h-[48px]
+              w-[48px]
+              items-center
+              justify-center
+              rounded-full
+              bg-[#E8DDFF]
+            "
           >
-            <Ionicons name="book-outline" size={30} color={primaryColor} />
+            <Ionicons
+              name="book-outline"
+              size={30}
+              color="#4F8EF7"
+            />
           </View>
 
           <Text
-            style={{
-              marginLeft: 12,
-              fontFamily: "Nunito-Bold",
-              fontSize: 20,
-              color: textColor,
-            }}
+            className="
+              ml-3
+              font-nunito-bold
+              text-[20px]
+              text-[#475569]
+            "
           >
             Entradas
           </Text>
         </View>
 
+        {/* Total de entradas */}
         <Text
-          style={{
-            marginTop: 16,
-            fontFamily: "Nunito-Bold",
-            fontSize: 28,
-            color: accentColor,
-          }}
+          className="
+            mt-4
+            font-nunito-bold
+            text-[28px]
+            text-[#7C4DDE]
+          "
         >
           {totalEntradas}
         </Text>
 
+        {/* Descripcion */}
         <Text
-          style={{
-            marginTop: 4,
-            fontFamily: "Nunito-Medium",
-            fontSize: 13,
-            color: textSecondaryColor,
-          }}
+          className="
+            mt-1
+            font-nunito-medium
+            text-[13px]
+            text-[#64748B]
+          "
         >
           Registros guardados
         </Text>
 
+        {/* Decoración */}
         <Ionicons
           name="sparkles-outline"
           size={55}
-          color={accentColor}
+          color="#DDD0FF"
           style={{
             position: "absolute",
             right: -2,
             bottom: -5,
-            opacity: 0.16,
+            opacity: 0.7,
           }}
         />
       </View>
