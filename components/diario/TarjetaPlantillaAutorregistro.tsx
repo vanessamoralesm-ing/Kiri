@@ -1,16 +1,20 @@
 import React from "react";
 
-import { Pressable, Text, View } from "react-native";
+import {
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 
-import { Ionicons } from "@expo/vector-icons";
+import {
+  Ionicons,
+} from "@expo/vector-icons";
 
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-
-import { useThemeColor } from "@/hooks/use-theme-color";
 
 interface TarjetaPlantillaAutorregistroProps {
   titulo: string;
@@ -29,26 +33,6 @@ export default function TarjetaPlantillaAutorregistro({
   fondoIcono,
   onPress,
 }: TarjetaPlantillaAutorregistroProps) {
-  // ======================================================
-  // TEMA
-  // ======================================================
-
-  const surfaceColor = useThemeColor({}, "surface");
-
-  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
-
-  const borderColor = useThemeColor({}, "border");
-
-  const textColor = useThemeColor({}, "text");
-
-  const textSecondaryColor = useThemeColor({}, "textSecondary");
-
-  const iconColor = useThemeColor({}, "icon");
-
-  // ======================================================
-  // ANIMACIÓN
-  // ======================================================
-
   const escala = useSharedValue(1);
 
   const estiloAnimado = useAnimatedStyle(() => ({
@@ -59,18 +43,10 @@ export default function TarjetaPlantillaAutorregistro({
     ],
   }));
 
-  // ======================================================
-  // UI
-  // ======================================================
-
   return (
     <Animated.View
-      style={[
-        estiloAnimado,
-        {
-          marginBottom: 16,
-        },
-      ]}
+      style={estiloAnimado}
+      className="mb-4"
     >
       <Pressable
         onPress={onPress}
@@ -80,17 +56,17 @@ export default function TarjetaPlantillaAutorregistro({
         onPressOut={() => {
           escala.value = withSpring(1);
         }}
-        style={({ pressed }) => ({
-          flexDirection: "row",
-          alignItems: "center",
-          padding: 16,
-          borderRadius: 22,
-          borderWidth: 1,
-          borderColor,
-          backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
-
+        className="
+          flex-row
+          items-center
+          rounded-[22px]
+          border
+          border-[#E8EDF3]
+          bg-white
+          p-4
+        "
+        style={{
           elevation: 2,
-
           shadowColor: "#000000",
           shadowOffset: {
             width: 0,
@@ -98,74 +74,70 @@ export default function TarjetaPlantillaAutorregistro({
           },
           shadowOpacity: 0.05,
           shadowRadius: 5,
-        })}
+        }}
       >
-        {/* ==================================================
-                    ICONO
-                ================================================== */}
-
+        {/* Icono de la plantilla */}
         <View
+          className="
+            h-[58px]
+            w-[58px]
+            items-center
+            justify-center
+            rounded-2xl
+          "
           style={{
-            width: 58,
-            height: 58,
-            borderRadius: 16,
-            alignItems: "center",
-            justifyContent: "center",
             backgroundColor: fondoIcono,
           }}
         >
-          <Ionicons name={icono} size={29} color={color} />
+          <Ionicons
+            name={icono}
+            size={29}
+            color={color}
+          />
         </View>
 
-        {/* ==================================================
-                    INFORMACIÓN
-                ================================================== */}
-
-        <View
-          style={{
-            flex: 1,
-            marginLeft: 16,
-          }}
-        >
+        {/* Información */}
+        <View className="ml-4 flex-1">
           <Text
-            style={{
-              fontFamily: "Nunito-SemiBold",
-              fontSize: 16,
-              color: textColor,
-            }}
+            className="
+              font-nunito-semibold
+              text-[16px]
+              text-[#1E293B]
+            "
           >
             {titulo}
           </Text>
 
           <Text
-            style={{
-              marginTop: 4,
-              fontFamily: "Nunito-Medium",
-              fontSize: 13,
-              lineHeight: 18,
-              color: textSecondaryColor,
-            }}
+            className="
+              mt-1
+              font-nunito-medium
+              text-[13px]
+              leading-[18px]
+              text-[#64748B]
+            "
           >
             {descripcion}
           </Text>
         </View>
 
-        {/* ==================================================
-                    FLECHA
-                ================================================== */}
-
+        {/* Flecha */}
         <View
-          style={{
-            width: 36,
-            height: 36,
-            marginLeft: 8,
-            borderRadius: 18,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: surfaceSecondaryColor,
-          }}
+          className="
+            ml-2
+            h-9
+            w-9
+            items-center
+            justify-center
+            rounded-full
+            bg-[#F1F5F9]
+          "
         >
-          <Ionicons name="chevron-forward" size={20} color={iconColor} />
+          <Ionicons
+            name="chevron-forward"
+            size={20}
+            color="#64748B"
+          />
         </View>
       </Pressable>
     </Animated.View>

@@ -1,7 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-
 import {
   KeyboardAvoidingView,
   Platform,
@@ -11,18 +8,14 @@ import {
   View,
 } from "react-native";
 
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
 import Animated, { FadeInDown } from "react-native-reanimated";
 
-import { CampoPreguntaDiario } from "@/components/diario/CampoPreguntaDiario";
 import { OpcionEmocion } from "@/components/diario/OpcionEmocion";
+import { CampoPreguntaDiario } from "@/components/diario/CampoPreguntaDiario";
 import Button from "@/components/ui/Button";
-import { useThemeColor } from "@/hooks/use-theme-color";
-
-// ==========================================================
-// EMOCIONES
-// ==========================================================
 
 const EMOCIONES = [
   { nombre: "Alegría", emoji: "😊" },
@@ -37,10 +30,6 @@ const EMOCIONES = [
   { nombre: "Esperanza", emoji: "🌱" },
 ];
 
-// ==========================================================
-// COMPONENTE
-// ==========================================================
-
 export default function NuevoAutorregistro() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -50,108 +39,43 @@ export default function NuevoAutorregistro() {
     origen?: string;
   }>();
 
-  // ======================================================
-  // ESTADO
-  // ======================================================
-
   const [emocion, setEmocion] = useState("");
   const [motivo, setMotivo] = useState("");
   const [reaccion, setReaccion] = useState("");
   const [ideaUtil, setIdeaUtil] = useState("");
 
-  // ======================================================
-  // TEMA
-  // ======================================================
-
-  const backgroundColor = useThemeColor({}, "background");
-
-  const surfaceColor = useThemeColor({}, "surface");
-
-  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
-
-  const borderColor = useThemeColor({}, "border");
-
-  const textColor = useThemeColor({}, "text");
-
-  const textSecondaryColor = useThemeColor({}, "textSecondary");
-
-  const textMutedColor = useThemeColor({}, "textMuted");
-
-  const primaryColor = useThemeColor({}, "primary");
-
-  const primarySoftColor = useThemeColor({}, "primarySoft");
-
-  const secondaryColor = useThemeColor({}, "secondary");
-
-  const secondarySoftColor = useThemeColor({}, "secondarySoft");
-
-  const accentColor = useThemeColor({}, "accent");
-
-  const accentSoftColor = useThemeColor({}, "accentSoft");
-
-  const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
-
-  // ======================================================
-  // NAVEGACIÓN
-  // ======================================================
-
+  // Regresa a la lista de tipos de autorregistro.
+  // Regresa a la lista de tipos de autorregistro.
   const regresar = () => {
     router.replace({
       pathname: "/diario/nuevo" as never,
-      params: {
-        origen,
-      },
+      params: { origen },
     });
   };
 
-  // ======================================================
-  // PLANTILLA NO DISPONIBLE
-  // ======================================================
-
+  // La plantilla Diario Emocional
   if (plantilla !== "emocional") {
     return (
-      <View
-        style={{
-          flex: 1,
-          paddingHorizontal: 24,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor,
-        }}
-      >
-        <Text
-          style={{
-            fontFamily: "Nunito-Bold",
-            fontSize: 20,
-            textAlign: "center",
-            color: textColor,
-          }}
-        >
+      <View className="flex-1 items-center justify-center bg-[#F8FBFF] px-6">
+        <Text className="text-center font-nunito-bold text-xl text-gray-700">
           Plantilla no disponible
         </Text>
       </View>
     );
   }
 
-  // ======================================================
-  // UI
-  // ======================================================
-
   return (
     <KeyboardAvoidingView
-      style={{
-        flex: 1,
-        backgroundColor,
-      }}
-      behavior={
-        Platform.OS === "ios"
-          ? "padding"
-          : Platform.OS === "android"
+        className="flex-1 bg-[#F8FBFF]"
+        behavior={
+          Platform.OS === "ios"
+            ? "padding"
+            : Platform.OS === "android"
             ? "height"
             : undefined
-      }
-      keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
-    >
+        }
+        keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
+      >
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -159,285 +83,84 @@ export default function NuevoAutorregistro() {
           paddingHorizontal: 16,
           paddingBottom: Math.max(insets.bottom + 130, 150),
         }}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="on-drag"
-      >
-        {/* ==================================================
-                    ENCABEZADO
-                ================================================== */}
-
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
+        {/* Encabezado */}
         <Animated.View
           entering={FadeInDown.duration(400)}
-          style={{
-            marginBottom: 20,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
+          className="mb-5 flex-row items-center justify-between"
         >
           <Pressable
             onPress={regresar}
-            style={({ pressed }) => ({
-              width: 44,
-              height: 44,
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
-            })}
+            className="h-11 w-11 items-center justify-center rounded-2xl border border-gray-100 bg-white"
           >
-            <Ionicons name="arrow-back" size={22} color={textColor} />
+            <Ionicons name="arrow-back" size={22} color="#1E3A5F" />
           </Pressable>
 
-          <View
-            style={{
-              flex: 1,
-              paddingHorizontal: 12,
-            }}
-          >
-            <Text
-              style={{
-                fontFamily: "Nunito-Bold",
-                fontSize: 30,
-                color: primaryColor,
-              }}
-            >
+          <View className="flex-1 px-3">
+            <Text className="font-nunito-bold text-[30px] font-[700] text-[#4F8EF7]">
               Diario Emocional
             </Text>
 
-            <Text
-              style={{
-                marginTop: 2,
-                fontFamily: "Nunito-Medium",
-                fontSize: 16,
-                color: textMutedColor,
-              }}
-            >
+            <Text className="font-nunito-medium text-[16px] text-[#9096a3]">
               Tu espacio seguro para expresar lo que sientes
             </Text>
           </View>
 
-          <Pressable
-            style={({ pressed }) => ({
-              width: 44,
-              height: 44,
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
-            })}
-          >
-            <Ionicons name="calendar-outline" size={23} color={textColor} />
+          <Pressable className="h-11 w-11 items-center justify-center rounded-2xl border border-gray-100 bg-white">
+            <Ionicons name="calendar-outline" size={23} color="#243B63" />
           </Pressable>
         </Animated.View>
 
-        {/* ==================================================
-                    TARJETA DE BIENVENIDA
-                ================================================== */}
-
+        {/* Tarjeta de bienvenida */}
         <Animated.View
           entering={FadeInDown.delay(100).duration(500)}
-          style={{
-            position: "relative",
-            minHeight: 185,
-            marginBottom: 28,
-            overflow: "hidden",
-            borderRadius: 24,
-            paddingHorizontal: 24,
-            paddingVertical: 24,
-            backgroundColor: primarySoftColor,
-          }}
+          className="relative mb-7 min-h-[185px] overflow-hidden rounded-[24px] bg-[#E9F1FF] px-6 py-6"
         >
-          {/* DECORACIONES */}
+          {/* Decoraciones de fondo */}
+          <View className="absolute -right-8 -top-10 h-36 w-36 rounded-full bg-[#D9E5FF]" />
+          <View className="absolute -bottom-12 right-16 h-32 w-32 rounded-full bg-[#E8DFFF]" />
+          <View className="absolute -left-8 bottom-[-35px] h-28 w-28 rounded-full bg-[#F7E0EF]" />
 
-          <View
-            style={{
-              position: "absolute",
-              right: -32,
-              top: -40,
-              width: 144,
-              height: 144,
-              borderRadius: 72,
-              backgroundColor: primarySoftColor,
-              opacity: 0.8,
-            }}
-          />
+          {/* Pequeños detalles decorativos */}
+          <View className="absolute right-24 top-8 h-3 w-3 rounded-full bg-[#AFC7F5]" />
+          <View className="absolute right-12 bottom-8 h-2 w-2 rounded-full bg-[#BFA9E8]" />
 
-          <View
-            style={{
-              position: "absolute",
-              right: 64,
-              bottom: -48,
-              width: 128,
-              height: 128,
-              borderRadius: 64,
-              backgroundColor: accentSoftColor,
-              opacity: 0.8,
-            }}
-          />
-
-          <View
-            style={{
-              position: "absolute",
-              left: -32,
-              bottom: -35,
-              width: 112,
-              height: 112,
-              borderRadius: 56,
-              backgroundColor: secondarySoftColor,
-              opacity: 0.55,
-            }}
-          />
-
-          <View
-            style={{
-              position: "absolute",
-              right: 96,
-              top: 32,
-              width: 12,
-              height: 12,
-              borderRadius: 6,
-              backgroundColor: primaryColor,
-              opacity: 0.35,
-            }}
-          />
-
-          <View
-            style={{
-              position: "absolute",
-              right: 48,
-              bottom: 32,
-              width: 8,
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: accentColor,
-              opacity: 0.45,
-            }}
-          />
-
-          <View
-            style={{
-              width: "58%",
-            }}
-          >
-            <Text
-              style={{
-                fontFamily: "Nunito-Bold",
-                fontSize: 23,
-                lineHeight: 28,
-                color: textColor,
-              }}
-            >
+          <View className="w-[58%]">
+            <Text className="font-nunito-bold text-[23px] font-[700] leading-7 text-[#2D3748]">
               ¿Cómo te{"\n"}sientes hoy?
             </Text>
 
-            <Text
-              style={{
-                marginTop: 12,
-                fontFamily: "Nunito-Medium",
-                fontSize: 16,
-                lineHeight: 20,
-                color: textSecondaryColor,
-              }}
-            >
+            <Text className="mt-3 font-nunito-medium text-[16px] leading-5 text-[#61718E]">
               Reconocer tus emociones es el primer paso para entenderte mejor.
             </Text>
           </View>
 
-          {/* ILUSTRACIÓN TEMPORAL */}
-
-          <View
-            style={{
-              position: "absolute",
-              right: 20,
-              bottom: 20,
-              width: 115,
-              height: 115,
-              borderRadius: 28,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: primaryColor,
-              transform: [
-                {
-                  rotate: "-5deg",
-                },
-              ],
-            }}
-          >
-            <View
-              style={{
-                width: 65,
-                height: 85,
-                borderRadius: 12,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: primaryColor,
-                opacity: 0.88,
-              }}
-            >
-              <Ionicons name="heart" size={34} color={textOnPrimaryColor} />
+          {/* Ilustracion sencilla mientras colocamos el asset definitivo */}
+          <View className="absolute bottom-5 right-5 h-[115px] w-[115px] items-center justify-center rounded-[28px] bg-[#7EA8EE] rotate-[-5deg]">
+            <View className="h-[85px] w-[65px] items-center justify-center rounded-xl bg-[#5E8FE4]">
+              <Ionicons name="heart" size={34} color="white" />
             </View>
 
-            <View
-              style={{
-                position: "absolute",
-                right: -8,
-                bottom: 16,
-                width: 16,
-                height: 32,
-                borderRadius: 8,
-                backgroundColor: primaryColor,
-                opacity: 0.7,
-              }}
-            />
+            <View className="absolute -right-2 bottom-4 h-8 w-4 rounded-full bg-[#365FAD]" />
           </View>
         </Animated.View>
 
-        {/* ==================================================
-                    SELECCIÓN DE EMOCIÓN
-                ================================================== */}
-
+        {/* Seleccion de emocion */}
         <Animated.View
           entering={FadeInDown.delay(200).duration(500)}
-          style={{
-            marginBottom: 24,
-          }}
+          className="mb-6"
         >
-          <Text
-            style={{
-              marginBottom: 4,
-              fontFamily: "Nunito-Bold",
-              fontSize: 20,
-              color: textColor,
-            }}
-          >
+          <Text className="mb-1 font-nunito-bold text-[20px] text-[#2D3748]">
             ¿Cómo me siento hoy?
           </Text>
 
-          <Text
-            style={{
-              marginBottom: 16,
-              fontFamily: "Nunito-Medium",
-              fontSize: 14,
-              lineHeight: 20,
-              color: textSecondaryColor,
-            }}
-          >
+          <Text className="mb-4 font-nunito-medium text-[14px] leading-5 text-[#7A89A3]">
             Elige la emoción que mejor representa cómo te sientes.
           </Text>
 
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              justifyContent: "space-between",
-              rowGap: 12,
-            }}
-          >
+          <View className="flex-row flex-wrap justify-between gap-y-3">
             {EMOCIONES.map((item) => (
               <OpcionEmocion
                 key={item.nombre}
@@ -450,56 +173,47 @@ export default function NuevoAutorregistro() {
           </View>
         </Animated.View>
 
-        {/* ==================================================
-                    PREGUNTAS DE REFLEXIÓN
-                ================================================== */}
+          {/* Preguntas de reflexion */}
+          <Animated.View
+            entering={FadeInDown.delay(300).duration(500)}
+          >
+            <CampoPreguntaDiario
+              titulo="¿Qué me hizo sentir así?"
+              valor={motivo}
+              onChangeText={setMotivo}
+              placeholder="Cuéntanos qué ocurrió..."
+            />
 
-        <Animated.View entering={FadeInDown.delay(300).duration(500)}>
-          <CampoPreguntaDiario
-            titulo="¿Qué me hizo sentir así?"
-            valor={motivo}
-            onChangeText={setMotivo}
-            placeholder="Cuéntanos qué ocurrió..."
-          />
+            <CampoPreguntaDiario
+              titulo="¿Cómo reaccioné?"
+              valor={reaccion}
+              onChangeText={setReaccion}
+              placeholder="¿Qué hiciste o cómo respondiste?"
+            />
 
-          <CampoPreguntaDiario
-            titulo="¿Cómo reaccioné?"
-            valor={reaccion}
-            onChangeText={setReaccion}
-            placeholder="¿Qué hiciste o cómo respondiste?"
-          />
+            <CampoPreguntaDiario
+              titulo="Una idea útil"
+              valor={ideaUtil}
+              onChangeText={setIdeaUtil}
+              placeholder="¿Qué te gustaría recordar de esta experiencia?"
+            />
+          </Animated.View>
 
-          <CampoPreguntaDiario
-            titulo="Una idea útil"
-            valor={ideaUtil}
-            onChangeText={setIdeaUtil}
-            placeholder="¿Qué te gustaría recordar de esta experiencia?"
-          />
+          {/* Boton de guardar */}
+        <Animated.View entering={FadeInDown.delay(400).duration(500)} className="mt-3">
+            <Button
+              title="Guardar registro"
+              onPress={() => {
+                console.log({
+                  emocion,
+                  motivo,
+                  reaccion,
+                  ideaUtil,
+                });
+              }}
+            />
         </Animated.View>
-
-        {/* ==================================================
-                    GUARDAR
-                ================================================== */}
-
-        <Animated.View
-          entering={FadeInDown.delay(400).duration(500)}
-          style={{
-            marginTop: 12,
-          }}
-        >
-          <Button
-            title="Guardar registro"
-            onPress={() => {
-              console.log({
-                emocion,
-                motivo,
-                reaccion,
-                ideaUtil,
-              });
-            }}
-          />
-        </Animated.View>
-      </ScrollView>
+     </ScrollView>
     </KeyboardAvoidingView>
   );
 }
