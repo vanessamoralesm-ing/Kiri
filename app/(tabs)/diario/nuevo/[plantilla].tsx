@@ -1,148 +1,361 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
 
-import Animated, { FadeInDown } from "react-native-reanimated";
+import {
+  Ionicons,
+} from "@expo/vector-icons";
 
-import { CampoPreguntaDiario } from "@/components/diario/CampoPreguntaDiario";
-import { OpcionEmocion } from "@/components/diario/OpcionEmocion";
+import {
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+
+import Animated, {
+  FadeInDown,
+} from "react-native-reanimated";
+
+import {
+  OpcionEmocion,
+} from "@/components/diario/OpcionEmocion";
+
+import {
+  CampoPreguntaDiario,
+} from "@/components/diario/CampoPreguntaDiario";
+
 import Button from "@/components/ui/Button";
-import { useThemeColor } from "@/hooks/use-theme-color";
 
-// ==========================================================
-// EMOCIONES
-// ==========================================================
+import {
+  useAuth,
+} from "@/services/authProvider";
 
-const EMOCIONES = [
-  { nombre: "Alegría", emoji: "😊" },
-  { nombre: "Tristeza", emoji: "😢" },
-  { nombre: "Ansiedad", emoji: "😰" },
-  { nombre: "Miedo", emoji: "😨" },
-  { nombre: "Enojo", emoji: "😡" },
-  { nombre: "Calma", emoji: "😌" },
-  { nombre: "Frustración", emoji: "😤" },
-  { nombre: "Culpa", emoji: "😔" },
-  { nombre: "Vergüenza", emoji: "😳" },
-  { nombre: "Esperanza", emoji: "🌱" },
-];
+import {
+  guardarDiarioEmocionalService,
+  obtenerEmocionesAutorregistro,
+} from "@/services/diario/autorregistro.service";
 
-// ==========================================================
-// COMPONENTE
-// ==========================================================
+import {
+  EmocionAutorregistro,
+} from "@/types/diario";
+
+
+// Emojis usados solamente para la interfaz.
+const EMOJIS_EMOCIONES: Record<string, string> = {
+  Alegría: "😊",
+  Tristeza: "😢",
+  Ansiedad: "😰",
+  Miedo: "😨",
+  Enojo: "😡",
+  Calma: "😌",
+  Frustración: "😤",
+  Culpa: "😔",
+  Vergüenza: "😳",
+  Esperanza: "🌱",
+};
+
 
 export default function NuevoAutorregistro() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const router =
+    useRouter();
 
-  const { plantilla, origen } = useLocalSearchParams<{
-    plantilla?: string;
-    origen?: string;
-  }>();
+  const insets =
+    useSafeAreaInsets();
 
-  // ======================================================
-  // ESTADO
-  // ======================================================
+  const {
+    width,
+  } =
+    useWindowDimensions();
 
-  const [emocion, setEmocion] = useState("");
-  const [motivo, setMotivo] = useState("");
-  const [reaccion, setReaccion] = useState("");
-  const [ideaUtil, setIdeaUtil] = useState("");
+  const {
+    user,
+  } =
+    useAuth();
 
-  // ======================================================
-  // TEMA
-  // ======================================================
+  const {
+    plantilla,
+    origen,
+  } =
+    useLocalSearchParams<{
+      plantilla?: string;
+      origen?: string;
+    }>();
 
-  const backgroundColor = useThemeColor({}, "background");
 
-  const surfaceColor = useThemeColor({}, "surface");
+  const [
+    guardando,
+    setGuardando,
+  ] =
+    useState(false);
 
-  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+  const [
+    cargandoEmociones,
+    setCargandoEmociones,
+  ] =
+    useState(true);
 
-  const borderColor = useThemeColor({}, "border");
+  const [
+    emociones,
+    setEmociones,
+  ] =
+    useState<EmocionAutorregistro[]>([]);
 
-  const textColor = useThemeColor({}, "text");
+  const [
+    idEmocion,
+    setIdEmocion,
+  ] =
+    useState("");
 
-  const textSecondaryColor = useThemeColor({}, "textSecondary");
+  const [
+    motivo,
+    setMotivo,
+  ] =
+    useState("");
 
-  const textMutedColor = useThemeColor({}, "textMuted");
+  const [
+    reaccion,
+    setReaccion,
+  ] =
+    useState("");
 
-  const primaryColor = useThemeColor({}, "primary");
+  const [
+    ideaUtil,
+    setIdeaUtil,
+  ] =
+    useState("");
 
-  const primarySoftColor = useThemeColor({}, "primarySoft");
 
-  const secondaryColor = useThemeColor({}, "secondary");
+  // Responsive.
+  const esTelefono =
+    width < 768;
 
-  const secondarySoftColor = useThemeColor({}, "secondarySoft");
+  const esTablet =
+    width >= 768 &&
+    width < 1100;
 
-  const accentColor = useThemeColor({}, "accent");
+  const esWeb =
+    width >= 1100;
 
-  const accentSoftColor = useThemeColor({}, "accentSoft");
 
-  const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
+  // Ancho máximo de toda la pantalla.
+  const maxWidthContenido =
+    esWeb
+      ? 980
+      : esTablet
+        ? 860
+        : undefined;
 
-  // ======================================================
-  // NAVEGACIÓN
-  // ======================================================
 
-  const regresar = () => {
-    router.replace({
-      pathname: "/diario/nuevo" as never,
-      params: {
-        origen,
+  // El card superior y las emociones no necesitan ocupar
+  // todo el ancho disponible en web.
+  const maxWidthSeccionPrincipal =
+    esWeb
+      ? 760
+      : undefined;
+
+
+  const paddingHorizontal =
+    esTelefono
+      ? 16
+      : 24;
+
+
+  // Cantidad de emociones por fila.
+  const columnasEmociones =
+    esTelefono
+      ? 3
+      : esTablet
+        ? 4
+        : 5;
+
+
+  const gapEmociones =
+    esTelefono
+      ? 12
+      : 14;
+
+
+  // En web el grid se limita a 760px.
+  const anchoGridEmociones =
+    Math.min(
+      width - paddingHorizontal * 2,
+      esWeb
+        ? 760
+        : esTablet
+          ? 760
+          : width - paddingHorizontal * 2
+    );
+
+
+  const anchoTarjetaEmocion =
+    useMemo(
+      () => {
+        const espacioTotal =
+          gapEmociones *
+          (
+            columnasEmociones - 1
+          );
+
+        return (
+          anchoGridEmociones -
+          espacioTotal
+        ) /
+        columnasEmociones;
       },
-    });
-  };
+      [
+        anchoGridEmociones,
+        columnasEmociones,
+        gapEmociones,
+      ]
+    );
 
-  // ======================================================
-  // PLANTILLA NO DISPONIBLE
-  // ======================================================
 
-  if (plantilla !== "emocional") {
+  useEffect(() => {
+    const cargarEmociones =
+      async () => {
+        try {
+          setCargandoEmociones(
+            true
+          );
+
+          const data =
+            await obtenerEmocionesAutorregistro();
+
+          setEmociones(
+            data
+          );
+        } catch (error: any) {
+          Alert.alert(
+            "Error",
+            error.message ||
+              "No se pudieron cargar las emociones."
+          );
+        } finally {
+          setCargandoEmociones(
+            false
+          );
+        }
+      };
+
+    cargarEmociones();
+  }, []);
+
+
+  const regresar =
+    () => {
+      router.replace({
+        pathname:
+          "/diario/nuevo" as never,
+
+        params: {
+          origen,
+        },
+      });
+    };
+
+
+  const guardarRegistro =
+    async () => {
+      if (
+        !user?.id
+      ) {
+        Alert.alert(
+          "Error",
+          "No se encontró una sesión de usuario activa."
+        );
+
+        return;
+      }
+
+      if (
+        !idEmocion
+      ) {
+        Alert.alert(
+          "Atención",
+          "Por favor selecciona una emoción antes de guardar."
+        );
+
+        return;
+      }
+
+      try {
+        setGuardando(
+          true
+        );
+
+        await guardarDiarioEmocionalService({
+          idUsuario:
+            user.id,
+
+          idEmocion,
+
+          motivo,
+
+          reaccion,
+
+          ideaUtil,
+        });
+
+        Alert.alert(
+          "¡Éxito!",
+          "Tu diario ha sido guardado correctamente.",
+          [
+            {
+              text:
+                "OK",
+
+              onPress:
+                regresar,
+            },
+          ]
+        );
+      } catch (error: any) {
+        Alert.alert(
+          "Error al guardar",
+          error.message ||
+            "Ocurrió un error inesperado."
+        );
+      } finally {
+        setGuardando(
+          false
+        );
+      }
+    };
+
+
+  if (
+    plantilla !==
+    "emocional"
+  ) {
     return (
-      <View
-        style={{
-          flex: 1,
-          paddingHorizontal: 24,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor,
-        }}
-      >
-        <Text
-          style={{
-            fontFamily: "Nunito-Bold",
-            fontSize: 20,
-            textAlign: "center",
-            color: textColor,
-          }}
-        >
+      <View className="flex-1 items-center justify-center bg-[#F8FBFF] px-6">
+        <Text className="text-center font-nunito-bold text-xl text-gray-700">
           Plantilla no disponible
         </Text>
       </View>
     );
   }
 
-  // ======================================================
-  // UI
-  // ======================================================
 
   return (
     <KeyboardAvoidingView
-      style={{
-        flex: 1,
-        backgroundColor,
-      }}
+      className="flex-1 bg-[#F8FBFF]"
       behavior={
         Platform.OS === "ios"
           ? "padding"
@@ -150,355 +363,591 @@ export default function NuevoAutorregistro() {
             ? "height"
             : undefined
       }
-      keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
+      keyboardVerticalOffset={
+        Platform.OS === "ios"
+          ? insets.top
+          : 0
+      }
     >
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop: 12,
-          paddingHorizontal: 16,
-          paddingBottom: Math.max(insets.bottom + 130, 150),
+          paddingTop:
+            esTelefono
+              ? 12
+              : 24,
+
+          paddingBottom:
+            Math.max(
+              insets.bottom + 130,
+              150
+            ),
         }}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
-        {/* ==================================================
-                    ENCABEZADO
-                ================================================== */}
-
-        <Animated.View
-          entering={FadeInDown.duration(400)}
+        {/* Contenedor general */}
+        <View
           style={{
-            marginBottom: 20,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
+            width:
+              "100%",
+
+            maxWidth:
+              maxWidthContenido,
+
+            alignSelf:
+              "center",
+
+            paddingHorizontal,
           }}
         >
-          <Pressable
-            onPress={regresar}
-            style={({ pressed }) => ({
-              width: 44,
-              height: 44,
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
-            })}
+          {/* Encabezado */}
+          <Animated.View
+            entering={
+              FadeInDown.duration(
+                400
+              )
+            }
+            className="mb-6 flex-row items-center justify-between"
           >
-            <Ionicons name="arrow-back" size={22} color={textColor} />
-          </Pressable>
-
-          <View
-            style={{
-              flex: 1,
-              paddingHorizontal: 12,
-            }}
-          >
-            <Text
+            <Pressable
+              onPress={
+                regresar
+              }
               style={{
-                fontFamily: "Nunito-Bold",
-                fontSize: 30,
-                color: primaryColor,
+                width:
+                  48,
+
+                height:
+                  48,
+
+                borderRadius:
+                  17,
+
+                backgroundColor:
+                  "#FFFFFF",
+
+                borderWidth:
+                  1,
+
+                borderColor:
+                  "#E8EDF4",
+
+                alignItems:
+                  "center",
+
+                justifyContent:
+                  "center",
               }}
             >
-              Diario Emocional
-            </Text>
+              <Ionicons
+                name="arrow-back"
+                size={22}
+                color="#1E3A5F"
+              />
+            </Pressable>
 
-            <Text
-              style={{
-                marginTop: 2,
-                fontFamily: "Nunito-Medium",
-                fontSize: 16,
-                color: textMutedColor,
-              }}
-            >
-              Tu espacio seguro para expresar lo que sientes
-            </Text>
-          </View>
 
-          <Pressable
-            style={({ pressed }) => ({
-              width: 44,
-              height: 44,
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
-            })}
-          >
-            <Ionicons name="calendar-outline" size={23} color={textColor} />
-          </Pressable>
-        </Animated.View>
+            <View className="flex-1 px-4">
+              <Text
+                className={`font-nunito-bold text-[#4F8EF7] ${
+                  esTelefono
+                    ? "text-[28px]"
+                    : "text-[30px]"
+                }`}
+              >
+                Diario Emocional
+              </Text>
 
-        {/* ==================================================
-                    TARJETA DE BIENVENIDA
-                ================================================== */}
-
-        <Animated.View
-          entering={FadeInDown.delay(100).duration(500)}
-          style={{
-            position: "relative",
-            minHeight: 185,
-            marginBottom: 28,
-            overflow: "hidden",
-            borderRadius: 24,
-            paddingHorizontal: 24,
-            paddingVertical: 24,
-            backgroundColor: primarySoftColor,
-          }}
-        >
-          {/* DECORACIONES */}
-
-          <View
-            style={{
-              position: "absolute",
-              right: -32,
-              top: -40,
-              width: 144,
-              height: 144,
-              borderRadius: 72,
-              backgroundColor: primarySoftColor,
-              opacity: 0.8,
-            }}
-          />
-
-          <View
-            style={{
-              position: "absolute",
-              right: 64,
-              bottom: -48,
-              width: 128,
-              height: 128,
-              borderRadius: 64,
-              backgroundColor: accentSoftColor,
-              opacity: 0.8,
-            }}
-          />
-
-          <View
-            style={{
-              position: "absolute",
-              left: -32,
-              bottom: -35,
-              width: 112,
-              height: 112,
-              borderRadius: 56,
-              backgroundColor: secondarySoftColor,
-              opacity: 0.55,
-            }}
-          />
-
-          <View
-            style={{
-              position: "absolute",
-              right: 96,
-              top: 32,
-              width: 12,
-              height: 12,
-              borderRadius: 6,
-              backgroundColor: primaryColor,
-              opacity: 0.35,
-            }}
-          />
-
-          <View
-            style={{
-              position: "absolute",
-              right: 48,
-              bottom: 32,
-              width: 8,
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: accentColor,
-              opacity: 0.45,
-            }}
-          />
-
-          <View
-            style={{
-              width: "58%",
-            }}
-          >
-            <Text
-              style={{
-                fontFamily: "Nunito-Bold",
-                fontSize: 23,
-                lineHeight: 28,
-                color: textColor,
-              }}
-            >
-              ¿Cómo te{"\n"}sientes hoy?
-            </Text>
-
-            <Text
-              style={{
-                marginTop: 12,
-                fontFamily: "Nunito-Medium",
-                fontSize: 16,
-                lineHeight: 20,
-                color: textSecondaryColor,
-              }}
-            >
-              Reconocer tus emociones es el primer paso para entenderte mejor.
-            </Text>
-          </View>
-
-          {/* ILUSTRACIÓN TEMPORAL */}
-
-          <View
-            style={{
-              position: "absolute",
-              right: 20,
-              bottom: 20,
-              width: 115,
-              height: 115,
-              borderRadius: 28,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: primaryColor,
-              transform: [
-                {
-                  rotate: "-5deg",
-                },
-              ],
-            }}
-          >
-            <View
-              style={{
-                width: 65,
-                height: 85,
-                borderRadius: 12,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: primaryColor,
-                opacity: 0.88,
-              }}
-            >
-              <Ionicons name="heart" size={34} color={textOnPrimaryColor} />
+              <Text className="mt-1 font-nunito-medium text-[16px] text-[#9096A3]">
+                Tu espacio seguro para expresar lo que sientes
+              </Text>
             </View>
 
+
+            <Pressable
+              style={{
+                width:
+                  48,
+
+                height:
+                  48,
+
+                borderRadius:
+                  17,
+
+                backgroundColor:
+                  "#FFFFFF",
+
+                borderWidth:
+                  1,
+
+                borderColor:
+                  "#E8EDF4",
+
+                alignItems:
+                  "center",
+
+                justifyContent:
+                  "center",
+              }}
+            >
+              <Ionicons
+                name="calendar-outline"
+                size={23}
+                color="#243B63"
+              />
+            </Pressable>
+          </Animated.View>
+
+
+          {/* CARD: ¿Cómo te sientes hoy? */}
+          <Animated.View
+            entering={
+              FadeInDown
+                .delay(100)
+                .duration(500)
+            }
+            style={{
+              width:
+                "100%",
+
+              maxWidth:
+                maxWidthSeccionPrincipal,
+
+              minHeight:
+                esTelefono
+                  ? 185
+                  : 205,
+
+              alignSelf:
+                "center",
+
+              marginBottom:
+                32,
+
+              paddingHorizontal:
+                esTelefono
+                  ? 24
+                  : 30,
+
+              paddingVertical:
+                esTelefono
+                  ? 24
+                  : 28,
+
+              borderRadius:
+                28,
+
+              backgroundColor:
+                "#E9F1FF",
+
+              borderWidth:
+                1,
+
+              borderColor:
+                "#D5E3FA",
+
+              overflow:
+                "hidden",
+
+              shadowColor:
+                "#315B9A",
+
+              shadowOffset: {
+                width:
+                  0,
+
+                height:
+                  5,
+              },
+
+              shadowOpacity:
+                0.08,
+
+              shadowRadius:
+                12,
+
+              elevation:
+                2,
+            }}
+          >
+            {/* Decoraciones */}
             <View
               style={{
-                position: "absolute",
-                right: -8,
-                bottom: 16,
-                width: 16,
-                height: 32,
-                borderRadius: 8,
-                backgroundColor: primaryColor,
-                opacity: 0.7,
+                position:
+                  "absolute",
+
+                width:
+                  150,
+
+                height:
+                  150,
+
+                borderRadius:
+                  75,
+
+                backgroundColor:
+                  "#D9E5FF",
+
+                right:
+                  -25,
+
+                top:
+                  -40,
               }}
             />
-          </View>
-        </Animated.View>
 
-        {/* ==================================================
-                    SELECCIÓN DE EMOCIÓN
-                ================================================== */}
+            <View
+              style={{
+                position:
+                  "absolute",
 
-        <Animated.View
-          entering={FadeInDown.delay(200).duration(500)}
-          style={{
-            marginBottom: 24,
-          }}
-        >
-          <Text
-            style={{
-              marginBottom: 4,
-              fontFamily: "Nunito-Bold",
-              fontSize: 20,
-              color: textColor,
-            }}
-          >
-            ¿Cómo me siento hoy?
-          </Text>
+                width:
+                  140,
 
-          <Text
-            style={{
-              marginBottom: 16,
-              fontFamily: "Nunito-Medium",
-              fontSize: 14,
-              lineHeight: 20,
-              color: textSecondaryColor,
-            }}
-          >
-            Elige la emoción que mejor representa cómo te sientes.
-          </Text>
+                height:
+                  140,
 
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              justifyContent: "space-between",
-              rowGap: 12,
-            }}
-          >
-            {EMOCIONES.map((item) => (
-              <OpcionEmocion
-                key={item.nombre}
-                nombre={item.nombre}
-                emoji={item.emoji}
-                seleccionada={emocion === item.nombre}
-                onPress={() => setEmocion(item.nombre)}
+                borderRadius:
+                  70,
+
+                backgroundColor:
+                  "#E8DFFF",
+
+                right:
+                  90,
+
+                bottom:
+                  -55,
+              }}
+            />
+
+            <View
+              style={{
+                position:
+                  "absolute",
+
+                width:
+                  120,
+
+                height:
+                  120,
+
+                borderRadius:
+                  60,
+
+                backgroundColor:
+                  "#F7E0EF",
+
+                left:
+                  -45,
+
+                bottom:
+                  -50,
+              }}
+            />
+
+
+            {/* Texto */}
+            <View
+              style={{
+                width:
+                  esTelefono
+                    ? "58%"
+                    : "62%",
+              }}
+            >
+              <Text
+                className={`font-nunito-bold text-[#2D3748] ${
+                  esTelefono
+                    ? "text-[23px] leading-7"
+                    : "text-[25px] leading-8"
+                }`}
+              >
+                ¿Cómo te{"\n"}sientes hoy?
+              </Text>
+
+              <Text
+                className={`mt-3 font-nunito-medium text-[#61718E] ${
+                  esTelefono
+                    ? "text-[16px] leading-5"
+                    : "text-[16px] leading-6"
+                }`}
+              >
+                Reconocer tus emociones es el primer paso para
+                entenderte mejor.
+              </Text>
+            </View>
+
+
+            {/* Ilustración */}
+            <View
+              style={{
+                position:
+                  "absolute",
+
+                right:
+                  esTelefono
+                    ? 20
+                    : 30,
+
+                bottom:
+                  24,
+
+                width:
+                  esTelefono
+                    ? 115
+                    : 125,
+
+                height:
+                  esTelefono
+                    ? 115
+                    : 125,
+
+                borderRadius:
+                  30,
+
+                backgroundColor:
+                  "#7EA8EE",
+
+                alignItems:
+                  "center",
+
+                justifyContent:
+                  "center",
+
+                transform: [
+                  {
+                    rotate:
+                      "-5deg",
+                  },
+                ],
+              }}
+            >
+              <View
+                style={{
+                  width:
+                    65,
+
+                  height:
+                    85,
+
+                  borderRadius:
+                    14,
+
+                  backgroundColor:
+                    "#5E8FE4",
+
+                  alignItems:
+                    "center",
+
+                  justifyContent:
+                    "center",
+                }}
+              >
+                <Ionicons
+                  name="heart"
+                  size={34}
+                  color="#FFFFFF"
+                />
+              </View>
+
+              <View
+                style={{
+                  position:
+                    "absolute",
+
+                  right:
+                    -8,
+
+                  bottom:
+                    18,
+
+                  width:
+                    16,
+
+                  height:
+                    32,
+
+                  borderRadius:
+                    10,
+
+                  backgroundColor:
+                    "#365FAD",
+                }}
               />
-            ))}
-          </View>
-        </Animated.View>
+            </View>
+          </Animated.View>
 
-        {/* ==================================================
-                    PREGUNTAS DE REFLEXIÓN
-                ================================================== */}
 
-        <Animated.View entering={FadeInDown.delay(300).duration(500)}>
-          <CampoPreguntaDiario
-            titulo="¿Qué me hizo sentir así?"
-            valor={motivo}
-            onChangeText={setMotivo}
-            placeholder="Cuéntanos qué ocurrió..."
-          />
+          {/* Selección de emoción */}
+          <Animated.View
+            entering={
+              FadeInDown
+                .delay(200)
+                .duration(500)
+            }
+            style={{
+              width:
+                "100%",
 
-          <CampoPreguntaDiario
-            titulo="¿Cómo reaccioné?"
-            valor={reaccion}
-            onChangeText={setReaccion}
-            placeholder="¿Qué hiciste o cómo respondiste?"
-          />
+              maxWidth:
+                esWeb
+                  ? 760
+                  : undefined,
 
-          <CampoPreguntaDiario
-            titulo="Una idea útil"
-            valor={ideaUtil}
-            onChangeText={setIdeaUtil}
-            placeholder="¿Qué te gustaría recordar de esta experiencia?"
-          />
-        </Animated.View>
+              alignSelf:
+                "center",
 
-        {/* ==================================================
-                    GUARDAR
-                ================================================== */}
-
-        <Animated.View
-          entering={FadeInDown.delay(400).duration(500)}
-          style={{
-            marginTop: 12,
-          }}
-        >
-          <Button
-            title="Guardar registro"
-            onPress={() => {
-              console.log({
-                emocion,
-                motivo,
-                reaccion,
-                ideaUtil,
-              });
+              marginBottom:
+                28,
             }}
-          />
-        </Animated.View>
+          >
+            <Text className="mb-1 font-nunito-bold text-[20px] text-[#2D3748]">
+              ¿Cómo me siento hoy?
+            </Text>
+
+            <Text className="mb-5 font-nunito-medium text-[14px] leading-5 text-[#7A89A3]">
+              Elige la emoción que mejor representa cómo te sientes.
+            </Text>
+
+
+            {cargandoEmociones ? (
+              <Text className="font-nunito-medium text-[14px] text-[#7A89A3]">
+                Cargando emociones...
+              </Text>
+            ) : emociones.length === 0 ? (
+              <Text className="font-nunito-medium text-[14px] text-[#7A89A3]">
+                No hay emociones disponibles.
+              </Text>
+            ) : (
+              <View
+                style={{
+                  flexDirection:
+                    "row",
+
+                  flexWrap:
+                    "wrap",
+
+                  gap:
+                    gapEmociones,
+                }}
+              >
+                {emociones.map(
+                  item => (
+                    <OpcionEmocion
+                      key={
+                        item.id_emocion
+                      }
+                      nombre={
+                        item.nombre
+                      }
+                      emoji={
+                        EMOJIS_EMOCIONES[
+                          item.nombre
+                        ] ?? "💭"
+                      }
+                      seleccionada={
+                        idEmocion ===
+                        item.id_emocion
+                      }
+                      ancho={
+                        anchoTarjetaEmocion
+                      }
+                      onPress={() =>
+                        setIdEmocion(
+                          item.id_emocion
+                        )
+                      }
+                    />
+                  )
+                )}
+              </View>
+            )}
+          </Animated.View>
+
+
+          {/* Preguntas */}
+          <Animated.View
+            entering={
+              FadeInDown
+                .delay(300)
+                .duration(500)
+            }
+            style={{
+              width:
+                "100%",
+
+              maxWidth:
+                esWeb
+                  ? 760
+                  : undefined,
+
+              alignSelf:
+                "center",
+            }}
+          >
+            <CampoPreguntaDiario
+              titulo="¿Qué me hizo sentir así?"
+              valor={motivo}
+              onChangeText={setMotivo}
+              placeholder="Cuéntanos qué ocurrió..."
+            />
+
+            <CampoPreguntaDiario
+              titulo="¿Cómo reaccioné?"
+              valor={reaccion}
+              onChangeText={setReaccion}
+              placeholder="¿Qué hiciste o cómo respondiste?"
+            />
+
+            <CampoPreguntaDiario
+              titulo="Una idea útil"
+              valor={ideaUtil}
+              onChangeText={setIdeaUtil}
+              placeholder="¿Qué te gustaría recordar de esta experiencia?"
+            />
+          </Animated.View>
+
+
+          {/* Guardar */}
+          <Animated.View
+            entering={
+              FadeInDown
+                .delay(400)
+                .duration(500)
+            }
+            style={{
+              width:
+                "100%",
+
+              maxWidth:
+                esWeb
+                  ? 760
+                  : undefined,
+
+              alignSelf:
+                "center",
+            }}
+            className="mt-3"
+          >
+            <Button
+              title={
+                guardando
+                  ? "Guardando..."
+                  : "Guardar registro"
+              }
+              onPress={
+                guardarRegistro
+              }
+              disabled={
+                guardando ||
+                cargandoEmociones
+              }
+            />
+          </Animated.View>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );

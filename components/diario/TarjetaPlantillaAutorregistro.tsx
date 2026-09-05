@@ -1,8 +1,15 @@
 import React from "react";
 
-import { Pressable, Text, View } from "react-native";
+import {
+  Pressable,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 
-import { Ionicons } from "@expo/vector-icons";
+import {
+  Ionicons,
+} from "@expo/vector-icons";
 
 import Animated, {
   useAnimatedStyle,
@@ -10,7 +17,6 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 
-import { useThemeColor } from "@/hooks/use-theme-color";
 
 interface TarjetaPlantillaAutorregistroProps {
   titulo: string;
@@ -21,6 +27,7 @@ interface TarjetaPlantillaAutorregistroProps {
   onPress: () => void;
 }
 
+
 export default function TarjetaPlantillaAutorregistro({
   titulo,
   descripcion,
@@ -29,143 +36,231 @@ export default function TarjetaPlantillaAutorregistro({
   fondoIcono,
   onPress,
 }: TarjetaPlantillaAutorregistroProps) {
-  // ======================================================
-  // TEMA
-  // ======================================================
+  const {
+    width,
+  } = useWindowDimensions();
 
-  const surfaceColor = useThemeColor({}, "surface");
+  const esTelefonoPequeno =
+    width < 390;
 
-  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+  const esTelefono =
+    width < 768;
 
-  const borderColor = useThemeColor({}, "border");
 
-  const textColor = useThemeColor({}, "text");
+  const escala =
+    useSharedValue(1);
 
-  const textSecondaryColor = useThemeColor({}, "textSecondary");
+  const estiloAnimado =
+    useAnimatedStyle(() => ({
+      transform: [
+        {
+          scale:
+            escala.value,
+        },
+      ],
+    }));
 
-  const iconColor = useThemeColor({}, "icon");
-
-  // ======================================================
-  // ANIMACIÓN
-  // ======================================================
-
-  const escala = useSharedValue(1);
-
-  const estiloAnimado = useAnimatedStyle(() => ({
-    transform: [
-      {
-        scale: escala.value,
-      },
-    ],
-  }));
-
-  // ======================================================
-  // UI
-  // ======================================================
 
   return (
     <Animated.View
-      style={[
-        estiloAnimado,
-        {
-          marginBottom: 16,
-        },
-      ]}
+      style={estiloAnimado}
     >
       <Pressable
         onPress={onPress}
         onPressIn={() => {
-          escala.value = withSpring(0.98);
+          escala.value =
+            withSpring(
+              0.985,
+              {
+                damping: 16,
+                stiffness: 220,
+              }
+            );
         }}
         onPressOut={() => {
-          escala.value = withSpring(1);
+          escala.value =
+            withSpring(
+              1,
+              {
+                damping: 16,
+                stiffness: 220,
+              }
+            );
         }}
-        style={({ pressed }) => ({
-          flexDirection: "row",
-          alignItems: "center",
-          padding: 16,
-          borderRadius: 22,
-          borderWidth: 1,
-          borderColor,
-          backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
+        style={{
+          minHeight:
+            esTelefonoPequeno
+              ? 108
+              : esTelefono
+                ? 114
+                : 118,
 
-          elevation: 2,
+          borderRadius:
+            24,
 
-          shadowColor: "#000000",
+          borderWidth:
+            1,
+
+          borderColor:
+            "#E5EAF1",
+
+          backgroundColor:
+            "#FFFFFF",
+
+          paddingHorizontal:
+            esTelefonoPequeno
+              ? 14
+              : 16,
+
+          paddingVertical:
+            esTelefono
+              ? 14
+              : 16,
+
+          flexDirection:
+            "row",
+
+          alignItems:
+            "center",
+
+          shadowColor:
+            "#64748B",
+
           shadowOffset: {
             width: 0,
-            height: 2,
+            height: 4,
           },
-          shadowOpacity: 0.05,
-          shadowRadius: 5,
-        })}
-      >
-        {/* ==================================================
-                    ICONO
-                ================================================== */}
 
+          shadowOpacity:
+            0.08,
+
+          shadowRadius:
+            10,
+
+          elevation:
+            2,
+        }}
+      >
+        {/* Icono */}
         <View
           style={{
-            width: 58,
-            height: 58,
-            borderRadius: 16,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: fondoIcono,
+            width:
+              esTelefonoPequeno
+                ? 56
+                : 60,
+
+            height:
+              esTelefonoPequeno
+                ? 56
+                : 60,
+
+            borderRadius:
+              18,
+
+            backgroundColor:
+              fondoIcono,
+
+            alignItems:
+              "center",
+
+            justifyContent:
+              "center",
+
+            flexShrink:
+              0,
           }}
         >
-          <Ionicons name={icono} size={29} color={color} />
+          <Ionicons
+            name={icono}
+            size={
+              esTelefonoPequeno
+                ? 27
+                : 30
+            }
+            color={color}
+          />
         </View>
 
-        {/* ==================================================
-                    INFORMACIÓN
-                ================================================== */}
-
+        {/* Información */}
         <View
           style={{
             flex: 1,
-            marginLeft: 16,
+            minWidth: 0,
+            marginLeft: 15,
+            paddingRight: 10,
           }}
         >
           <Text
+            numberOfLines={2}
+            className="font-nunito-semibold text-[#1E293B]"
             style={{
-              fontFamily: "Nunito-SemiBold",
-              fontSize: 16,
-              color: textColor,
+              fontSize:
+                esTelefonoPequeno
+                  ? 15
+                  : 16,
+
+              lineHeight:
+                esTelefonoPequeno
+                  ? 20
+                  : 22,
             }}
           >
             {titulo}
           </Text>
 
           <Text
+            numberOfLines={3}
+            className="mt-1 font-nunito-medium text-[#64748B]"
             style={{
-              marginTop: 4,
-              fontFamily: "Nunito-Medium",
-              fontSize: 13,
-              lineHeight: 18,
-              color: textSecondaryColor,
+              fontSize:
+                esTelefonoPequeno
+                  ? 12
+                  : 13,
+
+              lineHeight:
+                esTelefonoPequeno
+                  ? 17
+                  : 18,
             }}
           >
             {descripcion}
           </Text>
         </View>
 
-        {/* ==================================================
-                    FLECHA
-                ================================================== */}
-
+        {/* Flecha */}
         <View
           style={{
-            width: 36,
-            height: 36,
-            marginLeft: 8,
-            borderRadius: 18,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: surfaceSecondaryColor,
+            width:
+              esTelefonoPequeno
+                ? 38
+                : 40,
+
+            height:
+              esTelefonoPequeno
+                ? 38
+                : 40,
+
+            borderRadius:
+              20,
+
+            backgroundColor:
+              "#F1F5F9",
+
+            alignItems:
+              "center",
+
+            justifyContent:
+              "center",
+
+            flexShrink:
+              0,
           }}
         >
-          <Ionicons name="chevron-forward" size={20} color={iconColor} />
+          <Ionicons
+            name="chevron-forward"
+            size={20}
+            color="#64748B"
+          />
         </View>
       </Pressable>
     </Animated.View>

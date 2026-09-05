@@ -1,8 +1,16 @@
-import React, { useEffect } from "react";
+import React, {
+  useEffect,
+} from "react";
 
-import { Text, View } from "react-native";
+import {
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 
-import { Ionicons } from "@expo/vector-icons";
+import {
+  Ionicons,
+} from "@expo/vector-icons";
 
 import Animated, {
   FadeInDown,
@@ -13,8 +21,6 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { useThemeColor } from "@/hooks/use-theme-color";
-
 interface ResumenDiarioProps {
   diasRacha: number;
   totalEntradas: number;
@@ -24,155 +30,150 @@ export default function ResumenDiario({
   diasRacha,
   totalEntradas,
 }: ResumenDiarioProps) {
-  // ======================================================
-  // TEMA
-  // ======================================================
+  const {
+    width,
+  } = useWindowDimensions();
 
-  const surfaceColor = useThemeColor({}, "surface");
+  const esTelefonoPequeno =
+    width < 390;
 
-  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+  const movimientoLlama =
+    useSharedValue(0);
 
-  const borderColor = useThemeColor({}, "border");
-
-  const textColor = useThemeColor({}, "text");
-
-  const textSecondaryColor = useThemeColor({}, "textSecondary");
-
-  const textMutedColor = useThemeColor({}, "textMuted");
-
-  const primaryColor = useThemeColor({}, "primary");
-
-  const primarySoftColor = useThemeColor({}, "primarySoft");
-
-  const accentColor = useThemeColor({}, "accent");
-
-  const accentSoftColor = useThemeColor({}, "accentSoft");
-
-  // ======================================================
-  // ANIMACIÓN
-  // ======================================================
-
-  const movimientoLlama = useSharedValue(0);
-
-  const rotacionLlama = useSharedValue(0);
+  const rotacionLlama =
+    useSharedValue(0);
 
   useEffect(() => {
-    movimientoLlama.value = withRepeat(
-      withSequence(
-        withTiming(-4, {
-          duration: 700,
-        }),
-        withTiming(0, {
-          duration: 700,
-        }),
-      ),
-      -1,
-      true,
-    );
+    movimientoLlama.value =
+      withRepeat(
+        withSequence(
+          withTiming(-4, {
+            duration: 700,
+          }),
 
-    rotacionLlama.value = withRepeat(
-      withSequence(
-        withTiming(-5, {
-          duration: 600,
-        }),
-        withTiming(5, {
-          duration: 600,
-        }),
-        withTiming(0, {
-          duration: 600,
-        }),
-      ),
-      -1,
-      true,
-    );
-  }, [movimientoLlama, rotacionLlama]);
+          withTiming(0, {
+            duration: 700,
+          })
+        ),
+        -1,
+        true
+      );
 
-  const estiloLlama = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateY: movimientoLlama.value,
-      },
-      {
-        rotate: `${rotacionLlama.value}deg`,
-      },
-    ],
-  }));
+    rotacionLlama.value =
+      withRepeat(
+        withSequence(
+          withTiming(-5, {
+            duration: 600,
+          }),
 
-  // ======================================================
-  // COLORES DECORATIVOS
-  // ======================================================
+          withTiming(5, {
+            duration: 600,
+          }),
 
-  const colorRacha = "#F59E0B";
+          withTiming(0, {
+            duration: 600,
+          })
+        ),
+        -1,
+        true
+      );
+  }, [
+    movimientoLlama,
+    rotacionLlama,
+  ]);
 
-  const fondoRacha = surfaceSecondaryColor;
+  const estiloLlama =
+    useAnimatedStyle(() => ({
+      transform: [
+        {
+          translateY:
+            movimientoLlama.value,
+        },
 
-  const fondoIconoRacha = "rgba(245, 158, 11, 0.14)";
-
-  const bordeRacha = "rgba(245, 158, 11, 0.28)";
-
-  const colorDecoracionRacha = "#F59E0B";
-
-  const fondoEntradas = surfaceSecondaryColor;
-
-  const fondoIconoEntradas = accentSoftColor;
-
-  const bordeEntradas = borderColor;
-
-  // ======================================================
-  // UI
-  // ======================================================
+        {
+          rotate:
+            `${rotacionLlama.value}deg`,
+        },
+      ],
+    }));
 
   return (
     <Animated.View
-      entering={FadeInDown.delay(100).duration(450)}
+      entering={
+        FadeInDown
+          .delay(100)
+          .duration(450)
+      }
       style={{
-        marginTop: 20,
         flexDirection: "row",
+        width: "100%",
         gap: 12,
+        marginTop: 20,
       }}
     >
-      {/* ==================================================
-                RACHA
-            ================================================== */}
-
+      {/* Racha */}
       <View
         style={{
           flex: 1,
-          overflow: "hidden",
-          padding: 16,
-          borderRadius: 22,
-          borderWidth: 1,
-          borderColor: bordeRacha,
-          backgroundColor: fondoRacha,
+          minWidth: 0,
         }}
+        className="
+          overflow-hidden
+          rounded-[22px]
+          border
+          border-[#FFD59A]
+          bg-[#FFF4E5]
+          p-4
+        "
       >
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
+        <View className="flex-row items-center">
           <View
             style={{
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: fondoIconoRacha,
+              width:
+                esTelefonoPequeno
+                  ? 44
+                  : 48,
+
+              height:
+                esTelefonoPequeno
+                  ? 44
+                  : 48,
             }}
+            className="
+              items-center
+              justify-center
+              rounded-full
+              bg-[#FFE1B3]
+            "
           >
-            <Animated.View style={estiloLlama}>
-              <Ionicons name="flame" size={35} color={colorRacha} />
+            <Animated.View
+              style={estiloLlama}
+            >
+              <Ionicons
+                name="flame"
+                size={
+                  esTelefonoPequeno
+                    ? 31
+                    : 35
+                }
+                color="#F59E0B"
+              />
             </Animated.View>
           </View>
 
           <Text
+            numberOfLines={1}
+            className="
+              ml-3
+              flex-1
+              font-nunito-bold
+              text-[#475569]
+            "
             style={{
-              marginLeft: 12,
-              fontFamily: "Nunito-Bold",
-              fontSize: 20,
-              color: textColor,
+              fontSize:
+                esTelefonoPequeno
+                  ? 17
+                  : 20,
             }}
           >
             Racha
@@ -180,23 +181,23 @@ export default function ResumenDiario({
         </View>
 
         <Text
-          style={{
-            marginTop: 16,
-            fontFamily: "Nunito-Bold",
-            fontSize: 28,
-            color: colorRacha,
-          }}
+          className="
+            mt-4
+            font-nunito-bold
+            text-[28px]
+            text-[#F59E0B]
+          "
         >
           {diasRacha} días
         </Text>
 
         <Text
-          style={{
-            marginTop: 4,
-            fontFamily: "Nunito-Medium",
-            fontSize: 13,
-            color: textSecondaryColor,
-          }}
+          className="
+            mt-1
+            font-nunito-medium
+            text-[13px]
+            text-[#64748B]
+          "
         >
           ¡Sigue así!
         </Text>
@@ -204,56 +205,77 @@ export default function ResumenDiario({
         <Ionicons
           name="flame-outline"
           size={65}
-          color={colorDecoracionRacha}
+          color="#FFD89B"
           style={{
             position: "absolute",
             right: -8,
             bottom: -10,
-            opacity: 0.16,
+            opacity: 0.45,
           }}
         />
       </View>
 
-      {/* ==================================================
-                ENTRADAS
-            ================================================== */}
-
+      {/* Entradas */}
       <View
         style={{
           flex: 1,
-          overflow: "hidden",
-          padding: 16,
-          borderRadius: 22,
-          borderWidth: 1,
-          borderColor: bordeEntradas,
-          backgroundColor: fondoEntradas,
+          minWidth: 0,
         }}
+        className="
+          overflow-hidden
+          rounded-[22px]
+          border
+          border-[#E5DCFF]
+          bg-[#F3EDFF]
+          p-4
+        "
       >
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
+        <View className="flex-row items-center">
           <View
             style={{
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: fondoIconoEntradas,
+              width:
+                esTelefonoPequeno
+                  ? 44
+                  : 48,
+
+              height:
+                esTelefonoPequeno
+                  ? 44
+                  : 48,
             }}
+            className="
+              items-center
+              justify-center
+              rounded-full
+              bg-[#E8DDFF]
+            "
           >
-            <Ionicons name="book-outline" size={30} color={primaryColor} />
+            <Ionicons
+              name="book-outline"
+              size={
+                esTelefonoPequeno
+                  ? 27
+                  : 30
+              }
+              color="#4F8EF7"
+            />
           </View>
 
           <Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.8}
+            className="
+              ml-3
+              flex-1
+              font-nunito-bold
+              text-[#475569]
+            "
             style={{
-              marginLeft: 12,
-              fontFamily: "Nunito-Bold",
-              fontSize: 20,
-              color: textColor,
+              fontSize:
+                esTelefonoPequeno
+                  ? 17
+                  : 20,
             }}
           >
             Entradas
@@ -261,23 +283,26 @@ export default function ResumenDiario({
         </View>
 
         <Text
-          style={{
-            marginTop: 16,
-            fontFamily: "Nunito-Bold",
-            fontSize: 28,
-            color: accentColor,
-          }}
+          className="
+            mt-4
+            font-nunito-bold
+            text-[28px]
+            text-[#7C4DDE]
+          "
         >
           {totalEntradas}
         </Text>
 
         <Text
-          style={{
-            marginTop: 4,
-            fontFamily: "Nunito-Medium",
-            fontSize: 13,
-            color: textSecondaryColor,
-          }}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.82}
+          className="
+            mt-1
+            font-nunito-medium
+            text-[13px]
+            text-[#64748B]
+          "
         >
           Registros guardados
         </Text>
@@ -285,12 +310,12 @@ export default function ResumenDiario({
         <Ionicons
           name="sparkles-outline"
           size={55}
-          color={accentColor}
+          color="#DDD0FF"
           style={{
             position: "absolute",
             right: -2,
             bottom: -5,
-            opacity: 0.16,
+            opacity: 0.7,
           }}
         />
       </View>

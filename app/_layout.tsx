@@ -1,5 +1,3 @@
-import "../global.css";
-
 import React, { useEffect, useRef } from "react";
 
 import { ThemeProvider } from "@react-navigation/native";
@@ -15,13 +13,10 @@ import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 
 import AnimatedLogo from "@/components/ui/AnimatedLogo";
-
 import { KiriDarkTheme, KiriLightTheme } from "@/constants/theme";
-
-import { ThemeModeProvider, useThemeMode } from "@/contexts/ThemeModeContext";
-
 import { AuthProvider, useAuth } from "@/services/authProvider";
 
+import { ThemeModeProvider, useThemeMode } from "@/contexts/ThemeModeContext";
 import { obtenerEstadoInicialEntrevista } from "@/services/entrevista/entrevistaService";
 
 SplashScreen.preventAutoHideAsync();
