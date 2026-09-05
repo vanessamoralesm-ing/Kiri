@@ -45,6 +45,12 @@ export interface UsuarioPerfil {
   fecha_registro: string;
   estado: string;
 
-  // Relación con public.rol
-  rol: Rol | null;
+  // NUEVO
+  debe_cambiar_password: boolean;
+
+  rol: {
+      id_rol: string;
+      nombre: string;
+      descripcion: string | null;
+  } | null;
 }
