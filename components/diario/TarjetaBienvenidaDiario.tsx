@@ -1,8 +1,10 @@
 import React from "react";
 
 import {
+  Image,
   Pressable,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -26,6 +28,30 @@ export default function TarjetaBienvenidaDiario({
   nombre,
   onNuevoRegistro,
 }: TarjetaBienvenidaDiarioProps) {
+  const {
+    width,
+  } = useWindowDimensions();
+
+  const esTelefonoPequeno =
+    width < 390;
+
+  const esTelefono =
+    width < 768;
+
+  const esTablet =
+    width >= 768 &&
+    width < 1100;
+
+  // Tamaño responsive del avatar.
+  const tamanoAvatar =
+    esTelefonoPequeno
+      ? 135
+      : esTelefono
+        ? 160
+        : esTablet
+          ? 185
+          : 200;
+
   // Controla el tamaño del boton cuando se presiona.
   const escala = useSharedValue(1);
 
@@ -42,29 +68,68 @@ export default function TarjetaBienvenidaDiario({
     <Animated.View
       entering={FadeInDown.duration(450)}
     >
-      {/* Texto de Bienvenida Actualizado */}
-      <View className="mb-5">
-        <Text className="font-nunito-bold text-[24px] leading-[32px] text-[#1E293B]">
-          ¿Qué agregarás hoy a tu{"\n"}Diario,{" "}
-          <Text className="text-[#3478F6]">
-            {nombre}
-          </Text>?
-        </Text>
+      {/* Bienvenida con avatar */}
+      <View className="mb-5 flex-row items-center">
+        {/* Texto */}
+        <View
+          className="flex-1"
+          style={{
+            paddingRight: esTelefonoPequeno
+              ? 4
+              : 10,
+          }}
+        >
+          <Text
+            className="font-nunito-bold leading-[32px] text-[#1E293B]"
+            style={{
+              fontSize: esTelefonoPequeno
+                ? 22
+                : 24,
+              textAlign: "left",
+            }}
+          >
+            ¿Qué agregarás hoy a tu{"\n"}
+            Diario,{" "}
+            <Text className="text-[#3478F6]">
+              {nombre}
+            </Text>
+            ?
+          </Text>
+        </View>
 
-        <Text className="mt-3 max-w-[92%] font-nunito-medium text-[15px] leading-[22px] text-[#64748B]">
-          Tómate un momento para reconocer tus emociones,
-          pensamientos y experiencias.
-        </Text>
+        {/* Avatar */}
+        <View
+          style={{
+            width: tamanoAvatar,
+            height: tamanoAvatar,
+            flexShrink: 0,
+          }}
+          className="items-center justify-center"
+        >
+          <Image
+            source={require("@/assets/images_kids/avatar_pregunta.png")}
+            style={{
+              width: "100%",
+              height: "100%",
+              transform: [
+                {
+                  scale: 1.28,
+                },
+              ],
+            }}
+            resizeMode="contain"
+          />
+        </View>
       </View>
 
-      {/* Boton Nuevo Registro (Sin cambios) */}
+      {/* Boton Nuevo Registro */}
       <Animated.View
         style={estiloAnimado}
       >
         <Pressable
           onPress={onNuevoRegistro}
           onPressIn={() => {
-            escala.value = withSpring(0.95); // Ajustado levemente para que no se vea tan pequeño al presionar
+            escala.value = withSpring(0.95);
           }}
           onPressOut={() => {
             escala.value = withSpring(1);

@@ -3,6 +3,7 @@ import React from "react";
 import {
   Pressable,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -16,6 +17,7 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 
+
 interface TarjetaPlantillaAutorregistroProps {
   titulo: string;
   descripcion: string;
@@ -25,6 +27,7 @@ interface TarjetaPlantillaAutorregistroProps {
   onPress: () => void;
 }
 
+
 export default function TarjetaPlantillaAutorregistro({
   titulo,
   descripcion,
@@ -33,89 +36,192 @@ export default function TarjetaPlantillaAutorregistro({
   fondoIcono,
   onPress,
 }: TarjetaPlantillaAutorregistroProps) {
-  const escala = useSharedValue(1);
+  const {
+    width,
+  } = useWindowDimensions();
 
-  const estiloAnimado = useAnimatedStyle(() => ({
-    transform: [
-      {
-        scale: escala.value,
-      },
-    ],
-  }));
+  const esTelefonoPequeno =
+    width < 390;
+
+  const esTelefono =
+    width < 768;
+
+
+  const escala =
+    useSharedValue(1);
+
+  const estiloAnimado =
+    useAnimatedStyle(() => ({
+      transform: [
+        {
+          scale:
+            escala.value,
+        },
+      ],
+    }));
+
 
   return (
     <Animated.View
       style={estiloAnimado}
-      className="mb-4"
     >
       <Pressable
         onPress={onPress}
         onPressIn={() => {
-          escala.value = withSpring(0.98);
+          escala.value =
+            withSpring(
+              0.985,
+              {
+                damping: 16,
+                stiffness: 220,
+              }
+            );
         }}
         onPressOut={() => {
-          escala.value = withSpring(1);
+          escala.value =
+            withSpring(
+              1,
+              {
+                damping: 16,
+                stiffness: 220,
+              }
+            );
         }}
-        className="
-          flex-row
-          items-center
-          rounded-[22px]
-          border
-          border-[#E8EDF3]
-          bg-white
-          p-4
-        "
         style={{
-          elevation: 2,
-          shadowColor: "#000000",
+          minHeight:
+            esTelefonoPequeno
+              ? 108
+              : esTelefono
+                ? 114
+                : 118,
+
+          borderRadius:
+            24,
+
+          borderWidth:
+            1,
+
+          borderColor:
+            "#E5EAF1",
+
+          backgroundColor:
+            "#FFFFFF",
+
+          paddingHorizontal:
+            esTelefonoPequeno
+              ? 14
+              : 16,
+
+          paddingVertical:
+            esTelefono
+              ? 14
+              : 16,
+
+          flexDirection:
+            "row",
+
+          alignItems:
+            "center",
+
+          shadowColor:
+            "#64748B",
+
           shadowOffset: {
             width: 0,
-            height: 2,
+            height: 4,
           },
-          shadowOpacity: 0.05,
-          shadowRadius: 5,
+
+          shadowOpacity:
+            0.08,
+
+          shadowRadius:
+            10,
+
+          elevation:
+            2,
         }}
       >
-        {/* Icono de la plantilla */}
+        {/* Icono */}
         <View
-          className="
-            h-[58px]
-            w-[58px]
-            items-center
-            justify-center
-            rounded-2xl
-          "
           style={{
-            backgroundColor: fondoIcono,
+            width:
+              esTelefonoPequeno
+                ? 56
+                : 60,
+
+            height:
+              esTelefonoPequeno
+                ? 56
+                : 60,
+
+            borderRadius:
+              18,
+
+            backgroundColor:
+              fondoIcono,
+
+            alignItems:
+              "center",
+
+            justifyContent:
+              "center",
+
+            flexShrink:
+              0,
           }}
         >
           <Ionicons
             name={icono}
-            size={29}
+            size={
+              esTelefonoPequeno
+                ? 27
+                : 30
+            }
             color={color}
           />
         </View>
 
         {/* Información */}
-        <View className="ml-4 flex-1">
+        <View
+          style={{
+            flex: 1,
+            minWidth: 0,
+            marginLeft: 15,
+            paddingRight: 10,
+          }}
+        >
           <Text
-            className="
-              font-nunito-semibold
-              text-[16px]
-              text-[#1E293B]
-            "
+            numberOfLines={2}
+            className="font-nunito-semibold text-[#1E293B]"
+            style={{
+              fontSize:
+                esTelefonoPequeno
+                  ? 15
+                  : 16,
+
+              lineHeight:
+                esTelefonoPequeno
+                  ? 20
+                  : 22,
+            }}
           >
             {titulo}
           </Text>
 
           <Text
-            className="
-              mt-1
-              font-nunito-medium
-              text-[13px]
-              leading-[18px]
-              text-[#64748B]
-            "
+            numberOfLines={3}
+            className="mt-1 font-nunito-medium text-[#64748B]"
+            style={{
+              fontSize:
+                esTelefonoPequeno
+                  ? 12
+                  : 13,
+
+              lineHeight:
+                esTelefonoPequeno
+                  ? 17
+                  : 18,
+            }}
           >
             {descripcion}
           </Text>
@@ -123,15 +229,32 @@ export default function TarjetaPlantillaAutorregistro({
 
         {/* Flecha */}
         <View
-          className="
-            ml-2
-            h-9
-            w-9
-            items-center
-            justify-center
-            rounded-full
-            bg-[#F1F5F9]
-          "
+          style={{
+            width:
+              esTelefonoPequeno
+                ? 38
+                : 40,
+
+            height:
+              esTelefonoPequeno
+                ? 38
+                : 40,
+
+            borderRadius:
+              20,
+
+            backgroundColor:
+              "#F1F5F9",
+
+            alignItems:
+              "center",
+
+            justifyContent:
+              "center",
+
+            flexShrink:
+              0,
+          }}
         >
           <Ionicons
             name="chevron-forward"

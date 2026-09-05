@@ -1,100 +1,241 @@
-import React, { useEffect, useState } from "react";
+import React, {
+  useCallback,
+  useState,
+} from "react";
+
 import {
-  ActivityIndicator,
   Alert,
   Pressable,
   ScrollView,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
-  DetalleRegistroDiario,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
+
+import {
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+
+import {
+  useFocusEffect,
+} from "@react-navigation/native";
+
+import Animated, {
+  FadeInUp,
+} from "react-native-reanimated";
+
+import {
   eliminarRegistroDiario,
   obtenerDetalleRegistro,
 } from "@/services/diario/autorregistro.service";
 
+import {
+  DetalleRegistroDiario,
+} from "@/types/diario";
+
+import {
+  DetalleHeader,
+} from "@/components/diario/DetalleHeader";
+
+import {
+  ResumenRegistroCard,
+} from "@/components/diario/ResumenRegistroCard";
+
+import {
+  RespuestaDetalleCard,
+} from "@/components/diario/RespuestaDetalleCard";
+
+import {
+  DetalleSkeleton,
+} from "@/components/diario/DetalleSkeleton";
+
 export default function VerEntradaDiarioScreen() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const router =
+    useRouter();
 
-  const [cargando, setCargando] = useState(true);
-  const [registro, setRegistro] = useState<DetalleRegistroDiario | null>(null);
+  const insets =
+    useSafeAreaInsets();
 
-  useEffect(() => {
-    if (id) {
-      cargarDetalle();
-    }
-  }, [id]);
+  const {
+    width,
+  } =
+    useWindowDimensions();
 
-  const cargarDetalle = async () => {
-    setCargando(true);
-    const data = await obtenerDetalleRegistro(id as string);
-    setRegistro(data);
-    setCargando(false);
-  };
+  const {
+    id,
+  } =
+    useLocalSearchParams<{
+      id: string;
+    }>();
 
-  const confirmarEliminación = () => {
-    Alert.alert(
-      "Eliminar registro",
-      "¿Estás seguro de que deseas eliminar esta entrada? Esta acción no se puede deshacer.",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Eliminar",
-          style: "destructive",
-          onPress: async () => {
-            const ok = await eliminarRegistroDiario(id as string);
-            if (ok) {
-              Alert.alert("Registro eliminado", "", [
-                { text: "OK", onPress: () => router.back() },
-              ]);
-            } else {
-              Alert.alert("Error", "No se pudo eliminar el registro.");
-            }
-          },
-        },
-      ]
+  const [
+    cargando,
+    setCargando,
+  ] =
+    useState(true);
+
+  const [
+    registro,
+    setRegistro,
+  ] =
+    useState<DetalleRegistroDiario | null>(
+      null
     );
-  };
 
-  const formatearFecha = (fechaIso?: string) => {
-    if (!fechaIso) return "";
-    const f = new Date(fechaIso);
-    return f.toLocaleDateString("es-ES", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
+  const esTelefono =
+    width < 768;
+
+  const esTablet =
+    width >= 768 &&
+    width < 1100;
+
+  const esWeb =
+    width >= 1100;
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!id) {
+        return;
+      }
+
+      const cargarDetalle =
+        async () => {
+          try {
+            setCargando(true);
+
+            const data =
+              await obtenerDetalleRegistro(
+                id
+              );
+
+            setRegistro(data);
+          } catch (error) {
+            console.error(
+              "Error al cargar el detalle:",
+              error
+            );
+
+            setRegistro(null);
+          } finally {
+            setCargando(false);
+          }
+        };
+
+      cargarDetalle();
+    }, [id])
+  );
+
+  const confirmarEliminacion =
+    () => {
+      Alert.alert(
+        "Eliminar registro",
+        "¿Estás seguro de que deseas eliminar esta entrada? Esta acción no se puede deshacer.",
+        [
+          {
+            text: "Cancelar",
+            style: "cancel",
+          },
+          {
+            text: "Eliminar",
+            style: "destructive",
+            onPress:
+              async () => {
+                if (!id) {
+                  return;
+                }
+
+                const ok =
+                  await eliminarRegistroDiario(
+                    id
+                  );
+
+                if (ok) {
+                  Alert.alert(
+                    "Registro eliminado",
+                    "La entrada fue eliminada correctamente.",
+                    [
+                      {
+                        text: "OK",
+                        onPress: () =>
+                          router.back(),
+                      },
+                    ]
+                  );
+                } else {
+                  Alert.alert(
+                    "Error",
+                    "No se pudo eliminar el registro."
+                  );
+                }
+              },
+          },
+        ]
+      );
+    };
+
+  const formatearFecha =
+    (
+      fechaIso?: string
+    ) => {
+      if (!fechaIso) {
+        return "";
+      }
+
+      return new Date(
+        fechaIso
+      ).toLocaleDateString(
+        "es-ES",
+        {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }
+      );
+    };
 
   if (cargando) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#F8FBFF]">
-        <ActivityIndicator size="large" color="#4F8EF7" />
-      </View>
+      <DetalleSkeleton />
     );
   }
 
   if (!registro) {
     return (
       <View className="flex-1 items-center justify-center bg-[#F8FBFF] px-6">
-        <Text className="font-nunito-bold text-lg text-gray-700">
-          No se encontró el registro solicitado.
-        </Text>
-        <Pressable
-          onPress={() => router.back()}
-          className="mt-4 rounded-xl bg-blue-500 px-4 py-2"
+        <View
+          style={{
+            width: "100%",
+            maxWidth: 420,
+          }}
+          className="rounded-[26px] border border-slate-100 bg-white p-6 shadow-sm"
         >
-          <Text className="font-nunito-bold text-white">Regresar</Text>
-        </Pressable>
+          <Text className="text-center font-nunito-bold text-xl text-[#2D3748]">
+            No encontramos este registro
+          </Text>
+
+          <Text className="mt-2 text-center font-nunito-medium text-[14px] leading-5 text-[#8B98AC]">
+            Es posible que haya sido eliminado o que ya no esté disponible.
+          </Text>
+
+          <Pressable
+            onPress={() =>
+              router.back()
+            }
+            className="mt-5 min-h-[48px] items-center justify-center rounded-2xl bg-[#4F8EF7] px-5"
+          >
+            <Text className="font-nunito-bold text-white">
+              Regresar
+            </Text>
+          </Pressable>
+        </View>
       </View>
     );
   }
@@ -104,92 +245,137 @@ export default function VerEntradaDiarioScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop: 12,
-          paddingHorizontal: 16,
-          paddingBottom: Math.max(insets.bottom + 40, 60),
+          paddingTop:
+            Math.max(
+              insets.top + 12,
+              20
+            ),
+
+          paddingHorizontal:
+            esTelefono
+              ? 16
+              : 24,
+
+          paddingBottom:
+            Math.max(
+              insets.bottom + 40,
+              60
+            ),
         }}
       >
-        {/* Encabezado */}
-        <View className="mb-5 flex-row items-center justify-between">
-          <Pressable
-            onPress={() => router.back()}
-            className="h-11 w-11 items-center justify-center rounded-2xl border border-gray-100 bg-white shadow-sm"
+        <View
+          style={{
+            width: "100%",
+            maxWidth:
+              esWeb
+                ? 860
+                : esTablet
+                  ? 820
+                  : undefined,
+            alignSelf: "center",
+          }}
+        >
+          <Animated.View
+            entering={
+              FadeInUp.duration(
+                400
+              )
+            }
           >
-            <Ionicons name="arrow-back" size={22} color="#1E3A5F" />
-          </Pressable>
+            <DetalleHeader
+              onBack={() =>
+                router.back()
+              }
+              onEdit={() =>
+                router.push(
+                  `/diario/${id}/editar` as never
+                )
+              }
+              onDelete={
+                confirmarEliminacion
+              }
+            />
 
-          <Text className="font-nunito-bold text-[22px] text-[#4F8EF7]">
-            Detalle del Registro
-          </Text>
+            <ResumenRegistroCard
+              fecha={
+                formatearFecha(
+                  registro.fecha_inicio
+                )
+              }
+              emocion={
+                registro.emocionNombre
+              }
+            />
+          </Animated.View>
 
-          {/* Opciones: Editar y Eliminar */}
-          <View className="flex-row items-center gap-x-2">
-            <Pressable
-              onPress={() => router.push(`/diario/${id}/editar` as never)}
-              className="h-11 w-11 items-center justify-center rounded-2xl border border-gray-100 bg-white shadow-sm"
+          <View
+            style={
+              esTelefono
+                ? undefined
+                : {
+                    flexDirection:
+                      "row",
+                    flexWrap:
+                      "wrap",
+                    justifyContent:
+                      "space-between",
+                  }
+            }
+          >
+            <View
+              style={
+                esTelefono
+                  ? undefined
+                  : {
+                      width:
+                        "48.5%",
+                    }
+              }
             >
-              <Ionicons name="create-outline" size={22} color="#3478F6" />
-            </Pressable>
-
-            <Pressable
-              onPress={confirmarEliminación}
-              className="h-11 w-11 items-center justify-center rounded-2xl border border-gray-100 bg-white shadow-sm"
-            >
-              <Ionicons name="trash-outline" size={22} color="#EF4444" />
-            </Pressable>
-          </View>
-        </View>
-
-        {/* Tarjeta de Fecha e Información general */}
-        <View className="mb-5 rounded-[24px] bg-white p-5 border border-slate-100 shadow-sm">
-          <Text className="font-nunito-semibold text-xs text-[#9096a3] uppercase tracking-wider">
-            Fecha de registro
-          </Text>
-          <Text className="font-nunito-bold text-base text-[#1E293B] mt-1 capitalize">
-            {formatearFecha(registro.fecha_inicio)}
-          </Text>
-
-          {registro.emocionNombre ? (
-            <View className="mt-4 flex-row items-center">
-              <Text className="font-nunito-semibold text-sm text-slate-500 mr-2">
-                Emoción sentida:
-              </Text>
-              <View className="rounded-full bg-blue-50 px-3 py-1 border border-blue-200">
-                <Text className="font-nunito-bold text-xs text-blue-600">
-                  {registro.emocionNombre}
-                </Text>
-              </View>
+              <RespuestaDetalleCard
+                titulo="¿Qué me hizo sentir así?"
+                respuesta={
+                  registro.motivo
+                }
+                delay={100}
+              />
             </View>
-          ) : null}
-        </View>
 
-        {/* Respuestas registradas */}
-        <View className="gap-y-4">
-          <View className="rounded-[20px] bg-white p-4 border border-slate-100 shadow-sm">
-            <Text className="font-nunito-bold text-base text-[#2D3748] mb-1">
-              ¿Qué me hizo sentir así?
-            </Text>
-            <Text className="font-nunito-medium text-sm text-slate-600 leading-6">
-              {registro.motivo || "Sin respuesta"}
-            </Text>
-          </View>
+            <View
+              style={
+                esTelefono
+                  ? undefined
+                  : {
+                      width:
+                        "48.5%",
+                    }
+              }
+            >
+              <RespuestaDetalleCard
+                titulo="¿Cómo reaccioné?"
+                respuesta={
+                  registro.reaccion
+                }
+                delay={160}
+              />
+            </View>
 
-          <View className="rounded-[20px] bg-white p-4 border border-slate-100 shadow-sm">
-            <Text className="font-nunito-bold text-base text-[#2D3748] mb-1">
-              ¿Cómo reaccioné?
-            </Text>
-            <Text className="font-nunito-medium text-sm text-slate-600 leading-6">
-              {registro.reaccion || "Sin respuesta"}
-            </Text>
-          </View>
-
-          <View className="rounded-[20px] bg-white p-4 border border-slate-100 shadow-sm">
-            <Text className="font-nunito-bold text-base text-[#2D3748] mb-1">
-              Una idea útil
-            </Text>
-            <Text className="font-nunito-medium text-sm text-slate-600 leading-6">
-              {registro.ideaUtil || "Sin respuesta"}
-            </Text>
+            <View
+              style={{
+                width:
+                  esTelefono
+                    ? "100%"
+                    : "100%",
+              }}
+            >
+              <RespuestaDetalleCard
+                titulo="Una idea útil"
+                respuesta={
+                  registro.ideaUtil
+                }
+                delay={220}
+              />
+            </View>
           </View>
         </View>
       </ScrollView>

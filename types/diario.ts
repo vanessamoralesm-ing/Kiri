@@ -25,6 +25,7 @@ export interface DetalleRegistroDiario {
   id_registro: string;
   fecha_inicio: string;
   plantilla_nombre: string;
+  idEmocion: string;
   emocionNombre: string;
   motivo: string;
   reaccion: string;

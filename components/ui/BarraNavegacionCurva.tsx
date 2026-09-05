@@ -246,6 +246,23 @@ export function BarraNavegacionCurva({
     segmentosRuta[0] === "diario" &&
     segmentosRuta[1] === "nuevo" &&
     segmentosRuta.length >= 3;
+  // Historial completo del Diario.
+  const esHistorialDiario =
+    segmentosRuta[0] === "diario" &&
+    segmentosRuta[1] === "historial";
+
+    // Detalle de un registro: /diario/[id]
+  const esDetalleRegistroDiario =
+    segmentosRuta[0] === "diario" &&
+    segmentosRuta.length === 2 &&
+    segmentosRuta[1] !== "nuevo" &&
+    segmentosRuta[1] !== "historial";
+
+    // Edicion de un registro: /diario/[id]/editar
+  const esEditarRegistroDiario =
+    segmentosRuta[0] === "diario" &&
+    segmentosRuta.length === 3 &&
+    segmentosRuta[2] === "editar";
 
 
   const esRutaSecundariaDeInicio =
@@ -292,7 +309,10 @@ export function BarraNavegacionCurva({
     estaDentroDeForo ||
     estaDentroEntrevistaNinos ||
     estaDentroEntrevistaAdultos ||
-     estaDentroDePlantillaDiario;
+    estaDentroDePlantillaDiario ||
+    esHistorialDiario ||
+    esDetalleRegistroDiario ||
+    esEditarRegistroDiario;
 
 
   // ========================================================
