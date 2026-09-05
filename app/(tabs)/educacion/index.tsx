@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 
-import CategoriaCard from "../../../components/educacion/CategoriaCard";
+import CategoriaCard from "@/components/educacion/CategoriaCard";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
 
