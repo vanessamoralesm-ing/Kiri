@@ -82,7 +82,7 @@ export default function CategoriaCard({
           escala.value = withSpring(1);
         }}
         style={({ pressed }) => ({
-          height: 210,
+          height: 150,
 
           paddingHorizontal: 16,
 
@@ -136,9 +136,9 @@ export default function CategoriaCard({
               source={imagen}
 
               style={{
-                width: 110,
-
-                height: 100,
+                width: 120,
+                height: 110,
+                borderRadius: 10,
 
                 alignSelf: "center",
 
@@ -151,7 +151,7 @@ export default function CategoriaCard({
                 ],
               }}
 
-              resizeMode="contain"
+              resizeMode="cover"
             />
           )}
         </View>
