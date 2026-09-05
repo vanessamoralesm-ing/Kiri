@@ -12,9 +12,15 @@ export default function DiarioLayout() {
     >
       <Stack.Screen name="index" />
 
-      <Stack.Screen name="nuevo" />
+      <Stack.Screen name="historial" />
 
-      <Stack.Screen name="[id]" />
+      <Stack.Screen name="nuevo/index" />
+
+      <Stack.Screen name="nuevo/[plantilla]" />
+
+      <Stack.Screen name="[id]/index" />
+      
+      <Stack.Screen name="[id]/editar" />
     </Stack>
   );
 }

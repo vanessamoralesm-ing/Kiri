@@ -4,6 +4,7 @@ import React, {
 
 import {
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -29,16 +30,20 @@ export default function ResumenDiario({
   diasRacha,
   totalEntradas,
 }: ResumenDiarioProps) {
-  // Controla el movimiento vertical de la llama
+  const {
+    width,
+  } = useWindowDimensions();
+
+  const esTelefonoPequeno =
+    width < 390;
+
   const movimientoLlama =
     useSharedValue(0);
 
-  // Controla una pequeña inclinacion de la llama
   const rotacionLlama =
     useSharedValue(0);
 
   useEffect(() => {
-    // La llama sube y baja suavemente
     movimientoLlama.value =
       withRepeat(
         withSequence(
@@ -54,7 +59,6 @@ export default function ResumenDiario({
         true
       );
 
-    // La llama se inclina ligeramente de un lado al otro
     rotacionLlama.value =
       withRepeat(
         withSequence(
@@ -78,7 +82,6 @@ export default function ResumenDiario({
     rotacionLlama,
   ]);
 
-  // Estilo animado que recibe la llama
   const estiloLlama =
     useAnimatedStyle(() => ({
       transform: [
@@ -88,7 +91,8 @@ export default function ResumenDiario({
         },
 
         {
-          rotate: `${rotacionLlama.value}deg`,
+          rotate:
+            `${rotacionLlama.value}deg`,
         },
       ],
     }));
@@ -100,17 +104,20 @@ export default function ResumenDiario({
           .delay(100)
           .duration(450)
       }
-      className="
-        mt-5
-        flex-row
-        gap-3
-      "
+      style={{
+        flexDirection: "row",
+        width: "100%",
+        gap: 12,
+        marginTop: 20,
+      }}
     >
-      {/* Apartado de la racha */}
-
+      {/* Racha */}
       <View
+        style={{
+          flex: 1,
+          minWidth: 0,
+        }}
         className="
-          flex-1
           overflow-hidden
           rounded-[22px]
           border
@@ -119,49 +126,60 @@ export default function ResumenDiario({
           p-4
         "
       >
-        {/* Icono y titulo */}
-        <View
-          className="
-            flex-row
-            items-center
-          "
-        >
-          {/* modulo racha */}
+        <View className="flex-row items-center">
           <View
+            style={{
+              width:
+                esTelefonoPequeno
+                  ? 44
+                  : 48,
+
+              height:
+                esTelefonoPequeno
+                  ? 44
+                  : 48,
+            }}
             className="
-              h-[48px]
-              w-[48px]
               items-center
               justify-center
               rounded-full
               bg-[#FFE1B3]
             "
           >
-            {/* Llama animada */}
             <Animated.View
               style={estiloLlama}
             >
               <Ionicons
                 name="flame"
-                size={35}
+                size={
+                  esTelefonoPequeno
+                    ? 31
+                    : 35
+                }
                 color="#F59E0B"
               />
             </Animated.View>
           </View>
 
           <Text
+            numberOfLines={1}
             className="
               ml-3
+              flex-1
               font-nunito-bold
-              text-[20px]
               text-[#475569]
             "
+            style={{
+              fontSize:
+                esTelefonoPequeno
+                  ? 17
+                  : 20,
+            }}
           >
             Racha
           </Text>
         </View>
 
-        {/* Cantidad de dias */}
         <Text
           className="
             mt-4
@@ -173,7 +191,6 @@ export default function ResumenDiario({
           {diasRacha} días
         </Text>
 
-        {/* Mensaje */}
         <Text
           className="
             mt-1
@@ -185,7 +202,6 @@ export default function ResumenDiario({
           ¡Sigue así!
         </Text>
 
-        {/* Decoracion de fondo */}
         <Ionicons
           name="flame-outline"
           size={65}
@@ -199,11 +215,13 @@ export default function ResumenDiario({
         />
       </View>
 
-      {/*Entradas*/}
-
+      {/* Entradas */}
       <View
+        style={{
+          flex: 1,
+          minWidth: 0,
+        }}
         className="
-          flex-1
           overflow-hidden
           rounded-[22px]
           border
@@ -212,17 +230,20 @@ export default function ResumenDiario({
           p-4
         "
       >
-        {/* Icono y titulo */}
-        <View
-          className="
-            flex-row
-            items-center
-          "
-        >
+        <View className="flex-row items-center">
           <View
+            style={{
+              width:
+                esTelefonoPequeno
+                  ? 44
+                  : 48,
+
+              height:
+                esTelefonoPequeno
+                  ? 44
+                  : 48,
+            }}
             className="
-              h-[48px]
-              w-[48px]
               items-center
               justify-center
               rounded-full
@@ -231,24 +252,36 @@ export default function ResumenDiario({
           >
             <Ionicons
               name="book-outline"
-              size={30}
+              size={
+                esTelefonoPequeno
+                  ? 27
+                  : 30
+              }
               color="#4F8EF7"
             />
           </View>
 
           <Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.8}
             className="
               ml-3
+              flex-1
               font-nunito-bold
-              text-[20px]
               text-[#475569]
             "
+            style={{
+              fontSize:
+                esTelefonoPequeno
+                  ? 17
+                  : 20,
+            }}
           >
             Entradas
           </Text>
         </View>
 
-        {/* Total de entradas */}
         <Text
           className="
             mt-4
@@ -260,8 +293,10 @@ export default function ResumenDiario({
           {totalEntradas}
         </Text>
 
-        {/* Descripcion */}
         <Text
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.82}
           className="
             mt-1
             font-nunito-medium
@@ -272,7 +307,6 @@ export default function ResumenDiario({
           Registros guardados
         </Text>
 
-        {/* Decoración */}
         <Ionicons
           name="sparkles-outline"
           size={55}
