@@ -70,7 +70,7 @@ function RootNavigation() {
   // ======================================================
 
   
-  /* Función original comentada para referencia futura
+  /* Función original comentada para referencia futura */
   
   useEffect(() => {
     if (!inicioListo) {
@@ -124,96 +124,6 @@ function RootNavigation() {
     session?.user.id,
     router,
 ]);
-  
-  */
-
-
-  useEffect(() => {
-    if (!inicioListo) {
-      return;
-    }
-
-    // ==================================================
-    // SUPERADMIN
-    // ==================================================
-    //
-    // Por ahora permitimos entrar directamente al
-    // módulo de superadministrador para trabajar
-    // únicamente en sus vistas.
-    //
-    // Más adelante aquí agregaremos la validación:
-    //
-    // profile?.rol?.nombre === "superadministrador"
-    //
-    // ==================================================
-
-    if (pathname === "/superadmin" || pathname.startsWith("/superadmin/")) {
-      return;
-    }
-
-    let cancelado = false;
-
-    const verificarRuta = async () => {
-      // ==============================================
-      // USUARIO NO AUTENTICADO
-      // ==============================================
-
-      if (!session) {
-        router.replace("/(auth)/welcome");
-        return;
-      }
-
-      // ==============================================
-      // USUARIO AUTENTICADO
-      // ==============================================
-
-      try {
-        const estado = await obtenerEstadoInicialEntrevista();
-
-        if (cancelado) {
-          return;
-        }
-
-        // ==========================================
-        // ENTREVISTA COMPLETADA
-        // ==========================================
-
-        if (estado.situacion === "completada") {
-          router.replace("/(tabs)/home");
-
-          return;
-        }
-
-        // ==========================================
-        // SIN ENTREVISTA
-        // ==========================================
-
-        if (estado.situacion === "sin_entrevista") {
-          router.replace("/(entrevista)/bienvenida");
-
-          return;
-        }
-
-        // ==========================================
-        // ENTREVISTA EN PROGRESO
-        // ==========================================
-
-        if (estado.situacion === "en_progreso") {
-          router.replace("/(entrevista)/bienvenida");
-
-          return;
-        }
-      } catch (error) {
-        console.error("Error verificando entrevista inicial:", error);
-      }
-    };
-
-    verificarRuta();
-
-    return () => {
-      cancelado = true;
-    };
-  }, [inicioListo, session?.user.id, pathname, router]);
 
   // ======================================================
   // SPLASH PERSONALIZADO
