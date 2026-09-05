@@ -1,48 +1,126 @@
-export type EstadoSolicitud = "pendiente" | "aprobada" | "rechazada";
+export type TipoInstitucion =
+    | "educacion_superior"
+    | "escolar"
+    | "salud";
 
-export type TipoInstitucion = "educacion_superior" | "escolar" | "salud";
 
-export type FiltroEstado = "todas" | EstadoSolicitud;
+export type EstadoSolicitud =
+    | "pendiente"
+    | "aprobada"
+    | "rechazada";
 
-export type FiltroTipo = "todos" | TipoInstitucion;
 
-export interface ModuloSolicitado {
-    id: string;
-    nombre: string;
-}
+export type FiltroEstado =
+    | "todas"
+    | EstadoSolicitud;
 
-export interface InstitucionSolicitud {
-    nombre: string;
-    siglas: string;
-    sede: string;
-    direccion: string;
-    rut: string;
-    matricula_estimada: number;
-    tipo: TipoInstitucion;
-}
 
-export interface SolicitanteSolicitud {
-    nombre: string;
-    cargo: string;
-    correo: string;
-    telefono: string;
-    verificado: boolean;
-}
+export type FiltroTipo =
+    | "todos"
+    | TipoInstitucion;
+
+
+// ==========================================================
+// SOLICITUD QUE VIENE DE LA BASE DE DATOS
+// ==========================================================
 
 export interface SolicitudInstitucion {
     id_solicitud: string;
-    codigo: string;
 
-    institucion: InstitucionSolicitud;
+    id_institucion:
+        string | null;
 
-    solicitante: SolicitanteSolicitud;
+    nombre_institucion:
+        string;
 
-    modulos: ModuloSolicitado[];
+    codigo_institucional:
+        string;
 
-    estado: EstadoSolicitud;
+    tipo_institucion:
+        TipoInstitucion;
 
-    fecha_solicitud: string;
-    hora_solicitud: string;
+    direccion:
+        string;
 
-    documentos: number;
+    municipio:
+        string;
+
+    departamento:
+        string;
+
+    nombre_solicitante:
+        string;
+
+    apellido_solicitante:
+        string;
+
+    cedula_solicitante:
+        string;
+
+    cargo_solicitante:
+        string;
+
+    correo:
+        string;
+
+    telefono:
+        string;
+
+    descripcion:
+        string;
+
+    fecha_solicitud:
+        string;
+
+    fecha_resolucion:
+        string | null;
+
+    estado:
+        EstadoSolicitud;
+}
+
+
+// ==========================================================
+// DATOS PARA CREAR UNA SOLICITUD
+// ==========================================================
+
+export interface CrearSolicitudInstitucionInput {
+    nombre_institucion:
+        string;
+
+    codigo_institucional:
+        string;
+
+    tipo_institucion:
+        TipoInstitucion;
+
+    direccion:
+        string;
+
+    municipio:
+        string;
+
+    departamento:
+        string;
+
+    nombre_solicitante:
+        string;
+
+    apellido_solicitante:
+        string;
+
+    cedula_solicitante:
+        string;
+
+    cargo_solicitante:
+        string;
+
+    correo:
+        string;
+
+    telefono:
+        string;
+
+    descripcion:
+        string;
 }

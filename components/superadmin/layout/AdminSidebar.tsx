@@ -140,8 +140,6 @@ export default function AdminSidebar() {
             setCerrandoSesion(true);
 
             await signOut();
-
-            router.replace("/login" as never);
         } catch (error) {
             console.error("Error cerrando sesión:", error);
         } finally {
