@@ -1,15 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-
 import type { ReactNode } from "react";
-
 import { Platform } from "react-native";
-
 import type { Session, User } from "@supabase/supabase-js";
-
 import * as Linking from "expo-linking";
-
 import { supabase } from "@/lib/supabase";
-
 import type { SignUpInput, SignUpResult, UsuarioPerfil } from "@/types/auth";
 
 // ==========================================================
@@ -20,12 +14,11 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   profile: UsuarioPerfil | null;
+  role: string | null;
+  isSuperAdmin: boolean;
   loading: boolean;
-
   signUp: (input: SignUpInput) => Promise<SignUpResult>;
-
   signIn: (email: string, password: string) => Promise<void>;
-
   signOut: () => Promise<void>;
 }
 
@@ -45,9 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // ======================================================
 
   const [session, setSession] = useState<Session | null>(null);
-
   const [user, setUser] = useState<User | null>(null);
-
   const [profile, setProfile] = useState<UsuarioPerfil | null>(null);
 
   // ======================================================
@@ -55,7 +46,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // ======================================================
 
   const [authLoading, setAuthLoading] = useState(true);
-
   const [profileLoading, setProfileLoading] = useState(false);
 
   // ======================================================
@@ -82,10 +72,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         if (error) {
           console.error("Error obteniendo sesión:", error.message);
-
           setSession(null);
           setUser(null);
-
           return;
         }
 
@@ -167,9 +155,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       mounted = false;
-
       subscription.unsubscribe();
-
       subscriptionLinking?.remove();
     };
   }, []);
@@ -200,7 +186,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       try {
         let data: UsuarioPerfil | null = null;
-
         let error: Error | null = null;
 
         // ==========================================
@@ -212,19 +197,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             .from("usuario")
             .select(
               `
-                            *,
-                            rol (
-                                id_rol,
-                                nombre,
-                                descripcion
-                            )
-                        `,
+                *,
+                rol (
+                  id_rol,
+                  nombre,
+                  descripcion
+                )
+              `,
             )
             .eq("id_usuario", user.id)
             .maybeSingle();
 
           data = resultado.data as UsuarioPerfil | null;
-
           error = resultado.error;
 
           if (!data && intento < 2) {
@@ -245,9 +229,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             "Error cargando public.usuario:",
             error?.message ?? "Perfil no encontrado.",
           );
-
           setProfile(null);
-
           return;
         }
 
@@ -259,7 +241,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         if (!cancelled) {
           console.error("Error inesperado cargando perfil:", error);
-
           setProfile(null);
         }
       } finally {
@@ -328,25 +309,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const { data, error } = await supabase.auth.signUp({
       email: input.email.trim().toLowerCase(),
-
       password: input.password,
-
       options: {
         emailRedirectTo: redirectUrl,
-
         data: {
           nombres: input.nombres.trim(),
-
           apellidos: input.apellidos.trim(),
-
           nombre_preferido: input.nombrePreferido?.trim() || null,
-
           telefono: input.telefono.trim(),
-
           fecha_nacimiento: input.fechaNacimiento.trim(),
-
           genero: input.genero,
-
           foto_perfil: null,
         },
       },
@@ -380,7 +352,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const { error } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
-
       password,
     });
 
@@ -410,6 +381,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const loading = authLoading || profileLoading;
 
   // ======================================================
+  // ROL
+  // ======================================================
+
+  const role = profile?.rol?.nombre ?? null;
+  const isSuperAdmin = role === "superadministrador";
+
+  // ======================================================
   // CONTEXT
   // ======================================================
 
@@ -419,6 +397,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         session,
         user,
         profile,
+        role,
+        isSuperAdmin,
         loading,
         signUp,
         signIn,

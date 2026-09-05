@@ -108,7 +108,7 @@ const RUTAS_VISIBLES = [
     "home",
     "diario",
     "educacion/index",
-    "tecnicas/index",
+    "tecnicas",
     "perfil/index",
 ];
 

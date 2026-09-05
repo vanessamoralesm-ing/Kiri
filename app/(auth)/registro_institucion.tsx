@@ -1,143 +1,253 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
   Alert,
-} from 'react-native';
-import { useRouter } from 'expo-router';
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useRouter } from "expo-router";
 
-// IMPORTAMOS COMPONENTES REUTILIZABLES
-import Logo from '@/components/ui/Logo_izq';
-import Input from '../../components/ui/Input';
-import Button from '../../components/ui/Button';
+// COMPONENTES
+import Logo from "@/components/ui/Logo_izq";
+import Input from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
 
+// SERVICE
+import { crearSolicitudInstitucional } from "@/services/instituciones/solicitudInstitucionService";
+
+// TYPES
+import type { TipoInstitucion } from "@/types/superadmin/solicitudes";
+
+// COMPONENTE
 export default function RegistroInstitucionPantalla() {
   const router = useRouter();
 
-  // ESTADO PARA CONTROLAR EL PASO ACTUAL 1 o 2
+  // ESTADOS GENERALES
   const [pasoActual, setPasoActual] = useState(1);
+  const [enviando, setEnviando] = useState(false);
 
-  // ESTADOS DEL FORMULARIO PASO 1 INSTITUCION
-  const [nombreInstitucion, setNombreInstitucion] = useState('');
-  const [codigoMined, setCodigoMined] = useState('');
-  const [tipoInstitucion, setTipoInstitucion] = useState('');
-  const [departamento, setDepartamento] = useState('');
+  // PASO 1 - DATOS DE LA INSTITUCIÓN
+  const [nombreInstitucion, setNombreInstitucion] = useState("");
+  const [codigoInstitucional, setCodigoInstitucional] = useState("");
+  const [tipoInstitucion, setTipoInstitucion] = useState<TipoInstitucion | null>(null);
+  const [departamento, setDepartamento] = useState("");
+  const [municipio, setMunicipio] = useState("");
+  const [direccion, setDireccion] = useState("");
 
-  // ESTADOS DEL FORMULARIO PASO 2 SOLICITANTE Y CONTACTO
-  const [nombreSolicitante, setNombreSolicitante] = useState('');
-  const [cedula, setCedula] = useState('');
-  const [cargo, setCargo] = useState('');
-  const [correo, setCorreo] = useState('');
-  const [telefono, setTelefono] = useState('');
-  const [motivo, setMotivo] = useState('');
+  // PASO 2 - DATOS DEL SOLICITANTE
+  const [nombreSolicitante, setNombreSolicitante] = useState("");
+  const [apellidoSolicitante, setApellidoSolicitante] = useState("");
+  const [cedula, setCedula] = useState("");
+  const [cargo, setCargo] = useState("");
+  const [correo, setCorreo] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [motivo, setMotivo] = useState("");
 
-  // Funcion para volver a pantalla anterior o al paso1
-  const regresar = () => {
+  function regresar() {
+    if (enviando) return;
     if (pasoActual === 2) {
-      setPasoActual(1); // Si estamos en el paso 2, regresamos al paso 1
-    } else {
-      router.back(); // Si estamos en el paso 1, salimos de la pantalla
+      setPasoActual(1);
+      return;
     }
-  };
+    router.back();
+  }
 
-  // VALIDAR Y AVANZAR AL PASO 2
-  const irAlPaso2 = () => {
-    if (!nombreInstitucion.trim() || !codigoMined.trim() || !departamento.trim()) {
-      Alert.alert('Campos Incompletos', 'Por favor completa los datos obligatorios de la institución.');
+  function correoValido(valor: string) {
+    const correoLimpio = valor.trim();
+    return correoLimpio.includes("@") && correoLimpio.includes(".");
+  }
+
+  function irAlPaso2() {
+    if (
+      !nombreInstitucion.trim() ||
+      !codigoInstitucional.trim() ||
+      !tipoInstitucion ||
+      !departamento.trim() ||
+      !municipio.trim() ||
+      !direccion.trim()
+    ) {
+      Alert.alert(
+        "Campos incompletos",
+        "Por favor completa todos los datos obligatorios de la institución."
+      );
       return;
     }
     setPasoActual(2);
-  };
+  }
 
-  // ENVIAR FORMULARIO FINAL
-  const enviarSolicitud = () => {
-    if (!nombreSolicitante.trim() || !cedula.trim() || !correo.trim() || !telefono.trim()) {
-      Alert.alert('Campos Incompletos', 'Por favor completa tus datos de contacto.');
+  async function enviarSolicitud() {
+    if (enviando) return;
+
+    if (
+      !nombreSolicitante.trim() ||
+      !apellidoSolicitante.trim() ||
+      !cedula.trim() ||
+      !cargo.trim() ||
+      !correo.trim() ||
+      !telefono.trim() ||
+      !motivo.trim()
+    ) {
+      Alert.alert(
+        "Campos incompletos",
+        "Por favor completa todos los datos obligatorios del solicitante."
+      );
       return;
     }
 
-    Alert.alert(
-      'Solicitud Registrada',
-      'Tu información ha sido enviada al Administrador. Te notificaremos por correo cuando tu panel esté habilitado.',
-      [
-        {
-          text: 'Entendido',
-          onPress: () => router.back(),
-        },
-      ]
-    );
-  };
+    if (!correoValido(correo)) {
+      Alert.alert("Correo inválido", "Ingresa un correo institucional válido.");
+      return;
+    }
+
+    if (!tipoInstitucion) {
+      Alert.alert("Tipo de institución", "Selecciona un tipo de institución.");
+      return;
+    }
+
+    try {
+      setEnviando(true);
+
+      await crearSolicitudInstitucional({
+        nombre_institucion: nombreInstitucion,
+        codigo_institucional: codigoInstitucional,
+        tipo_institucion: tipoInstitucion,
+        direccion,
+        municipio,
+        departamento,
+        nombre_solicitante: nombreSolicitante,
+        apellido_solicitante: apellidoSolicitante,
+        cedula_solicitante: cedula,
+        cargo_solicitante: cargo,
+        correo,
+        telefono,
+        descripcion: motivo,
+      });
+
+      Alert.alert(
+        "Solicitud registrada",
+        "Tu solicitud ha sido enviada correctamente. El equipo de Kiri revisará la información y te notificará por correo cuando exista una resolución.",
+        [{ text: "Entendido", onPress: () => router.back() }]
+      );
+    } catch (error) {
+      console.error("Error enviando solicitud institucional:", error);
+      Alert.alert(
+        "No se pudo enviar la solicitud",
+        error instanceof Error
+          ? error.message
+          : "Ocurrió un error inesperado. Inténtalo nuevamente."
+      );
+    } finally {
+      setEnviando(false);
+    }
+  }
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContenedor}>
+    <ScrollView
+      contentContainerStyle={styles.scrollContenedor}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+    >
       <View style={styles.contenedor}>
-        
-        {/* CABECERA CON FLECHA DE REGRESO Y LOGO */}
+        {/* CABECERA */}
         <View style={styles.cabecera}>
-          <TouchableOpacity onPress={regresar} activeOpacity={0.7}>
+          <TouchableOpacity onPress={regresar} activeOpacity={0.7} disabled={enviando}>
             <Text style={styles.flechaRegreso}>←</Text>
           </TouchableOpacity>
           <Logo />
         </View>
 
-        {/* TITULO PRINCIPAL */}
+        {/* ENCABEZADO */}
         <Text style={styles.titulo}>Solicitud de Institución</Text>
-         <Text style={styles.subtitulo}>
-          Únete al ecosistema de Kiri y transforma el bienestar emocional de tu comunidad educativa.
-        </Text>
         <Text style={styles.subtitulo}>
+          Únete al ecosistema de Kiri y transforma el bienestar emocional de tu comunidad.
+        </Text>
+        <Text style={styles.descripcionPaso}>
           {pasoActual === 1
-            ? 'Paso 1: Información general de tu centro educativo'
-            : 'Paso 2: Datos del representante legal y contacto'}
+            ? "Paso 1: Información general de la institución"
+            : "Paso 2: Datos del representante y contacto"}
         </Text>
 
-        {/* BARRA DE PROGRESO DE 2 PASOS */}
+        {/* BARRA DE PROGRESO */}
         <View style={styles.contenedorBarra}>
           <View style={[styles.barraPaso, styles.barraActiva]} />
           <View style={[styles.barraPaso, pasoActual === 2 && styles.barraActiva]} />
         </View>
 
-        {/* TARJETA BLANCA DEL FORMULARIO */}
+        {/* TARJETA DEL FORMULARIO */}
         <View style={styles.tarjetaFormulario}>
-          
-          {/* Paso 1*/}
+          {/* PASO 1 */}
           {pasoActual === 1 && (
             <>
               <Input
                 label="Nombre de la Institución *"
-                placeholder="Ej. Colegio Jose Madriz"
+                placeholder="Ej. Colegio José Madriz"
                 value={nombreInstitucion}
                 onChangeText={setNombreInstitucion}
               />
+              <Input
+                label="Código Institucional *"
+                placeholder="Ej. MINED-0321"
+                value={codigoInstitucional}
+                onChangeText={setCodigoInstitucional}
+              />
+
+              <Text style={styles.label}>Tipo de Institución *</Text>
+              <View style={styles.contenedorTipos}>
+                <Pressable
+                  onPress={() => setTipoInstitucion("educacion_superior")}
+                  style={[styles.tipoBoton, tipoInstitucion === "educacion_superior" && styles.tipoBotonActivo]}
+                >
+                  <Text style={[styles.tipoTexto, tipoInstitucion === "educacion_superior" && styles.tipoTextoActivo]}>
+                    Educación superior
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => setTipoInstitucion("escolar")}
+                  style={[styles.tipoBoton, tipoInstitucion === "escolar" && styles.tipoBotonActivo]}
+                >
+                  <Text style={[styles.tipoTexto, tipoInstitucion === "escolar" && styles.tipoTextoActivo]}>
+                    Escolar
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => setTipoInstitucion("salud")}
+                  style={[styles.tipoBoton, tipoInstitucion === "salud" && styles.tipoBotonActivo]}
+                >
+                  <Text style={[styles.tipoTexto, tipoInstitucion === "salud" && styles.tipoTextoActivo]}>
+                    Salud
+                  </Text>
+                </Pressable>
+              </View>
 
               <View style={styles.filaCampos}>
                 <View style={styles.columnaMedia}>
                   <Input
-                    label="Código MINED *"
-                    placeholder="MINED-0321"
-                    value={codigoMined}
-                    onChangeText={setCodigoMined}
+                    label="Departamento *"
+                    placeholder="Ej. León"
+                    value={departamento}
+                    onChangeText={setDepartamento}
                   />
                 </View>
-
                 <View style={styles.columnaMedia}>
                   <Input
-                    label="Tipo de Institución *"
-                    placeholder="Ej. Colegio"
-                    value={tipoInstitucion}
-                    onChangeText={setTipoInstitucion}
+                    label="Municipio *"
+                    placeholder="Ej. León"
+                    value={municipio}
+                    onChangeText={setMunicipio}
                   />
                 </View>
               </View>
 
               <Input
-                label="Departamento *"
-                placeholder="Ej. León, Managua, Estelí"
-                value={departamento}
-                onChangeText={setDepartamento}
+                label="Dirección de la Institución *"
+                placeholder="Ej. Barrio El Sagrario, frente al parque..."
+                value={direccion}
+                onChangeText={setDireccion}
               />
 
               <Button
@@ -149,15 +259,27 @@ export default function RegistroInstitucionPantalla() {
             </>
           )}
 
-          {/*Paso 2*/}
+          {/* PASO 2 */}
           {pasoActual === 2 && (
             <>
-              <Input
-                label="Nombre del Solicitante*"
-                placeholder="Ej. Felix Pedro"
-                value={nombreSolicitante}
-                onChangeText={setNombreSolicitante}
-              />
+              <View style={styles.filaCampos}>
+                <View style={styles.columnaMedia}>
+                  <Input
+                    label="Nombre del Solicitante *"
+                    placeholder="Ej. Félix Pedro"
+                    value={nombreSolicitante}
+                    onChangeText={setNombreSolicitante}
+                  />
+                </View>
+                <View style={styles.columnaMedia}>
+                  <Input
+                    label="Apellido del Solicitante *"
+                    placeholder="Ej. López Pérez"
+                    value={apellidoSolicitante}
+                    onChangeText={setApellidoSolicitante}
+                  />
+                </View>
+              </View>
 
               <View style={styles.filaCampos}>
                 <View style={styles.columnaMedia}>
@@ -168,7 +290,6 @@ export default function RegistroInstitucionPantalla() {
                     onChangeText={setCedula}
                   />
                 </View>
-
                 <View style={styles.columnaMedia}>
                   <Input
                     label="Cargo *"
@@ -181,7 +302,7 @@ export default function RegistroInstitucionPantalla() {
 
               <Input
                 label="Correo Institucional *"
-                placeholder="@unanleon.edu.ni"
+                placeholder="admin@institucion.edu.ni"
                 value={correo}
                 onChangeText={setCorreo}
                 keyboardType="email-address"
@@ -198,7 +319,7 @@ export default function RegistroInstitucionPantalla() {
 
               <Input
                 label="Motivo de la Solicitud *"
-                placeholder="¿Por qué desean utilizar Kiri en su colegio?"
+                placeholder="¿Por qué desean utilizar Kiri?"
                 value={motivo}
                 onChangeText={setMotivo}
                 multiline
@@ -207,26 +328,24 @@ export default function RegistroInstitucionPantalla() {
               />
 
               <Button
-                title="Enviar Solicitud"
+                title={enviando ? "Enviando..." : "Enviar Solicitud"}
                 variant="primary"
                 onPress={enviarSolicitud}
                 style={styles.botonEnviar}
               />
             </>
           )}
-
         </View>
-
       </View>
     </ScrollView>
   );
 }
 
-//Estilos
+// ESTILOS
 const styles = StyleSheet.create({
   scrollContenedor: {
     flexGrow: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: "#F8FAFC",
   },
   contenedor: {
     flex: 1,
@@ -234,40 +353,40 @@ const styles = StyleSheet.create({
     paddingTop: 15,
     paddingBottom: 30,
   },
-
-  /* CABECERA */
   cabecera: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 15,
     marginBottom: -10,
   },
   flechaRegreso: {
     fontSize: 40,
-    color: '#64748B',
-    fontWeight: 'bold',
+    color: "#64748B",
+    fontWeight: "bold",
   },
-
-  /* TEXTOS ENCABEZADO */
   titulo: {
     fontSize: 35,
-    fontFamily: 'Nunito-Bold',
-    fontWeight: '700',
-    color: '#4F8EF7',
-    textAlign: 'center',
+    fontFamily: "Nunito-Bold",
+    color: "#4F8EF7",
+    textAlign: "center",
     marginBottom: 4,
   },
   subtitulo: {
     fontSize: 18,
-    fontFamily: 'Nunito-Medium',
-    color: '#2D3748',
-    textAlign: 'center',
+    fontFamily: "Nunito-Medium",
+    color: "#2D3748",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  descripcionPaso: {
+    fontSize: 15,
+    fontFamily: "Nunito-SemiBold",
+    color: "#64748B",
+    textAlign: "center",
     marginBottom: 15,
   },
-
-  /* Barra de progreso */
   contenedorBarra: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
     marginBottom: 20,
     paddingHorizontal: 10,
@@ -276,31 +395,64 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: "#E2E8F0",
   },
   barraActiva: {
-    backgroundColor: '#4F8EF7',
+    backgroundColor: "#4F8EF7",
   },
-
-  /* TARJETA */
   tarjetaFormulario: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: "#F1F5F9",
     elevation: 4,
   },
   filaCampos: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 10,
   },
   columnaMedia: {
     flex: 1,
   },
+  label: {
+    marginBottom: 8,
+    fontFamily: "Nunito-SemiBold",
+    fontSize: 14,
+    color: "#2D3748",
+  },
+  contenedorTipos: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 18,
+  },
+  tipoBoton: {
+    flex: 1,
+    minHeight: 46,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+  },
+  tipoBotonActivo: {
+    borderColor: "#4F8EF7",
+    backgroundColor: "#EFF6FF",
+  },
+  tipoTexto: {
+    fontFamily: "Nunito-SemiBold",
+    fontSize: 12,
+    color: "#64748B",
+    textAlign: "center",
+  },
+  tipoTextoActivo: {
+    color: "#4F8EF7",
+  },
   inputMultilinea: {
-    height: 80,
-    textAlignVertical: 'top',
+    height: 90,
+    textAlignVertical: "top",
     paddingTop: 10,
   },
   botonAccion: {
@@ -308,6 +460,6 @@ const styles = StyleSheet.create({
   },
   botonEnviar: {
     marginTop: 10,
-    backgroundColor: '#7BBF9A',
+    backgroundColor: "#7BBF9A",
   },
 });

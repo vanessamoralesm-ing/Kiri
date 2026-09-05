@@ -1,9 +1,9 @@
 import "../global.css";
 import React, { useEffect } from "react";
 import { ThemeProvider } from "@react-navigation/native";
-import { Stack, useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
+import { Stack, usePathname, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
 
@@ -11,7 +11,7 @@ import AnimatedLogo from "@/components/ui/AnimatedLogo";
 import { AuthProvider, useAuth } from "@/services/authProvider";
 import { KiriDarkTheme, KiriLightTheme } from "@/constants/theme";
 import { ThemeModeProvider, useThemeMode } from "@/contexts/ThemeModeContext";
-import {obtenerEstadoInicialEntrevista,} from "@/services/entrevista/entrevistaService";
+import { obtenerEstadoInicialEntrevista } from "@/services/entrevista/entrevistaService";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -19,26 +19,24 @@ SplashScreen.preventAutoHideAsync();
 // NAVEGACIÓN PRINCIPAL
 // ==========================================================
 function RootNavigation() {
-  const { loading, session } = useAuth();
+  const { loading, session, profile } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   const [splashTerminado, setSplashTerminado] = React.useState(false);
   const [inicioListo, setInicioListo] = React.useState(false);
 
-  // ========================================================
+  // ======================================================
   // SPLASH
-  // ========================================================
+  // ======================================================
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setSplashTerminado(true);
-    }, 3000);
-
+    const timer = setTimeout(() => setSplashTerminado(true), 3000);
     return () => clearTimeout(timer);
   }, []);
 
-  // ========================================================
+  // ======================================================
   // FINALIZAR ARRANQUE
-  // ========================================================
+  // ======================================================
   useEffect(() => {
     if (inicioListo) return;
     if (!splashTerminado || loading) return;
@@ -46,60 +44,66 @@ function RootNavigation() {
     setInicioListo(true);
   }, [splashTerminado, loading, inicioListo]);
 
-// ========================================================
-// AUTENTICACIÓN Y ENTREVISTA INICIAL
-// ========================================================
-
+  // ======================================================
+  // AUTENTICACIÓN, ROL Y ENTREVISTA INICIAL
+  // ======================================================
   useEffect(() => {
-    if (!inicioListo) {
-      return;
-    }
+    if (!inicioListo) return;
 
     let cancelado = false;
 
     const verificarRuta = async () => {
-      // ================================================
-      // USUARIO NO AUTENTICADO
-      // ================================================
-
+      // ==============================================
+      // 1. USUARIO NO AUTENTICADO
+      // ==============================================
       if (!session) {
         router.replace("/(auth)/welcome");
         return;
       }
+      // ==============================================
+      // 2. ESPERAR PERFIL DE PUBLIC.USUARIO
+      // ==============================================
+      // El AuthProvider obtiene: auth.users -> public.usuario -> public.rol
+      // Por eso no necesitamos consultar nuevamente la base de datos.
+      if (!profile) return;
 
-      // ================================================
-      // USUARIO AUTENTICADO
-      // ================================================
+      // ==============================================
+      // 3. OBTENER ROL
+      // ==============================================
+      const rol = profile.rol?.nombre ?? null;
+      if (__DEV__) {
+        console.log("[AUTH] Usuario:", session.user.id);
+        console.log("[AUTH] Rol:", rol);
+      }
 
+      // ==============================================
+      // 4. SUPERADMINISTRADOR
+      // ==============================================
+      if (rol === "superadministrador") {
+        router.replace("/(superadmin)/superadmin" as any);
+        return;
+      }
+
+      // ==============================================
+      // 5. USUARIO NORMAL
+      // ==============================================
       try {
         const estado = await obtenerEstadoInicialEntrevista();
+        if (cancelado) return;
 
-        if (cancelado) {
-          return;
-        }
-
-        // Ya realizó la entrevista inicial
+        // ENTREVISTA COMPLETADA
         if (estado.situacion === "completada") {
           router.replace("/(tabs)/home");
           return;
         }
 
-        // Nunca ha realizado la entrevista
-        if (estado.situacion === "sin_entrevista") {
-          router.replace("/(entrevista)/bienvenida");
-          return;
-        }
-
-        // La inició pero todavía no la termina
-        if (estado.situacion === "en_progreso") {
+        // SIN ENTREVISTA / EN PROGRESO
+        if (estado.situacion === "sin_entrevista" || estado.situacion === "en_progreso") {
           router.replace("/(entrevista)/bienvenida");
           return;
         }
       } catch (error) {
-        console.error(
-          "Error verificando entrevista inicial:",
-          error
-        );
+        console.error("Error verificando entrevista inicial:", error);
       }
     };
 
@@ -108,28 +112,40 @@ function RootNavigation() {
     return () => {
       cancelado = true;
     };
-  }, [
-    inicioListo,
-    session?.user.id,
-    router,
-  ]);
+  }, [inicioListo, session?.user.id, profile?.rol?.nombre, router]);
 
-  // ========================================================
+  // ======================================================
+  // PROTEGER RUTAS DEL SUPERADMINISTRADOR
+  // ======================================================
+  useEffect(() => {
+    if (!inicioListo || !session || !profile) return;
+
+    const estaEnSuperAdmin = pathname === "/superadmin" || pathname.startsWith("/superadmin/");
+    if (!estaEnSuperAdmin) return;
+
+    const rol = profile.rol?.nombre ?? null;
+    if (rol === "superadministrador") return;
+
+    // OTRO ROL NO PUEDE ENTRAR
+    router.replace("/(tabs)/home");
+  }, [inicioListo, session, profile, pathname, router]);
+
+  // ======================================================
   // SPLASH PERSONALIZADO
-  // ========================================================
-  if (!inicioListo) {
-    return <AnimatedLogo />;
-  }
+  // ======================================================
+  if (!inicioListo) return <AnimatedLogo />;
 
-  // ========================================================
-  // STACK
-  // ========================================================
+  // ======================================================
+  // STACK PRINCIPAL
+  // ======================================================
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="(entrevista)" />
+      <Stack.Screen name="(tecnica)" />
+      <Stack.Screen name="(superadmin)" />
     </Stack>
   );
 }
@@ -160,32 +176,16 @@ export default function RootLayout() {
     "Nunito-Bold": require("../assets/fonts/Nunito-Bold.ttf"),
   });
 
-  // ========================================================
-  // ERROR AL CARGAR FUENTES
-  // ========================================================
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
-  // ========================================================
-  // OCULTAR SPLASH NATIVO
-  // ========================================================
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
+    if (loaded) SplashScreen.hideAsync();
   }, [loaded]);
 
-  // ========================================================
-  // ESPERAR FUENTES
-  // ========================================================
-  if (!loaded) {
-    return null;
-  }
+  if (!loaded) return null;
 
-  // ========================================================
-  // PROVIDERS
-  // ========================================================
   return (
     <ThemeModeProvider>
       <AppConTema />
