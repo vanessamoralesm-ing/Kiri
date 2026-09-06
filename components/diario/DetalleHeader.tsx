@@ -1,21 +1,16 @@
 import React from "react";
 
-import {
-  Pressable,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Pressable, Text, useWindowDimensions, View } from "react-native";
 
-import {
-  Ionicons,
-} from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
+
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 type DetalleHeaderProps = {
   onBack: () => void;
@@ -28,74 +23,135 @@ export function DetalleHeader({
   onEdit,
   onDelete,
 }: DetalleHeaderProps) {
-  const {
-    width,
-  } =
-    useWindowDimensions();
+  const { width } = useWindowDimensions();
 
-  const esTelefonoPequeno =
-    width < 390;
+  // ======================================================
+  // TEMA
+  // ======================================================
 
-  const scaleEdit =
-    useSharedValue(1);
+  const surfaceColor = useThemeColor({}, "surface");
 
-  const scaleDelete =
-    useSharedValue(1);
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
-  const editStyle =
-    useAnimatedStyle(() => ({
-      transform: [
-        {
-          scale:
-            scaleEdit.value,
-        },
-      ],
-    }));
+  const borderColor = useThemeColor({}, "border");
 
-  const deleteStyle =
-    useAnimatedStyle(() => ({
-      transform: [
-        {
-          scale:
-            scaleDelete.value,
-        },
-      ],
-    }));
+  const textColor = useThemeColor({}, "text");
+
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
+
+  const primaryColor = useThemeColor({}, "primary");
+
+  const primarySoftColor = useThemeColor({}, "primarySoft");
+
+  const dangerColor = useThemeColor({}, "danger");
+
+  // ======================================================
+  // RESPONSIVE
+  // ======================================================
+
+  const esTelefonoPequeno = width < 390;
+
+  // ======================================================
+  // ANIMACIONES
+  // ======================================================
+
+  const scaleEdit = useSharedValue(1);
+
+  const scaleDelete = useSharedValue(1);
+
+  const editStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        scale: scaleEdit.value,
+      },
+    ],
+  }));
+
+  const deleteStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        scale: scaleDelete.value,
+      },
+    ],
+  }));
+
+  // ======================================================
+  // UI
+  // ======================================================
 
   return (
-    <View className="mb-6">
-      <View className="flex-row items-center">
+    <View
+      style={{
+        marginBottom: 24,
+      }}
+    >
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
+        {/* ==================================================
+            REGRESAR
+        ================================================== */}
+
         <Pressable
           onPress={onBack}
           hitSlop={8}
-          className="h-12 w-12 items-center justify-center rounded-[18px] border border-blue-100 bg-white shadow-sm"
+          style={({ pressed }) => ({
+            width: 48,
+            height: 48,
+
+            borderRadius: 18,
+
+            borderWidth: 1,
+            borderColor,
+
+            alignItems: "center",
+            justifyContent: "center",
+
+            backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
+
+            elevation: 1,
+
+            shadowColor: "#000000",
+
+            shadowOffset: {
+              width: 0,
+              height: 2,
+            },
+
+            shadowOpacity: 0.05,
+
+            shadowRadius: 5,
+          })}
         >
-          <Ionicons
-            name="arrow-back"
-            size={22}
-            color="#4F8EF7"
-          />
+          <Ionicons name="arrow-back" size={22} color={primaryColor} />
         </Pressable>
 
+        {/* ==================================================
+            TÍTULO
+        ================================================== */}
+
         <View
-          className="ml-4 flex-1"
           style={{
-            paddingRight:
-              esTelefonoPequeno
-                ? 6
-                : 12,
+            flex: 1,
+
+            marginLeft: 16,
+
+            paddingRight: esTelefonoPequeno ? 6 : 12,
           }}
         >
           <Text
             numberOfLines={1}
             adjustsFontSizeToFit
             minimumFontScale={0.82}
-            className="font-nunito-bold text-[#315B9A]"
             style={{
-              fontSize:
-                esTelefonoPequeno
-                  ? 20
-                  : 24,
+              fontFamily: "Nunito-Bold",
+
+              fontSize: esTelefonoPequeno ? 20 : 24,
+
+              color: textColor,
             }}
           >
             Detalle del Registro
@@ -103,76 +159,126 @@ export function DetalleHeader({
 
           <Text
             numberOfLines={1}
-            className="mt-1 font-nunito-medium text-[#8B98AC]"
             style={{
-              fontSize:
-                esTelefonoPequeno
-                  ? 12
-                  : 14,
+              marginTop: 4,
+
+              fontFamily: "Nunito-Medium",
+
+              fontSize: esTelefonoPequeno ? 12 : 14,
+
+              color: textSecondaryColor,
             }}
           >
             Revisa tu experiencia emocional
           </Text>
         </View>
 
+        {/* ==================================================
+            EDITAR
+        ================================================== */}
+
         <Animated.View
-          style={editStyle}
-          className="mr-2"
+          style={[
+            editStyle,
+            {
+              marginRight: 8,
+            },
+          ]}
         >
           <Pressable
             onPress={onEdit}
             hitSlop={6}
             onPressIn={() => {
-              scaleEdit.value =
-                withSpring(
-                  1.08,
-                  {
-                    damping: 12,
-                    stiffness: 220,
-                  }
-                );
+              scaleEdit.value = withSpring(1.08, {
+                damping: 12,
+
+                stiffness: 220,
+              });
             }}
             onPressOut={() => {
-              scaleEdit.value =
-                withSpring(1);
+              scaleEdit.value = withSpring(1);
             }}
-            className="h-[50px] w-[50px] items-center justify-center rounded-[18px] border border-blue-100 bg-[#EEF5FF] shadow-sm"
+            style={{
+              width: 50,
+              height: 50,
+
+              borderRadius: 18,
+
+              borderWidth: 1,
+              borderColor,
+
+              alignItems: "center",
+              justifyContent: "center",
+
+              backgroundColor: primarySoftColor,
+
+              elevation: 1,
+
+              shadowColor: "#000000",
+
+              shadowOffset: {
+                width: 0,
+
+                height: 2,
+              },
+
+              shadowOpacity: 0.05,
+
+              shadowRadius: 5,
+            }}
           >
-            <Ionicons
-              name="create-outline"
-              size={23}
-              color="#4F8EF7"
-            />
+            <Ionicons name="create-outline" size={23} color={primaryColor} />
           </Pressable>
         </Animated.View>
 
-        <Animated.View
-          style={deleteStyle}
-        >
+        {/* ==================================================
+            ELIMINAR
+        ================================================== */}
+
+        <Animated.View style={deleteStyle}>
           <Pressable
             onPress={onDelete}
             hitSlop={6}
             onPressIn={() => {
-              scaleDelete.value =
-                withSpring(
-                  1.08,
-                  {
-                    damping: 12,
-                    stiffness: 220,
-                  }
-                );
+              scaleDelete.value = withSpring(1.08, {
+                damping: 12,
+
+                stiffness: 220,
+              });
             }}
             onPressOut={() => {
-              scaleDelete.value =
-                withSpring(1);
+              scaleDelete.value = withSpring(1);
             }}
-            className="h-[50px] w-[50px] items-center justify-center rounded-[18px] border border-red-100 bg-[#FFF2F2] shadow-sm"
+            style={{
+              width: 50,
+              height: 50,
+
+              borderRadius: 18,
+
+              borderWidth: 1,
+              borderColor,
+
+              alignItems: "center",
+              justifyContent: "center",
+
+              backgroundColor: "rgba(239, 68, 68, 0.10)",
+
+              elevation: 1,
+
+              shadowColor: "#000000",
+
+              shadowOffset: {
+                width: 0,
+
+                height: 2,
+              },
+
+              shadowOpacity: 0.05,
+
+              shadowRadius: 5,
+            }}
           >
-            <Ionicons
-              name="trash-outline"
-              size={22}
-              color="#EF6B6B"
-            />
+            <Ionicons name="trash-outline" size={22} color={dangerColor} />
           </Pressable>
         </Animated.View>
       </View>

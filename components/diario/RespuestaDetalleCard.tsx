@@ -1,13 +1,10 @@
 import React from "react";
 
-import {
-  Text,
-  View,
-} from "react-native";
+import { Text, View } from "react-native";
 
-import Animated, {
-  FadeInDown,
-} from "react-native-reanimated";
+import Animated, { FadeInDown } from "react-native-reanimated";
+
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 type RespuestaDetalleCardProps = {
   titulo: string;
@@ -20,56 +17,100 @@ export function RespuestaDetalleCard({
   respuesta,
   delay = 0,
 }: RespuestaDetalleCardProps) {
+  // ======================================================
+  // TEMA
+  // ======================================================
+
+  const surfaceColor = useThemeColor({}, "surface");
+
+  const borderColor = useThemeColor({}, "border");
+
+  const textColor = useThemeColor({}, "text");
+
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
+
+  // ======================================================
+  // UI
+  // ======================================================
+
   return (
     <Animated.View
-      entering={
-        FadeInDown
-          .delay(delay)
-          .duration(450)
-      }
+      entering={FadeInDown.delay(delay).duration(450)}
       style={{
         width: "100%",
+
         borderRadius: 22,
+
         borderWidth: 1,
-        borderColor: "#E6EBF2",
-        backgroundColor: "#FFFFFF",
+
+        borderColor,
+
+        backgroundColor: surfaceColor,
+
         padding: 18,
+
         marginBottom: 16,
-        shadowColor: "#64748B",
+
+        shadowColor: "#000000",
+
         shadowOffset: {
           width: 0,
+
           height: 3,
         },
+
         shadowOpacity: 0.06,
+
         shadowRadius: 8,
+
         elevation: 2,
       }}
     >
+      {/* ==================================================
+          TÍTULO
+      ================================================== */}
+
       <Text
         style={{
           fontFamily: "Nunito-Bold",
+
           fontSize: 17,
+
           lineHeight: 23,
-          color: "#2D3748",
+
+          color: textColor,
         }}
       >
         {titulo}
       </Text>
 
+      {/* ==================================================
+          DIVISOR
+      ================================================== */}
+
       <View
         style={{
           height: 1,
-          backgroundColor: "#EEF2F7",
+
+          backgroundColor: borderColor,
+
           marginVertical: 12,
         }}
       />
 
+      {/* ==================================================
+          RESPUESTA
+      ================================================== */}
+
       <Text
         style={{
           fontFamily: "Nunito-Medium",
+
           fontSize: 15,
+
           lineHeight: 23,
-          color: "#66758D",
+
+          color: textSecondaryColor,
         }}
       >
         {respuesta || "Sin respuesta"}

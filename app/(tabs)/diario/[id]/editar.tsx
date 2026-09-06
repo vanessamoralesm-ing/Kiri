@@ -1,8 +1,4 @@
-import React, {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import {
   ActivityIndicator,
@@ -16,26 +12,15 @@ import {
   View,
 } from "react-native";
 
-import {
-  useLocalSearchParams,
-  useRouter,
-} from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
-import {
-  Ionicons,
-} from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
-import {
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import {
-  OpcionEmocion,
-} from "@/components/diario/OpcionEmocion";
+import { OpcionEmocion } from "@/components/diario/OpcionEmocion";
 
-import {
-  CampoPreguntaDiario,
-} from "@/components/diario/CampoPreguntaDiario";
+import { CampoPreguntaDiario } from "@/components/diario/CampoPreguntaDiario";
 
 import Button from "@/components/ui/Button";
 
@@ -45,12 +30,14 @@ import {
   obtenerEmocionesAutorregistro,
 } from "@/services/diario/autorregistro.service";
 
-import {
-  EmocionAutorregistro,
-} from "@/types/diario";
+import { EmocionAutorregistro } from "@/types/diario";
 
+import { useThemeColor } from "@/hooks/use-theme-color";
 
-// Emojis usados solamente para la interfaz.
+// ==========================================================
+// EMOJIS
+// ==========================================================
+
 const EMOJIS_EMOCIONES: Record<string, string> = {
   Alegría: "😊",
   Tristeza: "😢",
@@ -64,548 +51,423 @@ const EMOJIS_EMOCIONES: Record<string, string> = {
   Esperanza: "🌱",
 };
 
+// ==========================================================
+// COMPONENTE
+// ==========================================================
 
 export default function EditarRegistroScreen() {
-  const router =
-    useRouter();
+  const router = useRouter();
 
-  const insets =
-    useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
 
-  const {
-    width,
-  } =
-    useWindowDimensions();
+  const { width } = useWindowDimensions();
 
-  const {
-    id,
-  } =
-    useLocalSearchParams<{
-      id: string;
-    }>();
+  const { id } = useLocalSearchParams<{
+    id: string;
+  }>();
 
+  // ======================================================
+  // ESTADO
+  // ======================================================
 
-  const [
-    cargando,
-    setCargando,
-  ] =
-    useState(true);
+  const [cargando, setCargando] = useState(true);
 
-  const [
-    guardando,
-    setGuardando,
-  ] =
-    useState(false);
+  const [guardando, setGuardando] = useState(false);
 
-  const [
-    emociones,
-    setEmociones,
-  ] =
-    useState<EmocionAutorregistro[]>([]);
+  const [emociones, setEmociones] = useState<EmocionAutorregistro[]>([]);
 
-  const [
-    idEmocion,
-    setIdEmocion,
-  ] =
-    useState("");
+  const [idEmocion, setIdEmocion] = useState("");
 
-  const [
-    motivo,
-    setMotivo,
-  ] =
-    useState("");
+  const [motivo, setMotivo] = useState("");
 
-  const [
-    reaccion,
-    setReaccion,
-  ] =
-    useState("");
+  const [reaccion, setReaccion] = useState("");
 
-  const [
-    ideaUtil,
-    setIdeaUtil,
-  ] =
-    useState("");
+  const [ideaUtil, setIdeaUtil] = useState("");
 
+  // ======================================================
+  // TEMA
+  // ======================================================
 
-  // Responsive.
-  const esTelefono =
-    width < 768;
+  const backgroundColor = useThemeColor({}, "background");
 
-  const esTablet =
-    width >= 768 &&
-    width < 1100;
+  const surfaceColor = useThemeColor({}, "surface");
 
-  const esWeb =
-    width >= 1100;
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
+  const borderColor = useThemeColor({}, "border");
 
-  const maxWidthContenido =
-    esWeb
-      ? 980
-      : esTablet
-        ? 860
-        : undefined;
+  const textColor = useThemeColor({}, "text");
 
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
 
-  const maxWidthFormulario =
-    esWeb
-      ? 760
-      : undefined;
+  const textMutedColor = useThemeColor({}, "textMuted");
 
+  const primaryColor = useThemeColor({}, "primary");
 
-  const paddingHorizontal =
-    esTelefono
-      ? 16
-      : 24;
+  const primarySoftColor = useThemeColor({}, "primarySoft");
 
+  // ======================================================
+  // RESPONSIVE
+  // ======================================================
 
-  const columnasEmociones =
-    esTelefono
-      ? 3
-      : esTablet
-        ? 4
-        : 5;
+  const esTelefono = width < 768;
 
+  const esTablet = width >= 768 && width < 1100;
 
-  const gapEmociones =
-    esTelefono
-      ? 12
-      : 14;
+  const esWeb = width >= 1100;
 
+  const maxWidthContenido = esWeb ? 980 : esTablet ? 860 : undefined;
 
-  const anchoGridEmociones =
-    Math.min(
-      width - paddingHorizontal * 2,
-      esWeb
-        ? 760
-        : esTablet
-          ? 760
-          : width - paddingHorizontal * 2
-    );
+  const maxWidthFormulario = esWeb ? 760 : undefined;
 
+  const paddingHorizontal = esTelefono ? 16 : 24;
 
-  const anchoTarjetaEmocion =
-    useMemo(
-      () => {
-        const espacioTotal =
-          gapEmociones *
-          (
-            columnasEmociones - 1
-          );
+  const columnasEmociones = esTelefono ? 3 : esTablet ? 4 : 5;
 
-        return (
-          anchoGridEmociones -
-          espacioTotal
-        ) /
-        columnasEmociones;
-      },
-      [
-        anchoGridEmociones,
-        columnasEmociones,
-        gapEmociones,
-      ]
-    );
+  const gapEmociones = esTelefono ? 12 : 14;
 
+  const anchoGridEmociones = Math.min(
+    width - paddingHorizontal * 2,
+    esWeb ? 760 : esTablet ? 760 : width - paddingHorizontal * 2,
+  );
+
+  const anchoTarjetaEmocion = useMemo(() => {
+    const espacioTotal = gapEmociones * (columnasEmociones - 1);
+
+    return (anchoGridEmociones - espacioTotal) / columnasEmociones;
+  }, [anchoGridEmociones, columnasEmociones, gapEmociones]);
+
+  // ======================================================
+  // CARGAR DATOS
+  // ======================================================
 
   useEffect(() => {
-    if (
-      !id
-    ) {
+    if (!id) {
       return;
     }
 
-    const cargarDatos =
-      async () => {
-        try {
-          setCargando(
-            true
-          );
-
-          const [
-            detalle,
-            emocionesBD,
-          ] =
-            await Promise.all([
-              obtenerDetalleRegistro(
-                id
-              ),
-
-              obtenerEmocionesAutorregistro(),
-            ]);
-
-          if (
-            !detalle
-          ) {
-            Alert.alert(
-              "Error",
-              "No se pudo encontrar el registro solicitado."
-            );
-
-            return;
-          }
-
-          setEmociones(
-            emocionesBD
-          );
-
-          // Mantiene seleccionada la emoción actual.
-          setIdEmocion(
-            detalle.idEmocion
-          );
-
-          setMotivo(
-            detalle.motivo
-          );
-
-          setReaccion(
-            detalle.reaccion
-          );
-
-          setIdeaUtil(
-            detalle.ideaUtil
-          );
-        } catch (error: any) {
-          Alert.alert(
-            "Error",
-            error.message ||
-              "No se pudo cargar el registro."
-          );
-        } finally {
-          setCargando(
-            false
-          );
-        }
-      };
-
-    cargarDatos();
-  }, [
-    id,
-  ]);
-
-
-  const guardarCambios =
-    async () => {
-      if (
-        !id
-      ) {
-        Alert.alert(
-          "Error",
-          "No se encontró el registro."
-        );
-
-        return;
-      }
-
-      if (
-        !idEmocion
-      ) {
-        Alert.alert(
-          "Atención",
-          "El registro no tiene una emoción seleccionada."
-        );
-
-        return;
-      }
-
+    const cargarDatos = async () => {
       try {
-        setGuardando(
-          true
-        );
+        setCargando(true);
 
-        await actualizarDiarioEmocionalService({
-          idRegistro:
-            id,
+        const [detalle, emocionesBD] = await Promise.all([
+          obtenerDetalleRegistro(id),
+          obtenerEmocionesAutorregistro(),
+        ]);
 
-          idEmocion,
+        if (!detalle) {
+          Alert.alert("Error", "No se pudo encontrar el registro solicitado.");
 
-          motivo,
+          return;
+        }
 
-          reaccion,
+        setEmociones(emocionesBD);
 
-          ideaUtil,
-        });
+        setIdEmocion(detalle.idEmocion);
 
-        Alert.alert(
-          "¡Actualizado!",
-          "El registro ha sido modificado.",
-          [
-            {
-              text:
-                "OK",
+        setMotivo(detalle.motivo);
 
-              onPress:
-                () =>
-                  router.back(),
-            },
-          ]
-        );
+        setReaccion(detalle.reaccion);
+
+        setIdeaUtil(detalle.ideaUtil);
       } catch (error: any) {
-        Alert.alert(
-          "Error",
-          error.message ||
-            "Ocurrió un error al actualizar."
-        );
+        Alert.alert("Error", error.message || "No se pudo cargar el registro.");
       } finally {
-        setGuardando(
-          false
-        );
+        setCargando(false);
       }
     };
 
+    cargarDatos();
+  }, [id]);
 
-  if (
-    cargando
-  ) {
+  // ======================================================
+  // GUARDAR CAMBIOS
+  // ======================================================
+
+  const guardarCambios = async () => {
+    if (!id) {
+      Alert.alert("Error", "No se encontró el registro.");
+
+      return;
+    }
+
+    if (!idEmocion) {
+      Alert.alert("Atención", "El registro no tiene una emoción seleccionada.");
+
+      return;
+    }
+
+    try {
+      setGuardando(true);
+
+      await actualizarDiarioEmocionalService({
+        idRegistro: id,
+
+        idEmocion,
+
+        motivo,
+
+        reaccion,
+
+        ideaUtil,
+      });
+
+      Alert.alert("¡Actualizado!", "El registro ha sido modificado.", [
+        {
+          text: "OK",
+
+          onPress: () => router.back(),
+        },
+      ]);
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Ocurrió un error al actualizar.");
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  // ======================================================
+  // CARGANDO
+  // ======================================================
+
+  if (cargando) {
     return (
       <View
-        className="flex-1 items-center justify-center bg-[#F8FBFF]"
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor,
+        }}
       >
-        <ActivityIndicator
-          size="large"
-          color="#4F8EF7"
-        />
+        <ActivityIndicator size="large" color={primaryColor} />
+
+        <Text
+          style={{
+            marginTop: 12,
+            fontFamily: "Nunito-Medium",
+            fontSize: 14,
+            color: textMutedColor,
+          }}
+        >
+          Cargando registro...
+        </Text>
       </View>
     );
   }
 
+  // ======================================================
+  // UI
+  // ======================================================
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-[#F8FBFF]"
+      style={{
+        flex: 1,
+        backgroundColor,
+      }}
       behavior={
-        Platform.OS ===
-        "ios"
+        Platform.OS === "ios"
           ? "padding"
-          : Platform.OS ===
-            "android"
+          : Platform.OS === "android"
             ? "height"
             : undefined
       }
-      keyboardVerticalOffset={
-        Platform.OS ===
-        "ios"
-          ? insets.top
-          : 0
-      }
+      keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
     >
       <ScrollView
-        showsVerticalScrollIndicator={
-          false
-        }
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop:
-            esTelefono
-              ? 12
-              : 24,
+          paddingTop: esTelefono ? 12 : 24,
 
-          paddingBottom:
-            Math.max(
-              insets.bottom + 100,
-              120
-            ),
+          paddingBottom: Math.max(insets.bottom + 100, 120),
         }}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
         <View
           style={{
-            width:
-              "100%",
+            width: "100%",
 
-            maxWidth:
-              maxWidthContenido,
+            maxWidth: maxWidthContenido,
 
-            alignSelf:
-              "center",
+            alignSelf: "center",
 
             paddingHorizontal,
           }}
         >
-          {/* Encabezado */}
+          {/* ==================================================
+                        ENCABEZADO
+                    ================================================== */}
+
           <View
-            className="mb-6 flex-row items-center justify-between"
+            style={{
+              marginBottom: 24,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
           >
             <Pressable
-              onPress={() =>
-                router.back()
-              }
-              className="h-11 w-11 items-center justify-center rounded-2xl border border-gray-100 bg-white"
+              onPress={() => router.back()}
+              style={({ pressed }) => ({
+                width: 44,
+                height: 44,
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
+              })}
             >
-              <Ionicons
-                name="arrow-back"
-                size={22}
-                color="#1E3A5F"
-              />
+              <Ionicons name="arrow-back" size={22} color={textColor} />
             </Pressable>
 
             <Text
-              className={`font-nunito-bold text-[#4F8EF7] ${
-                esTelefono
-                  ? "text-[22px]"
-                  : "text-[26px]"
-              }`}
+              style={{
+                fontFamily: "Nunito-Bold",
+                fontSize: esTelefono ? 22 : 26,
+                color: primaryColor,
+              }}
             >
               Editar Registro
             </Text>
 
             <View
-              className="w-11"
+              style={{
+                width: 44,
+              }}
             />
           </View>
 
+          {/* ==================================================
+                        SELECCIÓN DE EMOCIÓN
+                    ================================================== */}
 
-          {/* Selección de emoción */}
           <View
             style={{
-              width:
-                "100%",
+              width: "100%",
 
-              maxWidth:
-                esWeb
-                  ? 760
-                  : undefined,
+              maxWidth: esWeb ? 760 : undefined,
 
-              alignSelf:
-                "center",
+              alignSelf: "center",
+
+              marginBottom: 28,
             }}
-            className="mb-7"
           >
             <Text
-              className="mb-4 font-nunito-bold text-[20px] text-[#2D3748]"
+              style={{
+                marginBottom: 16,
+
+                fontFamily: "Nunito-Bold",
+
+                fontSize: 20,
+
+                color: textColor,
+              }}
             >
               ¿Cómo te sentías?
             </Text>
 
-
-            {emociones.length ===
-            0 ? (
-              <Text
-                className="font-nunito-medium text-sm text-[#7A89A3]"
+            {emociones.length === 0 ? (
+              <View
+                style={{
+                  padding: 20,
+                  borderRadius: 18,
+                  borderWidth: 1,
+                  borderColor,
+                  backgroundColor: surfaceColor,
+                }}
               >
-                No hay emociones disponibles.
-              </Text>
+                <Text
+                  style={{
+                    fontFamily: "Nunito-Medium",
+                    fontSize: 14,
+                    color: textSecondaryColor,
+                  }}
+                >
+                  No hay emociones disponibles.
+                </Text>
+              </View>
             ) : (
               <View
                 style={{
-                  flexDirection:
-                    "row",
+                  flexDirection: "row",
 
-                  flexWrap:
-                    "wrap",
+                  flexWrap: "wrap",
 
-                  gap:
-                    gapEmociones,
+                  gap: gapEmociones,
                 }}
               >
-                {emociones.map(
-                  item => (
-                    <OpcionEmocion
-                      key={
-                        item.id_emocion
-                      }
-                      nombre={
-                        item.nombre
-                      }
-                      emoji={
-                        EMOJIS_EMOCIONES[
-                          item.nombre
-                        ] ?? "💭"
-                      }
-                      seleccionada={
-                        idEmocion ===
-                        item.id_emocion
-                      }
-                      ancho={
-                        anchoTarjetaEmocion
-                      }
-                      onPress={() =>
-                        setIdEmocion(
-                          item.id_emocion
-                        )
-                      }
-                    />
-                  )
-                )}
+                {emociones.map((item) => (
+                  <OpcionEmocion
+                    key={item.id_emocion}
+                    nombre={item.nombre}
+                    emoji={EMOJIS_EMOCIONES[item.nombre] ?? "💭"}
+                    seleccionada={idEmocion === item.id_emocion}
+                    ancho={anchoTarjetaEmocion}
+                    onPress={() => setIdEmocion(item.id_emocion)}
+                  />
+                ))}
               </View>
             )}
           </View>
 
+          {/* ==================================================
+                        PREGUNTAS
+                    ================================================== */}
 
-          {/* Preguntas */}
           <View
             style={{
-              width:
-                "100%",
+              width: "100%",
 
-              maxWidth:
-                maxWidthFormulario,
+              maxWidth: maxWidthFormulario,
 
-              alignSelf:
-                "center",
+              alignSelf: "center",
             }}
           >
             <CampoPreguntaDiario
               titulo="¿Qué me hizo sentir así?"
-              valor={
-                motivo
-              }
-              onChangeText={
-                setMotivo
-              }
+              valor={motivo}
+              onChangeText={setMotivo}
               placeholder="Cuéntanos qué ocurrió..."
             />
 
             <CampoPreguntaDiario
               titulo="¿Cómo reaccioné?"
-              valor={
-                reaccion
-              }
-              onChangeText={
-                setReaccion
-              }
+              valor={reaccion}
+              onChangeText={setReaccion}
               placeholder="¿Qué hiciste o cómo respondiste?"
             />
 
             <CampoPreguntaDiario
               titulo="Una idea útil"
-              valor={
-                ideaUtil
-              }
-              onChangeText={
-                setIdeaUtil
-              }
+              valor={ideaUtil}
+              onChangeText={setIdeaUtil}
               placeholder="¿Qué te gustaría recordar de esta experiencia?"
             />
           </View>
 
+          {/* ==================================================
+                        BOTÓN GUARDAR
+                    ================================================== */}
 
-          {/* Botón guardar */}
           <View
             style={{
-              width:
-                "100%",
+              width: "100%",
 
-              maxWidth:
-                maxWidthFormulario,
+              maxWidth: maxWidthFormulario,
 
-              alignSelf:
-                "center",
+              alignSelf: "center",
+
+              marginTop: 12,
             }}
-            className="mt-3"
           >
             <Button
-              title={
-                guardando
-                  ? "Guardando..."
-                  : "Guardar cambios"
-              }
-              onPress={
-                guardarCambios
-              }
-              disabled={
-                guardando
-              }
+              title={guardando ? "Guardando..." : "Guardar cambios"}
+              onPress={guardarCambios}
+              disabled={guardando}
             />
           </View>
         </View>

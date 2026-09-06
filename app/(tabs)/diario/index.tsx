@@ -1,8 +1,4 @@
-import React, {
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
+import React, { useCallback, useMemo, useState } from "react";
 
 import {
   ActivityIndicator,
@@ -13,404 +9,448 @@ import {
   View,
 } from "react-native";
 
-import {
-  router,
-  useFocusEffect,
-} from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
-import {
-  Ionicons,
-} from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
-import TarjetaBienvenidaDiario from "@/components/diario/TarjetaBienvenidaDiario";
 import ResumenDiario from "@/components/diario/ResumenDiario";
+import TarjetaBienvenidaDiario from "@/components/diario/TarjetaBienvenidaDiario";
 import TarjetaEntradaDiario from "@/components/diario/TarjetaEntradaDiario";
 
-import {
-  useAuth,
-} from "@/services/authProvider";
+import { useAuth } from "@/services/authProvider";
 
-import {
-  obtenerHistorialDiario,
-} from "@/services/diario/autorregistro.service";
+import { obtenerHistorialDiario } from "@/services/diario/autorregistro.service";
 
-import {
-  EntradaDiarioResumen,
-} from "@/types/diario";
+import { EntradaDiarioResumen } from "@/types/diario";
 
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 export default function DiarioScreen() {
-  const {
-    user,
-  } = useAuth();
+  const { user, profile } = useAuth();
 
-  const {
-    width,
-  } = useWindowDimensions();
+  const { width } = useWindowDimensions();
 
-  const [
-    cargando,
-    setCargando,
-  ] = useState(true);
+  const [cargando, setCargando] = useState(true);
 
-  const [
-    entradas,
-    setEntradas,
-  ] = useState<EntradaDiarioResumen[]>([]);
+  const [entradas, setEntradas] = useState<EntradaDiarioResumen[]>([]);
 
+  // ======================================================
+  // TEMA
+  // ======================================================
 
-  // Define tamaños responsive.
-  const esTablet =
-    width >= 768;
+  const backgroundColor = useThemeColor({}, "background");
 
-  const esWebGrande =
-    width >= 1100;
+  const surfaceColor = useThemeColor({}, "surface");
 
+  const borderColor = useThemeColor({}, "border");
 
-  // Obtiene únicamente el Nombre Preferido del usuario.
-  const nombreUsuario =
-    useMemo(
-      () => {
-        const nombrePreferido =
-          user?.user_metadata?.nombre_preferido;
+  const textColor = useThemeColor({}, "text");
 
-        if (
-          typeof nombrePreferido === "string" &&
-          nombrePreferido.trim()
-        ) {
-          return nombrePreferido.trim();
-        }
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
 
-        return "Usuario";
-      },
-      [
-        user,
-      ]
+  const textMutedColor = useThemeColor({}, "textMuted");
+
+  const primaryColor = useThemeColor({}, "primary");
+
+  const primarySoftColor = useThemeColor({}, "primarySoft");
+
+  // ======================================================
+  // RESPONSIVE
+  // ======================================================
+
+  const esTablet = width >= 768;
+
+  const esWebGrande = width >= 1100;
+
+  // ======================================================
+  // NOMBRE DEL USUARIO
+  // ======================================================
+
+  const nombreUsuario = useMemo(() => {
+    const nombrePreferidoPerfil =
+      typeof profile?.nombre_preferido === "string"
+        ? profile.nombre_preferido.trim()
+        : "";
+
+    const nombresPerfil =
+      typeof profile?.nombres === "string" ? profile.nombres.trim() : "";
+
+    const nombrePreferidoAuth =
+      typeof user?.user_metadata?.nombre_preferido === "string"
+        ? user.user_metadata.nombre_preferido.trim()
+        : "";
+
+    const nombresAuth =
+      typeof user?.user_metadata?.nombres === "string"
+        ? user.user_metadata.nombres.trim()
+        : "";
+
+    return (
+      nombrePreferidoPerfil ||
+      nombresPerfil ||
+      nombrePreferidoAuth ||
+      nombresAuth ||
+      "Usuario"
     );
+  }, [
+    profile?.nombre_preferido,
+    profile?.nombres,
+    user?.user_metadata?.nombre_preferido,
+    user?.user_metadata?.nombres,
+  ]);
 
+  // ======================================================
+  // CARGAR DATOS
+  // ======================================================
 
-  // Carga las entradas recientes del Diario.
-  const cargarDatos =
-    useCallback(
-      async () => {
-        try {
-          setCargando(true);
+  const cargarDatos = useCallback(async () => {
+    try {
+      setCargando(true);
 
-          const datos =
-            await obtenerHistorialDiario(
-              5
-            );
+      const datos = await obtenerHistorialDiario(5);
 
-          setEntradas(
-            datos
-          );
-        } catch (error) {
-          console.error(
-            "Error al cargar las entradas del diario:",
-            error
-          );
+      setEntradas(datos);
+    } catch (error) {
+      console.error("Error al cargar las entradas del diario:", error);
 
-          setEntradas(
-            []
-          );
-        } finally {
-          setCargando(
-            false
-          );
-        }
-      },
-      []
-    );
+      setEntradas([]);
+    } finally {
+      setCargando(false);
+    }
+  }, []);
 
+  // ======================================================
+  // ACTUALIZAR AL TOMAR FOCO
+  // ======================================================
 
-  // Recarga las entradas cuando la pantalla toma el foco.
   useFocusEffect(
-    useCallback(
-      () => {
-        cargarDatos();
-      },
-      [
-        cargarDatos,
-      ]
-    )
+    useCallback(() => {
+      cargarDatos();
+    }, [cargarDatos]),
   );
 
+  // ======================================================
+  // NAVEGACIÓN
+  // ======================================================
 
-  const irANuevoRegistro =
-    () => {
-      router.push({
-        pathname:
-          "/diario/nuevo" as never,
+  const irANuevoRegistro = () => {
+    router.push({
+      pathname: "/diario/nuevo" as never,
+      params: {
+        origen: "diario",
+      },
+    });
+  };
 
-        params: {
-          origen:
-            "diario",
-        },
-      });
-    };
+  const verTodasLasEntradas = () => {
+    router.push("/diario/historial" as never);
+  };
 
+  const abrirEntrada = (id: string) => {
+    router.push(`/diario/${id}` as never);
+  };
 
-  const verTodasLasEntradas =
-    () => {
-      router.push(
-        "/diario/historial" as never
-      );
-    };
+  // ======================================================
+  // FORMATEAR FECHA
+  // ======================================================
 
+  const formatearFecha = (fechaIso: string) => {
+    const fecha = new Date(fechaIso);
 
-  const abrirEntrada =
-    (
-      id: string
-    ) => {
-      router.push(
-        `/diario/${id}` as never
-      );
-    };
+    return fecha.toLocaleDateString("es-ES", {
+      day: "numeric",
 
+      month: "short",
 
-  const formatearFecha =
-    (
-      fechaIso: string
-    ) => {
-      const fecha =
-        new Date(
-          fechaIso
-        );
+      hour: "2-digit",
 
-      return fecha.toLocaleDateString(
-        "es-ES",
-        {
-          day:
-            "numeric",
+      minute: "2-digit",
+    });
+  };
 
-          month:
-            "short",
-
-          hour:
-            "2-digit",
-
-          minute:
-            "2-digit",
-        }
-      );
-    };
-
+  // ======================================================
+  // UI
+  // ======================================================
 
   return (
     <View
-      className="flex-1 bg-[#F8FAFC]"
+      style={{
+        flex: 1,
+        backgroundColor,
+      }}
     >
       <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={
-          false
-        }
+        style={{
+          flex: 1,
+        }}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom:
-            110,
+          paddingBottom: 110,
         }}
       >
-        {/* Contenedor principal responsive */}
+        {/* ==================================================
+                    CONTENEDOR PRINCIPAL
+                ================================================== */}
+
         <View
           style={{
-            width:
-              "100%",
+            width: "100%",
 
-            maxWidth:
-              esWebGrande
-                ? 1080
-                : 960,
+            maxWidth: esWebGrande ? 1080 : 960,
 
-            alignSelf:
-              "center",
+            alignSelf: "center",
 
-            paddingHorizontal:
-              esTablet
-                ? 28
-                : 20,
+            paddingHorizontal: esTablet ? 28 : 20,
 
-            paddingTop:
-              24,
+            paddingTop: 24,
 
-            paddingBottom:
-              20,
+            paddingBottom: 20,
           }}
         >
-          {/* Bienvenida */}
+          {/* ==================================================
+                        BIENVENIDA
+                    ================================================== */}
+
           <TarjetaBienvenidaDiario
-            nombre={
-              nombreUsuario
-            }
-            onNuevoRegistro={
-              irANuevoRegistro
-            }
+            nombre={nombreUsuario}
+            onNuevoRegistro={irANuevoRegistro}
           />
 
+          {/* ==================================================
+                        RESUMEN
+                    ================================================== */}
 
-          {/* Resumen */}
           <ResumenDiario
-            diasRacha={
-              entradas.length >
-              0
-                ? 1
-                : 0
-            }
-            totalEntradas={
-              entradas.length
-            }
+            diasRacha={entradas.length > 0 ? 1 : 0}
+            totalEntradas={entradas.length}
           />
 
+          {/* ==================================================
+                        ENCABEZADO ENTRADAS RECIENTES
+                    ================================================== */}
 
-          {/* Encabezado de Entradas Recientes */}
           <View
-            className="mb-5 mt-8 flex-row items-center justify-between"
+            style={{
+              marginTop: 32,
+
+              marginBottom: 20,
+
+              flexDirection: "row",
+
+              alignItems: "center",
+
+              justifyContent: "space-between",
+            }}
           >
             <View
-              className="flex-1 pr-3"
+              style={{
+                flex: 1,
+
+                paddingRight: 12,
+              }}
             >
               <Text
-                className="font-nunito-bold text-[20px] text-[#1E293B]"
+                style={{
+                  fontFamily: "Nunito-Bold",
+
+                  fontSize: 20,
+
+                  color: textColor,
+                }}
               >
                 Entradas Recientes
               </Text>
 
               <Text
-                className="mt-1 font-nunito-medium text-[13px] text-[#94A3B8]"
+                style={{
+                  marginTop: 4,
+
+                  fontFamily: "Nunito-Medium",
+
+                  fontSize: 13,
+
+                  color: textMutedColor,
+                }}
               >
                 Tus últimos momentos registrados
               </Text>
             </View>
 
-
             <Pressable
-              onPress={
-                verTodasLasEntradas
-              }
-              hitSlop={
-                8
-              }
-              className="flex-row items-center rounded-xl px-2 py-2"
+              onPress={verTodasLasEntradas}
+              hitSlop={8}
+              style={({ pressed }) => ({
+                paddingHorizontal: 8,
+
+                paddingVertical: 8,
+
+                borderRadius: 12,
+
+                flexDirection: "row",
+
+                alignItems: "center",
+
+                backgroundColor: pressed ? primarySoftColor : "transparent",
+              })}
             >
               <Text
-                className="font-nunito-semibold text-[13px] text-[#3478F6]"
+                style={{
+                  fontFamily: "Nunito-SemiBold",
+
+                  fontSize: 13,
+
+                  color: primaryColor,
+                }}
               >
                 Ver todas
               </Text>
 
-              <Ionicons
-                name="chevron-forward"
-                size={18}
-                color="#4F8EF7"
-              />
+              <Ionicons name="chevron-forward" size={18} color={primaryColor} />
             </Pressable>
           </View>
 
+          {/* ==================================================
+                        CARGANDO
+                    ================================================== */}
 
-          {/* Cargando */}
           {cargando ? (
             <View
-              className="items-center py-8"
+              style={{
+                paddingVertical: 32,
+
+                alignItems: "center",
+              }}
             >
-              <ActivityIndicator
-                size="small"
-                color="#4F8EF7"
-              />
+              <ActivityIndicator size="small" color={primaryColor} />
 
               <Text
-                className="mt-3 font-nunito-medium text-sm text-slate-400"
+                style={{
+                  marginTop: 12,
+
+                  fontFamily: "Nunito-Medium",
+
+                  fontSize: 14,
+
+                  color: textMutedColor,
+                }}
               >
                 Cargando tus entradas...
               </Text>
             </View>
-          ) : entradas.length ===
-            0 ? (
+          ) : entradas.length === 0 ? (
+            // ==================================================
+            // SIN REGISTROS
+            // ==================================================
+
             <View
-              className="items-center rounded-[22px] border border-slate-100 bg-white p-6"
+              style={{
+                padding: 24,
+
+                borderRadius: 22,
+
+                borderWidth: 1,
+
+                borderColor,
+
+                backgroundColor: surfaceColor,
+
+                alignItems: "center",
+              }}
             >
-              <Ionicons
-                name="book-outline"
-                size={28}
-                color="#94A3B8"
-              />
+              <View
+                style={{
+                  width: 58,
+
+                  height: 58,
+
+                  borderRadius: 29,
+
+                  alignItems: "center",
+
+                  justifyContent: "center",
+
+                  backgroundColor: primarySoftColor,
+                }}
+              >
+                <Ionicons name="book-outline" size={28} color={primaryColor} />
+              </View>
 
               <Text
-                className="mt-3 text-center font-nunito-medium text-sm text-slate-500"
+                style={{
+                  marginTop: 12,
+
+                  textAlign: "center",
+
+                  fontFamily: "Nunito-SemiBold",
+
+                  fontSize: 14,
+
+                  color: textSecondaryColor,
+                }}
               >
                 Aún no has registrado ninguna entrada.
               </Text>
 
               <Text
-                className="mt-1 text-center font-nunito-medium text-xs text-slate-400"
+                style={{
+                  marginTop: 4,
+
+                  textAlign: "center",
+
+                  fontFamily: "Nunito-Medium",
+
+                  fontSize: 12,
+
+                  color: textMutedColor,
+                }}
               >
                 Tu próximo registro aparecerá aquí.
               </Text>
             </View>
           ) : (
+            // ==================================================
+            // REGISTROS
+            // ==================================================
+
             <View
               style={
                 esTablet
                   ? {
-                      flexDirection:
-                        "row",
+                      flexDirection: "row",
 
-                      flexWrap:
-                        "wrap",
+                      flexWrap: "wrap",
 
-                      gap:
-                        16,
+                      gap: 16,
                     }
                   : undefined
               }
             >
-              {entradas.map(
-                (
-                  item
-                ) => (
-                  <View
-                    key={
-                      item.id_registro
-                    }
-                    style={
-                      esTablet
-                        ? {
-                            width:
-                              esWebGrande
-                                ? "calc(50% - 8px)" as never
-                                : "48.5%",
-                          }
-                        : {
-                            width:
-                              "100%",
+              {entradas.map((item) => (
+                <View
+                  key={item.id_registro}
+                  style={
+                    esTablet
+                      ? {
+                          width: esWebGrande
+                            ? ("calc(50% - 8px)" as never)
+                            : "48.5%",
+                        }
+                      : {
+                          width: "100%",
 
-                            marginBottom:
-                              18,
-                          }
-                    }
-                  >
-                    <TarjetaEntradaDiario
-                      fecha={
-                        formatearFecha(
-                          item.fecha_inicio
-                        )
-                      }
-                      titulo={
-                        item.plantilla_nombre
-                      }
-                      contenido={
-                        item.respuesta_corta
-                      }
-                      emociones={
-                        item.emociones
-                      }
-                      onPress={() =>
-                        abrirEntrada(
-                          item.id_registro
-                        )
-                      }
-                    />
-                  </View>
-                )
-              )}
+                          marginBottom: 18,
+                        }
+                  }
+                >
+                  <TarjetaEntradaDiario
+                    fecha={formatearFecha(item.fecha_inicio)}
+                    titulo={item.plantilla_nombre}
+                    contenido={item.respuesta_corta}
+                    emociones={item.emociones}
+                    onPress={() => abrirEntrada(item.id_registro)}
+                  />
+                </View>
+              ))}
             </View>
           )}
         </View>

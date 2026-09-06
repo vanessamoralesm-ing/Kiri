@@ -8,80 +8,86 @@ import {
   View,
 } from "react-native";
 
-import {
-  useLocalSearchParams,
-  useRouter,
-} from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
-import {
-  Ionicons,
-} from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
-import {
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Animated, {
-  FadeInDown,
-} from "react-native-reanimated";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 import TarjetaPlantillaAutorregistro from "@/components/diario/TarjetaPlantillaAutorregistro";
 
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 export default function NuevoRegistro() {
   const router = useRouter();
 
   const insets = useSafeAreaInsets();
 
-  const {
-    width,
-  } = useWindowDimensions();
+  const { width } = useWindowDimensions();
 
-  const {
-    origen,
-  } = useLocalSearchParams<{
+  const { origen } = useLocalSearchParams<{
     origen?: string;
   }>();
 
-  const esTelefono =
-    width < 768;
+  // ======================================================
+  // TEMA
+  // ======================================================
 
-  const esTablet =
-    width >= 768 &&
-    width < 1100;
+  const backgroundColor = useThemeColor({}, "background");
 
-  const esWeb =
-    width >= 1100;
+  const surfaceColor = useThemeColor({}, "surface");
 
-  const maxWidthContenido =
-    esWeb
-      ? 820
-      : esTablet
-        ? 760
-        : undefined;
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
+  const borderColor = useThemeColor({}, "border");
+
+  const textColor = useThemeColor({}, "text");
+
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
+
+  const primaryColor = useThemeColor({}, "primary");
+
+  const primarySoftColor = useThemeColor({}, "primarySoft");
+
+  const secondaryColor = useThemeColor({}, "secondary");
+
+  const secondarySoftColor = useThemeColor({}, "secondarySoft");
+
+  const accentColor = useThemeColor({}, "accent");
+
+  const accentSoftColor = useThemeColor({}, "accentSoft");
+
+  // ======================================================
+  // RESPONSIVE
+  // ======================================================
+
+  const esTelefono = width < 768;
+
+  const esTablet = width >= 768 && width < 1100;
+
+  const esWeb = width >= 1100;
+
+  const maxWidthContenido = esWeb ? 820 : esTablet ? 760 : undefined;
+
+  // ======================================================
+  // NAVEGACIÓN
+  // ======================================================
 
   const regresar = () => {
     if (origen === "home") {
-      router.replace(
-        "/(tabs)/home" as never
-      );
+      router.replace("/(tabs)/home" as never);
 
       return;
     }
 
-    router.replace(
-      "/(tabs)/diario" as never
-    );
+    router.replace("/(tabs)/diario" as never);
   };
 
-
-  const seleccionarPlantilla = (
-    plantilla: string
-  ) => {
+  const seleccionarPlantilla = (plantilla: string) => {
     router.push({
-      pathname:
-        `/diario/nuevo/${plantilla}` as never,
+      pathname: `/diario/nuevo/${plantilla}` as never,
 
       params: {
         origen,
@@ -89,84 +95,120 @@ export default function NuevoRegistro() {
     });
   };
 
+  // ======================================================
+  // UI
+  // ======================================================
 
   return (
-    <View className="flex-1 bg-[#F8FBFF]">
+    <View
+      style={{
+        flex: 1,
+        backgroundColor,
+      }}
+    >
       <ScrollView
-        className="flex-1"
+        style={{
+          flex: 1,
+        }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom:
-            Math.max(
-              insets.bottom + 70,
-              90
-            ),
+          paddingBottom: Math.max(insets.bottom + 70, 90),
         }}
       >
         <View
           style={{
             width: "100%",
+
             maxWidth: maxWidthContenido,
+
             alignSelf: "center",
-            paddingHorizontal:
-              esTelefono
-                ? 20
-                : 28,
-            paddingTop:
-              esTelefono
-                ? 18
-                : 26,
+
+            paddingHorizontal: esTelefono ? 20 : 28,
+
+            paddingTop: esTelefono ? 18 : 26,
           }}
         >
-          {/* Boton regresar */}
+          {/* ==================================================
+              BOTÓN REGRESAR
+          ================================================== */}
+
           <Pressable
             onPress={regresar}
             hitSlop={8}
-            className="mb-7 h-12 w-12 items-center justify-center rounded-[18px] border border-slate-100 bg-white shadow-sm"
+            style={({ pressed }) => ({
+              width: 48,
+
+              height: 48,
+
+              marginBottom: 28,
+
+              borderRadius: 18,
+
+              borderWidth: 1,
+
+              borderColor,
+
+              alignItems: "center",
+
+              justifyContent: "center",
+
+              backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
+
+              elevation: 1,
+
+              shadowColor: "#000000",
+
+              shadowOffset: {
+                width: 0,
+
+                height: 2,
+              },
+
+              shadowOpacity: 0.05,
+
+              shadowRadius: 5,
+            })}
           >
-            <Ionicons
-              name="arrow-back"
-              size={22}
-              color="#243B63"
-            />
+            <Ionicons name="arrow-back" size={22} color={textColor} />
           </Pressable>
 
-          {/* Encabezado */}
+          {/* ==================================================
+              ENCABEZADO
+          ================================================== */}
+
           <Animated.View
-            entering={
-              FadeInDown.duration(400)
-            }
-            className="mb-8"
+            entering={FadeInDown.duration(400)}
+            style={{
+              width: "100%",
+
+              marginBottom: 32,
+            }}
           >
             <Text
-              className="font-nunito-bold text-[#243B63]"
               style={{
-                fontSize:
-                  esTelefono
-                    ? 30
-                    : 34,
+                fontFamily: "Nunito-Bold",
 
-                lineHeight:
-                  esTelefono
-                    ? 38
-                    : 42,
+                fontSize: esTelefono ? 30 : 34,
+
+                lineHeight: esTelefono ? 38 : 42,
+
+                color: textColor,
               }}
             >
               ¿Qué quieres registrar hoy?
             </Text>
 
             <Text
-              className="mt-2 font-nunito-medium text-[#7A89A3]"
               style={{
-                fontSize:
-                  esTelefono
-                    ? 15
-                    : 16,
+                marginTop: 8,
 
-                lineHeight:
-                  esTelefono
-                    ? 22
-                    : 24,
+                fontFamily: "Nunito-Medium",
+
+                fontSize: esTelefono ? 15 : 16,
+
+                lineHeight: esTelefono ? 22 : 24,
+
+                color: textSecondaryColor,
               }}
             >
               Elige el tipo de autorregistro que mejor se adapte a lo que
@@ -174,80 +216,84 @@ export default function NuevoRegistro() {
             </Text>
           </Animated.View>
 
-          {/* Tarjetas */}
-          <View>
+          {/* ==================================================
+              TARJETAS
+          ================================================== */}
+
+          <View
+            style={{
+              width: "100%",
+
+              alignSelf: "stretch",
+            }}
+          >
+            {/* ==============================================
+                DIARIO EMOCIONAL
+            ============================================== */}
+
             <Animated.View
-              entering={
-                FadeInDown
-                  .delay(100)
-                  .duration(400)
-              }
+              entering={FadeInDown.delay(100).duration(400)}
               style={{
-                marginBottom:
-                  esTelefono
-                    ? 16
-                    : 20,
+                width: "100%",
+
+                alignSelf: "stretch",
+
+                marginBottom: esTelefono ? 16 : 20,
               }}
             >
               <TarjetaPlantillaAutorregistro
                 titulo="Diario emocional"
                 descripcion="Reconoce lo que sientes, qué lo provocó y cómo reaccionaste."
                 icono="heart-outline"
-                color="#6C8FE3"
-                fondoIcono="#E7EEFF"
-                onPress={() =>
-                  seleccionarPlantilla(
-                    "emocional"
-                  )
-                }
+                color={primaryColor}
+                fondoIcono={primarySoftColor}
+                onPress={() => seleccionarPlantilla("emocional")}
               />
             </Animated.View>
 
+            {/* ==============================================
+                PENSAMIENTOS
+            ============================================== */}
+
             <Animated.View
-              entering={
-                FadeInDown
-                  .delay(180)
-                  .duration(400)
-              }
+              entering={FadeInDown.delay(180).duration(400)}
               style={{
-                marginBottom:
-                  esTelefono
-                    ? 16
-                    : 20,
+                width: "100%",
+
+                alignSelf: "stretch",
+
+                marginBottom: esTelefono ? 16 : 20,
               }}
             >
               <TarjetaPlantillaAutorregistro
                 titulo="Observando mis pensamientos"
                 descripcion="Observa una situación, tus pensamientos, sentimientos y reacciones."
                 icono="bulb-outline"
-                color="#9B82D9"
-                fondoIcono="#F0EAFF"
-                onPress={() =>
-                  seleccionarPlantilla(
-                    "pensamientos"
-                  )
-                }
+                color={accentColor}
+                fondoIcono={accentSoftColor}
+                onPress={() => seleccionarPlantilla("pensamientos")}
               />
             </Animated.View>
 
+            {/* ==============================================
+                ABCDE
+            ============================================== */}
+
             <Animated.View
-              entering={
-                FadeInDown
-                  .delay(260)
-                  .duration(400)
-              }
+              entering={FadeInDown.delay(260).duration(400)}
+              style={{
+                width: "100%",
+
+                alignSelf: "stretch",
+              }}
             >
               <TarjetaPlantillaAutorregistro
                 titulo="Autorregistro ABCDE"
                 descripcion="Reflexiona sobre una situación, tus creencias y nuevas formas de responder."
                 icono="leaf-outline"
-                color="#6FA58A"
-                fondoIcono="#E8F5EE"
-                onPress={() =>
-                  seleccionarPlantilla(
-                    "abc"
-                  )
-                }
+                color={secondaryColor}
+                fondoIcono={secondarySoftColor}
+                onPress={() => seleccionarPlantilla("abc")}
               />
             </Animated.View>
           </View>
