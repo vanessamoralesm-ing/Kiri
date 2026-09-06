@@ -15,7 +15,7 @@ import { useAuth } from "@/services/authProvider";
 export default function AdminHeader() {
     const router = useRouter();
 
-    const { profile } = useAuth();
+    const { profile, user } = useAuth();
 
     const { isDarkMode, toggleDarkMode } = useThemeMode();
 
@@ -46,26 +46,41 @@ export default function AdminHeader() {
     const secondarySoftColor = useThemeColor({}, "secondarySoft");
 
     // ======================================================
-    // DATOS DEL USUARIO
+    // DATOS DEL USUARIO AUTENTICADO
     // ======================================================
 
-    const nombreUsuario = useMemo(
-        () =>
-            profile?.nombre_preferido?.trim() ||
-            profile?.nombres?.trim() ||
-            "Usuario",
-        [profile?.nombre_preferido, profile?.nombres],
-    );
+    const nombreUsuario = useMemo(() => {
+        const nombrePreferido = profile?.nombre_preferido?.trim();
+
+        const nombres = profile?.nombres?.trim();
+
+        const nombreMetadata =
+            user?.user_metadata?.nombre_preferido?.trim?.() ||
+            user?.user_metadata?.nombres?.trim?.() ||
+            user?.user_metadata?.nombre?.trim?.();
+
+        return nombrePreferido || nombres || nombreMetadata || "Usuario";
+    }, [profile?.nombre_preferido, profile?.nombres, user?.user_metadata]);
 
     const nombreCompleto = useMemo(() => {
-        const nombres = profile?.nombres?.trim() ?? "";
+        const nombres =
+            profile?.nombres?.trim() || user?.user_metadata?.nombres?.trim?.() || "";
 
-        const apellidos = profile?.apellidos?.trim() ?? "";
+        const apellidos =
+            profile?.apellidos?.trim() ||
+            user?.user_metadata?.apellidos?.trim?.() ||
+            "";
 
         return `${nombres} ${apellidos}`.trim() || nombreUsuario;
-    }, [profile?.nombres, profile?.apellidos, nombreUsuario]);
+    }, [
+        profile?.nombres,
+        profile?.apellidos,
+        user?.user_metadata,
+        nombreUsuario,
+    ]);
 
-    const fotoPerfil = profile?.foto_perfil ?? null;
+    const fotoPerfil =
+        profile?.foto_perfil ?? user?.user_metadata?.foto_perfil ?? null;
 
     // ======================================================
     // UI

@@ -19,18 +19,48 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 
+import {
+  useThemeColor,
+} from "@/hooks/use-theme-color";
+
+
 interface TarjetaBienvenidaDiarioProps {
   nombre: string;
+
   onNuevoRegistro: () => void;
 }
+
 
 export default function TarjetaBienvenidaDiario({
   nombre,
   onNuevoRegistro,
 }: TarjetaBienvenidaDiarioProps) {
+
   const {
     width,
   } = useWindowDimensions();
+
+
+  // ======================================================
+  // TEMA
+  // ======================================================
+
+  const textColor =
+    useThemeColor({}, "text");
+
+  const primaryColor =
+    useThemeColor({}, "primary");
+
+  const textOnPrimaryColor =
+    useThemeColor({}, "textOnPrimary");
+
+  const primarySoftColor =
+    useThemeColor({}, "primarySoft");
+
+
+  // ======================================================
+  // RESPONSIVE
+  // ======================================================
 
   const esTelefonoPequeno =
     width < 390;
@@ -42,6 +72,7 @@ export default function TarjetaBienvenidaDiario({
     width >= 768 &&
     width < 1100;
 
+
   // Tamaño responsive del avatar.
   const tamanoAvatar =
     esTelefonoPequeno
@@ -52,130 +83,325 @@ export default function TarjetaBienvenidaDiario({
           ? 185
           : 200;
 
-  // Controla el tamaño del boton cuando se presiona.
-  const escala = useSharedValue(1);
 
-  // Aplica la escala animada.
-  const estiloAnimado = useAnimatedStyle(() => ({
-    transform: [
-      {
-        scale: escala.value,
-      },
-    ],
-  }));
+  // ======================================================
+  // ANIMACIÓN
+  // ======================================================
+
+  const escala =
+    useSharedValue(1);
+
+  const estiloAnimado =
+    useAnimatedStyle(() => ({
+      transform: [
+        {
+          scale:
+            escala.value,
+        },
+      ],
+    }));
+
+
+  // ======================================================
+  // UI
+  // ======================================================
 
   return (
     <Animated.View
-      entering={FadeInDown.duration(450)}
+      entering={
+        FadeInDown.duration(450)
+      }
     >
-      {/* Bienvenida con avatar */}
-      <View className="mb-5 flex-row items-center">
-        {/* Texto */}
+
+      {/* ==================================================
+          BIENVENIDA CON AVATAR
+      ================================================== */}
+
+      <View
+        style={{
+          marginBottom: 20,
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
+
+        {/* TEXTO */}
+
         <View
-          className="flex-1"
           style={{
-            paddingRight: esTelefonoPequeno
-              ? 4
-              : 10,
+            flex: 1,
+
+            paddingRight:
+              esTelefonoPequeno
+                ? 4
+                : 10,
           }}
         >
           <Text
-            className="font-nunito-bold leading-[32px] text-[#1E293B]"
             style={{
-              fontSize: esTelefonoPequeno
-                ? 22
-                : 24,
-              textAlign: "left",
+              fontFamily:
+                "Nunito-Bold",
+
+              fontSize:
+                esTelefonoPequeno
+                  ? 22
+                  : 24,
+
+              lineHeight:
+                32,
+
+              textAlign:
+                "left",
+
+              color:
+                textColor,
             }}
           >
             ¿Qué agregarás hoy a tu{"\n"}
             Diario,{" "}
-            <Text className="text-[#3478F6]">
+
+            <Text
+              style={{
+                color:
+                  primaryColor,
+              }}
+            >
               {nombre}
             </Text>
+
             ?
           </Text>
         </View>
 
-        {/* Avatar */}
+
+        {/* AVATAR */}
+
         <View
           style={{
-            width: tamanoAvatar,
-            height: tamanoAvatar,
-            flexShrink: 0,
+            width:
+              tamanoAvatar,
+
+            height:
+              tamanoAvatar,
+
+            flexShrink:
+              0,
+
+            alignItems:
+              "center",
+
+            justifyContent:
+              "center",
           }}
-          className="items-center justify-center"
         >
           <Image
-            source={require("@/assets/images_kids/avatar_pregunta.png")}
+            source={
+              require(
+                "@/assets/images_kids/avatar_pregunta.png"
+              )
+            }
             style={{
-              width: "100%",
-              height: "100%",
+              width:
+                "100%",
+
+              height:
+                "100%",
+
               transform: [
                 {
-                  scale: 1.28,
+                  scale:
+                    1.28,
                 },
               ],
             }}
             resizeMode="contain"
           />
         </View>
+
       </View>
 
-      {/* Boton Nuevo Registro */}
+
+      {/* ==================================================
+          BOTÓN NUEVO REGISTRO
+      ================================================== */}
+
       <Animated.View
-        style={estiloAnimado}
+        style={
+          estiloAnimado
+        }
       >
         <Pressable
-          onPress={onNuevoRegistro}
+          onPress={
+            onNuevoRegistro
+          }
           onPressIn={() => {
-            escala.value = withSpring(0.95);
+            escala.value =
+              withSpring(0.95);
           }}
           onPressOut={() => {
-            escala.value = withSpring(1);
+            escala.value =
+              withSpring(1);
           }}
-          className="flex-row items-center rounded-[24px] bg-[#3478F6] px-5 py-5"
           style={{
-            elevation: 5,
-            shadowColor: "#4F8EF7",
+            flexDirection:
+              "row",
+
+            alignItems:
+              "center",
+
+            paddingHorizontal:
+              20,
+
+            paddingVertical:
+              20,
+
+            borderRadius:
+              24,
+
+            backgroundColor:
+              primaryColor,
+
+            elevation:
+              5,
+
+            shadowColor:
+              primaryColor,
+
             shadowOffset: {
-              width: 0,
-              height: 5,
+              width:
+                0,
+
+              height:
+                5,
             },
-            shadowOpacity: 0.2,
-            shadowRadius: 8,
+
+            shadowOpacity:
+              0.2,
+
+            shadowRadius:
+              8,
           }}
         >
-          {/* Icono lapiz */}
-          <View className="h-[64px] w-[64px] items-center justify-center rounded-full bg-white">
+
+          {/* ==================================================
+              ICONO LÁPIZ
+          ================================================== */}
+
+          <View
+            style={{
+              width:
+                64,
+
+              height:
+                64,
+
+              borderRadius:
+                32,
+
+              alignItems:
+                "center",
+
+              justifyContent:
+                "center",
+
+              backgroundColor:
+                textOnPrimaryColor,
+            }}
+          >
             <Ionicons
               name="create-outline"
               size={31}
-              color="#4F8EF7"
+              color={primaryColor}
             />
           </View>
 
-          {/* Texto */}
-          <View className="ml-4 flex-1">
-            <Text className="font-nunito-bold text-[19px] text-white">
+
+          {/* ==================================================
+              TEXTO
+          ================================================== */}
+
+          <View
+            style={{
+              flex:
+                1,
+
+              marginLeft:
+                16,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily:
+                  "Nunito-Bold",
+
+                fontSize:
+                  19,
+
+                color:
+                  textOnPrimaryColor,
+              }}
+            >
               Nuevo Registro
             </Text>
 
-            <Text className="mt-1 font-nunito-medium text-[14px] leading-5 text-[#EAF2FF]">
+            <Text
+              style={{
+                marginTop:
+                  4,
+
+                fontFamily:
+                  "Nunito-Medium",
+
+                fontSize:
+                  14,
+
+                lineHeight:
+                  20,
+
+                color:
+                  primarySoftColor,
+              }}
+            >
               Registra cómo te sientes y lo que pasó hoy.
             </Text>
           </View>
 
-          {/* Flecha */}
-          <View className="h-[48px] w-[48px] items-center justify-center rounded-full bg-white">
+
+          {/* ==================================================
+              FLECHA
+          ================================================== */}
+
+          <View
+            style={{
+              width:
+                48,
+
+              height:
+                48,
+
+              borderRadius:
+                24,
+
+              alignItems:
+                "center",
+
+              justifyContent:
+                "center",
+
+              backgroundColor:
+                textOnPrimaryColor,
+            }}
+          >
             <Ionicons
               name="arrow-forward"
               size={27}
-              color="#4F8EF7"
+              color={primaryColor}
             />
           </View>
+
         </Pressable>
       </Animated.View>
+
     </Animated.View>
   );
 }

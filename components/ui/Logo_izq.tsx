@@ -46,12 +46,12 @@ export default function Logo({
     dark
 
       ? require(
-          "../../assets/images/splash-icon-ps.png"
-        )
+        "../../assets/images/splash-icon-ps.png"
+      )
 
       : require(
-          "../../assets/images/splash-icon.png"
-        );
+        "../../assets/images/splash-icon.png"
+      );
 
 
   return (

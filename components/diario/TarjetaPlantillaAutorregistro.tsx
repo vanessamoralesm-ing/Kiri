@@ -1,15 +1,8 @@
 import React from "react";
 
-import {
-  Pressable,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Pressable, Text, useWindowDimensions, View } from "react-native";
 
-import {
-  Ionicons,
-} from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
 import Animated, {
   useAnimatedStyle,
@@ -17,16 +10,21 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 interface TarjetaPlantillaAutorregistroProps {
   titulo: string;
+
   descripcion: string;
+
   icono: keyof typeof Ionicons.glyphMap;
+
   color: string;
+
   fondoIcono: string;
+
   onPress: () => void;
 }
-
 
 export default function TarjetaPlantillaAutorregistro({
   titulo,
@@ -36,173 +34,185 @@ export default function TarjetaPlantillaAutorregistro({
   fondoIcono,
   onPress,
 }: TarjetaPlantillaAutorregistroProps) {
-  const {
-    width,
-  } = useWindowDimensions();
+  const { width } = useWindowDimensions();
 
-  const esTelefonoPequeno =
-    width < 390;
+  // ======================================================
+  // TEMA
+  // ======================================================
 
-  const esTelefono =
-    width < 768;
+  const surfaceColor = useThemeColor({}, "surface");
 
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
-  const escala =
-    useSharedValue(1);
+  const borderColor = useThemeColor({}, "border");
 
-  const estiloAnimado =
-    useAnimatedStyle(() => ({
-      transform: [
-        {
-          scale:
-            escala.value,
-        },
-      ],
-    }));
+  const textColor = useThemeColor({}, "text");
 
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
+
+  const iconColor = useThemeColor({}, "icon");
+
+  // ======================================================
+  // RESPONSIVE
+  // ======================================================
+
+  const esTelefonoPequeno = width < 390;
+
+  const esTelefono = width < 768;
+
+  // ======================================================
+  // ANIMACIÓN
+  // ======================================================
+
+  const escala = useSharedValue(1);
+
+  const estiloAnimado = useAnimatedStyle(() => ({
+    transform: [
+      {
+        scale: escala.value,
+      },
+    ],
+  }));
+
+  // ======================================================
+  // UI
+  // ======================================================
 
   return (
     <Animated.View
-      style={estiloAnimado}
+      style={[
+        estiloAnimado,
+        {
+          width: "100%",
+          alignSelf: "stretch",
+        },
+      ]}
     >
       <Pressable
         onPress={onPress}
+
         onPressIn={() => {
-          escala.value =
-            withSpring(
-              0.985,
-              {
-                damping: 16,
-                stiffness: 220,
-              }
-            );
+          escala.value = withSpring(0.985, {
+            damping: 16,
+            stiffness: 220,
+          });
         }}
+
         onPressOut={() => {
-          escala.value =
-            withSpring(
-              1,
-              {
-                damping: 16,
-                stiffness: 220,
-              }
-            );
+          escala.value = withSpring(1, {
+            damping: 16,
+            stiffness: 220,
+          });
         }}
+
         style={{
-          minHeight:
-            esTelefonoPequeno
-              ? 108
-              : esTelefono
-                ? 114
-                : 118,
+          // ==============================================
+          // MUY IMPORTANTE: DIMENSIONES DEL CARD
+          // ==============================================
 
-          borderRadius:
-            24,
+          width: "100%",
 
-          borderWidth:
-            1,
+          minHeight: esTelefonoPequeno ? 108 : esTelefono ? 114 : 118,
 
-          borderColor:
-            "#E5EAF1",
+          // ==============================================
+          // LAYOUT HORIZONTAL
+          // ==============================================
 
-          backgroundColor:
-            "#FFFFFF",
+          flexDirection: "row",
 
-          paddingHorizontal:
-            esTelefonoPequeno
-              ? 14
-              : 16,
+          alignItems: "center",
 
-          paddingVertical:
-            esTelefono
-              ? 14
-              : 16,
+          // ==============================================
+          // DISEÑO
+          // ==============================================
 
-          flexDirection:
-            "row",
+          paddingHorizontal: esTelefonoPequeno ? 14 : 16,
 
-          alignItems:
-            "center",
+          paddingVertical: esTelefono ? 14 : 16,
 
-          shadowColor:
-            "#64748B",
+          borderRadius: 24,
+
+          borderWidth: 1,
+
+          borderColor,
+
+          backgroundColor: surfaceColor,
+
+          // ==============================================
+          // SOMBRA
+          // ==============================================
+
+          elevation: 2,
+
+          shadowColor: "#000000",
 
           shadowOffset: {
             width: 0,
             height: 4,
           },
 
-          shadowOpacity:
-            0.08,
+          shadowOpacity: 0.08,
 
-          shadowRadius:
-            10,
-
-          elevation:
-            2,
+          shadowRadius: 10,
         }}
       >
-        {/* Icono */}
+        {/* ==================================================
+            ICONO
+        ================================================== */}
+
         <View
           style={{
-            width:
-              esTelefonoPequeno
-                ? 56
-                : 60,
+            width: esTelefonoPequeno ? 56 : 60,
 
-            height:
-              esTelefonoPequeno
-                ? 56
-                : 60,
+            height: esTelefonoPequeno ? 56 : 60,
 
-            borderRadius:
-              18,
+            borderRadius: 18,
 
-            backgroundColor:
-              fondoIcono,
+            backgroundColor: fondoIcono,
 
-            alignItems:
-              "center",
+            alignItems: "center",
 
-            justifyContent:
-              "center",
+            justifyContent: "center",
 
-            flexShrink:
-              0,
+            flexShrink: 0,
           }}
         >
           <Ionicons
             name={icono}
-            size={
-              esTelefonoPequeno
-                ? 27
-                : 30
-            }
+
+            size={esTelefonoPequeno ? 27 : 30}
+
             color={color}
           />
         </View>
 
-        {/* Información */}
+        {/* ==================================================
+            INFORMACIÓN
+        ================================================== */}
+
         <View
           style={{
             flex: 1,
+
             minWidth: 0,
+
             marginLeft: 15,
-            paddingRight: 10,
+
+            marginRight: 12,
+
+            justifyContent: "center",
           }}
         >
           <Text
             numberOfLines={2}
-            className="font-nunito-semibold text-[#1E293B]"
             style={{
-              fontSize:
-                esTelefonoPequeno
-                  ? 15
-                  : 16,
+              fontFamily: "Nunito-SemiBold",
 
-              lineHeight:
-                esTelefonoPequeno
-                  ? 20
-                  : 22,
+              fontSize: esTelefonoPequeno ? 15 : 16,
+
+              lineHeight: esTelefonoPequeno ? 20 : 22,
+
+              color: textColor,
             }}
           >
             {titulo}
@@ -210,57 +220,44 @@ export default function TarjetaPlantillaAutorregistro({
 
           <Text
             numberOfLines={3}
-            className="mt-1 font-nunito-medium text-[#64748B]"
             style={{
-              fontSize:
-                esTelefonoPequeno
-                  ? 12
-                  : 13,
+              marginTop: 4,
 
-              lineHeight:
-                esTelefonoPequeno
-                  ? 17
-                  : 18,
+              fontFamily: "Nunito-Medium",
+
+              fontSize: esTelefonoPequeno ? 12 : 13,
+
+              lineHeight: esTelefonoPequeno ? 17 : 18,
+
+              color: textSecondaryColor,
             }}
           >
             {descripcion}
           </Text>
         </View>
 
-        {/* Flecha */}
+        {/* ==================================================
+            FLECHA
+        ================================================== */}
+
         <View
           style={{
-            width:
-              esTelefonoPequeno
-                ? 38
-                : 40,
+            width: esTelefonoPequeno ? 38 : 40,
 
-            height:
-              esTelefonoPequeno
-                ? 38
-                : 40,
+            height: esTelefonoPequeno ? 38 : 40,
 
-            borderRadius:
-              20,
+            borderRadius: 20,
 
-            backgroundColor:
-              "#F1F5F9",
+            backgroundColor: surfaceSecondaryColor,
 
-            alignItems:
-              "center",
+            alignItems: "center",
 
-            justifyContent:
-              "center",
+            justifyContent: "center",
 
-            flexShrink:
-              0,
+            flexShrink: 0,
           }}
         >
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color="#64748B"
-          />
+          <Ionicons name="chevron-forward" size={20} color={iconColor} />
         </View>
       </Pressable>
     </Animated.View>
