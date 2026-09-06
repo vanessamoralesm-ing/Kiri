@@ -1,20 +1,18 @@
 import React from "react";
 
-import {
-   Platform,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Platform, Text, TextInput, View } from "react-native";
 
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 interface CampoPreguntaDiarioProps {
   titulo: string;
+
   valor: string;
+
   onChangeText: (texto: string) => void;
+
   placeholder: string;
 }
-
 
 export function CampoPreguntaDiario({
   titulo,
@@ -22,36 +20,78 @@ export function CampoPreguntaDiario({
   onChangeText,
   placeholder,
 }: CampoPreguntaDiarioProps) {
+  // ======================================================
+  // TEMA
+  // ======================================================
+
+  const textColor = useThemeColor({}, "text");
+
+  const inputBackgroundColor = useThemeColor({}, "inputBackground");
+
+  const inputBorderColor = useThemeColor({}, "inputBorder");
+
+  const placeholderColor = useThemeColor({}, "placeholder");
+
+  // ======================================================
+  // UI
+  // ======================================================
+
   return (
-    <View className="mb-5">
+    <View
+      style={{
+        marginBottom: 20,
+      }}
+    >
       <Text
-        className="mb-2 font-nunito-bold text-[20px] text-[#2D3748]"
+        style={{
+          marginBottom: 8,
+
+          fontFamily: "Nunito-Bold",
+
+          fontSize: 20,
+
+          color: textColor,
+        }}
       >
         {titulo}
       </Text>
 
       <TextInput
-        value={
-          valor
-        }
-        onChangeText={
-          onChangeText
-        }
-        placeholder={
-          placeholder
-        }
-        placeholderTextColor="#9CA3AF"
+        value={valor}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={placeholderColor}
         multiline
         textAlignVertical="top"
-        className="min-h-[110px] rounded-2xl border-2 border-gray-100 bg-white px-4 py-3 font-nunito-medium text-base text-gray-700"
-        style={
+        style={[
+          {
+            minHeight: 110,
+
+            paddingHorizontal: 16,
+
+            paddingVertical: 12,
+
+            borderRadius: 16,
+
+            borderWidth: 2,
+
+            borderColor: inputBorderColor,
+
+            backgroundColor: inputBackgroundColor,
+
+            fontFamily: "Nunito-Medium",
+
+            fontSize: 16,
+
+            color: textColor,
+          },
+
           Platform.OS === "web"
-            ? {
-                resize:
-                  "none",
-              } as any
-            : undefined
-        }
+            ? ({
+                resize: "none",
+              } as any)
+            : undefined,
+        ]}
       />
     </View>
   );
