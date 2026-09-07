@@ -27,11 +27,10 @@ Kiri busca convertirse en una herramienta preventiva, educativa y de acompañami
 
 # Producto Mínimo Viable (MVP)
 
-Las interfaces actualmente desarrolladas corresponden al **Producto Mínimo Viable (MVP)** de Kiri.
+Las interfaces actualmente desarrolladas corresponden al **Producto Mínimo Viable (MVP)** de Kiri, enfocados especificamente en el usuario final.
 
 El MVP se enfoca principalmente en validar:
 
-- La experiencia del usuario final.
 - El proceso de registro y autenticación.
 - La evaluación de la entrevista inicial.
 - La personalización de recomendaciones con el Plan de Bienestar Emocional.
@@ -45,36 +44,13 @@ El MVP se enfoca principalmente en validar:
 - Las primeras funcionalidades correspondientes al rol de Superadministrador.
 
 Las interfaces institucionales y administrativas forman parte de la visión integral de Kiri y serán incorporadas progresivamente en versiones posteriores.
-
 ---
 
 # Funcionalidades principales
 
-## Pantalla principal
-
-La pantalla **Home** funciona como centro de navegación de Kiri.
-
-Puede incluir:
-
-- Saludo personalizado.
-- Nombre del usuario.
-- Frase motivacional.
-- Estado emocional actual.
-- Racha.
-- Objetivos diarios.
-- Acceso a funcionalidades principales.
-- Recomendaciones personalizadas.
-- Plan del día.
-
-Las principales opciones pueden mostrarse mediante tarjetas o **cards**.
-
----
-
 ## Entrevista inicial
 
 Al comenzar su experiencia en Kiri, el usuario realiza una entrevista inicial mediante preguntas orientativas.
-
-La información recopilada permite conocer su estado emocional actual.
 
 Una vez finalizada la entrevista inicial, la aplicación analiza las respuestas proporcionadas y presenta un resumen visual del estado emocional identificado.
 
@@ -130,13 +106,11 @@ Permite reflexionar de manera estructurada sobre una situación, las creencias a
 
 El Módulo de Autorregistro también permite:
 
-- Consultar registros recientes.
 - Acceder al historial de autorregistros.
 - Visualizar el detalle de un registro.
 - Editar registros existentes.
 - Eliminar registros.
 - Identificar emociones asociadas.
-- Dar seguimiento al número de registros realizados.
 
 > Los autorregistros tienen una finalidad de autoconocimiento y seguimiento personal y no constituyen una evaluación diagnóstica.
 
@@ -144,7 +118,7 @@ El Módulo de Autorregistro también permite:
 
 # Test y cuestionarios
 
-Kiri incorpora diferentes test y cuestionarios psicológicos de carácter **orientativo**.
+Kiri incorpora diferentes test ó cuestionarios psicológicos de carácter **orientativo**.
 
 Estos instrumentos permiten explorar aspectos relacionados con:
 
@@ -279,19 +253,121 @@ Esto permite mantener consistencia visual en los diferentes módulos de la aplic
 
 ---
 
-# Navegación principal
 
-La barra de navegación inferior contempla accesos rápidos a:
+# Roles del sistema
 
-```text
-Home
-Diario
-Psicoeducación
-Técnicas
-Perfil
-```
+Kiri utiliza un modelo de control de acceso basado en roles (**RBAC - Role-Based Access Control**).
 
-La opción **Diario** corresponde funcionalmente al **Módulo de Autorregistro**.
+Los roles contemplados son:
+
+| Rol                             | Alcance                                                                                   |
+| ------------------------------- | ----------------------------------------------------------------------------------------- |
+| **Usuario Independiente**        | Utiliza Kiri de forma personal, sin pertenecer a una institución, accediendo a las herramientas de autocuidado, evaluaciones orientativas, seguimiento personal y contenido psicoeducativo.. |
+| **Superadministrador**          | Administra toda la plataforma, instituciones, usuarios, contenido y configuración global. |
+| **Administrador Institucional** | Administra únicamente la institución a la que pertenece.                                  |
+| **Psicólogo Institucional**     | Realiza seguimiento emocional de estudiantes autorizados y gestiona alertas.              |
+| **Docente**                     | Accede a información general de sus grupos y funcionalidades preventivas autorizadas.     |
+| **Estudiante**                  | Utiliza las herramientas de bienestar emocional y consulta su progreso personal.          |
+
+---
+## Estado actual de implementación de roles
+
+Actualmente, Kiri contempla los seis roles descritos anteriormente. Sin embargo, las funcionalidades completas de todos los roles todavía se encuentran en desarrollo.
+
+A nivel de base de datos, backend y flujo de autenticación, actualmente se encuentran implementados los siguientes roles:
+
+### Usuario Independiente
+
+El Usuario Independiente puede registrarse directamente en la aplicación sin necesidad de pertenecer a una institución. Este usuario puede utilizar las funcionalidades personales de Kiri orientadas al bienestar emocional, el autocuidado y el seguimiento individual.
+En la base de datos, este tipo de usuario se identifica porque no posee una institución asociada:
+
+id_institucion = null
+
+---
+
+### Superadministrador
+
+El rol de Superadministrador ya se encuentra implementado en la base de datos, backend y panel administrativo.
+Actualmente dispone de las siguientes funcionalidades:
+
+- Visualizar las solicitudes de incorporación de instituciones.
+- Consultar el detalle de cada solicitud.
+- Aprobar solicitudes institucionales.
+- Rechazar solicitudes institucionales.
+- Crear automáticamente una institución cuando una solicitud es aprobada.
+- Crear la cuenta correspondiente al Administrador Institucional.
+- Asociar al nuevo Administrador Institucional con la institución aprobada.
+- Actualizar el estado de la solicitud institucional.
+
+### Cuenta de prueba del Superadministrador
+Para acceder al panel del Superadministrador se encuentra disponible la siguiente cuenta de prueba:
+
+Correo: auxiliadora.morales22@est.unanleon.edu.ni
+Contraseña: 123456
+
+Esta cuenta permite comprobar las funcionalidades que actualmente están disponibles para este rol.
+
+---
+
+### Administrador Institucional
+
+El rol de Administrador Institucional también se encuentra implementado a nivel de base de datos y backend.
+Su cuenta no se crea mediante un registro tradicional. El proceso inicia cuando una institución envía una solicitud de incorporación a Kiri y el Superadministrador la aprueba.
+
+El flujo implementado actualmente es el siguiente:
+
+Institución envía solicitud
+        ↓
+Solicitud queda pendiente
+        ↓
+Superadministrador revisa la solicitud
+        ↓
+Superadministrador aprueba
+        ↓
+Se crea la institución
+        ↓
+Se crea el Administrador Institucional
+        ↓
+Se genera una contraseña temporal
+        ↓
+Las credenciales son enviadas por correo electrónico
+        ↓
+Administrador Institucional inicia sesión
+        ↓
+Debe cambiar la contraseña temporal
+        ↓
+Accede al panel correspondiente a su institución
+
+Cuando una solicitud es aprobada, el sistema genera automáticamente la cuenta del responsable de la institución y envía a su correo electrónico:
+
+- El correo utilizado para iniciar sesión.
+- Una contraseña temporal.
+
+La cuenta se crea inicialmente con el siguiente indicador:
+
+- debe_cambiar_password = true
+
+Este valor permite identificar que el Administrador Institucional todavía utiliza la contraseña temporal. En su primer acceso, debe establecer una nueva contraseña personal.
+
+Una vez completado el cambio, el sistema actualiza el indicador a:
+
+- debe_cambiar_password = false
+
+Después de este proceso, el Administrador Institucional puede acceder normalmente a las funcionalidades correspondientes a la institución a la que pertenece.
+
+---
+
+# Roles pendientes de implementación funcional
+
+Los siguientes roles ya forman parte del modelo de acceso de Kiri y en la base de datos, pero sus funcionalidades específicas todavía están pendientes de implementación o integración completa:
+
+- Psicólogo Institucional.
+- Docente.
+- Estudiante.
+
+Estos roles serán incorporados progresivamente junto con sus respectivos permisos, interfaces y restricciones de acceso.
+
+El objetivo del modelo de roles es garantizar que cada usuario pueda acceder únicamente a la información y funcionalidades correspondientes a su nivel de autorización y, cuando aplique, a la institución a la que pertenece.
 
 ---
 
@@ -302,13 +378,72 @@ Los usuarios pueden utilizar Kiri de forma:
 - Independiente.
 - Vinculada a una institución educativa.
 
-Cuando un estudiante pertenece a una institución podrá ingresar o escanear un código institucional para vincular su cuenta con:
+En versiones posteriores se implementará que el estudiante que pertenece a una institución podrá ingresar o escanear un código institucional para vincular su cuenta con:
 
 - Institución.
 - Grado.
 - Grupo o sección.
 
 ---
+# Diseño multiplataforma y responsividad
+
+Es importante destacar que las interfaces desarrolladas actualmente para Kiri están orientadas principalmente a la versión móvil de la aplicación. En esta etapa del proyecto todavía no se ha implementado una adaptación responsiva completa pensada específicamente para navegadores web.
+
+La excepción corresponde al dashboard administrativo, cuya interfaz sí fue diseñada considerando su uso desde una computadora y una visualización adecuada en entorno web.
+
+En versiones posteriores se contempla realizar la adaptación responsiva de las demás interfaces para que puedan utilizarse correctamente en distintos tamaños de pantalla.
+Cuando la aplicación se ejecuta en web mediante React Native Web, estos componentes son adaptados automáticamente a elementos compatibles con el navegador. Esto permite reutilizar gran parte de la lógica, los componentes y los estilos existentes.
+
+La arquitectura puede representarse de forma simplificada así:
+
+                    Código React Native
+                           │
+              ┌────────────┴────────────┐
+              │                         │
+              ▼                         ▼
+        Android / iOS                  Web
+              │                         │
+      Componentes nativos       React Native Web
+                                        │
+                                        ▼
+                                  Navegador web
+
+Sin embargo, que React Native permita ejecutar la aplicación en web no significa que todas las interfaces sean automáticamente responsivas.
+
+Para lograr una experiencia adecuada en pantallas más grandes será necesario adaptar algunos componentes.
+
+# Tecnologías utilizadas
+
+El proyecto de Kiri utiliza:
+
+- **React Native**
+- **Expo**
+- **TypeScript**
+- **Expo Router**
+- **React Navigation**
+- **Supabase**
+- **PostgreSQL**
+
+Supabase es utilizado como servicio backend para funciones como autenticación, acceso a datos y almacenamiento.
+
+---
+
+# Backend como Servicio
+
+Kiri utiliza Supabase como plataforma de backend en la nube.
+
+Supabase funciona bajo un modelo Backend as a Service (BaaS), proporcionando servicios que permiten gestionar la lógica y los datos de la aplicación sin necesidad de administrar directamente un servidor propio.
+
+Entre los principales servicios utilizados se encuentran:
+
+- Base de datos PostgreSQL.
+- Autenticación y gestión de usuarios.
+- Gestión de sesiones.
+- APIs automáticas.
+- Row Level Security (RLS) para el control de acceso a los datos.
+- Edge Functions para ejecutar lógica del lado del servidor.
+- Almacenamiento de archivos. 
+- Gestión de roles y permisos.
 
 # Privacidad y seguridad
 
@@ -322,57 +457,6 @@ Entre los principios principales se encuentran:
 - Acceso restringido a información sensible.
 - Vinculación institucional controlada.
 - Separación de permisos entre administradores, psicólogos, docentes y estudiantes.
-
----
-
-# Roles del sistema
-
-Kiri utiliza un modelo de control de acceso basado en roles (**RBAC - Role-Based Access Control**).
-
-Los roles contemplados son:
-
-| Rol                             | Alcance                                                                                   |
-| ------------------------------- | ----------------------------------------------------------------------------------------- |
-| **Superadministrador**          | Administra toda la plataforma, instituciones, usuarios, contenido y configuración global. |
-| **Administrador Institucional** | Administra únicamente la institución a la que pertenece.                                  |
-| **Psicólogo Institucional**     | Realiza seguimiento emocional de estudiantes autorizados y gestiona alertas.              |
-| **Docente**                     | Accede a información general de sus grupos y funcionalidades preventivas autorizadas.     |
-| **Estudiante**                  | Utiliza las herramientas de bienestar emocional y consulta su progreso personal.          |
-
----
-
-# Superadministrador
-
-El Superadministrador posee el mayor nivel de privilegios.
-
-Entre las funciones actualmente contempladas se encuentran:
-
-## Solicitudes
-
-- Consultar solicitudes institucionales.
-- Revisar solicitudes institucionales.
-- Aprobar solicitudes institucionales.
-- Rechazar solicitudes institucionales.
-
-En versiones posteriores se incluirán más funcionalidades para los roles de Superadministrador, Administrador Institucional, Psicólogo Institucional y Docente.
-
----
-
-# Tecnologías utilizadas
-
-El proyecto de Kiri utiliza:
-
-- **React Native**
-- **Expo**
-- **TypeScript**
-- **Expo Router**
-- **React Navigation**
-- **React Native Reanimated**
-- **NativeWind**
-- **Supabase**
-- **PostgreSQL**
-
-Supabase es utilizado como servicio backend para funciones como autenticación, acceso a datos y almacenamiento.
 
 ---
 
@@ -906,7 +990,10 @@ Este proyecto corresponde a:
 ```text
 Expo SDK 54
 ```
+# Instalación de Expo Go
+Para probarlas desde su versión móvil, desde un celular se deberá usar expo go, se recomienda instalarlo desde su página oficial de la web,seleccionando la versiób 54 del SDK.
 
+página web: [text](https://expo.dev/go)
 ---
 
 # Revisar dependencias
@@ -928,28 +1015,21 @@ npx expo install --check
 ## Iniciar Expo
 
 ```bash
-npx expo start
+npx expo start -c
 ```
 
 ## Android
 
 ```bash
-npx expo start --android
+Para probarlo desde el de celular de deberá usar expo go, que se descargó anteriormente y se hará el escaneo del código QR o bien escribir la dirección IP que se nos proporciona al momento de la ejecución.
 ```
 
 ## Web
 
 ```bash
-npx expo start --web
+Para probarlo desde la web solo se debe escribir la letra "w" en la terminal para que se nos abrá en el navegador web.
 ```
 
-Para iniciar Expo limpiando la caché:
-
-```bash
-npx expo start -c
-```
-
----
 
 # Estado del proyecto
 
