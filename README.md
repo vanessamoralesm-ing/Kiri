@@ -385,7 +385,32 @@ En versiones posteriores se implementará que el estudiante que pertenece a una 
 - Grupo o sección.
 
 ---
+# Diseño multiplataforma y responsividad
 
+Es importante destacar que las interfaces desarrolladas actualmente para Kiri están orientadas principalmente a la versión móvil de la aplicación. En esta etapa del proyecto todavía no se ha implementado una adaptación responsiva completa pensada específicamente para navegadores web.
+
+La excepción corresponde al dashboard administrativo, cuya interfaz sí fue diseñada considerando su uso desde una computadora y una visualización adecuada en entorno web.
+
+En versiones posteriores se contempla realizar la adaptación responsiva de las demás interfaces para que puedan utilizarse correctamente en distintos tamaños de pantalla.
+Cuando la aplicación se ejecuta en web mediante React Native Web, estos componentes son adaptados automáticamente a elementos compatibles con el navegador. Esto permite reutilizar gran parte de la lógica, los componentes y los estilos existentes.
+
+La arquitectura puede representarse de forma simplificada así:
+
+                    Código React Native
+                           │
+              ┌────────────┴────────────┐
+              │                         │
+              ▼                         ▼
+        Android / iOS                  Web
+              │                         │
+      Componentes nativos       React Native Web
+                                        │
+                                        ▼
+                                  Navegador web
+
+Sin embargo, que React Native permita ejecutar la aplicación en web no significa que todas las interfaces sean automáticamente responsivas.
+
+Para lograr una experiencia adecuada en pantallas más grandes será necesario adaptar algunos componentes.
 
 # Tecnologías utilizadas
 
