@@ -316,27 +316,27 @@ Su cuenta no se crea mediante un registro tradicional. El proceso inicia cuando 
 
 El flujo implementado actualmente es el siguiente:
 
-Institución envía solicitud
-        ↓
-Solicitud queda pendiente
-        ↓
-Superadministrador revisa la solicitud
-        ↓
-Superadministrador aprueba
-        ↓
-Se crea la institución
-        ↓
-Se crea el Administrador Institucional
-        ↓
-Se genera una contraseña temporal
-        ↓
-Las credenciales son enviadas por correo electrónico
-        ↓
-Administrador Institucional inicia sesión
-        ↓
-Debe cambiar la contraseña temporal
-        ↓
-Accede al panel correspondiente a su institución
+        Institución envía solicitud
+                ↓
+        Solicitud queda pendiente
+                ↓
+        Superadministrador revisa la solicitud
+                ↓
+        Superadministrador aprueba
+                ↓
+        Se crea la institución
+                ↓
+        Se crea el Administrador Institucional
+                ↓
+        Se genera una contraseña temporal
+                ↓
+        Las credenciales son enviadas por correo electrónico
+                ↓
+        Administrador Institucional inicia sesión
+                ↓
+        Debe cambiar la contraseña temporal
+                ↓
+        Accede al panel correspondiente a su institución
 
 Cuando una solicitud es aprobada, el sistema genera automáticamente la cuenta del responsable de la institución y envía a su correo electrónico:
 
