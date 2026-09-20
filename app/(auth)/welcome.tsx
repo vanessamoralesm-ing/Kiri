@@ -1,5 +1,5 @@
+import { useRouter } from "expo-router";
 import React from "react";
-
 import {
   Image,
   ImageBackground,
@@ -8,8 +8,6 @@ import {
   Text,
   View,
 } from "react-native";
-
-import { useRouter } from "expo-router";
 
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import Button from "../../components/ui/Button";
@@ -32,28 +30,36 @@ export default function WelcomeScreen() {
   };
 
   // ======================================================
-  // VALORES RESPONSIVE
+  // RESPONSIVE
   // ======================================================
 
-  const paddingHorizontal = esEscritorio ? 48 : esTablet ? 32 : 24;
+  const paddingHorizontal = esEscritorio ? 60 : esTablet ? 36 : 22;
+  const paddingVertical = esEscritorio ? 40 : esTablet ? 28 : 20;
 
-  const maxWidthContenido = esEscritorio ? 1180 : esTablet ? 960 : 520;
+  const maxWidthContenido = esEscritorio ? 1240 : esTablet ? 980 : 540;
 
-  const tamanoLogo = esEscritorio ? 180 : esTablet ? 160 : 150;
+  const anchoTarjeta = esEscritorio ? "92%" : esTablet ? "94%" : "100%";
+
+  const tamanoLogo = esEscritorio ? 180 : esTablet ? 160 : 145;
 
   const anchoMascota = esEscritorio
-    ? 390
+    ? 360
     : esTablet
-      ? 320
-      : Math.min(width * 0.75, 280);
+      ? 300
+      : Math.min(width * 0.66, 250);
 
-  const altoMascota = esEscritorio ? 430 : esTablet ? 350 : 300;
+  const altoMascota = esEscritorio ? 360 : esTablet ? 300 : 250;
 
-  const tamanoTitulo = esEscritorio ? 46 : esTablet ? 40 : 36;
+  const tamanoTitulo = esEscritorio ? 40 : esTablet ? 36 : 30;
+  const tamanoSubtitulo = esEscritorio ? 22 : esTablet ? 20 : 18;
+  const tamanoDescripcion = esEscritorio ? 17 : esTablet ? 16 : 15;
 
-  const tamanoSubtitulo = esEscritorio ? 27 : esTablet ? 24 : 22;
-
-  const tamanoDescripcion = esEscritorio ? 19 : esTablet ? 18 : 17;
+  const anchoPanelVisual = esTelefono ? "100%" : esEscritorio ? "46%" : "48%";
+  const anchoPanelContenido = esTelefono
+    ? "100%"
+    : esEscritorio
+      ? "46%"
+      : "48%";
 
   // ======================================================
   // UI
@@ -65,169 +71,172 @@ export default function WelcomeScreen() {
       style={styles.imagenFondo}
       resizeMode="cover"
     >
+      {/* Capa suave para bajar el peso visual del fondo */}
+      <View style={styles.overlay} />
+
       <ScrollView
-        contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.scrollContainer,
+          {
+            paddingHorizontal,
+            paddingVertical,
+          },
+        ]}
       >
         <View
           style={[
-            styles.container,
+            styles.wrapper,
             {
               maxWidth: maxWidthContenido,
-              paddingHorizontal,
-
-              flexDirection: esTelefono ? "column" : "row",
-
-              gap: esTelefono ? 20 : 48,
+              width: anchoTarjeta,
             },
           ]}
         >
-          {/* ==================================================
-              PANEL VISUAL
-          ================================================== */}
-
           <View
             style={[
-              styles.visualPanel,
+              styles.mainCard,
               {
-                width: esTelefono ? "100%" : "48%",
-
-                paddingTop: esTelefono ? 24 : 20,
+                flexDirection: esTelefono ? "column" : "row",
+                paddingHorizontal: esEscritorio ? 52 : esTablet ? 36 : 22,
+                paddingVertical: esEscritorio ? 42 : esTablet ? 30 : 24,
+                gap: esEscritorio ? 34 : esTablet ? 24 : 20,
               },
             ]}
           >
-            {/* LOGO */}
-
-            <Image
-              source={require("../../assets/images/logo_secundario.png")}
-              style={{
-                width: tamanoLogo,
-                height: 100,
-                marginBottom: esTelefono ? 0 : 10,
-              }}
-              resizeMode="contain"
-            />
-
-            {/* MASCOTA */}
-
+            {/* ==================================================
+                PANEL VISUAL
+            ================================================== */}
             <View
               style={[
-                styles.imageContainer,
+                styles.visualPanel,
                 {
-                  width: anchoMascota,
-                  height: altoMascota,
+                  width: anchoPanelVisual,
+                  alignItems: "center",
+                  justifyContent: "center",
                 },
               ]}
             >
               <Image
-                source={require("../../assets/images/mascota.png")}
-                style={styles.mascotImage}
+                source={require("../../assets/images/logo_secundario.png")}
                 resizeMode="contain"
+                style={{
+                  width: tamanoLogo,
+                  height: esEscritorio ? 90 : 82,
+                  marginBottom: esTelefono ? 10 : 16,
+                }}
               />
-            </View>
-          </View>
 
-          {/* ==================================================
-              PANEL DE CONTENIDO
-          ================================================== */}
-
-          <View
-            style={[
-              styles.contentPanel,
-              {
-                width: esTelefono ? "100%" : "48%",
-
-                paddingVertical: esTelefono ? 0 : 32,
-              },
-            ]}
-          >
-            {/* TÍTULO */}
-
-            <Text
-              style={[
-                styles.title,
-                {
-                  fontSize: tamanoTitulo,
-                  lineHeight: tamanoTitulo + 6,
-                },
-              ]}
-            >
-              Bienvenido a <Text style={styles.titleBlue}>Kiri</Text>
-            </Text>
-
-            {/* LÍNEA DECORATIVA */}
-
-            <View style={styles.divider} />
-
-            {/* SUBTÍTULO */}
-
-            <Text
-              style={[
-                styles.subtitle,
-                {
-                  fontSize: tamanoSubtitulo,
-                  lineHeight: tamanoSubtitulo + 6,
-                },
-              ]}
-            >
-              Cuidar de tu salud mental es un acto de fortaleza
-            </Text>
-
-            {/* DESCRIPCIÓN */}
-
-            <Text
-              style={[
-                styles.description,
-                {
-                  fontSize: tamanoDescripcion,
-                  lineHeight: tamanoDescripcion + 8,
-                },
-              ]}
-            >
-              En Kiri encontrarás herramientas para conocerte mejor, comprender
-              tus emociones y desarrollar hábitos que favorezcan tu bienestar.
-            </Text>
-
-            {/* TEXTO DE ACOMPAÑAMIENTO */}
-
-            <Text style={styles.footerText}>
-              Nunca estarás <Text style={styles.greenText}>solo</Text> en este
-              proceso.
-            </Text>
-
-            {/* ==================================================
-                BOTÓN PRINCIPAL
-            ================================================== */}
-
-            <View style={styles.buttonContainer}>
-              <Button
-                title="Comenzar"
-                variant="primary"
-                onPress={irModoAcceso}
-              />
+              <View
+                style={[
+                  styles.mascotCircle,
+                  {
+                    width: esEscritorio ? 380 : esTablet ? 320 : 260,
+                    height: esEscritorio ? 380 : esTablet ? 320 : 260,
+                    borderRadius: esEscritorio ? 190 : esTablet ? 160 : 130,
+                  },
+                ]}
+              >
+                <Image
+                  source={require("../../assets/images/mascota.png")}
+                  resizeMode="contain"
+                  style={{
+                    width: anchoMascota,
+                    height: altoMascota,
+                  }}
+                />
+              </View>
             </View>
 
             {/* ==================================================
-                SEPARADOR
+                PANEL CONTENIDO
             ================================================== */}
+            <View
+              style={[
+                styles.contentPanel,
+                {
+                  width: anchoPanelContenido,
+                  alignItems: "center",
+                  justifyContent: "center",
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.title,
+                  {
+                    fontSize: tamanoTitulo,
+                    lineHeight: tamanoTitulo + 6,
+                  },
+                ]}
+              >
+                Bienvenido a <Text style={styles.titleBlue}>Kiri</Text>
+              </Text>
 
-            <View style={styles.dividerContainer}>
-              <View style={styles.line} />
+              <View style={styles.divider} />
 
-              <Text style={styles.dividerText}>o</Text>
+              <Text
+                style={[
+                  styles.subtitle,
+                  {
+                    fontSize: tamanoSubtitulo,
+                    lineHeight: tamanoSubtitulo + 6,
+                    maxWidth: 460,
+                  },
+                ]}
+              >
+                Cuidar de tu salud mental es un acto de fortaleza
+              </Text>
 
-              <View style={styles.line} />
+              <Text
+                style={[
+                  styles.description,
+                  {
+                    fontSize: tamanoDescripcion,
+                    lineHeight: tamanoDescripcion + 8,
+                    maxWidth: esEscritorio ? 500 : 460,
+                  },
+                ]}
+              >
+                En Kiri encontrarás herramientas para conocerte mejor,
+                comprender tus emociones y desarrollar hábitos que favorezcan tu
+                bienestar.
+              </Text>
+
+              <Text
+                style={[
+                  styles.footerText,
+                  {
+                    fontSize: esEscritorio ? 16 : 15,
+                  },
+                ]}
+              >
+                Nunca estarás <Text style={styles.greenText}>solo</Text> en este
+                proceso.
+              </Text>
+
+              <View style={styles.buttonContainer}>
+                <Button
+                  title="Comenzar"
+                  variant="primary"
+                  onPress={irModoAcceso}
+                />
+              </View>
+
+              <View style={styles.dividerContainer}>
+                <View style={styles.line} />
+                <Text style={styles.dividerText}>o</Text>
+                <View style={styles.line} />
+              </View>
+
+              <View style={styles.buttonContainer}>
+                <Button
+                  title="¿Ya tienes una cuenta? Iniciar Sesión"
+                  variant="secondary"
+                  onPress={irLogin}
+                />
+              </View>
             </View>
-
-            {/* ==================================================
-                LOGIN
-            ================================================== */}
-
-            <Button
-              title="¿Ya tienes una cuenta? Iniciar Sesión"
-              variant="secondary"
-              onPress={irLogin}
-            />
           </View>
         </View>
       </ScrollView>
@@ -246,65 +255,55 @@ const styles = StyleSheet.create({
     height: "100%",
   },
 
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(255,255,255,0.58)",
+  },
+
   scrollContainer: {
     flexGrow: 1,
-  },
-
-  container: {
-    flex: 1,
-
-    width: "100%",
-
-    alignSelf: "center",
-
-    alignItems: "center",
-
     justifyContent: "center",
-
-    paddingTop: 24,
-
-    paddingBottom: 30,
+    alignItems: "center",
   },
 
-  // ======================================================
-  // PANEL VISUAL
-  // ======================================================
+  wrapper: {
+    alignSelf: "center",
+    width: "100%",
+  },
+
+  mainCard: {
+    width: "100%",
+    borderRadius: 34,
+    backgroundColor: "rgba(255,255,255,0.72)",
+    borderWidth: 1,
+    borderColor: "rgba(184, 168, 248, 0.18)",
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
   visualPanel: {
-    alignItems: "center",
+    minHeight: 420,
+  },
 
+  mascotCircle: {
+    backgroundColor: "rgba(184, 168, 248, 0.15)",
+    alignItems: "center",
     justifyContent: "center",
   },
-
-  imageContainer: {
-    justifyContent: "center",
-
-    alignItems: "center",
-  },
-
-  mascotImage: {
-    width: "100%",
-
-    height: "100%",
-  },
-
-  // ======================================================
-  // PANEL DE CONTENIDO
-  // ======================================================
 
   contentPanel: {
-    alignItems: "center",
-
-    justifyContent: "center",
+    minHeight: 420,
   },
 
   title: {
-    fontWeight: "700",
-
     fontFamily: "Nunito-Bold",
-
+    fontWeight: "700",
     color: "#2D3748",
-
     textAlign: "center",
   },
 
@@ -313,98 +312,66 @@ const styles = StyleSheet.create({
   },
 
   divider: {
-    width: 40,
-
+    width: 52,
     height: 4,
-
     backgroundColor: "#B8A8F8",
-
-    borderRadius: 5,
-
-    marginVertical: 11,
+    borderRadius: 999,
+    marginTop: 12,
+    marginBottom: 16,
   },
 
   subtitle: {
-    color: "#4F8EF7",
-
-    fontWeight: "600",
-
     fontFamily: "Nunito-SemiBold",
-
+    fontWeight: "600",
+    color: "#4F8EF7",
     textAlign: "center",
-
-    marginBottom: 12,
+    marginBottom: 14,
   },
 
   description: {
-    fontWeight: "400",
-
     fontFamily: "Nunito-Medium",
-
+    fontWeight: "400",
     color: "#2D3748",
-
     textAlign: "center",
-
-    marginBottom: 10,
+    marginBottom: 12,
   },
 
   footerText: {
-    fontSize: 18,
-
     fontFamily: "Nunito-Medium",
-
     color: "#2D3748",
-
     textAlign: "center",
-
     marginBottom: 22,
   },
 
   greenText: {
     color: "#7BBF9A",
-
+    fontFamily: "Nunito-Bold",
     fontWeight: "700",
-
-    fontFamily: "Nunito-Medium",
   },
-
-  // ======================================================
-  // BOTONES
-  // ======================================================
 
   buttonContainer: {
     width: "100%",
+    maxWidth: 460,
   },
-
-  // ======================================================
-  // SEPARADOR
-  // ======================================================
 
   dividerContainer: {
     flexDirection: "row",
-
     alignItems: "center",
-
     width: "100%",
-
-    marginVertical: 12,
+    maxWidth: 460,
+    marginVertical: 14,
   },
 
   line: {
     flex: 1,
-
     height: 1,
-
-    backgroundColor: "#2D3748",
+    backgroundColor: "rgba(45, 55, 72, 0.22)",
   },
 
   dividerText: {
     marginHorizontal: 15,
-
-    fontSize: 16,
-
+    fontSize: 15,
     fontFamily: "Nunito-Medium",
-
-    color: "#2D3748",
+    color: "#64748B",
   },
 });
