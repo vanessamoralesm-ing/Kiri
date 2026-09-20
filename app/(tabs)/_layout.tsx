@@ -38,11 +38,7 @@ export default function LayoutPestanas() {
           backgroundColor,
         }}
       >
-        {/* SIDEBAR */}
-
         <SidebarDesktop />
-
-        {/* CONTENIDO */}
 
         <View
           style={{
@@ -53,11 +49,7 @@ export default function LayoutPestanas() {
             backgroundColor,
           }}
         >
-          {/* HEADER */}
-
           <AppHeader />
-
-          {/* TABS */}
 
           <View
             style={{
@@ -118,6 +110,13 @@ export default function LayoutPestanas() {
 
               <Tabs.Screen
                 name="foro"
+                options={{
+                  href: null,
+                }}
+              />
+
+              <Tabs.Screen
+                name="progreso"
                 options={{
                   href: null,
                 }}
@@ -202,6 +201,13 @@ export default function LayoutPestanas() {
 
           <Tabs.Screen
             name="foro"
+            options={{
+              href: null,
+            }}
+          />
+
+          <Tabs.Screen
+            name="progreso"
             options={{
               href: null,
             }}

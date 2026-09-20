@@ -1,30 +1,21 @@
+import { Ionicons } from "@expo/vector-icons";
+import {
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
 import React, {
   useEffect,
   useMemo,
   useState,
 } from "react";
-
 import {
   ActivityIndicator,
   ScrollView,
   Text,
   TouchableOpacity,
-  useWindowDimensions,
   View,
 } from "react-native";
-
-import {
-  useLocalSearchParams,
-  useRouter,
-} from "expo-router";
-
-import {
-  SafeAreaView,
-} from "react-native-safe-area-context";
-
-import {
-  Ionicons,
-} from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import Animated, {
   FadeIn,
@@ -32,17 +23,18 @@ import Animated, {
 } from "react-native-reanimated";
 
 import {
-  supabase,
-} from "@/lib/supabase";
+  MAX_WIDTHS,
+  PADDING_RESPONSIVE,
+} from "@/constants/responsive";
 
-import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+
+import { supabase } from "@/lib/supabase";
 
 import {
   styles,
 } from "@/styles/resultadoEntrevista.styles";
-
 
 // ==========================================================
 // TIPOS
@@ -52,7 +44,6 @@ type NivelResultado =
   | "BAJO"
   | "MODERADO"
   | "ALTO";
-
 
 type Resultado = {
   id_resultado: string;
@@ -70,13 +61,11 @@ type Resultado = {
   nivel: NivelResultado;
 };
 
-
 type Props = {
   modo:
   | "entrevista"
   | "historial";
 };
-
 
 // ==========================================================
 // CONFIGURACIÓN DE ÁREAS
@@ -90,7 +79,6 @@ const CONFIG:
       keyof typeof Ionicons.glyphMap;
     }
   > = {
-
   SOMATICO: {
     icono:
       "body-outline",
@@ -120,38 +108,30 @@ const CONFIG:
     icono:
       "heart-outline",
   },
-
 };
-
 
 // ==========================================================
 // HELPERS
 // ==========================================================
 
 function obtenerRelacion(
-  valor: any
+  valor: any,
 ) {
-
   return Array.isArray(
-    valor
+    valor,
   )
     ? valor[0]
     : valor;
-
 }
 
-
 function textoNivel(
-  nivel:
-    NivelResultado
+  nivel: NivelResultado,
 ) {
-
   if (
     nivel === "ALTO"
   ) {
     return "Mayor atención";
   }
-
 
   if (
     nivel === "MODERADO"
@@ -159,50 +139,35 @@ function textoNivel(
     return "Atención moderada";
   }
 
-
   return "Menor atención";
-
 }
 
-
 function descripcionNivel(
-  nivel:
-    NivelResultado
+  nivel: NivelResultado,
 ) {
-
   if (
     nivel === "ALTO"
   ) {
-
     return "Esta área puede beneficiarse de un mayor acompañamiento.";
-
   }
-
 
   if (
     nivel === "MODERADO"
   ) {
-
     return "Conviene seguir observando y fortaleciendo esta área.";
-
   }
 
-
   return "Tus respuestas muestran menor dificultad en esta área.";
-
 }
 
-
 function normalizarNivel(
-  valor: any
+  valor: any,
 ): NivelResultado {
-
   if (
     valor === "ALTO"
   ) {
     return "ALTO";
   }
-
 
   if (
     valor === "MODERADO"
@@ -210,17 +175,14 @@ function normalizarNivel(
     return "MODERADO";
   }
 
-
   return "BAJO";
-
 }
-
 
 function esUUID(
   valor:
-    string | undefined
+    | string
+    | undefined,
 ): valor is string {
-
   if (
     !valor ||
     valor === "[id]"
@@ -228,33 +190,25 @@ function esUUID(
     return false;
   }
 
-
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    valor
+    valor,
   );
-
 }
 
-
 function anchoBarra(
-  valor:
-    number
+  valor: number,
 ): `${number}%` {
-
   const seguro =
     Math.min(
       Math.max(
         valor,
-        0
+        0,
       ),
-      100
+      100,
     );
 
-
   return `${seguro}%`;
-
 }
-
 
 // ==========================================================
 // COMPONENTE
@@ -263,34 +217,25 @@ function anchoBarra(
 export default function ResultadoEntrevista({
   modo,
 }: Props) {
-
-  const router =
-    useRouter();
-
+  const router = useRouter();
 
   const {
-    width,
-  } =
-    useWindowDimensions();
-
-
-  const movil =
-    width < 600;
-
+    esTelefono,
+    esTablet,
+    esEscritorio,
+  } = useResponsiveLayout();
 
   const params =
     useLocalSearchParams<{
-      id: string;
+      id?: string | string[];
     }>();
-
 
   const idEntrevista =
     Array.isArray(
-      params.id
+      params.id,
     )
       ? params.id[0]
       : params.id;
-
 
   // ========================================================
   // ESTADOS
@@ -300,28 +245,21 @@ export default function ResultadoEntrevista({
     resultados,
     setResultados,
   ] =
-    useState<
-      Resultado[]
-    >([]);
-
+    useState<Resultado[]>([]);
 
   const [
     cargando,
     setCargando,
   ] =
-    useState(
-      true
-    );
-
+    useState(true);
 
   const [
     error,
     setError,
   ] =
-    useState<
-      string | null
-    >(null);
-
+    useState<string | null>(
+      null,
+    );
 
   // ========================================================
   // COLORES DEL TEMA
@@ -330,121 +268,134 @@ export default function ResultadoEntrevista({
   const backgroundColor =
     useThemeColor(
       {},
-      "background"
+      "background",
     );
-
 
   const surfaceColor =
     useThemeColor(
       {},
-      "surface"
+      "surface",
     );
-
 
   const surfaceSecondaryColor =
     useThemeColor(
       {},
-      "surfaceSecondary"
+      "surfaceSecondary",
     );
-
 
   const borderColor =
     useThemeColor(
       {},
-      "border"
+      "border",
     );
-
 
   const dividerColor =
     useThemeColor(
       {},
-      "divider"
+      "divider",
     );
-
 
   const textColor =
     useThemeColor(
       {},
-      "text"
+      "text",
     );
-
 
   const textSecondaryColor =
     useThemeColor(
       {},
-      "textSecondary"
+      "textSecondary",
     );
-
 
   const textMutedColor =
     useThemeColor(
       {},
-      "textMuted"
+      "textMuted",
     );
-
 
   const primaryColor =
     useThemeColor(
       {},
-      "primary"
+      "primary",
     );
-
 
   const secondaryColor =
     useThemeColor(
       {},
-      "secondary"
+      "secondary",
     );
-
 
   const accentColor =
     useThemeColor(
       {},
-      "accent"
+      "accent",
     );
-
 
   const primarySoftColor =
     useThemeColor(
       {},
-      "primarySoft"
+      "primarySoft",
     );
-
 
   const secondarySoftColor =
     useThemeColor(
       {},
-      "secondarySoft"
+      "secondarySoft",
     );
-
 
   const accentSoftColor =
     useThemeColor(
       {},
-      "accentSoft"
+      "accentSoft",
     );
-
 
   const successColor =
     useThemeColor(
       {},
-      "success"
+      "success",
     );
-
 
   const warningColor =
     useThemeColor(
       {},
-      "warning"
+      "warning",
     );
-
 
   const dangerColor =
     useThemeColor(
       {},
-      "danger"
+      "danger",
     );
 
+  // ========================================================
+  // RESPONSIVE
+  // ========================================================
+
+  const paddingHorizontal =
+    esEscritorio
+      ? PADDING_RESPONSIVE.escritorio
+      : esTablet
+        ? PADDING_RESPONSIVE.tablet
+        : PADDING_RESPONSIVE.telefono;
+
+  const maxWidthPantalla =
+    esEscritorio
+      ? MAX_WIDTHS.dashboard
+      : esTablet
+        ? MAX_WIDTHS.contenido
+        : undefined;
+
+  const maxWidthContenido =
+    esEscritorio
+      ? 1080
+      : esTablet
+        ? 760
+        : undefined;
+
+  const anchoBoton =
+    esEscritorio
+      ? 300
+      : "100%";
 
   // ========================================================
   // CARGAR RESULTADOS
@@ -452,51 +403,39 @@ export default function ResultadoEntrevista({
 
   useEffect(
     () => {
-
       console.log(
         "ID recibido en resultado:",
-        idEntrevista
+        idEntrevista,
       );
-
 
       if (
         !esUUID(
-          idEntrevista
+          idEntrevista,
         )
       ) {
-
         setError(
-          "No se encontró una entrevista válida."
+          "No se encontró una entrevista válida.",
         );
-
 
         setCargando(
-          false
+          false,
         );
 
-
         return;
-
       }
-
 
       let activo =
         true;
 
-
       async function cargarResultados() {
-
         try {
-
           setCargando(
-            true
+            true,
           );
-
 
           setError(
-            null
+            null,
           );
-
 
           const {
             data,
@@ -504,7 +443,7 @@ export default function ResultadoEntrevista({
           } =
             await supabase
               .from(
-                "resultado_entrevista"
+                "resultado_entrevista",
               )
               .select(`
                 id_resultado,
@@ -519,16 +458,15 @@ export default function ResultadoEntrevista({
               `)
               .eq(
                 "id_entrevista",
-                idEntrevista
+                idEntrevista,
               )
               .order(
                 "porcentaje",
                 {
                   ascending:
                     false,
-                }
+                },
               );
-
 
           if (
             error
@@ -536,13 +474,11 @@ export default function ResultadoEntrevista({
             throw error;
           }
 
-
           if (
             !activo
           ) {
             return;
           }
-
 
           const lista:
             Resultado[] =
@@ -552,14 +488,12 @@ export default function ResultadoEntrevista({
             ).map(
               (
                 item:
-                  any
+                  any,
               ) => {
-
                 const modulo =
                   obtenerRelacion(
-                    item.modulo_entrevista
+                    item.modulo_entrevista,
                   );
-
 
                 return {
                   id_resultado:
@@ -579,90 +513,68 @@ export default function ResultadoEntrevista({
                   puntaje:
                     Number(
                       item.puntaje ??
-                      0
+                      0,
                     ),
 
                   porcentaje:
                     Number(
                       item.porcentaje ??
-                      0
+                      0,
                     ),
 
                   nivel:
                     normalizarNivel(
-                      item.nivel
+                      item.nivel,
                     ),
                 };
-
-              }
+              },
             );
-
 
           console.log(
             "Resultados cargados:",
-            lista
+            lista,
           );
-
 
           setResultados(
-            lista
+            lista,
           );
-
-
         } catch (
         e
         ) {
-
           console.error(
             "Error cargando resultados:",
-            e
+            e,
           );
 
-
           if (
             activo
           ) {
-
             setError(
-              "No pudimos cargar tus resultados."
+              "No pudimos cargar tus resultados.",
             );
-
           }
-
-
         } finally {
-
           if (
             activo
           ) {
-
             setCargando(
-              false
+              false,
             );
-
           }
-
         }
-
       }
-
 
       cargarResultados();
 
-
       return () => {
-
         activo =
           false;
-
       };
-
     },
     [
       idEntrevista,
-    ]
+    ],
   );
-
 
   // ========================================================
   // PRIORIDADES
@@ -671,34 +583,30 @@ export default function ResultadoEntrevista({
   const prioridades =
     useMemo(
       () => {
-
         if (
           !resultados.length
         ) {
           return [];
         }
 
-
         const mayor =
           resultados[0]
             .porcentaje;
 
-
         return resultados.filter(
-          resultado =>
+          (
+            resultado,
+          ) =>
             Math.abs(
               resultado.porcentaje -
-              mayor
-            ) <
-            0.01
+              mayor,
+            ) < 0.01,
         );
-
       },
       [
         resultados,
-      ]
+      ],
     );
-
 
   // ========================================================
   // PROMEDIO
@@ -707,117 +615,92 @@ export default function ResultadoEntrevista({
   const promedio =
     useMemo(
       () => {
-
         if (
           !resultados.length
         ) {
           return 0;
         }
 
-
         const total =
           resultados.reduce(
             (
               acumulado,
-              resultado
+              resultado,
             ) =>
               acumulado +
               resultado.porcentaje,
-
-            0
+            0,
           );
-
 
         return (
           total /
           resultados.length
         );
-
       },
       [
         resultados,
-      ]
+      ],
     );
-
 
   // ========================================================
   // NAVEGAR AL PLAN
   // ========================================================
 
   function continuar() {
-
     if (
       !esUUID(
-        idEntrevista
+        idEntrevista,
       )
     ) {
-
       console.error(
         "ID inválido al abrir plan:",
-        idEntrevista
+        idEntrevista,
       );
 
-
       return;
-
     }
-
 
     console.log(
       "ABRIENDO PLAN:",
-      idEntrevista
+      idEntrevista,
     );
-
 
     if (
       modo ===
       "historial"
     ) {
-
       router.push(
-        `/(tabs)/entrevistas/${idEntrevista}/plan` as any
+        `/(tabs)/entrevistas/${idEntrevista}/plan` as any,
       );
 
-
       return;
-
     }
 
-
     router.replace(
-      `/(entrevista)/jovenes-adultos/${idEntrevista}/plan` as any
+      `/(entrevista)/jovenes-adultos/${idEntrevista}/plan` as any,
     );
-
   }
-
 
   // ========================================================
   // SALIR
   // ========================================================
 
   function salir() {
-
     if (
       modo ===
       "historial"
     ) {
-
       router.replace(
-        "/(tabs)/entrevistas"
+        "/(tabs)/entrevistas",
       );
 
-
       return;
-
     }
 
-
     router.replace(
-      "/(tabs)/home"
+      "/(tabs)/home",
     );
-
   }
-
 
   // ========================================================
   // CARGANDO
@@ -826,9 +709,7 @@ export default function ResultadoEntrevista({
   if (
     cargando
   ) {
-
     return (
-
       <SafeAreaView
         style={[
           styles.pantalla,
@@ -838,13 +719,15 @@ export default function ResultadoEntrevista({
           },
         ]}
       >
-
         <View
-          style={
-            styles.cargando
-          }
-        >
+          style={[
+            styles.cargando,
 
+            {
+              paddingHorizontal,
+            },
+          ]}
+        >
           <View
             style={[
               styles.cargandoCirculo,
@@ -857,15 +740,12 @@ export default function ResultadoEntrevista({
               },
             ]}
           >
-
             <ActivityIndicator
               color={
                 primaryColor
               }
             />
-
           </View>
-
 
           <Text
             style={[
@@ -880,7 +760,6 @@ export default function ResultadoEntrevista({
             Preparando tu perfil
           </Text>
 
-
           <Text
             style={[
               styles.cargandoTexto,
@@ -888,20 +767,20 @@ export default function ResultadoEntrevista({
               {
                 color:
                   textSecondaryColor,
+
+                maxWidth:
+                  esEscritorio
+                    ? 520
+                    : 380,
               },
             ]}
           >
             Estamos organizando los resultados de tu entrevista.
           </Text>
-
         </View>
-
       </SafeAreaView>
-
     );
-
   }
-
 
   // ========================================================
   // ERROR
@@ -910,9 +789,7 @@ export default function ResultadoEntrevista({
   if (
     error
   ) {
-
     return (
-
       <SafeAreaView
         style={[
           styles.pantalla,
@@ -922,13 +799,15 @@ export default function ResultadoEntrevista({
           },
         ]}
       >
-
         <View
-          style={
-            styles.cargando
-          }
-        >
+          style={[
+            styles.cargando,
 
+            {
+              paddingHorizontal,
+            },
+          ]}
+        >
           <View
             style={[
               styles.errorCirculo,
@@ -942,7 +821,6 @@ export default function ResultadoEntrevista({
               },
             ]}
           >
-
             <Ionicons
               name="alert-circle-outline"
               size={28}
@@ -950,9 +828,7 @@ export default function ResultadoEntrevista({
                 accentColor
               }
             />
-
           </View>
-
 
           <Text
             style={[
@@ -967,7 +843,6 @@ export default function ResultadoEntrevista({
             No pudimos mostrar tus resultados
           </Text>
 
-
           <Text
             style={[
               styles.cargandoTexto,
@@ -975,74 +850,69 @@ export default function ResultadoEntrevista({
               {
                 color:
                   textSecondaryColor,
+
+                maxWidth:
+                  esEscritorio
+                    ? 520
+                    : 380,
               },
             ]}
           >
             {error}
           </Text>
 
-
           <TouchableOpacity
             activeOpacity={
               0.8
             }
-
             onPress={
               salir
             }
-
             style={[
               styles.botonPrincipal,
 
-              movil &&
+              esTelefono &&
               styles.botonPrincipalMovil,
 
               {
+                width:
+                  anchoBoton,
+
+                alignSelf:
+                  "center",
+
                 backgroundColor:
                   primaryColor,
               },
             ]}
           >
-
             <Ionicons
               name="arrow-back"
               size={20}
               color="#FFFFFF"
             />
 
-
             <Text
               style={
                 styles.botonTexto
               }
             >
-              {
-                modo ===
-                  "historial"
-
-                  ? "Volver a mis entrevistas"
-
-                  : "Volver al inicio"
-              }
+              {modo ===
+                "historial"
+                ? "Volver a mis entrevistas"
+                : "Volver al inicio"}
             </Text>
-
           </TouchableOpacity>
-
         </View>
-
       </SafeAreaView>
-
     );
-
   }
-
 
   // ========================================================
   // PANTALLA PRINCIPAL
   // ========================================================
 
   return (
-
     <SafeAreaView
       style={[
         styles.pantalla,
@@ -1052,126 +922,184 @@ export default function ResultadoEntrevista({
         },
       ]}
     >
-
       <ScrollView
         showsVerticalScrollIndicator={
           false
         }
-
         contentContainerStyle={[
           styles.scroll,
 
-          movil &&
+          esTelefono &&
           styles.scrollMovil,
 
-          movil &&
+          esTelefono &&
           modo ===
           "historial" &&
           styles.scrollHistorialMovil,
+
+          {
+            paddingHorizontal,
+          },
         ]}
       >
-
         {/* =================================================
-            HEADER
+            CONTENEDOR GENERAL
         ================================================= */}
 
-        <Animated.View
-          entering={
-            FadeInUp.duration(
-              550
-            )
-          }
+        <View
+          style={{
+            width:
+              "100%",
 
-          style={
-            styles.header
-          }
+            maxWidth:
+              maxWidthPantalla,
+
+            alignSelf:
+              "center",
+          }}
         >
-
           <View
-            style={[
-              styles.headerIcono,
+            style={{
+              width:
+                "100%",
 
-              {
-                backgroundColor:
-                  primarySoftColor,
+              maxWidth:
+                maxWidthContenido,
 
-                borderColor,
-              },
-            ]}
+              alignSelf:
+                "center",
+            }}
           >
+            {/* =================================================
+                HEADER
+            ================================================= */}
 
-            <Ionicons
-              name="sparkles"
-              size={22}
-              color={
-                primaryColor
+            <Animated.View
+              entering={
+                FadeInUp.duration(
+                  550,
+                )
               }
-            />
+              style={[
+                styles.header,
 
-          </View>
+                {
+                  marginTop:
+                    esEscritorio
+                      ? 24
+                      : esTablet
+                        ? 18
+                        : 10,
 
+                  marginBottom:
+                    esEscritorio
+                      ? 28
+                      : 22,
+                },
+              ]}
+            >
+              <View
+                style={[
+                  styles.headerIcono,
 
-          <Text
-            style={[
-              styles.titulo,
+                  {
+                    backgroundColor:
+                      primarySoftColor,
 
-              {
-                color:
-                  textColor,
-              },
-            ]}
-          >
-            {
-              modo ===
-                "historial"
+                    borderColor,
+                  },
+                ]}
+              >
+                <Ionicons
+                  name="sparkles"
+                  size={
+                    esEscritorio
+                      ? 24
+                      : 22
+                  }
+                  color={
+                    primaryColor
+                  }
+                />
+              </View>
 
-                ? "Perfil de bienestar"
+              <Text
+                style={[
+                  styles.titulo,
 
-                : "Tu perfil de bienestar"
-            }
-          </Text>
+                  {
+                    color:
+                      textColor,
 
+                    fontSize:
+                      esEscritorio
+                        ? 32
+                        : esTablet
+                          ? 29
+                          : 26,
 
-          <Text
-            style={[
-              styles.subtitulo,
+                    lineHeight:
+                      esEscritorio
+                        ? 40
+                        : 34,
+                  },
+                ]}
+              >
+                {modo ===
+                  "historial"
+                  ? "Perfil de bienestar"
+                  : "Tu perfil de bienestar"}
+              </Text>
 
-              {
-                color:
-                  textSecondaryColor,
-              },
-            ]}
-          >
-            Una mirada general a las áreas que exploramos contigo.
-          </Text>
+              <Text
+                style={[
+                  styles.subtitulo,
 
-        </Animated.View>
+                  {
+                    color:
+                      textSecondaryColor,
 
+                    maxWidth:
+                      640,
 
-        {/* =================================================
-            CASO ESTABLE
-        ================================================= */}
+                    alignSelf:
+                      "center",
 
-        {
-          !resultados.length
+                    fontSize:
+                      esEscritorio
+                        ? 16
+                        : 14,
 
-            ? (
+                    lineHeight:
+                      esEscritorio
+                        ? 24
+                        : 21,
+                  },
+                ]}
+              >
+                Una mirada general a las áreas que exploramos contigo.
+              </Text>
+            </Animated.View>
 
+            {/* =================================================
+                CASO ESTABLE
+            ================================================= */}
+
+            {!resultados.length ? (
               <Animated.View
                 entering={
                   FadeInUp
                     .delay(
-                      120
+                      120,
                     )
                     .duration(
-                      500
+                      500,
                     )
                 }
-
                 style={[
                   styles.estableCard,
 
-                  movil &&
+                  esTelefono &&
                   styles.estableCardMovil,
 
                   {
@@ -1179,10 +1107,22 @@ export default function ResultadoEntrevista({
                       surfaceColor,
 
                     borderColor,
+
+                    maxWidth:
+                      esEscritorio
+                        ? 720
+                        : undefined,
+
+                    alignSelf:
+                      "center",
+
+                    padding:
+                      esEscritorio
+                        ? 30
+                        : undefined,
                   },
                 ]}
               >
-
                 <View
                   style={[
                     styles.estableIcono,
@@ -1193,7 +1133,6 @@ export default function ResultadoEntrevista({
                     },
                   ]}
                 >
-
                   <Ionicons
                     name="leaf-outline"
                     size={26}
@@ -1201,9 +1140,7 @@ export default function ResultadoEntrevista({
                       secondaryColor
                     }
                   />
-
                 </View>
-
 
                 <Text
                   style={[
@@ -1212,12 +1149,16 @@ export default function ResultadoEntrevista({
                     {
                       color:
                         textColor,
+
+                      fontSize:
+                        esEscritorio
+                          ? 22
+                          : undefined,
                     },
                   ]}
                 >
                   Todo se ve estable por ahora
                 </Text>
-
 
                 <Text
                   style={[
@@ -1226,20 +1167,18 @@ export default function ResultadoEntrevista({
                     {
                       color:
                         textSecondaryColor,
+
+                      maxWidth:
+                        560,
                     },
                   ]}
                 >
-                  Tus respuestas no activaron áreas adicionales que necesitaran una exploración más profunda.
+                  Tus respuestas no activaron áreas adicionales que necesitaran
+                  una exploración más profunda.
                 </Text>
-
               </Animated.View>
-
-            )
-
-            : (
-
+            ) : (
               <>
-
                 {/* ===========================================
                     RESUMEN
                 =========================================== */}
@@ -1248,17 +1187,16 @@ export default function ResultadoEntrevista({
                   entering={
                     FadeInUp
                       .delay(
-                        100
+                        100,
                       )
                       .duration(
-                        500
+                        500,
                       )
                   }
-
                   style={[
                     styles.resumenCard,
 
-                    movil &&
+                    esTelefono &&
                     styles.resumenCardMovil,
 
                     {
@@ -1266,22 +1204,29 @@ export default function ResultadoEntrevista({
                         surfaceColor,
 
                       borderColor,
+
+                      padding:
+                        esEscritorio
+                          ? 26
+                          : undefined,
+
+                      borderRadius:
+                        esEscritorio
+                          ? 22
+                          : undefined,
                     },
                   ]}
                 >
-
                   <View
                     style={
                       styles.resumenSuperior
                     }
                   >
-
                     <View
                       style={
                         styles.resumenInfo
                       }
                     >
-
                       <Text
                         style={[
                           styles.resumenEtiqueta,
@@ -1295,7 +1240,6 @@ export default function ResultadoEntrevista({
                         RESUMEN DE TU ENTREVISTA
                       </Text>
 
-
                       <Text
                         style={[
                           styles.resumenTitulo,
@@ -1303,6 +1247,11 @@ export default function ResultadoEntrevista({
                           {
                             color:
                               textColor,
+
+                            fontSize:
+                              esEscritorio
+                                ? 22
+                                : undefined,
                           },
                         ]}
                       >
@@ -1310,16 +1259,12 @@ export default function ResultadoEntrevista({
                         {
                           resultados.length
                         }{" "}
-                        {
-                          resultados.length ===
-                            1
-                            ? "área"
-                            : "áreas"
-                        }
+                        {resultados.length ===
+                          1
+                          ? "área"
+                          : "áreas"}
                       </Text>
-
                     </View>
-
 
                     <View
                       style={[
@@ -1331,7 +1276,6 @@ export default function ResultadoEntrevista({
                         },
                       ]}
                     >
-
                       <Ionicons
                         name="analytics-outline"
                         size={22}
@@ -1339,11 +1283,8 @@ export default function ResultadoEntrevista({
                           primaryColor
                         }
                       />
-
                     </View>
-
                   </View>
-
 
                   <View
                     style={[
@@ -1356,19 +1297,16 @@ export default function ResultadoEntrevista({
                     ]}
                   />
 
-
                   <View
                     style={
                       styles.resumenInferior
                     }
                   >
-
                     <View
                       style={
                         styles.resumenDato
                       }
                     >
-
                       <Text
                         style={[
                           styles.resumenNumero,
@@ -1376,16 +1314,19 @@ export default function ResultadoEntrevista({
                           {
                             color:
                               textColor,
+
+                            fontSize:
+                              esEscritorio
+                                ? 30
+                                : undefined,
                           },
                         ]}
                       >
-                        {
-                          Math.round(
-                            promedio
-                          )
-                        }%
+                        {Math.round(
+                          promedio,
+                        )}
+                        %
                       </Text>
-
 
                       <Text
                         style={[
@@ -1399,9 +1340,7 @@ export default function ResultadoEntrevista({
                       >
                         promedio general
                       </Text>
-
                     </View>
-
 
                     <View
                       style={[
@@ -1414,13 +1353,11 @@ export default function ResultadoEntrevista({
                       ]}
                     />
 
-
                     <View
                       style={
                         styles.resumenDato
                       }
                     >
-
                       <Text
                         style={[
                           styles.resumenNumero,
@@ -1428,17 +1365,20 @@ export default function ResultadoEntrevista({
                           {
                             color:
                               textColor,
+
+                            fontSize:
+                              esEscritorio
+                                ? 30
+                                : undefined,
                           },
                         ]}
                       >
-                        {
-                          Math.round(
-                            resultados[0]
-                              .porcentaje
-                          )
-                        }%
+                        {Math.round(
+                          resultados[0]
+                            .porcentaje,
+                        )}
+                        %
                       </Text>
-
 
                       <Text
                         style={[
@@ -1452,40 +1392,40 @@ export default function ResultadoEntrevista({
                       >
                         mayor indicador
                       </Text>
-
                     </View>
-
                   </View>
-
                 </Animated.View>
 
-
                 {/* ===========================================
-                    ENCABEZADO ÁREAS
+                    ENCABEZADO DE ÁREAS
                 =========================================== */}
 
                 <Animated.View
                   entering={
                     FadeIn
                       .delay(
-                        180
+                        180,
                       )
                       .duration(
-                        450
+                        450,
                       )
                   }
+                  style={[
+                    styles.seccionHeader,
 
-                  style={
-                    styles.seccionHeader
-                  }
+                    {
+                      marginTop:
+                        esEscritorio
+                          ? 30
+                          : undefined,
+                    },
+                  ]}
                 >
-
                   <View
                     style={
                       styles.seccionInfo
                     }
                   >
-
                     <Text
                       style={[
                         styles.seccionTitulo,
@@ -1493,12 +1433,16 @@ export default function ResultadoEntrevista({
                         {
                           color:
                             textColor,
+
+                          fontSize:
+                            esEscritorio
+                              ? 21
+                              : undefined,
                         },
                       ]}
                     >
                       Áreas exploradas
                     </Text>
-
 
                     <Text
                       style={[
@@ -1512,9 +1456,7 @@ export default function ResultadoEntrevista({
                     >
                       De mayor a menor necesidad de atención.
                     </Text>
-
                   </View>
-
 
                   <View
                     style={[
@@ -1526,7 +1468,6 @@ export default function ResultadoEntrevista({
                       },
                     ]}
                   >
-
                     <Text
                       style={[
                         styles.cantidadTexto,
@@ -1541,250 +1482,170 @@ export default function ResultadoEntrevista({
                         resultados.length
                       }
                     </Text>
-
                   </View>
-
                 </Animated.View>
-
 
                 {/* ===========================================
                     TARJETAS
                 =========================================== */}
 
                 <View
-                  style={
-                    styles.lista
-                  }
+                  style={[
+                    styles.lista,
+
+                    {
+                      width:
+                        "100%",
+
+                      flexDirection:
+                        esEscritorio
+                          ? "row"
+                          : "column",
+
+                      flexWrap:
+                        esEscritorio
+                          ? "wrap"
+                          : "nowrap",
+
+                      gap:
+                        esEscritorio
+                          ? 16
+                          : 12,
+                    },
+                  ]}
                 >
+                  {resultados.map(
+                    (
+                      resultado,
+                      index,
+                    ) => {
+                      const icono:
+                        keyof typeof Ionicons.glyphMap =
+                        CONFIG[
+                          resultado.codigo
+                        ]?.icono ??
+                        "sparkles-outline";
 
-                  {
-                    resultados.map(
-                      (
-                        resultado,
-                        index
-                      ) => {
+                      const esPrioridad =
+                        prioridades.some(
+                          (
+                            prioridad,
+                          ) =>
+                            prioridad.id_modulo ===
+                            resultado.id_modulo,
+                        );
 
-                        const icono:
-                          keyof typeof Ionicons.glyphMap =
-                          CONFIG[
-                            resultado.codigo
-                          ]?.icono ??
-                          "sparkles-outline";
+                      const colorNivel =
+                        resultado.nivel ===
+                          "ALTO"
+                          ? dangerColor
+                          : resultado.nivel ===
+                            "MODERADO"
+                            ? warningColor
+                            : successColor;
 
+                      return (
+                        <Animated.View
+                          key={
+                            resultado.id_resultado
+                          }
+                          entering={
+                            FadeInUp
+                              .delay(
+                                220 +
+                                index *
+                                80,
+                              )
+                              .duration(
+                                500,
+                              )
+                          }
+                          style={[
+                            styles.card,
 
-                        const esPrioridad =
-                          prioridades.some(
-                            prioridad =>
-                              prioridad.id_modulo ===
-                              resultado.id_modulo
-                          );
+                            esTelefono &&
+                            styles.cardMovil,
 
+                            {
+                              backgroundColor:
+                                surfaceColor,
 
-                        const colorNivel =
-                          resultado.nivel ===
-                            "ALTO"
+                              borderColor:
+                                esPrioridad
+                                  ? primaryColor
+                                  : borderColor,
 
-                            ? dangerColor
+                              width:
+                                esEscritorio
+                                  ? "48.8%"
+                                  : "100%",
 
-                            : resultado.nivel ===
-                              "MODERADO"
+                              flexBasis:
+                                esEscritorio
+                                  ? "48%"
+                                  : "100%",
 
-                              ? warningColor
+                              flexGrow:
+                                esEscritorio
+                                  ? 1
+                                  : 0,
 
-                              : successColor;
+                              minWidth:
+                                esEscritorio
+                                  ? 420
+                                  : undefined,
 
+                              padding:
+                                esEscritorio
+                                  ? 22
+                                  : undefined,
+                            },
 
-                        return (
+                            esPrioridad &&
+                            styles.cardPrioridad,
+                          ]}
+                        >
+                          {/* FILA SUPERIOR */}
 
-                          <Animated.View
-                            key={
-                              resultado.id_resultado
+                          <View
+                            style={
+                              styles.cardSuperior
                             }
-
-                            entering={
-                              FadeInUp
-                                .delay(
-                                  220 +
-                                  index *
-                                  80
-                                )
-                                .duration(
-                                  500
-                                )
-                            }
-
-                            style={[
-                              styles.card,
-
-                              movil &&
-                              styles.cardMovil,
-
-                              {
-                                backgroundColor:
-                                  surfaceColor,
-
-                                borderColor:
-                                  esPrioridad
-                                    ? primaryColor
-                                    : borderColor,
-                              },
-
-                              esPrioridad &&
-                              styles.cardPrioridad,
-                            ]}
                           >
+                            <View
+                              style={[
+                                styles.areaIcono,
 
-                            {/* ===============================
-                                FILA SUPERIOR
-                            =============================== */}
+                                {
+                                  backgroundColor:
+                                    primarySoftColor,
+                                },
+                              ]}
+                            >
+                              <Ionicons
+                                name={
+                                  icono
+                                }
+                                size={22}
+                                color={
+                                  primaryColor
+                                }
+                              />
+                            </View>
 
                             <View
                               style={
-                                styles.cardSuperior
+                                styles.areaInfo
                               }
                             >
-
-                              <View
-                                style={[
-                                  styles.areaIcono,
-
-                                  {
-                                    backgroundColor:
-                                      primarySoftColor,
-                                  },
-                                ]}
-                              >
-
-                                <Ionicons
-                                  name={
-                                    icono
-                                  }
-
-                                  size={22}
-
-                                  color={
-                                    primaryColor
-                                  }
-                                />
-
-                              </View>
-
-
                               <View
                                 style={
-                                  styles.areaInfo
+                                  styles.nombreFila
                                 }
                               >
-
-                                <View
-                                  style={
-                                    styles.nombreFila
-                                  }
-                                >
-
-                                  <Text
-                                    style={[
-                                      styles.areaNombre,
-
-                                      {
-                                        color:
-                                          textColor,
-                                      },
-                                    ]}
-                                  >
-                                    {
-                                      resultado.nombre
-                                    }
-                                  </Text>
-
-
-                                  {
-                                    esPrioridad && (
-
-                                      <View
-                                        style={[
-                                          styles.prioridadMini,
-
-                                          {
-                                            backgroundColor:
-                                              accentSoftColor,
-
-                                            borderColor:
-                                              accentColor,
-                                          },
-                                        ]}
-                                      >
-
-                                        <Text
-                                          style={[
-                                            styles.prioridadMiniTexto,
-
-                                            {
-                                              color:
-                                                accentColor,
-                                            },
-                                          ]}
-                                        >
-                                          Prioridad
-                                        </Text>
-
-                                      </View>
-
-                                    )
-                                  }
-
-                                </View>
-
-
-                                <View
-                                  style={
-                                    styles.nivelFila
-                                  }
-                                >
-
-                                  <View
-                                    style={[
-                                      styles.nivelPunto,
-
-                                      {
-                                        backgroundColor:
-                                          colorNivel,
-                                      },
-                                    ]}
-                                  />
-
-
-                                  <Text
-                                    style={[
-                                      styles.nivelTexto,
-
-                                      {
-                                        color:
-                                          textSecondaryColor,
-                                      },
-                                    ]}
-                                  >
-                                    {
-                                      textoNivel(
-                                        resultado.nivel
-                                      )
-                                    }
-                                  </Text>
-
-                                </View>
-
-                              </View>
-
-
-                              <View
-                                style={
-                                  styles.porcentaje
-                                }
-                              >
-
                                 <Text
                                   style={[
-                                    styles.porcentajeNumero,
+                                    styles.areaNombre,
 
                                     {
                                       color:
@@ -1793,16 +1654,59 @@ export default function ResultadoEntrevista({
                                   ]}
                                 >
                                   {
-                                    Math.round(
-                                      resultado.porcentaje
-                                    )
+                                    resultado.nombre
                                   }
                                 </Text>
 
+                                {esPrioridad && (
+                                  <View
+                                    style={[
+                                      styles.prioridadMini,
+
+                                      {
+                                        backgroundColor:
+                                          accentSoftColor,
+
+                                        borderColor:
+                                          accentColor,
+                                      },
+                                    ]}
+                                  >
+                                    <Text
+                                      style={[
+                                        styles.prioridadMiniTexto,
+
+                                        {
+                                          color:
+                                            accentColor,
+                                        },
+                                      ]}
+                                    >
+                                      Prioridad
+                                    </Text>
+                                  </View>
+                                )}
+                              </View>
+
+                              <View
+                                style={
+                                  styles.nivelFila
+                                }
+                              >
+                                <View
+                                  style={[
+                                    styles.nivelPunto,
+
+                                    {
+                                      backgroundColor:
+                                        colorNivel,
+                                    },
+                                  ]}
+                                />
 
                                 <Text
                                   style={[
-                                    styles.porcentajeSimbolo,
+                                    styles.nivelTexto,
 
                                     {
                                       color:
@@ -1810,316 +1714,355 @@ export default function ResultadoEntrevista({
                                     },
                                   ]}
                                 >
-                                  %
+                                  {
+                                    textoNivel(
+                                      resultado.nivel,
+                                    )
+                                  }
                                 </Text>
-
                               </View>
-
                             </View>
-
-
-                            {/* ===============================
-                                BARRA
-                            =============================== */}
 
                             <View
-                              style={[
-                                styles.barraContenedor,
-
-                                {
-                                  backgroundColor:
-                                    surfaceSecondaryColor,
-                                },
-                              ]}
+                              style={
+                                styles.porcentaje
+                              }
                             >
-
-                              <View
+                              <Text
                                 style={[
-                                  styles.barra,
+                                  styles.porcentajeNumero,
 
                                   {
-                                    width:
-                                      anchoBarra(
-                                        resultado.porcentaje
-                                      ),
-
-                                    backgroundColor:
-                                      primaryColor,
+                                    color:
+                                      textColor,
                                   },
                                 ]}
-                              />
+                              >
+                                {Math.round(
+                                  resultado.porcentaje,
+                                )}
+                              </Text>
 
+                              <Text
+                                style={[
+                                  styles.porcentajeSimbolo,
+
+                                  {
+                                    color:
+                                      textSecondaryColor,
+                                  },
+                                ]}
+                              >
+                                %
+                              </Text>
                             </View>
+                          </View>
 
+                          {/* BARRA */}
 
-                            {/* ===============================
-                                DESCRIPCIÓN
-                            =============================== */}
+                          <View
+                            style={[
+                              styles.barraContenedor,
 
-                            <Text
+                              {
+                                backgroundColor:
+                                  surfaceSecondaryColor,
+                              },
+                            ]}
+                          >
+                            <View
                               style={[
-                                styles.cardDescripcion,
+                                styles.barra,
 
                                 {
-                                  color:
-                                    textSecondaryColor,
+                                  width:
+                                    anchoBarra(
+                                      resultado.porcentaje,
+                                    ),
+
+                                  backgroundColor:
+                                    primaryColor,
                                 },
                               ]}
-                            >
+                            />
+                          </View>
+
+                          {/* DESCRIPCIÓN */}
+
+                          <Text
+                            style={[
+                              styles.cardDescripcion,
+
                               {
-                                descripcionNivel(
-                                  resultado.nivel
-                                )
-                              }
-                            </Text>
-
-                          </Animated.View>
-
-                        );
-
-                      }
-                    )
-                  }
-
+                                color:
+                                  textSecondaryColor,
+                              },
+                            ]}
+                          >
+                            {
+                              descripcionNivel(
+                                resultado.nivel,
+                              )
+                            }
+                          </Text>
+                        </Animated.View>
+                      );
+                    },
+                  )}
                 </View>
-
 
                 {/* ===========================================
                     ENFOQUE PRINCIPAL
                 =========================================== */}
 
-                {
-                  !!prioridades.length && (
+                {!!prioridades.length && (
+                  <Animated.View
+                    entering={
+                      FadeInUp
+                        .delay(
+                          450,
+                        )
+                        .duration(
+                          550,
+                        )
+                    }
+                    style={[
+                      styles.enfoqueCard,
 
-                    <Animated.View
-                      entering={
-                        FadeInUp
-                          .delay(
-                            450
-                          )
-                          .duration(
-                            550
-                          )
-                      }
+                      esTelefono &&
+                      styles.enfoqueCardMovil,
 
+                      {
+                        backgroundColor:
+                          primaryColor,
+
+                        marginTop:
+                          esEscritorio
+                            ? 24
+                            : undefined,
+
+                        padding:
+                          esEscritorio
+                            ? 24
+                            : undefined,
+
+                        borderRadius:
+                          esEscritorio
+                            ? 22
+                            : undefined,
+                      },
+                    ]}
+                  >
+                    <View
                       style={[
-                        styles.enfoqueCard,
-
-                        movil &&
-                        styles.enfoqueCardMovil,
+                        styles.enfoqueIcono,
 
                         {
                           backgroundColor:
-                            primaryColor,
+                            "rgba(255,255,255,0.18)",
                         },
                       ]}
                     >
+                      <Ionicons
+                        name="compass-outline"
+                        size={22}
+                        color="#FFFFFF"
+                      />
+                    </View>
 
-                      <View
+                    <View
+                      style={
+                        styles.enfoqueContenido
+                      }
+                    >
+                      <Text
                         style={[
-                          styles.enfoqueIcono,
+                          styles.enfoqueEtiqueta,
 
                           {
-                            backgroundColor:
-                              "rgba(255,255,255,0.18)",
+                            color:
+                              "rgba(255,255,255,0.78)",
                           },
                         ]}
                       >
+                        ENFOQUE PRINCIPAL
+                      </Text>
 
-                        <Ionicons
-                          name="compass-outline"
-                          size={22}
-                          color="#FFFFFF"
-                        />
+                      <Text
+                        style={[
+                          styles.enfoqueTitulo,
 
-                      </View>
+                          {
+                            color:
+                              "#FFFFFF",
 
-
-                      <View
-                        style={
-                          styles.enfoqueContenido
-                        }
+                            fontSize:
+                              esEscritorio
+                                ? 21
+                                : undefined,
+                          },
+                        ]}
                       >
+                        {prioridades
+                          .map(
+                            (
+                              prioridad,
+                            ) =>
+                              prioridad.nombre,
+                          )
+                          .join(
+                            " y ",
+                          )}
+                      </Text>
 
-                        <Text
-                          style={[
-                            styles.enfoqueEtiqueta,
+                      <Text
+                        style={[
+                          styles.enfoqueTexto,
 
-                            {
-                              color:
-                                "rgba(255,255,255,0.78)",
-                            },
-                          ]}
-                        >
-                          ENFOQUE PRINCIPAL
-                        </Text>
-
-
-                        <Text
-                          style={[
-                            styles.enfoqueTitulo,
-
-                            {
-                              color:
-                                "#FFFFFF",
-                            },
-                          ]}
-                        >
                           {
-                            prioridades
-                              .map(
-                                prioridad =>
-                                  prioridad.nombre
-                              )
-                              .join(
-                                " y "
-                              )
-                          }
-                        </Text>
-
-
-                        <Text
-                          style={[
-                            styles.enfoqueTexto,
-
-                            {
-                              color:
-                                "rgba(255,255,255,0.90)",
-                            },
-                          ]}
-                        >
-                          {
-                            prioridades.length ===
-                              1
-
-                              ? "Esta área obtuvo el indicador más alto y será una referencia importante para tu plan de bienestar."
-
-                              : "Estas áreas comparten el indicador más alto y serán una referencia importante para tu plan de bienestar."
-                          }
-                        </Text>
-
-                      </View>
-
-                    </Animated.View>
-
-                  )
-                }
-
+                            color:
+                              "rgba(255,255,255,0.90)",
+                          },
+                        ]}
+                      >
+                        {prioridades.length ===
+                          1
+                          ? "Esta área obtuvo el indicador más alto y será una referencia importante para tu plan de bienestar."
+                          : "Estas áreas comparten el indicador más alto y serán una referencia importante para tu plan de bienestar."}
+                      </Text>
+                    </View>
+                  </Animated.View>
+                )}
               </>
+            )}
 
-            )
-        }
+            {/* =================================================
+                AVISO
+            ================================================= */}
 
+            <Animated.View
+              entering={
+                FadeIn
+                  .delay(
+                    500,
+                  )
+                  .duration(
+                    500,
+                  )
+              }
+              style={[
+                styles.aviso,
 
-        {/* =================================================
-            AVISO
-        ================================================= */}
+                esTelefono &&
+                styles.avisoMovil,
 
-        <Animated.View
-          entering={
-            FadeIn
-              .delay(
-                500
-              )
-              .duration(
-                500
-              )
-          }
+                {
+                  backgroundColor:
+                    surfaceSecondaryColor,
 
-          style={[
-            styles.aviso,
+                  borderColor,
 
-            movil &&
-            styles.avisoMovil,
+                  maxWidth:
+                    esEscritorio
+                      ? 850
+                      : undefined,
 
-            {
-              backgroundColor:
-                surfaceSecondaryColor,
+                  alignSelf:
+                    "center",
 
-              borderColor,
-            },
-          ]}
-        >
+                  marginTop:
+                    esEscritorio
+                      ? 24
+                      : undefined,
+                },
+              ]}
+            >
+              <Ionicons
+                name="information-circle-outline"
+                size={19}
+                color={
+                  textSecondaryColor
+                }
+              />
 
-          <Ionicons
-            name="information-circle-outline"
-            size={19}
-            color={
-              textSecondaryColor
-            }
-          />
+              <Text
+                style={[
+                  styles.avisoTexto,
 
+                  {
+                    color:
+                      textSecondaryColor,
+                  },
+                ]}
+              >
+                Estos resultados son orientativos y están pensados para apoyar tu
+                autocuidado. No representan un diagnóstico clínico.
+              </Text>
+            </Animated.View>
 
-          <Text
-            style={[
-              styles.avisoTexto,
+            {/* =================================================
+                BOTÓN PLAN
+            ================================================= */}
 
-              {
-                color:
-                  textSecondaryColor,
-              },
-            ]}
-          >
-            Estos resultados son orientativos y están pensados para apoyar tu autocuidado. No representan un diagnóstico clínico.
-          </Text>
+            <View
+              style={{
+                width:
+                  "100%",
 
-        </Animated.View>
+                marginTop:
+                  esEscritorio
+                    ? 28
+                    : 20,
 
+                alignItems:
+                  esEscritorio
+                    ? "flex-end"
+                    : "stretch",
+              }}
+            >
+              <TouchableOpacity
+                activeOpacity={
+                  0.8
+                }
+                onPress={
+                  continuar
+                }
+                style={[
+                  styles.botonPrincipal,
 
-        {/* =================================================
-            BOTÓN PLAN
-        ================================================= */}
+                  esTelefono &&
+                  styles.botonPrincipalMovil,
 
-        <TouchableOpacity
-          activeOpacity={
-            0.8
-          }
+                  {
+                    width:
+                      anchoBoton,
 
-          onPress={
-            continuar
-          }
+                    backgroundColor:
+                      primaryColor,
+                  },
+                ]}
+              >
+                <Text
+                  style={
+                    styles.botonTexto
+                  }
+                >
+                  {modo ===
+                    "historial"
+                    ? "Ver plan de bienestar"
+                    : "Ver mi plan de bienestar"}
+                </Text>
 
-          style={[
-            styles.botonPrincipal,
-
-            movil &&
-            styles.botonPrincipalMovil,
-
-            {
-              backgroundColor:
-                primaryColor,
-            },
-          ]}
-        >
-
-          <Text
-            style={
-              styles.botonTexto
-            }
-          >
-            {
-              modo ===
-                "historial"
-
-                ? "Ver plan de bienestar"
-
-                : "Ver mi plan de bienestar"
-            }
-          </Text>
-
-
-          <Ionicons
-            name="arrow-forward"
-            size={20}
-            color="#FFFFFF"
-          />
-
-        </TouchableOpacity>
-
+                <Ionicons
+                  name="arrow-forward"
+                  size={20}
+                  color="#FFFFFF"
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
       </ScrollView>
-
     </SafeAreaView>
-
   );
-
 }

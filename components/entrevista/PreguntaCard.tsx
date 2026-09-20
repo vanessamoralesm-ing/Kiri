@@ -1,15 +1,9 @@
 import React from "react";
+import { Platform, StyleSheet, Text, View } from "react-native";
 
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
-import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
-
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 // ==========================================================
 // PROPS
@@ -27,7 +21,6 @@ interface Props {
   children?: React.ReactNode;
 }
 
-
 // ==========================================================
 // COMPONENTE
 // ==========================================================
@@ -39,177 +32,174 @@ export default function PreguntaCard({
   opcional = false,
   children,
 }: Props) {
+  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
   // ========================================================
   // COLORES DEL TEMA
   // ========================================================
 
-  const surfaceColor =
-    useThemeColor(
-      {},
-      "surface"
-    );
+  const surfaceColor = useThemeColor({}, "surface");
 
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
-  const surfaceSecondaryColor =
-    useThemeColor(
-      {},
-      "surfaceSecondary"
-    );
+  const borderColor = useThemeColor({}, "border");
 
+  const textColor = useThemeColor({}, "text");
 
-  const borderColor =
-    useThemeColor(
-      {},
-      "border"
-    );
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
 
+  const textMutedColor = useThemeColor({}, "textMuted");
 
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
+  const primaryColor = useThemeColor({}, "primary");
 
+  const primarySoftColor = useThemeColor({}, "primarySoft");
 
-  const textSecondaryColor =
-    useThemeColor(
-      {},
-      "textSecondary"
-    );
+  // ========================================================
+  // RESPONSIVE
+  // ========================================================
 
+  const paddingHorizontal = esEscritorio ? 28 : esTablet ? 24 : 20;
 
-  const textMutedColor =
-    useThemeColor(
-      {},
-      "textMuted"
-    );
+  const paddingTop = esEscritorio ? 24 : 22;
 
+  const paddingBottom = esEscritorio ? 24 : esTablet ? 26 : 24;
 
-  const primaryColor =
-    useThemeColor(
-      {},
-      "primary"
-    );
+  const borderRadius = esEscritorio ? 22 : 24;
 
+  const fontSizePregunta = esEscritorio ? 21 : esTablet ? 21 : 20;
 
-  const primarySoftColor =
-    useThemeColor(
-      {},
-      "primarySoft"
-    );
+  const lineHeightPregunta = esEscritorio ? 28 : 27;
 
+  const marginTopRespuestas = esEscritorio ? 22 : esTablet ? 24 : 22;
 
   // ========================================================
   // UI
   // ========================================================
 
   return (
-
     <View
       style={[
         styles.tarjeta,
 
         {
-          backgroundColor:
-            surfaceColor,
+          backgroundColor: surfaceColor,
 
           borderColor,
+
+          borderRadius,
+
+          paddingHorizontal,
+
+          paddingTop,
+
+          paddingBottom,
+
+          ...(Platform.OS === "web"
+            ? ({
+              boxShadow: esEscritorio
+                ? "0px 4px 14px rgba(0,0,0,0.05)"
+                : "0px 4px 14px rgba(0,0,0,0.06)",
+            } as any)
+            : {}),
+
+          ...(Platform.OS === "ios"
+            ? {
+              shadowColor: "#000000",
+
+              shadowOffset: {
+                width: 0,
+                height: 4,
+              },
+
+              shadowOpacity: esEscritorio ? 0.05 : 0.07,
+
+              shadowRadius: esEscritorio ? 8 : 9,
+            }
+            : {}),
+
+          ...(Platform.OS === "android"
+            ? {
+              elevation: esEscritorio ? 2 : 3,
+            }
+            : {}),
         },
       ]}
     >
-
       {/* =================================================
           ENCABEZADO
       ================================================= */}
 
       <View
-        style={
-          styles.encabezadoPregunta
-        }
+        style={[
+          styles.encabezadoPregunta,
+
+          {
+            marginBottom: esEscritorio ? 14 : 16,
+          },
+        ]}
       >
+        {/* CÓDIGO */}
 
-        {/* Código */}
+        {codigo ? (
+          <View
+            style={[
+              styles.codigo,
 
-        {
-          codigo
+              {
+                minWidth: esEscritorio ? 40 : 43,
 
-            ? (
+                minHeight: esEscritorio ? 30 : 32,
 
-              <View
-                style={[
-                  styles.codigo,
-
-                  {
-                    backgroundColor:
-                      primarySoftColor,
-                  },
-                ]}
-              >
-
-                <Text
-                  style={[
-                    styles.codigoTexto,
-
-                    {
-                      color:
-                        primaryColor,
-                    },
-                  ]}
-                >
-                  {codigo}
-                </Text>
-
-              </View>
-
-            )
-
-            : (
-
-              <View />
-
-            )
-        }
-
-
-        {/* Opcional */}
-
-        {
-          opcional && (
-
-            <View
+                backgroundColor: primarySoftColor,
+              },
+            ]}
+          >
+            <Text
               style={[
-                styles.opcional,
+                styles.codigoTexto,
 
                 {
-                  backgroundColor:
-                    surfaceSecondaryColor,
+                  color: primaryColor,
 
-                  borderColor,
+                  fontSize: esEscritorio ? 12 : 13,
                 },
               ]}
             >
+              {codigo}
+            </Text>
+          </View>
+        ) : (
+          <View />
+        )}
 
-              <Text
-                style={[
-                  styles.opcionalTexto,
+        {/* OPCIONAL */}
 
-                  {
-                    color:
-                      textMutedColor,
-                  },
-                ]}
-              >
-                Opcional
-              </Text>
+        {opcional && (
+          <View
+            style={[
+              styles.opcional,
 
-            </View>
+              {
+                backgroundColor: surfaceSecondaryColor,
 
-          )
-        }
+                borderColor,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.opcionalTexto,
 
+                {
+                  color: textMutedColor,
+                },
+              ]}
+            >
+              Opcional
+            </Text>
+          </View>
+        )}
       </View>
-
 
       {/* =================================================
           PREGUNTA
@@ -220,223 +210,128 @@ export default function PreguntaCard({
           styles.pregunta,
 
           {
-            color:
-              textColor,
+            color: textColor,
+
+            fontSize: fontSizePregunta,
+
+            lineHeight: lineHeightPregunta,
           },
         ]}
       >
         {pregunta}
       </Text>
 
-
       {/* =================================================
           DESCRIPCIÓN
       ================================================= */}
 
-      {
-        descripcion && (
+      {descripcion && (
+        <Text
+          style={[
+            styles.descripcion,
 
-          <Text
-            style={[
-              styles.descripcion,
+            {
+              color: textSecondaryColor,
 
-              {
-                color:
-                  textSecondaryColor,
-              },
-            ]}
-          >
-            {descripcion}
-          </Text>
+              fontSize: esEscritorio ? 14 : 14,
 
-        )
-      }
+              lineHeight: esEscritorio ? 20 : 21,
 
+              marginTop: esEscritorio ? 8 : 10,
+            },
+          ]}
+        >
+          {descripcion}
+        </Text>
+      )}
 
       {/* =================================================
           RESPUESTAS
       ================================================= */}
 
       <View
-        style={
-          styles.respuestas
-        }
+        style={[
+          styles.respuestas,
+
+          {
+            marginTop: marginTopRespuestas,
+          },
+        ]}
       >
         {children}
       </View>
-
     </View>
-
   );
-
 }
-
 
 // ==========================================================
 // ESTILOS
 // ==========================================================
 
-const styles =
-  StyleSheet.create({
+const styles = StyleSheet.create({
+  tarjeta: {
+    width: "100%",
 
-    tarjeta: {
-      width:
-        "100%",
+    borderWidth: 1,
+  },
 
-      borderRadius:
-        26,
+  encabezadoPregunta: {
+    width: "100%",
 
-      borderWidth:
-        1,
+    flexDirection: "row",
 
-      paddingHorizontal:
-        22,
+    alignItems: "center",
 
-      paddingTop:
-        24,
+    justifyContent: "space-between",
+  },
 
-      paddingBottom:
-        28,
+  codigo: {
+    paddingHorizontal: 11,
 
-      shadowColor:
-        "#000000",
+    paddingVertical: 6,
 
-      shadowOffset: {
-        width:
-          0,
+    borderRadius: 16,
 
-        height:
-          4,
-      },
+    alignItems: "center",
 
-      shadowOpacity:
-        0.1,
+    justifyContent: "center",
+  },
 
-      shadowRadius:
-        9,
+  codigoTexto: {
+    fontFamily: "Nunito-Bold",
+  },
 
-      elevation:
-        4,
-    },
+  opcional: {
+    paddingHorizontal: 11,
 
+    paddingVertical: 6,
 
-    encabezadoPregunta: {
-      width:
-        "100%",
+    borderRadius: 15,
 
-      flexDirection:
-        "row",
+    borderWidth: 1,
 
-      alignItems:
-        "center",
+    marginLeft: 10,
+  },
 
-      justifyContent:
-        "space-between",
+  opcionalTexto: {
+    fontSize: 12,
 
-      marginBottom:
-        17,
-    },
+    fontFamily: "Nunito-SemiBold",
+  },
 
+  pregunta: {
+    width: "100%",
 
-    codigo: {
-      minWidth:
-        43,
+    fontFamily: "Nunito-Bold",
+  },
 
-      minHeight:
-        32,
+  descripcion: {
+    width: "100%",
 
-      paddingHorizontal:
-        11,
+    fontFamily: "Nunito-Medium",
+  },
 
-      paddingVertical:
-        6,
-
-      borderRadius:
-        16,
-
-      alignItems:
-        "center",
-
-      justifyContent:
-        "center",
-    },
-
-
-    codigoTexto: {
-      fontSize:
-        13,
-
-      fontFamily:
-        "Nunito-Bold",
-    },
-
-
-    opcional: {
-      paddingHorizontal:
-        11,
-
-      paddingVertical:
-        6,
-
-      borderRadius:
-        15,
-
-      borderWidth:
-        1,
-
-      marginLeft:
-        10,
-    },
-
-
-    opcionalTexto: {
-      fontSize:
-        12,
-
-      fontFamily:
-        "Nunito-SemiBold",
-    },
-
-
-    pregunta: {
-      width:
-        "100%",
-
-      fontSize:
-        22,
-
-      lineHeight:
-        30,
-
-      fontFamily:
-        "Nunito-Bold",
-    },
-
-
-    descripcion: {
-      width:
-        "100%",
-
-      fontSize:
-        14,
-
-      lineHeight:
-        21,
-
-      fontFamily:
-        "Nunito-Medium",
-
-      marginTop:
-        10,
-    },
-
-
-    respuestas: {
-      width:
-        "100%",
-
-      marginTop:
-        28,
-    },
-
-  });
+  respuestas: {
+    width: "100%",
+  },
+});

@@ -1,32 +1,50 @@
 import { DetalleTecnicaInterface } from "@/components/tecnicas/TecnicasInterfaces";
+
 import {
   iniciarTecnica,
   obtenerTecnica,
   TecnicaComplementaria,
 } from "@/services/tecnicas/tecnicasService";
+
 import { useLocalSearchParams, useRouter } from "expo-router";
+
 import React, { useCallback, useEffect, useState } from "react";
+
 import { Alert } from "react-native";
 
 export default function DetalleTecnica() {
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+
+  const { id } = useLocalSearchParams<{
+    id: string;
+  }>();
 
   const idTecnica = Array.isArray(id) ? id[0] : id;
 
   const [tecnica, setTecnica] = useState<TecnicaComplementaria | null>(null);
+
   const [cargando, setCargando] = useState(true);
+
   const [iniciando, setIniciando] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
 
   const cargar = useCallback(async () => {
-    if (!idTecnica) return;
+    if (!idTecnica) {
+      setError("No se recibió el identificador de la técnica.");
+
+      setCargando(false);
+
+      return;
+    }
 
     try {
       setCargando(true);
+
       setError(null);
 
       const data = await obtenerTecnica(idTecnica);
+
       setTecnica(data);
     } catch (e) {
       setError(
@@ -42,7 +60,9 @@ export default function DetalleTecnica() {
   }, [cargar]);
 
   const comenzar = async () => {
-    if (!idTecnica) return;
+    if (!idTecnica) {
+      return;
+    }
 
     try {
       setIniciando(true);
@@ -51,11 +71,17 @@ export default function DetalleTecnica() {
 
       router.push({
         pathname: "/(tecnica)/[id]/ejercicio" as any,
-        params: { id: idTecnica, registro: registro.id_registro },
+
+        params: {
+          id: idTecnica,
+
+          registro: registro.id_registro,
+        },
       });
     } catch (e) {
       Alert.alert(
         "No pudimos iniciar",
+
         e instanceof Error ? e.message : "Inténtalo nuevamente.",
       );
     } finally {
