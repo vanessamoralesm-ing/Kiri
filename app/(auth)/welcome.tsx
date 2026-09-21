@@ -1,69 +1,180 @@
 import { useRouter } from "expo-router";
 import React from "react";
+
 import {
   Image,
   ImageBackground,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
-import Button from "../../components/ui/Button";
+
+// ==========================================================
+// COMPONENTE
+// ==========================================================
 
 export default function WelcomeScreen() {
   const router = useRouter();
 
-  const { width, esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
+  const insets = useSafeAreaInsets();
 
-  // ======================================================
+  const { width, height, esTelefono, esTablet, esEscritorio } =
+    useResponsiveLayout();
+
+  // ========================================================
   // NAVEGACIÓN
-  // ======================================================
+  // ========================================================
 
-  const irModoAcceso = () => {
+  function irModoAcceso() {
     router.push("/(auth)/modo_acceso");
-  };
+  }
 
-  const irLogin = () => {
+  function irLogin() {
     router.push("/(auth)/login");
-  };
+  }
 
-  // ======================================================
-  // RESPONSIVE
-  // ======================================================
+  // ========================================================
+  // RESPONSIVE GENERAL
+  // ========================================================
 
-  const paddingHorizontal = esEscritorio ? 60 : esTablet ? 36 : 22;
-  const paddingVertical = esEscritorio ? 40 : esTablet ? 28 : 20;
+  const telefonoPequeno = esTelefono && height < 760;
 
-  const maxWidthContenido = esEscritorio ? 1240 : esTablet ? 980 : 540;
+  const telefonoMuyPequeno = esTelefono && height < 680;
 
-  const anchoTarjeta = esEscritorio ? "92%" : esTablet ? "94%" : "100%";
+  const paddingHorizontal = esEscritorio ? 60 : esTablet ? 36 : 20;
 
-  const tamanoLogo = esEscritorio ? 180 : esTablet ? 160 : 145;
+  const paddingTop = esEscritorio
+    ? 40
+    : esTablet
+      ? 28
+      : Math.max(insets.top + 8, 16);
 
-  const anchoMascota = esEscritorio
+  const paddingBottom = esEscritorio
+    ? 40
+    : esTablet
+      ? 28
+      : Math.max(insets.bottom + 28, 36);
+
+  const maxWidthContenido = esEscritorio ? 1240 : esTablet ? 980 : 560;
+
+  // ========================================================
+  // LOGO
+  // ========================================================
+
+  const tamanoLogo = esEscritorio
+    ? 180
+    : esTablet
+      ? 150
+      : telefonoMuyPequeno
+        ? 74
+        : telefonoPequeno
+          ? 82
+          : 90;
+
+  const altoLogo = esEscritorio
+    ? 90
+    : esTablet
+      ? 78
+      : telefonoMuyPequeno
+        ? 36
+        : telefonoPequeno
+          ? 40
+          : 44;
+
+  // ========================================================
+  // MASCOTA
+  // ========================================================
+
+  const tamanoCirculo = esEscritorio
+    ? 380
+    : esTablet
+      ? 310
+      : telefonoMuyPequeno
+        ? Math.min(width * 0.42, 160)
+        : telefonoPequeno
+          ? Math.min(width * 0.46, 178)
+          : Math.min(width * 0.5, 205);
+
+  const tamanoMascota = esEscritorio
     ? 360
     : esTablet
-      ? 300
-      : Math.min(width * 0.66, 250);
+      ? 290
+      : telefonoMuyPequeno
+        ? Math.min(width * 0.4, 152)
+        : telefonoPequeno
+          ? Math.min(width * 0.44, 170)
+          : Math.min(width * 0.48, 195);
 
-  const altoMascota = esEscritorio ? 360 : esTablet ? 300 : 250;
+  // ========================================================
+  // TIPOGRAFÍA
+  // ========================================================
 
-  const tamanoTitulo = esEscritorio ? 40 : esTablet ? 36 : 30;
-  const tamanoSubtitulo = esEscritorio ? 22 : esTablet ? 20 : 18;
-  const tamanoDescripcion = esEscritorio ? 17 : esTablet ? 16 : 15;
+  const tamanoTitulo = esEscritorio
+    ? 40
+    : esTablet
+      ? 36
+      : telefonoMuyPequeno
+        ? 23
+        : telefonoPequeno
+          ? 25
+          : 28;
+
+  const tamanoSubtitulo = esEscritorio
+    ? 22
+    : esTablet
+      ? 20
+      : telefonoMuyPequeno
+        ? 15
+        : telefonoPequeno
+          ? 16
+          : 17;
+
+  const tamanoDescripcion = esEscritorio
+    ? 17
+    : esTablet
+      ? 16
+      : telefonoMuyPequeno
+        ? 12
+        : telefonoPequeno
+          ? 13
+          : 14;
+
+  // ========================================================
+  // DISTRIBUCIÓN
+  // ========================================================
 
   const anchoPanelVisual = esTelefono ? "100%" : esEscritorio ? "46%" : "48%";
+
   const anchoPanelContenido = esTelefono
     ? "100%"
     : esEscritorio
       ? "46%"
       : "48%";
 
-  // ======================================================
+  const paddingCardHorizontal = esEscritorio ? 52 : esTablet ? 36 : 0;
+
+  const paddingCardVertical = esEscritorio ? 42 : esTablet ? 30 : 0;
+
+  const gapCard = esEscritorio
+    ? 34
+    : esTablet
+      ? 24
+      : telefonoMuyPequeno
+        ? 5
+        : telefonoPequeno
+          ? 7
+          : 10;
+
+  // ========================================================
   // UI
-  // ======================================================
+  // ========================================================
 
   return (
     <ImageBackground
@@ -71,69 +182,147 @@ export default function WelcomeScreen() {
       style={styles.imagenFondo}
       resizeMode="cover"
     >
-      {/* Capa suave para bajar el peso visual del fondo */}
+      {/* ==================================================
+          CAPA SUAVE
+      ================================================== */}
+
       <View style={styles.overlay} />
 
+      {/* ==================================================
+          SCROLL
+      ================================================== */}
+
       <ScrollView
+        style={{
+          flex: 1,
+        }}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={[
           styles.scrollContainer,
           {
             paddingHorizontal,
-            paddingVertical,
+            paddingTop,
+            paddingBottom,
+
+            justifyContent: esTelefono ? "flex-start" : "center",
           },
         ]}
       >
+        {/* ==================================================
+            CONTENEDOR GENERAL
+        ================================================== */}
+
         <View
           style={[
             styles.wrapper,
             {
               maxWidth: maxWidthContenido,
-              width: anchoTarjeta,
+
+              width: esTelefono ? "100%" : esTablet ? "94%" : "92%",
             },
           ]}
         >
+          {/* ==================================================
+              TARJETA
+          ================================================== */}
+
           <View
             style={[
               styles.mainCard,
               {
                 flexDirection: esTelefono ? "column" : "row",
-                paddingHorizontal: esEscritorio ? 52 : esTablet ? 36 : 22,
-                paddingVertical: esEscritorio ? 42 : esTablet ? 30 : 24,
-                gap: esEscritorio ? 34 : esTablet ? 24 : 20,
+
+                paddingHorizontal: paddingCardHorizontal,
+
+                paddingVertical: paddingCardVertical,
+
+                gap: gapCard,
+
+                borderRadius: esTelefono ? 0 : 34,
+
+                backgroundColor: esTelefono
+                  ? "transparent"
+                  : "rgba(255,255,255,0.78)",
+
+                borderWidth: esTelefono ? 0 : 1,
+
+                borderColor: esTelefono
+                  ? "transparent"
+                  : "rgba(184,168,248,0.18)",
+
+                ...(Platform.OS === "web" && !esTelefono
+                  ? ({
+                    boxShadow: "0px 10px 30px rgba(0,0,0,0.08)",
+                  } as any)
+                  : {}),
+
+                ...(Platform.OS === "ios" && !esTelefono
+                  ? {
+                    shadowColor: "#000000",
+
+                    shadowOffset: {
+                      width: 0,
+                      height: 10,
+                    },
+
+                    shadowOpacity: 0.08,
+
+                    shadowRadius: 20,
+                  }
+                  : {}),
+
+                ...(Platform.OS === "android" && !esTelefono
+                  ? {
+                    elevation: 6,
+                  }
+                  : {}),
               },
             ]}
           >
             {/* ==================================================
                 PANEL VISUAL
             ================================================== */}
+
             <View
               style={[
                 styles.visualPanel,
                 {
                   width: anchoPanelVisual,
+
+                  minHeight: esTelefono ? undefined : 420,
+
                   alignItems: "center",
+
                   justifyContent: "center",
                 },
               ]}
             >
+              {/* LOGO */}
+
               <Image
                 source={require("../../assets/images/logo_secundario.png")}
                 resizeMode="contain"
                 style={{
                   width: tamanoLogo,
-                  height: esEscritorio ? 90 : 82,
-                  marginBottom: esTelefono ? 10 : 16,
+
+                  height: altoLogo,
+
+                  marginBottom: esTelefono ? (telefonoMuyPequeno ? 2 : 5) : 16,
                 }}
               />
+
+              {/* MASCOTA */}
 
               <View
                 style={[
                   styles.mascotCircle,
                   {
-                    width: esEscritorio ? 380 : esTablet ? 320 : 260,
-                    height: esEscritorio ? 380 : esTablet ? 320 : 260,
-                    borderRadius: esEscritorio ? 190 : esTablet ? 160 : 130,
+                    width: tamanoCirculo,
+
+                    height: tamanoCirculo,
+
+                    borderRadius: tamanoCirculo / 2,
                   },
                 ]}
               >
@@ -141,60 +330,124 @@ export default function WelcomeScreen() {
                   source={require("../../assets/images/mascota.png")}
                   resizeMode="contain"
                   style={{
-                    width: anchoMascota,
-                    height: altoMascota,
+                    width: tamanoMascota,
+
+                    height: tamanoMascota,
                   }}
                 />
               </View>
             </View>
 
             {/* ==================================================
-                PANEL CONTENIDO
+                PANEL DE CONTENIDO
             ================================================== */}
+
             <View
               style={[
                 styles.contentPanel,
                 {
                   width: anchoPanelContenido,
+
+                  minHeight: esTelefono ? undefined : 420,
+
                   alignItems: "center",
-                  justifyContent: "center",
+
+                  justifyContent: esTelefono ? "flex-start" : "center",
+
+                  paddingTop: esTelefono
+                    ? telefonoMuyPequeno
+                      ? 4
+                      : telefonoPequeno
+                        ? 6
+                        : 10
+                    : 0,
                 },
               ]}
             >
+              {/* =================================================
+                  TÍTULO
+              ================================================= */}
+
               <Text
                 style={[
                   styles.title,
                   {
                     fontSize: tamanoTitulo,
-                    lineHeight: tamanoTitulo + 6,
+
+                    lineHeight: tamanoTitulo + 5,
                   },
                 ]}
               >
                 Bienvenido a <Text style={styles.titleBlue}>Kiri</Text>
               </Text>
 
-              <View style={styles.divider} />
+              {/* =================================================
+                  DIVISOR
+              ================================================= */}
+
+              <View
+                style={[
+                  styles.divider,
+                  {
+                    marginTop: telefonoMuyPequeno
+                      ? 6
+                      : telefonoPequeno
+                        ? 8
+                        : 10,
+
+                    marginBottom: telefonoMuyPequeno
+                      ? 8
+                      : telefonoPequeno
+                        ? 10
+                        : 14,
+                  },
+                ]}
+              />
+
+              {/* =================================================
+                  SUBTÍTULO
+              ================================================= */}
 
               <Text
                 style={[
                   styles.subtitle,
                   {
                     fontSize: tamanoSubtitulo,
+
                     lineHeight: tamanoSubtitulo + 6,
+
                     maxWidth: 460,
+
+                    marginBottom: telefonoMuyPequeno
+                      ? 7
+                      : telefonoPequeno
+                        ? 9
+                        : 12,
                   },
                 ]}
               >
                 Cuidar de tu salud mental es un acto de fortaleza
               </Text>
 
+              {/* =================================================
+                  DESCRIPCIÓN
+              ================================================= */}
+
               <Text
                 style={[
                   styles.description,
                   {
                     fontSize: tamanoDescripcion,
-                    lineHeight: tamanoDescripcion + 8,
+
+                    lineHeight: tamanoDescripcion + 7,
+
                     maxWidth: esEscritorio ? 500 : 460,
+
+                    marginBottom: telefonoMuyPequeno
+                      ? 5
+                      : telefonoPequeno
+                        ? 7
+                        : 10,
                   },
                 ]}
               >
@@ -203,11 +456,29 @@ export default function WelcomeScreen() {
                 bienestar.
               </Text>
 
+              {/* =================================================
+                  MENSAJE FINAL
+              ================================================= */}
+
               <Text
                 style={[
                   styles.footerText,
                   {
-                    fontSize: esEscritorio ? 16 : 15,
+                    fontSize: esEscritorio
+                      ? 16
+                      : telefonoMuyPequeno
+                        ? 12
+                        : telefonoPequeno
+                          ? 13
+                          : 14,
+
+                    lineHeight: esTelefono ? 20 : 22,
+
+                    marginBottom: telefonoMuyPequeno
+                      ? 8
+                      : telefonoPequeno
+                        ? 10
+                        : 14,
                   },
                 ]}
               >
@@ -215,26 +486,160 @@ export default function WelcomeScreen() {
                 proceso.
               </Text>
 
-              <View style={styles.buttonContainer}>
-                <Button
-                  title="Comenzar"
-                  variant="primary"
+              {/* =================================================
+                  ACCIONES
+              ================================================= */}
+
+              <View
+                style={{
+                  width: "100%",
+
+                  maxWidth: 460,
+
+                  alignSelf: "center",
+
+                  marginTop: telefonoMuyPequeno ? 2 : telefonoPequeno ? 4 : 8,
+                }}
+              >
+                {/* ===============================================
+                    BOTÓN COMENZAR
+                =============================================== */}
+
+                <TouchableOpacity
+                  activeOpacity={0.82}
                   onPress={irModoAcceso}
-                />
-              </View>
+                  style={{
+                    width: "100%",
 
-              <View style={styles.dividerContainer}>
-                <View style={styles.line} />
-                <Text style={styles.dividerText}>o</Text>
-                <View style={styles.line} />
-              </View>
+                    minHeight: telefonoMuyPequeno
+                      ? 48
+                      : telefonoPequeno
+                        ? 52
+                        : 56,
 
-              <View style={styles.buttonContainer}>
-                <Button
-                  title="¿Ya tienes una cuenta? Iniciar Sesión"
-                  variant="secondary"
+                    paddingHorizontal: 20,
+
+                    paddingVertical: telefonoMuyPequeno ? 10 : 12,
+
+                    borderRadius: 18,
+
+                    alignItems: "center",
+
+                    justifyContent: "center",
+
+                    backgroundColor: "#4F8EF7",
+
+                    ...(Platform.OS === "ios"
+                      ? {
+                        shadowColor: "#4F8EF7",
+
+                        shadowOffset: {
+                          width: 0,
+                          height: 3,
+                        },
+
+                        shadowOpacity: 0.18,
+
+                        shadowRadius: 6,
+                      }
+                      : {}),
+
+                    ...(Platform.OS === "android"
+                      ? {
+                        elevation: 3,
+                      }
+                      : {}),
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.textoBotonPrincipal,
+                      {
+                        fontSize: telefonoMuyPequeno ? 15 : 17,
+                      },
+                    ]}
+                  >
+                    Comenzar
+                  </Text>
+                </TouchableOpacity>
+
+                {/* ===============================================
+                    SEPARADOR
+                =============================================== */}
+
+                <View
+                  style={[
+                    styles.dividerContainer,
+                    {
+                      marginVertical: telefonoMuyPequeno
+                        ? 10
+                        : telefonoPequeno
+                          ? 12
+                          : 16,
+                    },
+                  ]}
+                >
+                  <View style={styles.line} />
+
+                  <Text style={styles.dividerText}>o</Text>
+
+                  <View style={styles.line} />
+                </View>
+
+                {/* ===============================================
+                    LOGIN
+                =============================================== */}
+
+                <TouchableOpacity
+                  activeOpacity={0.78}
                   onPress={irLogin}
-                />
+                  style={{
+                    width: "100%",
+
+                    minHeight: telefonoMuyPequeno
+                      ? 46
+                      : telefonoPequeno
+                        ? 50
+                        : 54,
+
+                    paddingHorizontal: 12,
+
+                    paddingVertical: telefonoMuyPequeno ? 8 : 10,
+
+                    borderRadius: 18,
+
+                    borderWidth: 2,
+
+                    borderColor: "#4F8EF7",
+
+                    alignItems: "center",
+
+                    justifyContent: "center",
+
+                    backgroundColor: "rgba(255,255,255,0.92)",
+                  }}
+                >
+                  <Text
+                    numberOfLines={2}
+                    style={[
+                      styles.textoBotonSecundario,
+                      {
+                        fontSize: telefonoMuyPequeno
+                          ? 12
+                          : telefonoPequeno
+                            ? 13
+                            : 14,
+
+                        lineHeight: 20,
+                      },
+                    ]}
+                  >
+                    ¿Ya tienes una cuenta?{" "}
+                    <Text style={styles.textoLoginDestacado}>
+                      Iniciar sesión
+                    </Text>
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
           </View>
@@ -249,61 +654,83 @@ export default function WelcomeScreen() {
 // ==========================================================
 
 const styles = StyleSheet.create({
+  // ======================================================
+  // FONDO
+  // ======================================================
+
   imagenFondo: {
     flex: 1,
+
     width: "100%",
+
     height: "100%",
   },
 
   overlay: {
     ...StyleSheet.absoluteFillObject,
+
     backgroundColor: "rgba(255,255,255,0.58)",
   },
 
+  // ======================================================
+  // SCROLL
+  // ======================================================
+
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
+
     alignItems: "center",
   },
 
   wrapper: {
     alignSelf: "center",
+
     width: "100%",
   },
+
+  // ======================================================
+  // CONTENEDOR PRINCIPAL
+  // ======================================================
 
   mainCard: {
     width: "100%",
-    borderRadius: 34,
-    backgroundColor: "rgba(255,255,255,0.72)",
-    borderWidth: 1,
-    borderColor: "rgba(184, 168, 248, 0.18)",
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 8,
+
     alignItems: "center",
+
     justifyContent: "center",
   },
 
+  // ======================================================
+  // VISUAL
+  // ======================================================
+
   visualPanel: {
-    minHeight: 420,
+    alignItems: "center",
+
+    justifyContent: "center",
   },
 
   mascotCircle: {
-    backgroundColor: "rgba(184, 168, 248, 0.15)",
+    backgroundColor: "rgba(184,168,248,0.15)",
+
     alignItems: "center",
+
     justifyContent: "center",
   },
 
+  // ======================================================
+  // CONTENIDO
+  // ======================================================
+
   contentPanel: {
-    minHeight: 420,
+    alignItems: "center",
   },
 
   title: {
     fontFamily: "Nunito-Bold",
-    fontWeight: "700",
+
     color: "#2D3748",
+
     textAlign: "center",
   },
 
@@ -313,65 +740,107 @@ const styles = StyleSheet.create({
 
   divider: {
     width: 52,
+
     height: 4,
+
     backgroundColor: "#B8A8F8",
+
     borderRadius: 999,
-    marginTop: 12,
-    marginBottom: 16,
   },
 
   subtitle: {
     fontFamily: "Nunito-SemiBold",
-    fontWeight: "600",
+
     color: "#4F8EF7",
+
     textAlign: "center",
-    marginBottom: 14,
   },
 
   description: {
     fontFamily: "Nunito-Medium",
-    fontWeight: "400",
+
     color: "#2D3748",
+
     textAlign: "center",
-    marginBottom: 12,
   },
 
   footerText: {
     fontFamily: "Nunito-Medium",
+
     color: "#2D3748",
+
     textAlign: "center",
-    marginBottom: 22,
   },
 
   greenText: {
     color: "#7BBF9A",
+
     fontFamily: "Nunito-Bold",
-    fontWeight: "700",
   },
 
-  buttonContainer: {
-    width: "100%",
-    maxWidth: 460,
+  // ======================================================
+  // BOTÓN PRINCIPAL
+  // ======================================================
+
+  textoBotonPrincipal: {
+    fontFamily: "Nunito-Bold",
+
+    color: "#FFFFFF",
+
+    textAlign: "center",
+
+    includeFontPadding: false,
   },
+
+  // ======================================================
+  // SEPARADOR
+  // ======================================================
 
   dividerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
     width: "100%",
-    maxWidth: 460,
-    marginVertical: 14,
+
+    flexDirection: "row",
+
+    alignItems: "center",
   },
 
   line: {
     flex: 1,
+
     height: 1,
-    backgroundColor: "rgba(45, 55, 72, 0.22)",
+
+    backgroundColor: "rgba(45,55,72,0.22)",
   },
 
   dividerText: {
     marginHorizontal: 15,
-    fontSize: 15,
+
+    fontSize: 14,
+
     fontFamily: "Nunito-Medium",
+
     color: "#64748B",
+  },
+
+  // ======================================================
+  // LOGIN
+  // ======================================================
+
+  textoBotonSecundario: {
+    width: "100%",
+
+    fontFamily: "Nunito-SemiBold",
+
+    color: "#475569",
+
+    textAlign: "center",
+
+    includeFontPadding: false,
+  },
+
+  textoLoginDestacado: {
+    fontFamily: "Nunito-Bold",
+
+    color: "#4F8EF7",
   },
 });
