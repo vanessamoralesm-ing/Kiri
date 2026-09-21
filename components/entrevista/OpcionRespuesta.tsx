@@ -1,16 +1,10 @@
 import React from "react";
 
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 // ==========================================================
 // PROPS
@@ -18,10 +12,11 @@ import {
 
 interface Props {
   texto: string;
+
   seleccionada: boolean;
+
   onPress: () => void;
 }
-
 
 // ==========================================================
 // COMPONENTE
@@ -32,266 +27,178 @@ export default function OpcionRespuesta({
   seleccionada,
   onPress,
 }: Props) {
+  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
   // ========================================================
   // COLORES DEL TEMA
   // ========================================================
 
-  const surfaceColor =
-    useThemeColor(
-      {},
-      "surface"
-    );
+  const surfaceColor = useThemeColor({}, "surface");
 
-  const borderColor =
-    useThemeColor(
-      {},
-      "border"
-    );
+  const borderColor = useThemeColor({}, "border");
 
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
+  const textColor = useThemeColor({}, "text");
 
-  const textSecondaryColor =
-    useThemeColor(
-      {},
-      "textSecondary"
-    );
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
 
-  const primaryColor =
-    useThemeColor(
-      {},
-      "primary"
-    );
+  const primaryColor = useThemeColor({}, "primary");
 
-  const primarySoftColor =
-    useThemeColor(
-      {},
-      "primarySoft"
-    );
+  const primarySoftColor = useThemeColor({}, "primarySoft");
 
+  // ========================================================
+  // RESPONSIVE
+  // ========================================================
+
+  const minHeightOpcion = esEscritorio ? 54 : esTablet ? 56 : 58;
+
+  const minHeightContenido = esEscritorio ? 52 : esTablet ? 54 : 56;
+
+  const paddingHorizontal = esEscritorio ? 18 : 16;
+
+  const paddingVertical = esEscritorio ? 10 : 12;
+
+  const tamañoRadio = esEscritorio ? 22 : 24;
+
+  const tamañoRadioInterno = esEscritorio ? 10 : 12;
+
+  const fontSize = esEscritorio ? 15 : 16;
+
+  const lineHeight = esEscritorio ? 21 : 22;
+
+  const marginBottom = esEscritorio ? 10 : 12;
 
   // ========================================================
   // UI
   // ========================================================
 
   return (
-
     <Pressable
-      onPress={
-        onPress
-      }
-
+      onPress={onPress}
       android_ripple={{
         color: "rgba(79, 142, 247, 0.10)",
       }}
+      style={({ pressed }) => [
+        styles.opcion,
 
-      style={({
-        pressed,
-      }) => [
-          styles.opcion,
+        {
+          minHeight: minHeightOpcion,
+
+          marginBottom,
+
+          backgroundColor: seleccionada ? primarySoftColor : surfaceColor,
+
+          borderColor: seleccionada ? primaryColor : borderColor,
+        },
+
+        pressed && styles.opcionPresionada,
+      ]}
+    >
+      <View
+        style={[
+          styles.contenidoOpcion,
 
           {
-            backgroundColor:
-              seleccionada
-                ? primarySoftColor
-                : surfaceColor,
+            minHeight: minHeightContenido,
 
-            borderColor:
-              seleccionada
-                ? primaryColor
-                : borderColor,
+            paddingHorizontal,
+
+            paddingVertical,
           },
-
-          pressed &&
-          styles.opcionPresionada,
         ]}
-    >
-
-      {/* =================================================
-          CONTENEDOR HORIZONTAL
-      ================================================= */}
-
-      <View
-        style={
-          styles.contenidoOpcion
-        }
       >
-
-        {/* ===============================================
-            RADIO
-        =============================================== */}
+        {/* RADIO */}
 
         <View
-          style={[
-            styles.radio,
+          style={{
+            width: tamañoRadio,
 
-            {
-              borderColor:
-                seleccionada
-                  ? primaryColor
-                  : textSecondaryColor,
-            },
-          ]}
+            height: tamañoRadio,
+
+            borderRadius: tamañoRadio / 2,
+
+            borderWidth: 2,
+
+            borderColor: seleccionada ? primaryColor : textSecondaryColor,
+
+            alignItems: "center",
+
+            justifyContent: "center",
+
+            marginRight: esEscritorio ? 12 : 14,
+
+            flexShrink: 0,
+          }}
         >
+          {seleccionada && (
+            <View
+              style={{
+                width: tamañoRadioInterno,
 
-          {
-            seleccionada && (
+                height: tamañoRadioInterno,
 
-              <View
-                style={[
-                  styles.radioInterno,
+                borderRadius: tamañoRadioInterno / 2,
 
-                  {
-                    backgroundColor:
-                      primaryColor,
-                  },
-                ]}
-              />
-
-            )
-          }
-
+                backgroundColor: primaryColor,
+              }}
+            />
+          )}
         </View>
 
-
-        {/* ===============================================
-            TEXTO
-        =============================================== */}
+        {/* TEXTO */}
 
         <Text
           style={[
             styles.texto,
 
             {
-              color:
-                seleccionada
-                  ? primaryColor
-                  : textColor,
+              fontSize,
+              lineHeight,
+
+              color: seleccionada ? primaryColor : textColor,
             },
           ]}
         >
           {texto}
         </Text>
-
       </View>
-
     </Pressable>
-
   );
-
 }
-
 
 // ==========================================================
 // ESTILOS
 // ==========================================================
 
-const styles =
-  StyleSheet.create({
+const styles = StyleSheet.create({
+  opcion: {
+    width: "100%",
 
-    // ------------------------------------------------------
-    // OPCIÓN COMPLETA
-    // ------------------------------------------------------
+    borderWidth: 1.5,
 
-    opcion: {
-      width: "100%",
+    borderRadius: 16,
 
-      minHeight: 58,
+    overflow: "hidden",
+  },
 
-      borderWidth: 1.5,
+  contenidoOpcion: {
+    width: "100%",
 
-      borderRadius: 16,
+    flexDirection: "row",
 
-      marginBottom: 12,
+    alignItems: "center",
+  },
 
-      overflow: "hidden",
-    },
+  texto: {
+    flex: 1,
 
+    fontFamily: "Nunito-SemiBold",
 
-    // ------------------------------------------------------
-    // RADIO + TEXTO
-    // ------------------------------------------------------
+    textAlignVertical: "center",
 
-    contenidoOpcion: {
-      width: "100%",
+    includeFontPadding: false,
+  },
 
-      minHeight: 56,
-
-      flexDirection: "row",
-
-      alignItems: "center",
-
-      paddingHorizontal: 16,
-
-      paddingVertical: 12,
-    },
-
-
-    // ------------------------------------------------------
-    // RADIO
-    // ------------------------------------------------------
-
-    radio: {
-      width: 24,
-
-      height: 24,
-
-      borderRadius: 12,
-
-      borderWidth: 2,
-
-      alignItems: "center",
-
-      justifyContent: "center",
-
-      marginRight: 14,
-
-      flexShrink: 0,
-    },
-
-
-    // ------------------------------------------------------
-    // CENTRO DEL RADIO
-    // ------------------------------------------------------
-
-    radioInterno: {
-      width: 12,
-
-      height: 12,
-
-      borderRadius: 6,
-    },
-
-
-    // ------------------------------------------------------
-    // TEXTO
-    // ------------------------------------------------------
-
-    texto: {
-      flex: 1,
-
-      fontSize: 16,
-
-      lineHeight: 22,
-
-      fontFamily: "Nunito-SemiBold",
-
-      textAlignVertical: "center",
-
-      includeFontPadding: false,
-    },
-
-
-    // ------------------------------------------------------
-    // PRESIONADO
-    // ------------------------------------------------------
-
-    opcionPresionada: {
-      opacity: 0.85,
-    },
-
-  });
+  opcionPresionada: {
+    opacity: 0.85,
+  },
+});

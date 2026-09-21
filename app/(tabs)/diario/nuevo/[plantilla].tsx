@@ -3,11 +3,11 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
+  LayoutChangeEvent,
   Platform,
   Pressable,
   ScrollView,
   Text,
-  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -25,6 +25,12 @@ import { CampoPreguntaDiario } from "@/components/diario/CampoPreguntaDiario";
 
 import Button from "@/components/ui/Button";
 
+import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
+
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+
+import { useThemeColor } from "@/hooks/use-theme-color";
+
 import { useAuth } from "@/services/authProvider";
 
 import {
@@ -33,8 +39,6 @@ import {
 } from "@/services/diario/autorregistro.service";
 
 import { EmocionAutorregistro } from "@/types/diario";
-
-import { useThemeColor } from "@/hooks/use-theme-color";
 
 // ==========================================================
 // EMOJIS
@@ -62,7 +66,7 @@ export default function NuevoAutorregistro() {
 
   const insets = useSafeAreaInsets();
 
-  const { width } = useWindowDimensions();
+  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
   const { user } = useAuth();
 
@@ -71,9 +75,9 @@ export default function NuevoAutorregistro() {
     origen?: string;
   }>();
 
-  // ======================================================
+  // ========================================================
   // ESTADO
-  // ======================================================
+  // ========================================================
 
   const [guardando, setGuardando] = useState(false);
 
@@ -89,9 +93,17 @@ export default function NuevoAutorregistro() {
 
   const [ideaUtil, setIdeaUtil] = useState("");
 
-  // ======================================================
+  /*
+   * Ancho real disponible para la cuadrícula.
+   *
+   * Se mide directamente del contenedor para que responda
+   * correctamente cuando la sidebar se expande o retrae.
+   */
+  const [anchoGridEmociones, setAnchoGridEmociones] = useState(0);
+
+  // ========================================================
   // TEMA
-  // ======================================================
+  // ========================================================
 
   const backgroundColor = useThemeColor({}, "background");
 
@@ -117,40 +129,59 @@ export default function NuevoAutorregistro() {
 
   const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
 
-  // ======================================================
+  // ========================================================
   // RESPONSIVE
-  // ======================================================
+  // ========================================================
 
-  const esTelefono = width < 768;
+  const paddingHorizontal = esEscritorio
+    ? PADDING_RESPONSIVE.escritorio
+    : esTablet
+      ? PADDING_RESPONSIVE.tablet
+      : PADDING_RESPONSIVE.telefono;
 
-  const esTablet = width >= 768 && width < 1100;
+  /*
+   * La pantalla puede ocupar el dashboard,
+   * pero el formulario interior se mantiene
+   * más estrecho para facilitar la lectura.
+   */
+  const maxWidthContenido = esEscritorio
+    ? MAX_WIDTHS.dashboard
+    : esTablet
+      ? MAX_WIDTHS.contenido
+      : undefined;
 
-  const esWeb = width >= 1100;
+  const maxWidthFormulario = esEscritorio
+    ? 820
+    : esTablet
+      ? MAX_WIDTHS.formulario
+      : undefined;
 
-  const maxWidthContenido = esWeb ? 980 : esTablet ? 860 : undefined;
+  /*
+   * Emociones:
+   *
+   * móvil      -> 3 columnas
+   * tablet     -> 4 columnas
+   * escritorio -> 5 columnas
+   */
+  const columnasEmociones = esEscritorio ? 5 : esTablet ? 4 : 3;
 
-  const maxWidthSeccionPrincipal = esWeb ? 760 : undefined;
-
-  const paddingHorizontal = esTelefono ? 16 : 24;
-
-  const columnasEmociones = esTelefono ? 3 : esTablet ? 4 : 5;
-
-  const gapEmociones = esTelefono ? 12 : 14;
-
-  const anchoGridEmociones = Math.min(
-    width - paddingHorizontal * 2,
-    esWeb ? 760 : esTablet ? 760 : width - paddingHorizontal * 2,
-  );
+  const gapEmociones = esEscritorio ? 14 : 12;
 
   const anchoTarjetaEmocion = useMemo(() => {
+    if (anchoGridEmociones <= 0) {
+      return 0;
+    }
+
     const espacioTotal = gapEmociones * (columnasEmociones - 1);
 
     return (anchoGridEmociones - espacioTotal) / columnasEmociones;
   }, [anchoGridEmociones, columnasEmociones, gapEmociones]);
 
-  // ======================================================
+  const paddingBottom = esEscritorio ? 64 : Math.max(insets.bottom + 130, 150);
+
+  // ========================================================
   // CARGAR EMOCIONES
-  // ======================================================
+  // ========================================================
 
   useEffect(() => {
     const cargarEmociones = async () => {
@@ -173,9 +204,9 @@ export default function NuevoAutorregistro() {
     cargarEmociones();
   }, []);
 
-  // ======================================================
+  // ========================================================
   // NAVEGACIÓN
-  // ======================================================
+  // ========================================================
 
   const regresar = () => {
     router.replace({
@@ -187,9 +218,9 @@ export default function NuevoAutorregistro() {
     });
   };
 
-  // ======================================================
+  // ========================================================
   // GUARDAR REGISTRO
-  // ======================================================
+  // ========================================================
 
   const guardarRegistro = async () => {
     if (!user?.id) {
@@ -239,43 +270,146 @@ export default function NuevoAutorregistro() {
     }
   };
 
-  // ======================================================
+  // ========================================================
+  // MEDIR GRID DE EMOCIONES
+  // ========================================================
+
+  const medirGridEmociones = (event: LayoutChangeEvent) => {
+    const nuevoAncho = event.nativeEvent.layout.width;
+
+    if (Math.abs(nuevoAncho - anchoGridEmociones) > 1) {
+      setAnchoGridEmociones(nuevoAncho);
+    }
+  };
+
+  // ========================================================
   // PLANTILLA NO DISPONIBLE
-  // ======================================================
+  // ========================================================
 
   if (plantilla !== "emocional") {
     return (
       <View
         style={{
           flex: 1,
-          paddingHorizontal: 24,
+
+          paddingHorizontal: paddingHorizontal,
+
           alignItems: "center",
+
           justifyContent: "center",
+
           backgroundColor,
         }}
       >
+        <View
+          style={{
+            width: 64,
+
+            height: 64,
+
+            borderRadius: 32,
+
+            alignItems: "center",
+
+            justifyContent: "center",
+
+            backgroundColor: primarySoftColor,
+
+            marginBottom: 18,
+          }}
+        >
+          <Ionicons
+            name="document-text-outline"
+            size={30}
+            color={primaryColor}
+          />
+        </View>
+
         <Text
           style={{
             textAlign: "center",
+
             fontFamily: "Nunito-Bold",
+
             fontSize: 20,
+
             color: textColor,
           }}
         >
           Plantilla no disponible
         </Text>
+
+        <Text
+          style={{
+            marginTop: 6,
+
+            maxWidth: 420,
+
+            textAlign: "center",
+
+            fontFamily: "Nunito-Medium",
+
+            fontSize: 14,
+
+            lineHeight: 20,
+
+            color: textSecondaryColor,
+          }}
+        >
+          Esta plantilla todavía no está disponible.
+        </Text>
+
+        <Pressable
+          onPress={regresar}
+          style={({ pressed }) => ({
+            marginTop: 22,
+
+            minHeight: 44,
+
+            paddingHorizontal: 18,
+
+            borderRadius: 12,
+
+            flexDirection: "row",
+
+            alignItems: "center",
+
+            justifyContent: "center",
+
+            gap: 7,
+
+            backgroundColor: primaryColor,
+
+            opacity: pressed ? 0.8 : 1,
+          })}
+        >
+          <Ionicons name="arrow-back" size={18} color={textOnPrimaryColor} />
+
+          <Text
+            style={{
+              fontFamily: "Nunito-SemiBold",
+
+              fontSize: 14,
+
+              color: textOnPrimaryColor,
+            }}
+          >
+            Volver a plantillas
+          </Text>
+        </Pressable>
       </View>
     );
   }
 
-  // ======================================================
+  // ========================================================
   // UI
-  // ======================================================
+  // ========================================================
 
   return (
     <KeyboardAvoidingView
       style={{
         flex: 1,
+
         backgroundColor,
       }}
       behavior={
@@ -290,13 +424,17 @@ export default function NuevoAutorregistro() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop: esTelefono ? 12 : 24,
+          paddingTop: esEscritorio ? 28 : esTablet ? 22 : 14,
 
-          paddingBottom: Math.max(insets.bottom + 130, 150),
+          paddingBottom,
         }}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
+        {/* ==================================================
+            CONTENEDOR PRINCIPAL
+        ================================================== */}
+
         <View
           style={{
             width: "100%",
@@ -315,20 +453,30 @@ export default function NuevoAutorregistro() {
           <Animated.View
             entering={FadeInDown.duration(400)}
             style={{
-              marginBottom: 24,
+              width: "100%",
+
+              maxWidth: maxWidthFormulario,
+
+              alignSelf: "center",
+
+              marginBottom: 26,
+
               flexDirection: "row",
+
               alignItems: "center",
-              justifyContent: "space-between",
             }}
           >
             <Pressable
               onPress={regresar}
+              hitSlop={8}
               style={({ pressed }) => ({
-                width: 48,
+                width: 46,
 
-                height: 48,
+                height: 46,
 
-                borderRadius: 17,
+                flexShrink: 0,
+
+                borderRadius: 15,
 
                 borderWidth: 1,
 
@@ -341,34 +489,41 @@ export default function NuevoAutorregistro() {
                 backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
               })}
             >
-              <Ionicons name="arrow-back" size={22} color={textColor} />
+              <Ionicons name="arrow-back" size={21} color={textColor} />
             </Pressable>
 
             <View
               style={{
                 flex: 1,
+
+                minWidth: 0,
+
                 paddingHorizontal: 16,
               }}
             >
               <Text
+                numberOfLines={1}
                 style={{
                   fontFamily: "Nunito-Bold",
 
-                  fontSize: esTelefono ? 28 : 30,
+                  fontSize: esEscritorio ? 30 : esTablet ? 29 : 26,
 
                   color: primaryColor,
                 }}
               >
-                Diario Emocional
+                Diario emocional
               </Text>
 
               <Text
+                numberOfLines={esTelefono ? 2 : 1}
                 style={{
-                  marginTop: 4,
+                  marginTop: 3,
 
                   fontFamily: "Nunito-Medium",
 
-                  fontSize: 16,
+                  fontSize: esEscritorio ? 15 : 14,
+
+                  lineHeight: 20,
 
                   color: textMutedColor,
                 }}
@@ -377,27 +532,33 @@ export default function NuevoAutorregistro() {
               </Text>
             </View>
 
-            <Pressable
-              style={({ pressed }) => ({
-                width: 48,
+            {/* CALENDARIO */}
 
-                height: 48,
+            {!esTelefono && (
+              <View
+                style={{
+                  width: 46,
 
-                borderRadius: 17,
+                  height: 46,
 
-                borderWidth: 1,
+                  flexShrink: 0,
 
-                borderColor,
+                  borderRadius: 15,
 
-                alignItems: "center",
+                  borderWidth: 1,
 
-                justifyContent: "center",
+                  borderColor,
 
-                backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
-              })}
-            >
-              <Ionicons name="calendar-outline" size={23} color={textColor} />
-            </Pressable>
+                  alignItems: "center",
+
+                  justifyContent: "center",
+
+                  backgroundColor: surfaceColor,
+                }}
+              >
+                <Ionicons name="calendar-outline" size={22} color={textColor} />
+              </View>
+            )}
           </Animated.View>
 
           {/* ==================================================
@@ -409,19 +570,19 @@ export default function NuevoAutorregistro() {
             style={{
               width: "100%",
 
-              maxWidth: maxWidthSeccionPrincipal,
+              maxWidth: maxWidthFormulario,
 
               minHeight: esTelefono ? 185 : 205,
 
               alignSelf: "center",
 
-              marginBottom: 32,
+              marginBottom: esEscritorio ? 34 : 28,
 
-              paddingHorizontal: esTelefono ? 24 : 30,
+              paddingHorizontal: esTelefono ? 22 : 30,
 
-              paddingVertical: esTelefono ? 24 : 28,
+              paddingVertical: esTelefono ? 22 : 28,
 
-              borderRadius: 28,
+              borderRadius: 26,
 
               backgroundColor: primarySoftColor,
 
@@ -516,16 +677,16 @@ export default function NuevoAutorregistro() {
 
             <View
               style={{
-                width: esTelefono ? "58%" : "62%",
+                width: esTelefono ? "60%" : "64%",
               }}
             >
               <Text
                 style={{
                   fontFamily: "Nunito-Bold",
 
-                  fontSize: esTelefono ? 23 : 25,
+                  fontSize: esEscritorio ? 26 : esTelefono ? 22 : 24,
 
-                  lineHeight: esTelefono ? 28 : 32,
+                  lineHeight: esEscritorio ? 33 : esTelefono ? 28 : 31,
 
                   color: textColor,
                 }}
@@ -535,13 +696,13 @@ export default function NuevoAutorregistro() {
 
               <Text
                 style={{
-                  marginTop: 12,
+                  marginTop: 10,
 
                   fontFamily: "Nunito-Medium",
 
-                  fontSize: 16,
+                  fontSize: esTelefono ? 14 : 15,
 
-                  lineHeight: esTelefono ? 20 : 24,
+                  lineHeight: esTelefono ? 20 : 22,
 
                   color: textSecondaryColor,
                 }}
@@ -558,15 +719,15 @@ export default function NuevoAutorregistro() {
               style={{
                 position: "absolute",
 
-                right: esTelefono ? 20 : 30,
+                right: esTelefono ? 18 : 30,
 
-                bottom: 24,
+                bottom: esTelefono ? 22 : 25,
 
-                width: esTelefono ? 115 : 125,
+                width: esTelefono ? 100 : 120,
 
-                height: esTelefono ? 115 : 125,
+                height: esTelefono ? 100 : 120,
 
-                borderRadius: 30,
+                borderRadius: 28,
 
                 backgroundColor: primaryColor,
 
@@ -581,44 +742,10 @@ export default function NuevoAutorregistro() {
                 ],
               }}
             >
-              <View
-                style={{
-                  width: 65,
-
-                  height: 85,
-
-                  borderRadius: 14,
-
-                  backgroundColor: primaryColor,
-
-                  alignItems: "center",
-
-                  justifyContent: "center",
-
-                  opacity: 0.88,
-                }}
-              >
-                <Ionicons name="heart" size={34} color={textOnPrimaryColor} />
-              </View>
-
-              <View
-                style={{
-                  position: "absolute",
-
-                  right: -8,
-
-                  bottom: 18,
-
-                  width: 16,
-
-                  height: 32,
-
-                  borderRadius: 10,
-
-                  backgroundColor: primaryColor,
-
-                  opacity: 0.65,
-                }}
+              <Ionicons
+                name="heart"
+                size={esTelefono ? 32 : 38}
+                color={textOnPrimaryColor}
               />
             </View>
           </Animated.View>
@@ -632,11 +759,11 @@ export default function NuevoAutorregistro() {
             style={{
               width: "100%",
 
-              maxWidth: esWeb ? 760 : undefined,
+              maxWidth: maxWidthFormulario,
 
               alignSelf: "center",
 
-              marginBottom: 28,
+              marginBottom: 30,
             }}
           >
             <Text
@@ -645,7 +772,7 @@ export default function NuevoAutorregistro() {
 
                 fontFamily: "Nunito-Bold",
 
-                fontSize: 20,
+                fontSize: esEscritorio ? 21 : 20,
 
                 color: textColor,
               }}
@@ -670,32 +797,55 @@ export default function NuevoAutorregistro() {
             </Text>
 
             {cargandoEmociones ? (
-              <Text
-                style={{
-                  fontFamily: "Nunito-Medium",
-
-                  fontSize: 14,
-
-                  color: textMutedColor,
-                }}
-              >
-                Cargando emociones...
-              </Text>
-            ) : emociones.length === 0 ? (
-              <Text
-                style={{
-                  fontFamily: "Nunito-Medium",
-
-                  fontSize: 14,
-
-                  color: textMutedColor,
-                }}
-              >
-                No hay emociones disponibles.
-              </Text>
-            ) : (
               <View
                 style={{
+                  minHeight: 100,
+
+                  alignItems: "center",
+
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: "Nunito-Medium",
+
+                    fontSize: 14,
+
+                    color: textMutedColor,
+                  }}
+                >
+                  Cargando emociones...
+                </Text>
+              </View>
+            ) : emociones.length === 0 ? (
+              <View
+                style={{
+                  minHeight: 100,
+
+                  alignItems: "center",
+
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: "Nunito-Medium",
+
+                    fontSize: 14,
+
+                    color: textMutedColor,
+                  }}
+                >
+                  No hay emociones disponibles.
+                </Text>
+              </View>
+            ) : (
+              <View
+                onLayout={medirGridEmociones}
+                style={{
+                  width: "100%",
+
                   flexDirection: "row",
 
                   flexWrap: "wrap",
@@ -726,7 +876,7 @@ export default function NuevoAutorregistro() {
             style={{
               width: "100%",
 
-              maxWidth: esWeb ? 760 : undefined,
+              maxWidth: maxWidthFormulario,
 
               alignSelf: "center",
             }}
@@ -762,7 +912,7 @@ export default function NuevoAutorregistro() {
             style={{
               width: "100%",
 
-              maxWidth: esWeb ? 760 : undefined,
+              maxWidth: maxWidthFormulario,
 
               alignSelf: "center",
 

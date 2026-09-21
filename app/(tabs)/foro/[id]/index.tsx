@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -17,11 +18,19 @@ import {
     View,
 } from "react-native";
 
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+    SafeAreaView,
+    useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import ComentarioCard from "@/components/foro/ComentarioCard";
 
+import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
+
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+
 import { useThemeColor } from "@/hooks/use-theme-color";
+
 import { useAuth } from "@/services/authProvider";
 
 import {
@@ -47,15 +56,19 @@ import type {
 export default function DetallePublicacionScreen() {
     const router = useRouter();
 
+    const insets = useSafeAreaInsets();
+
+    const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
+
     const { id } = useLocalSearchParams<{
         id: string;
     }>();
 
     const { profile, loading: authLoading } = useAuth();
 
-    // ======================================================
+    // ========================================================
     // ESTADOS
-    // ======================================================
+    // ========================================================
 
     const [publicacion, setPublicacion] = useState<PublicacionForo | null>(null);
 
@@ -73,28 +86,75 @@ export default function DetallePublicacionScreen() {
 
     const [error, setError] = useState<string | null>(null);
 
-    // ======================================================
+    // ========================================================
     // TEMA
-    // ======================================================
+    // ========================================================
 
     const backgroundColor = useThemeColor({}, "background");
+
     const surfaceColor = useThemeColor({}, "surface");
+
     const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+
     const borderColor = useThemeColor({}, "border");
+
     const dividerColor = useThemeColor({}, "divider");
+
     const textColor = useThemeColor({}, "text");
+
     const textSecondaryColor = useThemeColor({}, "textSecondary");
+
     const textMutedColor = useThemeColor({}, "textMuted");
+
     const placeholderColor = useThemeColor({}, "placeholder");
+
     const iconColor = useThemeColor({}, "icon");
+
     const primaryColor = useThemeColor({}, "primary");
+
     const primarySoftColor = useThemeColor({}, "primarySoft");
+
     const accentColor = useThemeColor({}, "accent");
+
     const accentSoftColor = useThemeColor({}, "accentSoft");
 
-    // ======================================================
+    const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
+
+    // ========================================================
+    // RESPONSIVE
+    // ========================================================
+
+    const paddingHorizontal = esEscritorio
+        ? PADDING_RESPONSIVE.escritorio
+        : esTablet
+            ? PADDING_RESPONSIVE.tablet
+            : PADDING_RESPONSIVE.telefono;
+
+    const maxWidthContenido = esEscritorio
+        ? MAX_WIDTHS.dashboard
+        : esTablet
+            ? MAX_WIDTHS.contenido
+            : undefined;
+
+    /*
+     * El detalle del foro mantiene un feed central para
+     * evitar líneas demasiado largas en escritorio.
+     */
+    const maxWidthFeed = esEscritorio ? 900 : esTablet ? 760 : undefined;
+
+    const paddingTopContenido = esEscritorio ? 26 : esTablet ? 22 : 18;
+
+    const paddingBottomContenido = esEscritorio ? 32 : 26;
+
+    const paddingTarjeta = esEscritorio ? 26 : esTablet ? 22 : 18;
+
+    const paddingBottomComposer = esEscritorio
+        ? 14
+        : Math.max(insets.bottom + 8, 12);
+
+    // ========================================================
     // DATOS DERIVADOS
-    // ======================================================
+    // ========================================================
 
     const nombreUsuario = useMemo(
         () =>
@@ -110,9 +170,9 @@ export default function DetallePublicacionScreen() {
 
     const totalReacciones = publicacion?.total_reacciones ?? 0;
 
-    // ======================================================
+    // ========================================================
     // FECHA
-    // ======================================================
+    // ========================================================
 
     function formatearFecha(fecha: string) {
         const valor = new Date(fecha);
@@ -123,16 +183,20 @@ export default function DetallePublicacionScreen() {
 
         return valor.toLocaleDateString("es-NI", {
             day: "2-digit",
+
             month: "long",
+
             year: "numeric",
+
             hour: "2-digit",
+
             minute: "2-digit",
         });
     }
 
-    // ======================================================
+    // ========================================================
     // CARGAR DETALLE
-    // ======================================================
+    // ========================================================
 
     const cargarDetalle = useCallback(
         async (mostrarCargaPrincipal = true) => {
@@ -149,11 +213,13 @@ export default function DetallePublicacionScreen() {
 
                 const [datosPublicacion, datosComentarios] = await Promise.all([
                     obtenerPublicacionPorId(id, profile?.id_usuario),
+
                     obtenerComentarios(id),
                 ]);
 
                 if (!datosPublicacion) {
                     setPublicacion(null);
+
                     setComentarios([]);
 
                     setError("La publicación no está disponible.");
@@ -162,6 +228,7 @@ export default function DetallePublicacionScreen() {
                 }
 
                 setPublicacion(datosPublicacion);
+
                 setComentarios(datosComentarios);
             } catch (e) {
                 console.error("Error cargando detalle de publicación:", e);
@@ -178,9 +245,9 @@ export default function DetallePublicacionScreen() {
         [id, profile?.id_usuario],
     );
 
-    // ======================================================
+    // ========================================================
     // CARGA INICIAL
-    // ======================================================
+    // ========================================================
 
     useEffect(() => {
         if (authLoading) {
@@ -198,9 +265,9 @@ export default function DetallePublicacionScreen() {
         cargarDetalle();
     }, [authLoading, id, cargarDetalle]);
 
-    // ======================================================
+    // ========================================================
     // REFRESH
-    // ======================================================
+    // ========================================================
 
     const refrescar = useCallback(async () => {
         if (authLoading || refrescando) {
@@ -216,9 +283,9 @@ export default function DetallePublicacionScreen() {
         }
     }, [authLoading, refrescando, cargarDetalle]);
 
-    // ======================================================
+    // ========================================================
     // REACCIONAR
-    // ======================================================
+    // ========================================================
 
     async function manejarReaccion() {
         if (!publicacion || procesandoReaccion) {
@@ -255,7 +322,9 @@ export default function DetallePublicacionScreen() {
             actual
                 ? {
                     ...actual,
+
                     reaccion_usuario: nuevaReaccionLocal,
+
                     total_reacciones: nuevoTotal,
                 }
                 : actual,
@@ -274,6 +343,7 @@ export default function DetallePublicacionScreen() {
                 actual
                     ? {
                         ...actual,
+
                         reaccion_usuario: resultado,
                     }
                     : actual,
@@ -283,7 +353,9 @@ export default function DetallePublicacionScreen() {
                 actual
                     ? {
                         ...actual,
+
                         reaccion_usuario: reaccionAnterior,
+
                         total_reacciones: totalAnterior,
                     }
                     : actual,
@@ -300,9 +372,9 @@ export default function DetallePublicacionScreen() {
         }
     }
 
-    // ======================================================
+    // ========================================================
     // CREAR COMENTARIO
-    // ======================================================
+    // ========================================================
 
     async function manejarPublicarComentario() {
         if (publicandoComentario) {
@@ -333,7 +405,9 @@ export default function DetallePublicacionScreen() {
 
             const comentario = await crearComentario({
                 idPublicacion: id,
+
                 idUsuario: profile.id_usuario,
+
                 contenido: nuevoComentario,
             });
 
@@ -345,6 +419,7 @@ export default function DetallePublicacionScreen() {
                 actual
                     ? {
                         ...actual,
+
                         total_comentarios: (actual.total_comentarios ?? 0) + 1,
                     }
                     : actual,
@@ -361,9 +436,9 @@ export default function DetallePublicacionScreen() {
         }
     }
 
-    // ======================================================
+    // ========================================================
     // ELIMINAR COMENTARIO
-    // ======================================================
+    // ========================================================
 
     function manejarEliminarComentario(comentario: ComentarioForo) {
         if (!profile?.id_usuario) {
@@ -372,14 +447,19 @@ export default function DetallePublicacionScreen() {
 
         Alert.alert(
             "Eliminar comentario",
+
             "¿Seguro que deseas eliminar este comentario?",
+
             [
                 {
                     text: "Cancelar",
+
                     style: "cancel",
                 },
+
                 {
                     text: "Eliminar",
+
                     style: "destructive",
 
                     onPress: async () => {
@@ -399,8 +479,10 @@ export default function DetallePublicacionScreen() {
                                 actual
                                     ? {
                                         ...actual,
+
                                         total_comentarios: Math.max(
                                             0,
+
                                             (actual.total_comentarios ?? 0) - 1,
                                         ),
                                     }
@@ -420,9 +502,9 @@ export default function DetallePublicacionScreen() {
         );
     }
 
-    // ======================================================
+    // ========================================================
     // EDITAR COMENTARIO
-    // ======================================================
+    // ========================================================
 
     function manejarEditarComentario(_comentario: ComentarioForo) {
         Alert.alert(
@@ -431,9 +513,9 @@ export default function DetallePublicacionScreen() {
         );
     }
 
-    // ======================================================
+    // ========================================================
     // REPORTAR COMENTARIO
-    // ======================================================
+    // ========================================================
 
     function manejarReportarComentario(comentario: ComentarioForo) {
         if (!profile?.id_usuario) {
@@ -445,29 +527,43 @@ export default function DetallePublicacionScreen() {
             return;
         }
 
-        Alert.alert("Reportar comentario", "Selecciona el motivo del reporte.", [
-            {
-                text: "Contenido inapropiado",
-                onPress: () =>
-                    enviarReporteComentario(comentario, "contenido_inapropiado"),
-            },
-            {
-                text: "Acoso",
-                onPress: () => enviarReporteComentario(comentario, "acoso"),
-            },
-            {
-                text: "Spam",
-                onPress: () => enviarReporteComentario(comentario, "spam"),
-            },
-            {
-                text: "Cancelar",
-                style: "cancel",
-            },
-        ]);
+        Alert.alert(
+            "Reportar comentario",
+
+            "Selecciona el motivo del reporte.",
+
+            [
+                {
+                    text: "Contenido inapropiado",
+
+                    onPress: () =>
+                        enviarReporteComentario(comentario, "contenido_inapropiado"),
+                },
+
+                {
+                    text: "Acoso",
+
+                    onPress: () => enviarReporteComentario(comentario, "acoso"),
+                },
+
+                {
+                    text: "Spam",
+
+                    onPress: () => enviarReporteComentario(comentario, "spam"),
+                },
+
+                {
+                    text: "Cancelar",
+
+                    style: "cancel",
+                },
+            ],
+        );
     }
 
     async function enviarReporteComentario(
         comentario: ComentarioForo,
+
         motivo: MotivoReporte,
     ) {
         if (!profile?.id_usuario) {
@@ -477,7 +573,9 @@ export default function DetallePublicacionScreen() {
         try {
             await crearReporte({
                 idUsuarioReporta: profile.id_usuario,
+
                 idComentario: comentario.id_comentario,
+
                 motivo,
             });
 
@@ -492,31 +590,61 @@ export default function DetallePublicacionScreen() {
         }
     }
 
-    // ======================================================
+    // ========================================================
     // CARGANDO
-    // ======================================================
+    // ========================================================
 
     if (authLoading || cargando) {
         return (
             <SafeAreaView
+                edges={[]}
                 style={{
                     flex: 1,
+
                     backgroundColor,
                 }}
             >
                 <View
                     style={{
                         flex: 1,
+
                         alignItems: "center",
+
                         justifyContent: "center",
+
+                        paddingHorizontal: paddingHorizontal,
                     }}
                 >
-                    <ActivityIndicator size="large" color={primaryColor} />
+                    <View
+                        style={{
+                            width: 68,
+
+                            height: 68,
+
+                            borderRadius: 34,
+
+                            alignItems: "center",
+
+                            justifyContent: "center",
+
+                            borderWidth: 1,
+
+                            borderColor,
+
+                            backgroundColor: surfaceColor,
+                        }}
+                    >
+                        <ActivityIndicator size="large" color={primaryColor} />
+                    </View>
 
                     <Text
                         style={{
-                            marginTop: 14,
+                            marginTop: 16,
+
                             fontFamily: "Nunito-SemiBold",
+
+                            fontSize: 15,
+
                             color: textSecondaryColor,
                         }}
                     >
@@ -527,95 +655,162 @@ export default function DetallePublicacionScreen() {
         );
     }
 
-    // ======================================================
+    // ========================================================
     // ERROR
-    // ======================================================
+    // ========================================================
 
     if (error || !publicacion) {
         return (
             <SafeAreaView
+                edges={[]}
                 style={{
                     flex: 1,
+
                     backgroundColor,
                 }}
             >
                 <View
                     style={{
                         flex: 1,
-                        paddingHorizontal: 24,
+
+                        paddingHorizontal,
+
                         alignItems: "center",
+
                         justifyContent: "center",
                     }}
                 >
-                    <Ionicons
-                        name="alert-circle-outline"
-                        size={52}
-                        color={textMutedColor}
-                    />
-
-                    <Text
+                    <View
                         style={{
-                            marginTop: 16,
-                            fontFamily: "Nunito-Bold",
-                            fontSize: 20,
-                            textAlign: "center",
-                            color: textColor,
-                        }}
-                    >
-                        No pudimos cargar esta publicación
-                    </Text>
+                            width: "100%",
 
-                    <Text
-                        style={{
-                            marginTop: 8,
-                            fontFamily: "Nunito-Medium",
-                            fontSize: 14,
-                            lineHeight: 21,
-                            textAlign: "center",
-                            color: textSecondaryColor,
-                        }}
-                    >
-                        {error ?? "La publicación no está disponible."}
-                    </Text>
+                            maxWidth: 440,
 
-                    <Pressable
-                        onPress={() => cargarDetalle()}
-                        style={{
-                            marginTop: 24,
-                            minHeight: 48,
-                            paddingHorizontal: 22,
-                            borderRadius: 16,
-                            flexDirection: "row",
+                            padding: esTelefono ? 22 : 28,
+
+                            borderRadius: 24,
+
+                            borderWidth: 1,
+
+                            borderColor,
+
                             alignItems: "center",
-                            justifyContent: "center",
-                            backgroundColor: primaryColor,
+
+                            backgroundColor: surfaceColor,
                         }}
                     >
-                        <Ionicons name="refresh-outline" size={19} color="#FFFFFF" />
+                        <View
+                            style={{
+                                width: 64,
+
+                                height: 64,
+
+                                borderRadius: 32,
+
+                                alignItems: "center",
+
+                                justifyContent: "center",
+
+                                backgroundColor: primarySoftColor,
+                            }}
+                        >
+                            <Ionicons
+                                name="alert-circle-outline"
+                                size={30}
+                                color={primaryColor}
+                            />
+                        </View>
 
                         <Text
                             style={{
-                                marginLeft: 8,
+                                marginTop: 16,
+
                                 fontFamily: "Nunito-Bold",
-                                color: "#FFFFFF",
+
+                                fontSize: 20,
+
+                                textAlign: "center",
+
+                                color: textColor,
                             }}
                         >
-                            Intentar nuevamente
+                            No pudimos cargar esta publicación
                         </Text>
-                    </Pressable>
+
+                        <Text
+                            style={{
+                                marginTop: 8,
+
+                                fontFamily: "Nunito-Medium",
+
+                                fontSize: 14,
+
+                                lineHeight: 21,
+
+                                textAlign: "center",
+
+                                color: textSecondaryColor,
+                            }}
+                        >
+                            {error ?? "La publicación no está disponible."}
+                        </Text>
+
+                        <Pressable
+                            onPress={() => cargarDetalle()}
+                            style={({ pressed }) => ({
+                                marginTop: 24,
+
+                                minHeight: 48,
+
+                                paddingHorizontal: 22,
+
+                                borderRadius: 14,
+
+                                flexDirection: "row",
+
+                                alignItems: "center",
+
+                                justifyContent: "center",
+
+                                backgroundColor: primaryColor,
+
+                                opacity: pressed ? 0.82 : 1,
+                            })}
+                        >
+                            <Ionicons
+                                name="refresh-outline"
+                                size={19}
+                                color={textOnPrimaryColor}
+                            />
+
+                            <Text
+                                style={{
+                                    marginLeft: 8,
+
+                                    fontFamily: "Nunito-Bold",
+
+                                    color: textOnPrimaryColor,
+                                }}
+                            >
+                                Intentar nuevamente
+                            </Text>
+                        </Pressable>
+                    </View>
                 </View>
             </SafeAreaView>
         );
     }
 
-    // ======================================================
+    // ========================================================
     // UI
-    // ======================================================
+    // ========================================================
 
     return (
         <SafeAreaView
+            edges={[]}
             style={{
                 flex: 1,
+
                 backgroundColor,
             }}
         >
@@ -626,48 +821,116 @@ export default function DetallePublicacionScreen() {
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
             >
                 {/* ==================================================
-                    HEADER
-                ================================================== */}
+            HEADER
+        ================================================== */}
 
                 <View
                     style={{
-                        minHeight: 64,
-                        paddingHorizontal: 18,
-                        flexDirection: "row",
-                        alignItems: "center",
+                        minHeight: esEscritorio ? 70 : 64,
+
                         borderBottomWidth: 1,
+
                         borderBottomColor: dividerColor,
+
                         backgroundColor,
                     }}
                 >
-                    <Pressable
-                        onPress={() => router.back()}
+                    <View
                         style={{
-                            width: 44,
-                            height: 44,
-                            alignItems: "center",
-                            justifyContent: "center",
-                        }}
-                    >
-                        <Ionicons name="arrow-back" size={27} color={iconColor} />
-                    </Pressable>
+                            width: "100%",
 
-                    <Text
-                        style={{
+                            maxWidth: maxWidthContenido,
+
                             flex: 1,
-                            marginLeft: 8,
-                            fontFamily: "Nunito-Bold",
-                            fontSize: 22,
-                            color: textColor,
+
+                            alignSelf: "center",
+
+                            paddingHorizontal,
+
+                            flexDirection: "row",
+
+                            alignItems: "center",
                         }}
                     >
-                        Publicación
-                    </Text>
+                        <View
+                            style={{
+                                width: "100%",
+
+                                maxWidth: maxWidthFeed,
+
+                                alignSelf: "center",
+
+                                flexDirection: "row",
+
+                                alignItems: "center",
+                            }}
+                        >
+                            <Pressable
+                                onPress={() => router.back()}
+                                hitSlop={8}
+                                style={({ pressed }) => ({
+                                    width: 44,
+
+                                    height: 44,
+
+                                    borderRadius: 14,
+
+                                    alignItems: "center",
+
+                                    justifyContent: "center",
+
+                                    backgroundColor: pressed
+                                        ? surfaceSecondaryColor
+                                        : "transparent",
+                                })}
+                            >
+                                <Ionicons name="arrow-back" size={24} color={iconColor} />
+                            </Pressable>
+
+                            <View
+                                style={{
+                                    flex: 1,
+
+                                    minWidth: 0,
+
+                                    marginLeft: 8,
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        fontFamily: "Nunito-Bold",
+
+                                        fontSize: esEscritorio ? 23 : 21,
+
+                                        color: textColor,
+                                    }}
+                                >
+                                    Publicación
+                                </Text>
+
+                                {esEscritorio && (
+                                    <Text
+                                        style={{
+                                            marginTop: 1,
+
+                                            fontFamily: "Nunito-Medium",
+
+                                            fontSize: 12,
+
+                                            color: textMutedColor,
+                                        }}
+                                    >
+                                        Comunidad Kiri
+                                    </Text>
+                                )}
+                            </View>
+                        </View>
+                    </View>
                 </View>
 
                 {/* ==================================================
-                    CONTENIDO
-                ================================================== */}
+            CONTENIDO
+        ================================================== */}
 
                 <ScrollView
                     showsVerticalScrollIndicator={false}
@@ -681,390 +944,676 @@ export default function DetallePublicacionScreen() {
                         />
                     }
                     contentContainerStyle={{
-                        paddingHorizontal: 20,
-                        paddingTop: 20,
-                        paddingBottom: 28,
+                        paddingTop: paddingTopContenido,
+
+                        paddingBottom: paddingBottomContenido,
                     }}
                 >
-                    {/* ==================================================
-                        PUBLICACIÓN
-                    ================================================== */}
-
                     <View
                         style={{
-                            padding: 20,
-                            borderRadius: 24,
-                            borderWidth: 1,
-                            borderColor,
-                            backgroundColor: surfaceColor,
+                            width: "100%",
+
+                            maxWidth: maxWidthContenido,
+
+                            alignSelf: "center",
+
+                            paddingHorizontal,
                         }}
                     >
-                        {/* AUTOR */}
-
                         <View
                             style={{
-                                flexDirection: "row",
-                                alignItems: "center",
+                                width: "100%",
+
+                                maxWidth: maxWidthFeed,
+
+                                alignSelf: "center",
                             }}
                         >
-                            {publicacion.usuario?.foto_perfil ? (
-                                <Image
-                                    source={{
-                                        uri: publicacion.usuario.foto_perfil,
-                                    }}
-                                    style={{
-                                        width: 50,
-                                        height: 50,
-                                        borderRadius: 25,
-                                        borderWidth: 1,
-                                        borderColor,
-                                    }}
-                                />
-                            ) : (
+                            {/* ==================================================
+                  PUBLICACIÓN
+              ================================================== */}
+
+                            <View
+                                style={{
+                                    padding: paddingTarjeta,
+
+                                    borderRadius: 24,
+
+                                    borderWidth: 1,
+
+                                    borderColor,
+
+                                    backgroundColor: surfaceColor,
+
+                                    ...Platform.select({
+                                        web: {
+                                            boxShadow: "0px 3px 10px rgba(0,0,0,0.04)",
+                                        },
+
+                                        ios: {
+                                            shadowColor: "#000000",
+
+                                            shadowOffset: {
+                                                width: 0,
+
+                                                height: 3,
+                                            },
+
+                                            shadowOpacity: 0.05,
+
+                                            shadowRadius: 7,
+                                        },
+
+                                        android: {
+                                            elevation: 2,
+                                        },
+                                    }),
+                                }}
+                            >
+                                {/* ==============================================
+                    AUTOR
+                ============================================== */}
+
                                 <View
                                     style={{
-                                        width: 50,
-                                        height: 50,
-                                        borderRadius: 25,
+                                        flexDirection: "row",
+
                                         alignItems: "center",
-                                        justifyContent: "center",
-                                        borderWidth: 1,
-                                        borderColor,
-                                        backgroundColor: surfaceSecondaryColor,
                                     }}
                                 >
-                                    <Ionicons name="person-outline" size={24} color={iconColor} />
-                                </View>
-                            )}
+                                    {publicacion.usuario?.foto_perfil ? (
+                                        <Image
+                                            source={{
+                                                uri: publicacion.usuario.foto_perfil,
+                                            }}
+                                            style={{
+                                                width: esEscritorio ? 54 : 50,
 
-                            <View
-                                style={{
-                                    flex: 1,
-                                    marginLeft: 13,
-                                }}
-                            >
-                                <Text
-                                    style={{
-                                        fontFamily: "Nunito-Bold",
-                                        fontSize: 16,
-                                        color: textColor,
-                                    }}
-                                >
-                                    {nombreUsuario}
-                                </Text>
+                                                height: esEscritorio ? 54 : 50,
 
-                                <Text
-                                    style={{
-                                        marginTop: 2,
-                                        fontFamily: "Nunito-Medium",
-                                        fontSize: 12,
-                                        color: textMutedColor,
-                                    }}
-                                >
-                                    {formatearFecha(publicacion.fecha_publicacion)}
+                                                borderRadius: esEscritorio ? 27 : 25,
 
-                                    {publicacion.editada ? " · Editada" : ""}
-                                </Text>
-                            </View>
-                        </View>
+                                                borderWidth: 1,
 
-                        {/* EMOCIONES */}
+                                                borderColor,
+                                            }}
+                                        />
+                                    ) : (
+                                        <View
+                                            style={{
+                                                width: esEscritorio ? 54 : 50,
 
-                        {(publicacion.emociones ?? []).length > 0 && (
-                            <View
-                                style={{
-                                    marginTop: 18,
-                                    flexDirection: "row",
-                                    flexWrap: "wrap",
-                                    gap: 8,
-                                }}
-                            >
-                                {(publicacion.emociones ?? []).map((emocion) => (
+                                                height: esEscritorio ? 54 : 50,
+
+                                                borderRadius: esEscritorio ? 27 : 25,
+
+                                                alignItems: "center",
+
+                                                justifyContent: "center",
+
+                                                borderWidth: 1,
+
+                                                borderColor,
+
+                                                backgroundColor: surfaceSecondaryColor,
+                                            }}
+                                        >
+                                            <Ionicons
+                                                name="person-outline"
+                                                size={24}
+                                                color={iconColor}
+                                            />
+                                        </View>
+                                    )}
+
                                     <View
-                                        key={emocion.id_emocion_foro}
                                         style={{
-                                            paddingHorizontal: 12,
-                                            paddingVertical: 5,
-                                            borderRadius: 999,
-                                            borderWidth: 1,
-                                            borderColor: accentColor,
-                                            backgroundColor: accentSoftColor,
+                                            flex: 1,
+
+                                            minWidth: 0,
+
+                                            marginLeft: 13,
                                         }}
                                     >
                                         <Text
                                             style={{
-                                                fontFamily: "Nunito-Medium",
-                                                fontSize: 13,
-                                                color: accentColor,
+                                                fontFamily: "Nunito-Bold",
+
+                                                fontSize: esEscritorio ? 17 : 16,
+
+                                                color: textColor,
                                             }}
                                         >
-                                            {emocion.nombre}
+                                            {nombreUsuario}
+                                        </Text>
+
+                                        <Text
+                                            style={{
+                                                marginTop: 2,
+
+                                                fontFamily: "Nunito-Medium",
+
+                                                fontSize: 12,
+
+                                                color: textMutedColor,
+                                            }}
+                                        >
+                                            {formatearFecha(publicacion.fecha_publicacion)}
+
+                                            {publicacion.editada ? " · Editada" : ""}
                                         </Text>
                                     </View>
-                                ))}
-                            </View>
-                        )}
+                                </View>
 
-                        {/* TÍTULO */}
+                                {/* ==============================================
+                    EMOCIONES
+                ============================================== */}
 
-                        <Text
-                            style={{
-                                marginTop: 18,
-                                fontFamily: "Nunito-Bold",
-                                fontSize: 22,
-                                lineHeight: 29,
-                                color: textColor,
-                            }}
-                        >
-                            {publicacion.titulo}
-                        </Text>
+                                {(publicacion.emociones ?? []).length > 0 && (
+                                    <View
+                                        style={{
+                                            marginTop: 18,
 
-                        {/* CONTENIDO */}
+                                            flexDirection: "row",
 
-                        <Text
-                            style={{
-                                marginTop: 10,
-                                fontFamily: "Nunito-Medium",
-                                fontSize: 16,
-                                lineHeight: 25,
-                                color: textSecondaryColor,
-                            }}
-                        >
-                            {publicacion.contenido}
-                        </Text>
+                                            flexWrap: "wrap",
 
-                        {/* ACCIONES */}
+                                            gap: 8,
+                                        }}
+                                    >
+                                        {(publicacion.emociones ?? []).map((emocion) => (
+                                            <View
+                                                key={emocion.id_emocion_foro}
+                                                style={{
+                                                    paddingHorizontal: 12,
 
-                        <View
-                            style={{
-                                marginTop: 22,
-                                paddingTop: 14,
-                                borderTopWidth: 1,
-                                borderTopColor: dividerColor,
-                                flexDirection: "row",
-                                alignItems: "center",
-                            }}
-                        >
-                            <Pressable
-                                disabled={procesandoReaccion}
-                                onPress={manejarReaccion}
-                                style={{
-                                    minHeight: 42,
-                                    paddingHorizontal: 12,
-                                    borderRadius: 13,
-                                    flexDirection: "row",
-                                    alignItems: "center",
-                                    backgroundColor: reaccionMeGusta
-                                        ? primarySoftColor
-                                        : "transparent",
-                                }}
-                            >
-                                <Ionicons
-                                    name={reaccionMeGusta ? "heart" : "heart-outline"}
-                                    size={22}
-                                    color={primaryColor}
-                                />
+                                                    paddingVertical: 5,
+
+                                                    borderRadius: 999,
+
+                                                    borderWidth: 1,
+
+                                                    borderColor: accentColor,
+
+                                                    backgroundColor: accentSoftColor,
+                                                }}
+                                            >
+                                                <Text
+                                                    style={{
+                                                        fontFamily: "Nunito-Medium",
+
+                                                        fontSize: 13,
+
+                                                        color: accentColor,
+                                                    }}
+                                                >
+                                                    {emocion.nombre}
+                                                </Text>
+                                            </View>
+                                        ))}
+                                    </View>
+                                )}
+
+                                {/* ==============================================
+                    TÍTULO
+                ============================================== */}
 
                                 <Text
                                     style={{
-                                        marginLeft: 7,
-                                        fontFamily: "Nunito-SemiBold",
-                                        color: primaryColor,
+                                        marginTop: 18,
+
+                                        fontFamily: "Nunito-Bold",
+
+                                        fontSize: esEscritorio ? 25 : 22,
+
+                                        lineHeight: esEscritorio ? 32 : 29,
+
+                                        color: textColor,
                                     }}
                                 >
-                                    {totalReacciones}
+                                    {publicacion.titulo}
                                 </Text>
-                            </Pressable>
 
-                            <View
-                                style={{
-                                    marginLeft: 14,
-                                    minHeight: 42,
-                                    paddingHorizontal: 12,
-                                    flexDirection: "row",
-                                    alignItems: "center",
-                                }}
-                            >
-                                <Ionicons
-                                    name="chatbubble-outline"
-                                    size={20}
-                                    color={iconColor}
-                                />
+                                {/* ==============================================
+                    CONTENIDO
+                ============================================== */}
 
                                 <Text
                                     style={{
-                                        marginLeft: 7,
+                                        marginTop: 10,
+
                                         fontFamily: "Nunito-Medium",
+
+                                        fontSize: esEscritorio ? 16 : 15,
+
+                                        lineHeight: esEscritorio ? 26 : 24,
+
                                         color: textSecondaryColor,
                                     }}
                                 >
-                                    {comentarios.length}
+                                    {publicacion.contenido}
                                 </Text>
+
+                                {/* ==============================================
+                    ACCIONES
+                ============================================== */}
+
+                                <View
+                                    style={{
+                                        marginTop: 22,
+
+                                        paddingTop: 14,
+
+                                        borderTopWidth: 1,
+
+                                        borderTopColor: dividerColor,
+
+                                        flexDirection: "row",
+
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <Pressable
+                                        disabled={procesandoReaccion}
+                                        onPress={manejarReaccion}
+                                        style={({ pressed }) => ({
+                                            minHeight: 42,
+
+                                            paddingHorizontal: 12,
+
+                                            borderRadius: 13,
+
+                                            flexDirection: "row",
+
+                                            alignItems: "center",
+
+                                            backgroundColor: reaccionMeGusta
+                                                ? primarySoftColor
+                                                : pressed
+                                                    ? surfaceSecondaryColor
+                                                    : "transparent",
+
+                                            opacity: procesandoReaccion ? 0.6 : 1,
+                                        })}
+                                    >
+                                        <Ionicons
+                                            name={reaccionMeGusta ? "heart" : "heart-outline"}
+                                            size={22}
+                                            color={primaryColor}
+                                        />
+
+                                        <Text
+                                            style={{
+                                                marginLeft: 7,
+
+                                                fontFamily: "Nunito-SemiBold",
+
+                                                color: primaryColor,
+                                            }}
+                                        >
+                                            {totalReacciones}
+                                        </Text>
+                                    </Pressable>
+
+                                    <View
+                                        style={{
+                                            marginLeft: 14,
+
+                                            minHeight: 42,
+
+                                            paddingHorizontal: 12,
+
+                                            flexDirection: "row",
+
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        <Ionicons
+                                            name="chatbubble-outline"
+                                            size={20}
+                                            color={iconColor}
+                                        />
+
+                                        <Text
+                                            style={{
+                                                marginLeft: 7,
+
+                                                fontFamily: "Nunito-Medium",
+
+                                                color: textSecondaryColor,
+                                            }}
+                                        >
+                                            {comentarios.length}
+                                        </Text>
+                                    </View>
+                                </View>
                             </View>
-                        </View>
-                    </View>
 
-                    {/* ==================================================
-                        COMENTARIOS
-                    ================================================== */}
+                            {/* ==================================================
+                  COMENTARIOS
+              ================================================== */}
 
-                    <View
-                        style={{
-                            marginTop: 30,
-                            marginBottom: 16,
-                            flexDirection: "row",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                        }}
-                    >
-                        <Text
-                            style={{
-                                fontFamily: "Nunito-Bold",
-                                fontSize: 20,
-                                color: textColor,
-                            }}
-                        >
-                            Comentarios
-                        </Text>
-
-                        <Text
-                            style={{
-                                fontFamily: "Nunito-Medium",
-                                fontSize: 14,
-                                color: textMutedColor,
-                            }}
-                        >
-                            {comentarios.length}
-                        </Text>
-                    </View>
-
-                    {comentarios.length === 0 ? (
-                        <View
-                            style={{
-                                paddingVertical: 35,
-                                alignItems: "center",
-                            }}
-                        >
-                            <Ionicons
-                                name="chatbubble-ellipses-outline"
-                                size={38}
-                                color={textMutedColor}
-                            />
-
-                            <Text
+                            <View
                                 style={{
-                                    marginTop: 10,
-                                    fontFamily: "Nunito-Medium",
-                                    fontSize: 14,
-                                    lineHeight: 21,
-                                    textAlign: "center",
-                                    color: textSecondaryColor,
+                                    marginTop: esEscritorio ? 34 : 28,
+
+                                    marginBottom: 16,
+
+                                    flexDirection: "row",
+
+                                    alignItems: "center",
+
+                                    justifyContent: "space-between",
                                 }}
                             >
-                                Aún no hay comentarios. Puedes ser la primera persona en
-                                responder.
-                            </Text>
-                        </View>
-                    ) : (
-                        comentarios.map((comentario) => {
-                            const esPropio = comentario.id_usuario === profile?.id_usuario;
+                                <View>
+                                    <Text
+                                        style={{
+                                            fontFamily: "Nunito-Bold",
 
-                            return (
-                                <ComentarioCard
-                                    key={comentario.id_comentario}
-                                    comentario={comentario}
-                                    esPropio={esPropio}
-                                    onEditar={() => manejarEditarComentario(comentario)}
-                                    onEliminar={() => manejarEliminarComentario(comentario)}
-                                    onReportar={() => manejarReportarComentario(comentario)}
-                                />
-                            );
-                        })
-                    )}
+                                            fontSize: esEscritorio ? 21 : 20,
+
+                                            color: textColor,
+                                        }}
+                                    >
+                                        Comentarios
+                                    </Text>
+
+                                    {!esTelefono && (
+                                        <Text
+                                            style={{
+                                                marginTop: 2,
+
+                                                fontFamily: "Nunito-Medium",
+
+                                                fontSize: 12,
+
+                                                color: textMutedColor,
+                                            }}
+                                        >
+                                            Participa en la conversación de forma respetuosa.
+                                        </Text>
+                                    )}
+                                </View>
+
+                                <View
+                                    style={{
+                                        minWidth: 34,
+
+                                        height: 34,
+
+                                        paddingHorizontal: 10,
+
+                                        borderRadius: 17,
+
+                                        alignItems: "center",
+
+                                        justifyContent: "center",
+
+                                        backgroundColor: primarySoftColor,
+                                    }}
+                                >
+                                    <Text
+                                        style={{
+                                            fontFamily: "Nunito-Bold",
+
+                                            fontSize: 13,
+
+                                            color: primaryColor,
+                                        }}
+                                    >
+                                        {comentarios.length}
+                                    </Text>
+                                </View>
+                            </View>
+
+                            {comentarios.length === 0 ? (
+                                <View
+                                    style={{
+                                        minHeight: 180,
+
+                                        paddingVertical: 35,
+
+                                        paddingHorizontal: 20,
+
+                                        alignItems: "center",
+
+                                        justifyContent: "center",
+
+                                        borderRadius: 20,
+
+                                        borderWidth: 1,
+
+                                        borderColor,
+
+                                        backgroundColor: surfaceColor,
+                                    }}
+                                >
+                                    <View
+                                        style={{
+                                            width: 58,
+
+                                            height: 58,
+
+                                            borderRadius: 29,
+
+                                            alignItems: "center",
+
+                                            justifyContent: "center",
+
+                                            backgroundColor: primarySoftColor,
+                                        }}
+                                    >
+                                        <Ionicons
+                                            name="chatbubble-ellipses-outline"
+                                            size={27}
+                                            color={primaryColor}
+                                        />
+                                    </View>
+
+                                    <Text
+                                        style={{
+                                            marginTop: 12,
+
+                                            maxWidth: 360,
+
+                                            fontFamily: "Nunito-Medium",
+
+                                            fontSize: 14,
+
+                                            lineHeight: 21,
+
+                                            textAlign: "center",
+
+                                            color: textSecondaryColor,
+                                        }}
+                                    >
+                                        Aún no hay comentarios. Puedes ser la primera persona en
+                                        responder.
+                                    </Text>
+                                </View>
+                            ) : (
+                                <View
+                                    style={{
+                                        width: "100%",
+
+                                        gap: 12,
+                                    }}
+                                >
+                                    {comentarios.map((comentario) => {
+                                        const esPropio =
+                                            comentario.id_usuario === profile?.id_usuario;
+
+                                        return (
+                                            <ComentarioCard
+                                                key={comentario.id_comentario}
+                                                comentario={comentario}
+                                                esPropio={esPropio}
+                                                onEditar={() => manejarEditarComentario(comentario)}
+                                                onEliminar={() => manejarEliminarComentario(comentario)}
+                                                onReportar={() => manejarReportarComentario(comentario)}
+                                            />
+                                        );
+                                    })}
+                                </View>
+                            )}
+                        </View>
+                    </View>
                 </ScrollView>
 
                 {/* ==================================================
-                    NUEVO COMENTARIO
-                ================================================== */}
+            NUEVO COMENTARIO
+        ================================================== */}
 
                 <View
                     style={{
-                        paddingHorizontal: 16,
-                        paddingTop: 10,
-                        paddingBottom: 12,
                         borderTopWidth: 1,
+
                         borderTopColor: dividerColor,
+
                         backgroundColor,
+
+                        paddingBottom: paddingBottomComposer,
                     }}
                 >
                     <View
                         style={{
-                            minHeight: 52,
-                            paddingLeft: 16,
-                            paddingRight: 6,
-                            borderRadius: 18,
-                            borderWidth: 1,
-                            borderColor,
-                            flexDirection: "row",
-                            alignItems: "center",
-                            backgroundColor: surfaceColor,
+                            width: "100%",
+
+                            maxWidth: maxWidthContenido,
+
+                            alignSelf: "center",
+
+                            paddingHorizontal,
                         }}
                     >
-                        <TextInput
-                            value={nuevoComentario}
-                            onChangeText={setNuevoComentario}
-                            editable={!publicandoComentario}
-                            placeholder="Escribe un comentario..."
-                            placeholderTextColor={placeholderColor}
-                            selectionColor={primaryColor}
-                            multiline
-                            maxLength={1000}
+                        <View
                             style={{
-                                flex: 1,
-                                maxHeight: 110,
-                                paddingVertical: 12,
-                                fontFamily: "Nunito-Medium",
-                                fontSize: 15,
-                                color: textColor,
-                            }}
-                        />
+                                width: "100%",
 
-                        <Pressable
-                            disabled={publicandoComentario || !nuevoComentario.trim()}
-                            onPress={manejarPublicarComentario}
-                            accessibilityRole="button"
-                            accessibilityLabel="Publicar comentario"
-                            style={{
-                                width: 44,
-                                height: 44,
-                                borderRadius: 15,
-                                alignItems: "center",
-                                justifyContent: "center",
-                                opacity:
-                                    publicandoComentario || !nuevoComentario.trim() ? 0.45 : 1,
-                                backgroundColor: primaryColor,
+                                maxWidth: maxWidthFeed,
+
+                                alignSelf: "center",
+
+                                paddingTop: 10,
                             }}
                         >
-                            {publicandoComentario ? (
-                                <ActivityIndicator size="small" color="#FFFFFF" />
-                            ) : (
-                                <Ionicons name="send" size={20} color="#FFFFFF" />
-                            )}
-                        </Pressable>
-                    </View>
+                            <View
+                                style={{
+                                    minHeight: 54,
 
-                    <Text
-                        style={{
-                            marginTop: 5,
-                            marginRight: 4,
-                            textAlign: "right",
-                            fontFamily: "Nunito-Medium",
-                            fontSize: 11,
-                            color: textMutedColor,
-                        }}
-                    >
-                        {nuevoComentario.length}/1000
-                    </Text>
+                                    paddingLeft: 16,
+
+                                    paddingRight: 6,
+
+                                    borderRadius: 18,
+
+                                    borderWidth: 1,
+
+                                    borderColor,
+
+                                    flexDirection: "row",
+
+                                    alignItems: "center",
+
+                                    backgroundColor: surfaceColor,
+
+                                    ...Platform.select({
+                                        web: {
+                                            boxShadow: "0px 2px 8px rgba(0,0,0,0.03)",
+                                        },
+                                    }),
+                                }}
+                            >
+                                <TextInput
+                                    value={nuevoComentario}
+                                    onChangeText={setNuevoComentario}
+                                    editable={!publicandoComentario}
+                                    placeholder="Escribe un comentario..."
+                                    placeholderTextColor={placeholderColor}
+                                    selectionColor={primaryColor}
+                                    multiline
+                                    maxLength={1000}
+                                    style={{
+                                        flex: 1,
+
+                                        maxHeight: 110,
+
+                                        paddingVertical: 12,
+
+                                        fontFamily: "Nunito-Medium",
+
+                                        fontSize: 15,
+
+                                        color: textColor,
+
+                                        outlineStyle: "none" as any,
+                                    }}
+                                />
+
+                                <Pressable
+                                    disabled={publicandoComentario || !nuevoComentario.trim()}
+                                    onPress={manejarPublicarComentario}
+                                    accessibilityRole="button"
+                                    accessibilityLabel="Publicar comentario"
+                                    style={({ pressed }) => ({
+                                        width: 44,
+
+                                        height: 44,
+
+                                        borderRadius: 15,
+
+                                        flexShrink: 0,
+
+                                        alignItems: "center",
+
+                                        justifyContent: "center",
+
+                                        opacity:
+                                            publicandoComentario || !nuevoComentario.trim()
+                                                ? 0.45
+                                                : pressed
+                                                    ? 0.82
+                                                    : 1,
+
+                                        backgroundColor: primaryColor,
+                                    })}
+                                >
+                                    {publicandoComentario ? (
+                                        <ActivityIndicator
+                                            size="small"
+                                            color={textOnPrimaryColor}
+                                        />
+                                    ) : (
+                                        <Ionicons
+                                            name="send"
+                                            size={20}
+                                            color={textOnPrimaryColor}
+                                        />
+                                    )}
+                                </Pressable>
+                            </View>
+
+                            <Text
+                                style={{
+                                    marginTop: 5,
+
+                                    marginRight: 4,
+
+                                    textAlign: "right",
+
+                                    fontFamily: "Nunito-Medium",
+
+                                    fontSize: 11,
+
+                                    color: textMutedColor,
+                                }}
+                            >
+                                {nuevoComentario.length}
+                                /1000
+                            </Text>
+                        </View>
+                    </View>
                 </View>
             </KeyboardAvoidingView>
         </SafeAreaView>

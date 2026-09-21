@@ -4,11 +4,11 @@ import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
+  LayoutChangeEvent,
   Platform,
   Pressable,
   ScrollView,
   Text,
-  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -24,6 +24,12 @@ import { CampoPreguntaDiario } from "@/components/diario/CampoPreguntaDiario";
 
 import Button from "@/components/ui/Button";
 
+import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
+
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+
+import { useThemeColor } from "@/hooks/use-theme-color";
+
 import {
   actualizarDiarioEmocionalService,
   obtenerDetalleRegistro,
@@ -31,8 +37,6 @@ import {
 } from "@/services/diario/autorregistro.service";
 
 import { EmocionAutorregistro } from "@/types/diario";
-
-import { useThemeColor } from "@/hooks/use-theme-color";
 
 // ==========================================================
 // EMOJIS
@@ -60,15 +64,15 @@ export default function EditarRegistroScreen() {
 
   const insets = useSafeAreaInsets();
 
-  const { width } = useWindowDimensions();
+  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
   const { id } = useLocalSearchParams<{
     id: string;
   }>();
 
-  // ======================================================
+  // ========================================================
   // ESTADO
-  // ======================================================
+  // ========================================================
 
   const [cargando, setCargando] = useState(true);
 
@@ -84,9 +88,11 @@ export default function EditarRegistroScreen() {
 
   const [ideaUtil, setIdeaUtil] = useState("");
 
-  // ======================================================
+  const [anchoGridEmociones, setAnchoGridEmociones] = useState(0);
+
+  // ========================================================
   // TEMA
-  // ======================================================
+  // ========================================================
 
   const backgroundColor = useThemeColor({}, "background");
 
@@ -106,40 +112,49 @@ export default function EditarRegistroScreen() {
 
   const primarySoftColor = useThemeColor({}, "primarySoft");
 
-  // ======================================================
+  // ========================================================
   // RESPONSIVE
-  // ======================================================
+  // ========================================================
 
-  const esTelefono = width < 768;
+  const paddingHorizontal = esEscritorio
+    ? PADDING_RESPONSIVE.escritorio
+    : esTablet
+      ? PADDING_RESPONSIVE.tablet
+      : PADDING_RESPONSIVE.telefono;
 
-  const esTablet = width >= 768 && width < 1100;
+  const maxWidthContenido = esEscritorio
+    ? MAX_WIDTHS.dashboard
+    : esTablet
+      ? MAX_WIDTHS.contenido
+      : undefined;
 
-  const esWeb = width >= 1100;
+  const maxWidthFormulario = esEscritorio
+    ? 820
+    : esTablet
+      ? MAX_WIDTHS.formulario
+      : undefined;
 
-  const maxWidthContenido = esWeb ? 980 : esTablet ? 860 : undefined;
+  const columnasEmociones = esEscritorio ? 5 : esTablet ? 4 : 3;
 
-  const maxWidthFormulario = esWeb ? 760 : undefined;
-
-  const paddingHorizontal = esTelefono ? 16 : 24;
-
-  const columnasEmociones = esTelefono ? 3 : esTablet ? 4 : 5;
-
-  const gapEmociones = esTelefono ? 12 : 14;
-
-  const anchoGridEmociones = Math.min(
-    width - paddingHorizontal * 2,
-    esWeb ? 760 : esTablet ? 760 : width - paddingHorizontal * 2,
-  );
+  const gapEmociones = esEscritorio ? 14 : 12;
 
   const anchoTarjetaEmocion = useMemo(() => {
+    if (anchoGridEmociones <= 0) {
+      return 0;
+    }
+
     const espacioTotal = gapEmociones * (columnasEmociones - 1);
 
     return (anchoGridEmociones - espacioTotal) / columnasEmociones;
   }, [anchoGridEmociones, columnasEmociones, gapEmociones]);
 
-  // ======================================================
+  const paddingTop = esEscritorio ? 28 : esTablet ? 22 : 14;
+
+  const paddingBottom = esEscritorio ? 64 : Math.max(insets.bottom + 100, 120);
+
+  // ========================================================
   // CARGAR DATOS
-  // ======================================================
+  // ========================================================
 
   useEffect(() => {
     if (!id) {
@@ -152,6 +167,7 @@ export default function EditarRegistroScreen() {
 
         const [detalle, emocionesBD] = await Promise.all([
           obtenerDetalleRegistro(id),
+
           obtenerEmocionesAutorregistro(),
         ]);
 
@@ -180,9 +196,9 @@ export default function EditarRegistroScreen() {
     cargarDatos();
   }, [id]);
 
-  // ======================================================
+  // ========================================================
   // GUARDAR CAMBIOS
-  // ======================================================
+  // ========================================================
 
   const guardarCambios = async () => {
     if (!id) {
@@ -226,17 +242,32 @@ export default function EditarRegistroScreen() {
     }
   };
 
-  // ======================================================
+  // ========================================================
+  // MEDIR GRID DE EMOCIONES
+  // ========================================================
+
+  const medirGridEmociones = (event: LayoutChangeEvent) => {
+    const nuevoAncho = event.nativeEvent.layout.width;
+
+    if (Math.abs(nuevoAncho - anchoGridEmociones) > 1) {
+      setAnchoGridEmociones(nuevoAncho);
+    }
+  };
+
+  // ========================================================
   // CARGANDO
-  // ======================================================
+  // ========================================================
 
   if (cargando) {
     return (
       <View
         style={{
           flex: 1,
+
           alignItems: "center",
+
           justifyContent: "center",
+
           backgroundColor,
         }}
       >
@@ -245,8 +276,11 @@ export default function EditarRegistroScreen() {
         <Text
           style={{
             marginTop: 12,
+
             fontFamily: "Nunito-Medium",
+
             fontSize: 14,
+
             color: textMutedColor,
           }}
         >
@@ -256,14 +290,15 @@ export default function EditarRegistroScreen() {
     );
   }
 
-  // ======================================================
+  // ========================================================
   // UI
-  // ======================================================
+  // ========================================================
 
   return (
     <KeyboardAvoidingView
       style={{
         flex: 1,
+
         backgroundColor,
       }}
       behavior={
@@ -278,13 +313,17 @@ export default function EditarRegistroScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop: esTelefono ? 12 : 24,
+          paddingTop,
 
-          paddingBottom: Math.max(insets.bottom + 100, 120),
+          paddingBottom,
         }}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
+        {/* ==================================================
+            CONTENEDOR PRINCIPAL
+        ================================================== */}
+
         <View
           style={{
             width: "100%",
@@ -297,72 +336,135 @@ export default function EditarRegistroScreen() {
           }}
         >
           {/* ==================================================
-                        ENCABEZADO
-                    ================================================== */}
-
-          <View
-            style={{
-              marginBottom: 24,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <Pressable
-              onPress={() => router.back()}
-              style={({ pressed }) => ({
-                width: 44,
-                height: 44,
-                borderRadius: 16,
-                borderWidth: 1,
-                borderColor,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
-              })}
-            >
-              <Ionicons name="arrow-back" size={22} color={textColor} />
-            </Pressable>
-
-            <Text
-              style={{
-                fontFamily: "Nunito-Bold",
-                fontSize: esTelefono ? 22 : 26,
-                color: primaryColor,
-              }}
-            >
-              Editar Registro
-            </Text>
-
-            <View
-              style={{
-                width: 44,
-              }}
-            />
-          </View>
-
-          {/* ==================================================
-                        SELECCIÓN DE EMOCIÓN
-                    ================================================== */}
+              ENCABEZADO
+          ================================================== */}
 
           <View
             style={{
               width: "100%",
 
-              maxWidth: esWeb ? 760 : undefined,
+              maxWidth: maxWidthFormulario,
 
               alignSelf: "center",
 
-              marginBottom: 28,
+              marginBottom: esEscritorio ? 30 : 24,
+
+              flexDirection: "row",
+
+              alignItems: "center",
+            }}
+          >
+            <Pressable
+              onPress={() => router.back()}
+              hitSlop={8}
+              style={({ pressed }) => ({
+                width: 46,
+
+                height: 46,
+
+                flexShrink: 0,
+
+                borderRadius: 15,
+
+                borderWidth: 1,
+
+                borderColor,
+
+                alignItems: "center",
+
+                justifyContent: "center",
+
+                backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
+              })}
+            >
+              <Ionicons name="arrow-back" size={21} color={textColor} />
+            </Pressable>
+
+            <View
+              style={{
+                flex: 1,
+
+                minWidth: 0,
+
+                paddingHorizontal: 16,
+              }}
+            >
+              <Text
+                numberOfLines={1}
+                style={{
+                  fontFamily: "Nunito-Bold",
+
+                  fontSize: esEscritorio ? 30 : esTablet ? 27 : 24,
+
+                  color: primaryColor,
+                }}
+              >
+                Editar registro
+              </Text>
+
+              {!esTelefono && (
+                <Text
+                  style={{
+                    marginTop: 3,
+
+                    fontFamily: "Nunito-Medium",
+
+                    fontSize: 14,
+
+                    color: textMutedColor,
+                  }}
+                >
+                  Actualiza la información de tu autorregistro.
+                </Text>
+              )}
+            </View>
+
+            {/* Conserva simetría visual en móvil */}
+
+            {esTelefono && (
+              <View
+                style={{
+                  width: 46,
+
+                  height: 46,
+                }}
+              />
+            )}
+          </View>
+
+          {/* ==================================================
+              SELECCIÓN DE EMOCIÓN
+          ================================================== */}
+
+          <View
+            style={{
+              width: "100%",
+
+              maxWidth: maxWidthFormulario,
+
+              alignSelf: "center",
+
+              marginBottom: 30,
+
+              padding: esEscritorio ? 24 : esTablet ? 22 : 0,
+
+              borderRadius: esEscritorio || esTablet ? 22 : 0,
+
+              borderWidth: esEscritorio || esTablet ? 1 : 0,
+
+              borderColor,
+
+              backgroundColor:
+                esEscritorio || esTablet ? surfaceColor : "transparent",
             }}
           >
             <Text
               style={{
-                marginBottom: 16,
+                marginBottom: 4,
 
                 fontFamily: "Nunito-Bold",
 
-                fontSize: 20,
+                fontSize: esEscritorio ? 21 : 20,
 
                 color: textColor,
               }}
@@ -370,20 +472,45 @@ export default function EditarRegistroScreen() {
               ¿Cómo te sentías?
             </Text>
 
+            <Text
+              style={{
+                marginBottom: 20,
+
+                fontFamily: "Nunito-Medium",
+
+                fontSize: 14,
+
+                lineHeight: 20,
+
+                color: textSecondaryColor,
+              }}
+            >
+              Selecciona la emoción que representa mejor cómo te sentías en ese
+              momento.
+            </Text>
+
             {emociones.length === 0 ? (
               <View
                 style={{
                   padding: 20,
+
                   borderRadius: 18,
+
                   borderWidth: 1,
+
                   borderColor,
+
                   backgroundColor: surfaceColor,
                 }}
               >
                 <Text
                   style={{
+                    textAlign: "center",
+
                     fontFamily: "Nunito-Medium",
+
                     fontSize: 14,
+
                     color: textSecondaryColor,
                   }}
                 >
@@ -392,7 +519,10 @@ export default function EditarRegistroScreen() {
               </View>
             ) : (
               <View
+                onLayout={medirGridEmociones}
                 style={{
+                  width: "100%",
+
                   flexDirection: "row",
 
                   flexWrap: "wrap",
@@ -415,8 +545,8 @@ export default function EditarRegistroScreen() {
           </View>
 
           {/* ==================================================
-                        PREGUNTAS
-                    ================================================== */}
+              PREGUNTAS
+          ================================================== */}
 
           <View
             style={{
@@ -425,6 +555,17 @@ export default function EditarRegistroScreen() {
               maxWidth: maxWidthFormulario,
 
               alignSelf: "center",
+
+              padding: esEscritorio ? 24 : esTablet ? 22 : 0,
+
+              borderRadius: esEscritorio || esTablet ? 22 : 0,
+
+              borderWidth: esEscritorio || esTablet ? 1 : 0,
+
+              borderColor,
+
+              backgroundColor:
+                esEscritorio || esTablet ? surfaceColor : "transparent",
             }}
           >
             <CampoPreguntaDiario
@@ -450,8 +591,8 @@ export default function EditarRegistroScreen() {
           </View>
 
           {/* ==================================================
-                        BOTÓN GUARDAR
-                    ================================================== */}
+              BOTÓN GUARDAR
+          ================================================== */}
 
           <View
             style={{
@@ -461,7 +602,7 @@ export default function EditarRegistroScreen() {
 
               alignSelf: "center",
 
-              marginTop: 12,
+              marginTop: 18,
             }}
           >
             <Button

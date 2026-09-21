@@ -5,7 +5,9 @@ import {
   obtenerHistorialEntrevistas,
 } from "@/services/entrevista/historialEntrevistaService";
 
-import { styles } from "@/styles/entrevistas.styles";
+import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
+
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
 
@@ -17,14 +19,17 @@ import React, { useCallback, useState } from "react";
 
 import {
   ActivityIndicator,
+  Platform,
+  Pressable,
   ScrollView,
   Text,
-  TouchableOpacity,
-  useWindowDimensions,
   View,
 } from "react-native";
 
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 // ==========================================================
 // FECHA
@@ -47,9 +52,9 @@ function formatearFecha(fecha: string | null) {
 export default function MisEntrevistasScreen() {
   const router = useRouter();
 
-  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
 
-  const movil = width < 600;
+  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
   // ========================================================
   // TEMA
@@ -79,6 +84,8 @@ export default function MisEntrevistasScreen() {
 
   const secondarySoftColor = useThemeColor({}, "secondarySoft");
 
+  const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
+
   // ========================================================
   // ESTADOS
   // ========================================================
@@ -90,6 +97,28 @@ export default function MisEntrevistasScreen() {
   const [creando, setCreando] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
+
+  // ========================================================
+  // RESPONSIVE
+  // ========================================================
+
+  const paddingHorizontal = esEscritorio
+    ? PADDING_RESPONSIVE.escritorio
+    : esTablet
+      ? PADDING_RESPONSIVE.tablet
+      : PADDING_RESPONSIVE.telefono;
+
+  const maxWidthContenido = esEscritorio
+    ? MAX_WIDTHS.dashboard
+    : esTablet
+      ? MAX_WIDTHS.contenido
+      : undefined;
+
+  const maxWidthCabecera = esEscritorio ? 860 : undefined;
+
+  const paddingTop = esEscritorio ? 28 : esTablet ? 24 : 20;
+
+  const paddingBottom = esEscritorio ? 64 : Math.max(insets.bottom + 130, 150);
 
   // ========================================================
   // CARGAR HISTORIAL
@@ -187,499 +216,807 @@ export default function MisEntrevistasScreen() {
 
   return (
     <SafeAreaView
-      edges={["top"]}
+      edges={[]}
+      style={{
+        flex: 1,
 
-      style={[
-        styles.pantalla,
-
-        {
-          backgroundColor,
-        },
-      ]}
+        backgroundColor,
+      }}
     >
       <ScrollView
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingTop,
 
-        contentContainerStyle={[styles.scroll, movil && styles.scrollMovil]}
+          paddingBottom,
+        }}
       >
-        {/* =================================================
-            HEADER
-        ================================================= */}
+        <View
+          style={{
+            width: "100%",
 
-        <View style={styles.header}>
-          <TouchableOpacity
-            activeOpacity={0.7}
+            maxWidth: maxWidthContenido,
 
-            onPress={() => router.replace("/(tabs)/home")}
+            alignSelf: "center",
 
-            style={styles.volver}
-          >
-            <Ionicons name="arrow-back" size={22} color={iconColor} />
-          </TouchableOpacity>
-
-          <View style={styles.headerInfo}>
-            <Text
-              style={[
-                styles.titulo,
-
-                {
-                  color: textColor,
-                },
-              ]}
-            >
-              Entrevista de bienestar
-            </Text>
-
-            <Text
-              style={[
-                styles.subtitulo,
-
-                {
-                  color: textSecondaryColor,
-                },
-              ]}
-            >
-              Consulta tus evaluaciones anteriores o realiza una nueva.
-            </Text>
-          </View>
-        </View>
-
-        {/* =================================================
-            NUEVA ENTREVISTA
-        ================================================= */}
-
-        <TouchableOpacity
-          activeOpacity={0.82}
-
-          disabled={creando}
-
-          onPress={nuevaEntrevista}
-
-          style={[
-            styles.nuevaCard,
-
-            movil && styles.nuevaCardMovil,
-
-            creando && styles.deshabilitado,
-
-            {
-              backgroundColor: primaryColor,
-
-              borderColor: primaryColor,
-            },
-          ]}
+            paddingHorizontal,
+          }}
         >
+          {/* ==================================================
+              HEADER
+          ================================================== */}
+
           <View
-            style={[
-              styles.nuevaIcono,
+            style={{
+              width: "100%",
 
-              {
-                backgroundColor: surfaceColor,
-              },
-            ]}
+              maxWidth: maxWidthCabecera,
+
+              marginBottom: esEscritorio ? 26 : 22,
+
+              flexDirection: "row",
+
+              alignItems: "flex-start",
+            }}
           >
-            {creando ? (
-              <ActivityIndicator size="small" color={primaryColor} />
-            ) : (
-              <Ionicons name="add" size={26} color={primaryColor} />
-            )}
-          </View>
+            <Pressable
+              onPress={() => router.replace("/(tabs)/home")}
+              hitSlop={8}
+              style={({ pressed }) => ({
+                width: 46,
 
-          <View style={styles.nuevaInfo}>
-            <Text
-              style={[
-                styles.nuevaTitulo,
+                height: 46,
 
-                {
-                  color: "#FFFFFF",
-                },
-              ]}
-            >
-              {creando ? "Preparando evaluación..." : "Nueva evaluación"}
-            </Text>
+                flexShrink: 0,
 
-            <Text
-              numberOfLines={2}
+                borderRadius: 15,
 
-              style={[
-                styles.nuevaTexto,
+                borderWidth: 1,
 
-                {
-                  color: "#EAF2FF",
-                },
-              ]}
-            >
-              {creando
-                ? "Estamos preparando una nueva entrevista."
-                : "Cuéntanos cómo te sientes actualmente."}
-            </Text>
-          </View>
+                borderColor,
 
-          {!creando && (
-            <Ionicons name="chevron-forward" size={22} color="#FFFFFF" />
-          )}
-        </TouchableOpacity>
+                alignItems: "center",
 
-        {/* =================================================
-            ESTADOS
-        ================================================= */}
+                justifyContent: "center",
 
-        {cargando ? (
-          <View style={styles.centro}>
-            <ActivityIndicator color={primaryColor} />
+                backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
 
-            <Text
-              style={[
-                styles.centroTexto,
+                opacity: pressed ? 0.8 : 1,
 
-                {
-                  color: textSecondaryColor,
-                },
-              ]}
-            >
-              Cargando tus entrevistas...
-            </Text>
-          </View>
-        ) : error ? (
-          <EstadoVacio
-            movil={movil}
-
-            icono="alert-circle-outline"
-
-            titulo="No pudimos cargar tus entrevistas"
-
-            texto={error}
-          />
-        ) : !entrevistas.length ? (
-          <EstadoVacio
-            movil={movil}
-
-            icono="heart-outline"
-
-            titulo="Aún no tienes evaluaciones"
-
-            texto="Realiza tu primera entrevista para comenzar a conocer mejor tu bienestar."
-          >
-            <TouchableOpacity
-              activeOpacity={0.8}
-
-              disabled={creando}
-
-              onPress={nuevaEntrevista}
-
-              style={[
-                styles.botonPrincipal,
-
-                {
-                  backgroundColor: primaryColor,
-                },
-              ]}
-            >
-              {creando && <ActivityIndicator size="small" color="#FFFFFF" />}
-
-              <Text
-                style={[
-                  styles.botonPrincipalTexto,
-
-                  {
-                    color: "#FFFFFF",
+                ...Platform.select({
+                  web: {
+                    boxShadow: "0px 2px 8px rgba(0,0,0,0.04)",
                   },
-                ]}
-              >
-                {creando ? "Preparando..." : "Realizar mi primera entrevista"}
-              </Text>
-            </TouchableOpacity>
-          </EstadoVacio>
-        ) : (
-          <>
-            {/* =====================================
-                        ÚLTIMA EVALUACIÓN
-                    ===================================== */}
 
-            <Text
-              style={[
-                styles.seccionTitulo,
+                  ios: {
+                    shadowColor: "#000000",
 
-                {
-                  color: textColor,
-                },
-              ]}
+                    shadowOffset: {
+                      width: 0,
+                      height: 2,
+                    },
+
+                    shadowOpacity: 0.05,
+
+                    shadowRadius: 5,
+                  },
+
+                  android: {
+                    elevation: 2,
+                  },
+                }),
+              })}
             >
-              Última evaluación
-            </Text>
+              <Ionicons name="arrow-back" size={22} color={iconColor} />
+            </Pressable>
 
             <View
-              style={[
-                styles.ultimaCard,
+              style={{
+                flex: 1,
 
-                movil && styles.ultimaCardMovil,
+                minWidth: 0,
 
-                {
-                  backgroundColor: surfaceColor,
-
-                  borderColor,
-                },
-              ]}
+                marginLeft: 16,
+              }}
             >
-              {/* Fecha */}
+              <Text
+                style={{
+                  fontFamily: "Nunito-Bold",
 
-              <View style={styles.fechaFila}>
-                <View
-                  style={[
-                    styles.fechaIcono,
+                  fontSize: esEscritorio ? 30 : esTablet ? 27 : 24,
 
-                    {
-                      backgroundColor: primarySoftColor,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name="calendar-outline"
-                    size={21}
-                    color={primaryColor}
-                  />
-                </View>
+                  lineHeight: esEscritorio ? 38 : 32,
 
-                <View style={styles.fechaInfo}>
-                  <Text
-                    style={[
-                      styles.fechaLabel,
+                  color: textColor,
+                }}
+              >
+                Entrevista de bienestar
+              </Text>
 
-                      {
-                        color: textMutedColor,
-                      },
-                    ]}
-                  >
-                    Realizada el
-                  </Text>
+              <Text
+                style={{
+                  marginTop: 5,
 
-                  <Text
-                    style={[
-                      styles.fecha,
+                  maxWidth: 650,
 
-                      {
-                        color: textColor,
-                      },
-                    ]}
-                  >
-                    {formatearFecha(ultima.fecha_fin)}
-                  </Text>
-                </View>
+                  fontFamily: "Nunito-Medium",
 
-                <View
-                  style={[
-                    styles.completada,
+                  fontSize: esEscritorio ? 15 : 14,
 
-                    {
-                      backgroundColor: secondarySoftColor,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.completadaTexto,
+                  lineHeight: 21,
 
-                      {
-                        color: secondaryColor,
-                      },
-                    ]}
-                  >
-                    Completada
-                  </Text>
-                </View>
-              </View>
+                  color: textSecondaryColor,
+                }}
+              >
+                Consulta tus evaluaciones anteriores o realiza una nueva.
+              </Text>
+            </View>
+          </View>
 
-              {/* Área prioritaria */}
+          {/* ==================================================
+              NUEVA ENTREVISTA
+          ================================================== */}
 
-              {!!ultima.areas_prioritarias.length && (
-                <View
-                  style={[
-                    styles.area,
+          <Pressable
+            disabled={creando}
+            onPress={nuevaEntrevista}
+            style={({ pressed }) => ({
+              width: "100%",
 
-                    {
-                      backgroundColor: surfaceSecondaryColor,
+              minHeight: esEscritorio ? 126 : 112,
 
-                      borderColor,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.areaLabel,
+              marginBottom: 28,
 
-                      {
-                        color: textMutedColor,
-                      },
-                    ]}
-                  >
-                    Enfoque principal
-                  </Text>
+              padding: esEscritorio ? 24 : 20,
 
-                  <View style={styles.areaFila}>
-                    <Text
-                      style={[
-                        styles.areaNombre,
+              borderRadius: 24,
 
-                        {
-                          color: textColor,
-                        },
-                      ]}
-                    >
-                      {ultima.areas_prioritarias.join(" y ")}
-                    </Text>
+              borderWidth: 1,
 
-                    {ultima.porcentaje !== null && (
-                      <Text
-                        style={[
-                          styles.porcentaje,
+              borderColor: primaryColor,
 
-                          {
-                            color: primaryColor,
-                          },
-                        ]}
-                      >
-                        {Math.round(ultima.porcentaje)}%
-                      </Text>
-                    )}
-                  </View>
-                </View>
+              flexDirection: "row",
+
+              alignItems: "center",
+
+              backgroundColor: primaryColor,
+
+              opacity: creando ? 0.65 : pressed ? 0.88 : 1,
+
+              ...Platform.select({
+                web: {
+                  boxShadow: "0px 4px 12px rgba(0,0,0,0.08)",
+                },
+
+                ios: {
+                  shadowColor: "#000000",
+
+                  shadowOffset: {
+                    width: 0,
+                    height: 4,
+                  },
+
+                  shadowOpacity: 0.08,
+
+                  shadowRadius: 10,
+                },
+
+                android: {
+                  elevation: 4,
+                },
+              }),
+            })}
+          >
+            <View
+              style={{
+                width: esEscritorio ? 58 : 52,
+
+                height: esEscritorio ? 58 : 52,
+
+                borderRadius: 18,
+
+                flexShrink: 0,
+
+                alignItems: "center",
+
+                justifyContent: "center",
+
+                backgroundColor: surfaceColor,
+              }}
+            >
+              {creando ? (
+                <ActivityIndicator size="small" color={primaryColor} />
+              ) : (
+                <Ionicons name="add" size={27} color={primaryColor} />
               )}
-
-              {/* Acciones */}
-
-              <View style={[styles.acciones, movil && styles.accionesMovil]}>
-                <BotonAccion
-                  icono="analytics-outline"
-                  texto="Ver resultados"
-
-                  onPress={() => verResultado(ultima.id_entrevista)}
-                />
-
-                {ultima.tiene_plan && (
-                  <BotonAccion
-                    icono="clipboard-outline"
-                    texto="Ver plan"
-
-                    onPress={() => verPlan(ultima.id_entrevista)}
-                  />
-                )}
-              </View>
             </View>
 
-            {/* =====================================
-                        HISTORIAL
-                    ===================================== */}
+            <View
+              style={{
+                flex: 1,
 
-            {!!anteriores.length && (
-              <>
-                <Text
-                  style={[
-                    styles.seccionTitulo,
-                    styles.historialTitulo,
+                minWidth: 0,
 
-                    {
-                      color: textColor,
-                    },
-                  ]}
-                >
-                  Historial
-                </Text>
+                marginLeft: 16,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: "Nunito-Bold",
 
-                <View style={styles.lista}>
-                  {anteriores.map((entrevista) => (
-                    <TouchableOpacity
-                      key={entrevista.id_entrevista}
+                  fontSize: esEscritorio ? 18 : 16,
 
-                      activeOpacity={0.75}
+                  color: textOnPrimaryColor,
+                }}
+              >
+                {creando ? "Preparando evaluación..." : "Nueva evaluación"}
+              </Text>
 
-                      onPress={() => verResultado(entrevista.id_entrevista)}
+              <Text
+                numberOfLines={esTelefono ? 2 : 1}
+                style={{
+                  marginTop: 4,
 
-                      style={[
-                        styles.historialCard,
+                  fontFamily: "Nunito-Medium",
 
-                        movil && styles.historialCardMovil,
+                  fontSize: 13,
 
-                        {
-                          backgroundColor: surfaceColor,
+                  lineHeight: 19,
 
-                          borderColor,
-                        },
-                      ]}
-                    >
-                      <View
-                        style={[
-                          styles.historialIcono,
+                  color: "#EAF2FF",
+                }}
+              >
+                {creando
+                  ? "Estamos preparando una nueva entrevista."
+                  : "Cuéntanos cómo te sientes actualmente y recibe una evaluación de bienestar."}
+              </Text>
+            </View>
 
-                          {
-                            backgroundColor: primarySoftColor,
-                          },
-                        ]}
-                      >
-                        <Ionicons
-                          name="heart-outline"
-                          size={20}
-                          color={primaryColor}
-                        />
-                      </View>
-
-                      <View style={styles.historialInfo}>
-                        <Text
-                          style={[
-                            styles.historialFecha,
-
-                            {
-                              color: textColor,
-                            },
-                          ]}
-                        >
-                          {formatearFecha(entrevista.fecha_fin)}
-                        </Text>
-
-                        {!!entrevista.areas_prioritarias.length && (
-                          <Text
-                            numberOfLines={2}
-
-                            style={[
-                              styles.historialArea,
-
-                              {
-                                color: textSecondaryColor,
-                              },
-                            ]}
-                          >
-                            {entrevista.areas_prioritarias.join(" y ")}
-                          </Text>
-                        )}
-                      </View>
-
-                      <View style={styles.historialDerecha}>
-                        {entrevista.porcentaje !== null && (
-                          <Text
-                            style={[
-                              styles.historialPorcentaje,
-
-                              {
-                                color: primaryColor,
-                              },
-                            ]}
-                          >
-                            {Math.round(entrevista.porcentaje)}%
-                          </Text>
-                        )}
-
-                        <Ionicons
-                          name="chevron-forward"
-                          size={20}
-                          color={primaryColor}
-                        />
-                      </View>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </>
+            {!creando && (
+              <Ionicons
+                name="chevron-forward"
+                size={22}
+                color={textOnPrimaryColor}
+              />
             )}
-          </>
-        )}
+          </Pressable>
+
+          {/* ==================================================
+              ESTADOS
+          ================================================== */}
+
+          {cargando ? (
+            <View
+              style={{
+                minHeight: 260,
+
+                alignItems: "center",
+
+                justifyContent: "center",
+              }}
+            >
+              <ActivityIndicator size="small" color={primaryColor} />
+
+              <Text
+                style={{
+                  marginTop: 12,
+
+                  fontFamily: "Nunito-Medium",
+
+                  fontSize: 14,
+
+                  color: textSecondaryColor,
+                }}
+              >
+                Cargando tus entrevistas...
+              </Text>
+            </View>
+          ) : error ? (
+            <EstadoVacio
+              icono="alert-circle-outline"
+              titulo="No pudimos cargar tus entrevistas"
+              texto={error}
+            />
+          ) : !entrevistas.length ? (
+            <EstadoVacio
+              icono="heart-outline"
+              titulo="Aún no tienes evaluaciones"
+              texto="Realiza tu primera entrevista para comenzar a conocer mejor tu bienestar."
+            >
+              <Pressable
+                disabled={creando}
+                onPress={nuevaEntrevista}
+                style={({ pressed }) => ({
+                  minHeight: 46,
+
+                  marginTop: 20,
+
+                  paddingHorizontal: 20,
+
+                  borderRadius: 14,
+
+                  flexDirection: "row",
+
+                  alignItems: "center",
+
+                  justifyContent: "center",
+
+                  gap: 8,
+
+                  backgroundColor: primaryColor,
+
+                  opacity: creando ? 0.6 : pressed ? 0.8 : 1,
+                })}
+              >
+                {creando && (
+                  <ActivityIndicator size="small" color={textOnPrimaryColor} />
+                )}
+
+                <Text
+                  style={{
+                    fontFamily: "Nunito-Bold",
+
+                    fontSize: 13,
+
+                    color: textOnPrimaryColor,
+                  }}
+                >
+                  {creando ? "Preparando..." : "Realizar mi primera entrevista"}
+                </Text>
+              </Pressable>
+            </EstadoVacio>
+          ) : (
+            <>
+              {/* ==================================================
+                  ÚLTIMA EVALUACIÓN
+              ================================================== */}
+
+              <Text
+                style={{
+                  marginBottom: 16,
+
+                  fontFamily: "Nunito-Bold",
+
+                  fontSize: esEscritorio ? 22 : 20,
+
+                  color: textColor,
+                }}
+              >
+                Última evaluación
+              </Text>
+
+              <View
+                style={{
+                  width: "100%",
+
+                  padding: esEscritorio ? 24 : 20,
+
+                  borderRadius: 24,
+
+                  borderWidth: 1,
+
+                  borderColor,
+
+                  backgroundColor: surfaceColor,
+
+                  ...Platform.select({
+                    web: {
+                      boxShadow: "0px 3px 10px rgba(0,0,0,0.05)",
+                    },
+
+                    ios: {
+                      shadowColor: "#000000",
+
+                      shadowOffset: {
+                        width: 0,
+                        height: 3,
+                      },
+
+                      shadowOpacity: 0.06,
+
+                      shadowRadius: 8,
+                    },
+
+                    android: {
+                      elevation: 3,
+                    },
+                  }),
+                }}
+              >
+                {/* ==============================================
+                    FECHA
+                ============================================== */}
+
+                <View
+                  style={{
+                    flexDirection: esTelefono ? "column" : "row",
+
+                    alignItems: esTelefono ? "flex-start" : "center",
+
+                    gap: esTelefono ? 12 : 0,
+                  }}
+                >
+                  <View
+                    style={{
+                      flex: 1,
+
+                      minWidth: 0,
+
+                      flexDirection: "row",
+
+                      alignItems: "center",
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 46,
+
+                        height: 46,
+
+                        borderRadius: 15,
+
+                        alignItems: "center",
+
+                        justifyContent: "center",
+
+                        backgroundColor: primarySoftColor,
+                      }}
+                    >
+                      <Ionicons
+                        name="calendar-outline"
+                        size={21}
+                        color={primaryColor}
+                      />
+                    </View>
+
+                    <View
+                      style={{
+                        flex: 1,
+
+                        marginLeft: 13,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: "Nunito-Medium",
+
+                          fontSize: 12,
+
+                          color: textMutedColor,
+                        }}
+                      >
+                        Realizada el
+                      </Text>
+
+                      <Text
+                        style={{
+                          marginTop: 2,
+
+                          fontFamily: "Nunito-Bold",
+
+                          fontSize: 15,
+
+                          color: textColor,
+                        }}
+                      >
+                        {formatearFecha(ultima.fecha_fin)}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View
+                    style={{
+                      paddingHorizontal: 12,
+
+                      paddingVertical: 7,
+
+                      borderRadius: 999,
+
+                      backgroundColor: secondarySoftColor,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: "Nunito-SemiBold",
+
+                        fontSize: 12,
+
+                        color: secondaryColor,
+                      }}
+                    >
+                      Completada
+                    </Text>
+                  </View>
+                </View>
+
+                {/* ==============================================
+                    ÁREA PRIORITARIA
+                ============================================== */}
+
+                {!!ultima.areas_prioritarias.length && (
+                  <View
+                    style={{
+                      marginTop: 20,
+
+                      padding: 18,
+
+                      borderRadius: 18,
+
+                      borderWidth: 1,
+
+                      borderColor,
+
+                      backgroundColor: surfaceSecondaryColor,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: "Nunito-Medium",
+
+                        fontSize: 12,
+
+                        color: textMutedColor,
+                      }}
+                    >
+                      Enfoque principal
+                    </Text>
+
+                    <View
+                      style={{
+                        marginTop: 6,
+
+                        flexDirection: "row",
+
+                        alignItems: "center",
+
+                        justifyContent: "space-between",
+
+                        gap: 12,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          flex: 1,
+
+                          fontFamily: "Nunito-Bold",
+
+                          fontSize: 15,
+
+                          lineHeight: 21,
+
+                          color: textColor,
+                        }}
+                      >
+                        {ultima.areas_prioritarias.join(" y ")}
+                      </Text>
+
+                      {ultima.porcentaje !== null && (
+                        <Text
+                          style={{
+                            fontFamily: "Nunito-Bold",
+
+                            fontSize: 21,
+
+                            color: primaryColor,
+                          }}
+                        >
+                          {Math.round(ultima.porcentaje)}%
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                )}
+
+                {/* ==============================================
+                    ACCIONES
+                ============================================== */}
+
+                <View
+                  style={{
+                    marginTop: 20,
+
+                    flexDirection: esTelefono ? "column" : "row",
+
+                    gap: 12,
+                  }}
+                >
+                  <BotonAccion
+                    icono="analytics-outline"
+                    texto="Ver resultados"
+                    onPress={() => verResultado(ultima.id_entrevista)}
+                  />
+
+                  {ultima.tiene_plan && (
+                    <BotonAccion
+                      icono="clipboard-outline"
+                      texto="Ver plan"
+                      onPress={() => verPlan(ultima.id_entrevista)}
+                    />
+                  )}
+                </View>
+              </View>
+
+              {/* ==================================================
+                  HISTORIAL
+              ================================================== */}
+
+              {!!anteriores.length && (
+                <>
+                  <View
+                    style={{
+                      marginTop: esEscritorio ? 36 : 30,
+
+                      marginBottom: 16,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: "Nunito-Bold",
+
+                        fontSize: esEscritorio ? 22 : 20,
+
+                        color: textColor,
+                      }}
+                    >
+                      Historial
+                    </Text>
+
+                    <Text
+                      style={{
+                        marginTop: 3,
+
+                        fontFamily: "Nunito-Medium",
+
+                        fontSize: 13,
+
+                        color: textMutedColor,
+                      }}
+                    >
+                      Revisa tus evaluaciones anteriores.
+                    </Text>
+                  </View>
+
+                  <View
+                    style={{
+                      width: "100%",
+
+                      flexDirection: esEscritorio ? "row" : "column",
+
+                      flexWrap: esEscritorio ? "wrap" : "nowrap",
+
+                      gap: 14,
+                    }}
+                  >
+                    {anteriores.map((entrevista) => (
+                      <Pressable
+                        key={entrevista.id_entrevista}
+                        onPress={() => verResultado(entrevista.id_entrevista)}
+                        style={({ pressed }) => ({
+                          width: esEscritorio ? "49.3%" : "100%",
+
+                          minHeight: 96,
+
+                          padding: 16,
+
+                          borderRadius: 18,
+
+                          borderWidth: 1,
+
+                          borderColor: pressed ? primaryColor : borderColor,
+
+                          flexDirection: "row",
+
+                          alignItems: "center",
+
+                          backgroundColor: pressed
+                            ? primarySoftColor
+                            : surfaceColor,
+
+                          opacity: pressed ? 0.9 : 1,
+                        })}
+                      >
+                        <View
+                          style={{
+                            width: 44,
+
+                            height: 44,
+
+                            borderRadius: 14,
+
+                            alignItems: "center",
+
+                            justifyContent: "center",
+
+                            backgroundColor: primarySoftColor,
+                          }}
+                        >
+                          <Ionicons
+                            name="heart-outline"
+                            size={20}
+                            color={primaryColor}
+                          />
+                        </View>
+
+                        <View
+                          style={{
+                            flex: 1,
+
+                            minWidth: 0,
+
+                            marginLeft: 13,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontFamily: "Nunito-Bold",
+
+                              fontSize: 14,
+
+                              color: textColor,
+                            }}
+                          >
+                            {formatearFecha(entrevista.fecha_fin)}
+                          </Text>
+
+                          {!!entrevista.areas_prioritarias.length && (
+                            <Text
+                              numberOfLines={2}
+                              style={{
+                                marginTop: 3,
+
+                                fontFamily: "Nunito-Medium",
+
+                                fontSize: 12,
+
+                                lineHeight: 17,
+
+                                color: textSecondaryColor,
+                              }}
+                            >
+                              {entrevista.areas_prioritarias.join(" y ")}
+                            </Text>
+                          )}
+                        </View>
+
+                        <View
+                          style={{
+                            marginLeft: 10,
+
+                            alignItems: "flex-end",
+
+                            justifyContent: "center",
+
+                            gap: 4,
+                          }}
+                        >
+                          {entrevista.porcentaje !== null && (
+                            <Text
+                              style={{
+                                fontFamily: "Nunito-Bold",
+
+                                fontSize: 16,
+
+                                color: primaryColor,
+                              }}
+                            >
+                              {Math.round(entrevista.porcentaje)}%
+                            </Text>
+                          )}
+
+                          <Ionicons
+                            name="chevron-forward"
+                            size={19}
+                            color={primaryColor}
+                          />
+                        </View>
+                      </Pressable>
+                    ))}
+                  </View>
+                </>
+              )}
+            </>
+          )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -690,14 +1027,11 @@ export default function MisEntrevistasScreen() {
 // ==========================================================
 
 function EstadoVacio({
-  movil,
   icono,
   titulo,
   texto,
   children,
 }: {
-  movil: boolean;
-
   icono: keyof typeof Ionicons.glyphMap;
 
   titulo: string;
@@ -706,6 +1040,8 @@ function EstadoVacio({
 
   children?: React.ReactNode;
 }) {
+  const { esTelefono } = useResponsiveLayout();
+
   const surfaceColor = useThemeColor({}, "surface");
 
   const borderColor = useThemeColor({}, "border");
@@ -720,56 +1056,76 @@ function EstadoVacio({
 
   return (
     <View
-      style={[
-        styles.vacio,
+      style={{
+        width: "100%",
 
-        movil && styles.vacioMovil,
+        minHeight: esTelefono ? 250 : 300,
 
-        {
-          backgroundColor: surfaceColor,
+        padding: esTelefono ? 22 : 30,
 
-          borderColor,
-        },
-      ]}
+        borderRadius: 24,
+
+        borderWidth: 1,
+
+        borderColor,
+
+        alignItems: "center",
+
+        justifyContent: "center",
+
+        backgroundColor: surfaceColor,
+      }}
     >
       <View
-        style={[
-          styles.vacioIcono,
+        style={{
+          width: 64,
 
-          {
-            backgroundColor: primarySoftColor,
-          },
-        ]}
+          height: 64,
+
+          borderRadius: 32,
+
+          alignItems: "center",
+
+          justifyContent: "center",
+
+          backgroundColor: primarySoftColor,
+        }}
       >
-        <Ionicons
-          name={icono}
-
-          size={29}
-
-          color={primaryColor}
-        />
+        <Ionicons name={icono} size={29} color={primaryColor} />
       </View>
 
       <Text
-        style={[
-          styles.vacioTitulo,
+        style={{
+          marginTop: 16,
 
-          {
-            color: textColor,
-          },
-        ]}
+          fontFamily: "Nunito-Bold",
+
+          fontSize: 18,
+
+          textAlign: "center",
+
+          color: textColor,
+        }}
       >
         {titulo}
       </Text>
 
       <Text
-        style={[
-          styles.vacioTexto,
+        style={{
+          marginTop: 7,
 
-          {
-            color: textSecondaryColor,
-          },
-        ]}
+          maxWidth: 460,
+
+          fontFamily: "Nunito-Medium",
+
+          fontSize: 14,
+
+          lineHeight: 20,
+
+          textAlign: "center",
+
+          color: textSecondaryColor,
+        }}
       >
         {texto}
       </Text>
@@ -794,6 +1150,8 @@ function BotonAccion({
 
   onPress: () => void;
 }) {
+  const { esTelefono } = useResponsiveLayout();
+
   const primaryColor = useThemeColor({}, "primary");
 
   const primarySoftColor = useThemeColor({}, "primarySoft");
@@ -801,40 +1159,49 @@ function BotonAccion({
   const borderColor = useThemeColor({}, "border");
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
-
+    <Pressable
       onPress={onPress}
+      style={({ pressed }) => ({
+        flex: esTelefono ? undefined : 1,
 
-      style={[
-        styles.accion,
+        width: esTelefono ? "100%" : undefined,
 
-        {
-          backgroundColor: primarySoftColor,
+        minHeight: 46,
 
-          borderColor,
-        },
-      ]}
+        paddingHorizontal: 16,
+
+        borderRadius: 14,
+
+        borderWidth: 1,
+
+        borderColor: pressed ? primaryColor : borderColor,
+
+        flexDirection: "row",
+
+        alignItems: "center",
+
+        justifyContent: "center",
+
+        gap: 8,
+
+        backgroundColor: primarySoftColor,
+
+        opacity: pressed ? 0.76 : 1,
+      })}
     >
-      <Ionicons
-        name={icono}
-
-        size={18}
-
-        color={primaryColor}
-      />
+      <Ionicons name={icono} size={18} color={primaryColor} />
 
       <Text
-        style={[
-          styles.accionTexto,
+        style={{
+          fontFamily: "Nunito-SemiBold",
 
-          {
-            color: primaryColor,
-          },
-        ]}
+          fontSize: 13,
+
+          color: primaryColor,
+        }}
       >
         {texto}
       </Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 }

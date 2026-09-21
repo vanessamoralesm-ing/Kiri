@@ -1,153 +1,224 @@
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 
-import {
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Platform, Text, TouchableOpacity, View } from "react-native";
 
-import {
-  Ionicons,
-} from "@expo/vector-icons";
+import { useTheme } from "@react-navigation/native";
 
-import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
+import { useThemeColor } from "@/hooks/use-theme-color";
 
-interface TarjetaModuloProps {
+// ==========================================================
+// PROPS
+// ==========================================================
+
+type TarjetaModuloProps = {
   titulo: string;
 
-  nombreIcono:
-    keyof typeof Ionicons.glyphMap;
+  descripcion?: string;
+
+  nombreIcono: keyof typeof Ionicons.glyphMap;
+
+  colorAcento?: string;
+
+  fondoIconoClaro?: string;
+
+  fondoIconoOscuro?: string;
 
   onPress: () => void;
-}
+};
 
-export const TarjetaModulo = ({
+// ==========================================================
+// COMPONENTE
+// ==========================================================
+
+export function TarjetaModulo({
   titulo,
+  descripcion,
   nombreIcono,
+  colorAcento,
+  fondoIconoClaro,
+  fondoIconoOscuro,
   onPress,
-}: TarjetaModuloProps) => {
+}: TarjetaModuloProps) {
+  const { dark: isDarkMode } = useTheme();
 
-  const surfaceColor =
-    useThemeColor(
-      {},
-      "surface"
-    );
+  // ========================================================
+  // TEMA
+  // ========================================================
 
-  const borderColor =
-    useThemeColor(
-      {},
-      "border"
-    );
+  const surfaceColor = useThemeColor({}, "surface");
 
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
+  const textColor = useThemeColor({}, "text");
 
-  const primaryColor =
-    useThemeColor(
-      {},
-      "primary"
-    );
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
 
-  const primarySoftColor =
-    useThemeColor(
-      {},
-      "primarySoft"
-    );
+  const borderColor = useThemeColor({}, "border");
+
+  const primaryColor = useThemeColor({}, "primary");
+
+  const primarySoftColor = useThemeColor({}, "primarySoft");
+
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+
+  // ========================================================
+  // COLORES
+  // ========================================================
+
+  const colorIcono = colorAcento ?? primaryColor;
+
+  const fondoIcono = isDarkMode
+    ? (fondoIconoOscuro ?? primarySoftColor)
+    : (fondoIconoClaro ?? primarySoftColor);
+
+  // ========================================================
+  // UI
+  // ========================================================
 
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
+      activeOpacity={0.82}
       onPress={onPress}
-
-      className="
-        w-[48%]
-        p-4
-        rounded-3xl
-        items-center
-        justify-center
-        my-2
-      "
-
       style={{
-        backgroundColor:
-          surfaceColor,
+        width: "100%",
+
+        height: "100%",
+
+        minHeight: 170,
+
+        borderRadius: 20,
 
         borderWidth: 1,
 
-        borderColor:
-          borderColor,
+        borderColor,
 
-        shadowColor:
-          "#000000",
+        paddingHorizontal: 18,
 
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
+        paddingVertical: 18,
 
-        shadowOpacity:
-          0.12,
+        backgroundColor: surfaceColor,
 
-        shadowRadius:
-          5,
+        alignItems: "center",
 
-        elevation:
-          3,
+        justifyContent: "space-between",
+
+        ...Platform.select({
+          web: {
+            boxShadow: "0px 3px 8px rgba(0, 0, 0, 0.05)",
+          },
+
+          ios: {
+            shadowColor: "#000000",
+
+            shadowOffset: {
+              width: 0,
+              height: 3,
+            },
+
+            shadowOpacity: 0.05,
+
+            shadowRadius: 8,
+          },
+
+          android: {
+            elevation: 3,
+          },
+        }),
       }}
     >
-
-      {/* Fondo del icono */}
+      {/* ICONO */}
 
       <View
-        className="
-          p-4
-          rounded-2xl
-          mb-3
-        "
-
         style={{
-          backgroundColor:
-            primarySoftColor,
+          width: 52,
+
+          height: 52,
+
+          borderRadius: 16,
+
+          alignItems: "center",
+
+          justifyContent: "center",
+
+          backgroundColor: fondoIcono,
         }}
       >
-
-        <Ionicons
-          name={nombreIcono}
-          size={30}
-          color={primaryColor}
-        />
-
+        <Ionicons name={nombreIcono} size={27} color={colorIcono} />
       </View>
 
+      {/* TEXTO */}
 
-      {/* Título */}
-
-      <Text
+      <View
         style={{
-          fontFamily:
-            "Nunito-SemiBold",
+          width: "100%",
 
-          fontSize:
-            13,
+          flex: 1,
 
-          lineHeight:
-            17,
+          alignItems: "center",
 
-          textAlign:
-            "center",
+          justifyContent: "center",
 
-          color:
-            textColor,
+          marginTop: 12,
         }}
       >
-        {titulo}
-      </Text>
+        <Text
+          style={{
+            fontFamily: "Nunito-Bold",
 
+            fontSize: 15,
+
+            lineHeight: 20,
+
+            color: textColor,
+
+            textAlign: "center",
+          }}
+        >
+          {titulo}
+        </Text>
+
+        {descripcion && (
+          <Text
+            numberOfLines={3}
+            style={{
+              marginTop: 6,
+
+              fontFamily: "Nunito-Medium",
+
+              fontSize: 12,
+
+              lineHeight: 17,
+
+              color: textSecondaryColor,
+
+              textAlign: "center",
+            }}
+          >
+            {descripcion}
+          </Text>
+        )}
+      </View>
+
+      {/* FLECHA */}
+
+      <View
+        style={{
+          width: 30,
+
+          height: 30,
+
+          borderRadius: 15,
+
+          alignSelf: "flex-end",
+
+          alignItems: "center",
+
+          justifyContent: "center",
+
+          backgroundColor: surfaceSecondaryColor,
+        }}
+      >
+        <Ionicons name="arrow-forward" size={16} color={colorIcono} />
+      </View>
     </TouchableOpacity>
   );
-};
+}

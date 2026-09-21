@@ -1,122 +1,35 @@
-import React, {
-  useState,
-} from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@react-navigation/native";
+import { useRouter } from "expo-router";
+import React from "react";
 
-import {
-  Pressable,
-  Text,
-  View,
-} from "react-native";
+import { Image, Platform, Pressable, View } from "react-native";
 
-import {
-  Ionicons,
-} from "@expo/vector-icons";
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
-import {
-  useRouter,
-} from "expo-router";
-
-import Logo from "@/components/ui/Logo_izq";
-
-import LogoutModal from "@/components/ui/LogoutModal";
-
-import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
-
+// ==========================================================
+// COMPONENTE
+// ==========================================================
 
 export default function AppHeader() {
+  const router = useRouter();
 
-  const router =
-    useRouter();
+  const { dark: isDarkMode } = useTheme();
 
-  const [
-    menuAbierto,
-    setMenuAbierto,
-  ] =
-    useState(false);
-
-  const [
-    mostrarLogout,
-    setMostrarLogout,
-  ] =
-    useState(false);
-
+  const { esEscritorio } = useResponsiveLayout();
 
   // ========================================================
-  // COLORES DEL TEMA
+  // TEMA
   // ========================================================
 
-  const surfaceColor =
-    useThemeColor(
-      {},
-      "surface"
-    );
+  const surfaceColor = useThemeColor({}, "surface");
 
-  const backgroundColor =
-    useThemeColor(
-      {},
-      "background"
-    );
+  const borderColor = useThemeColor({}, "border");
 
-  const borderColor =
-    useThemeColor(
-      {},
-      "border"
-    );
+  const primaryColor = useThemeColor({}, "primary");
 
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
-
-  const iconColor =
-    useThemeColor(
-      {},
-      "icon"
-    );
-
-  const primaryColor =
-    useThemeColor(
-      {},
-      "primary"
-    );
-
-  const accentColor =
-    useThemeColor(
-      {},
-      "accent"
-    );
-
-  const dividerColor =
-    useThemeColor(
-      {},
-      "divider"
-    );
-
-
-  // ========================================================
-  // ACCIONES
-  // ========================================================
-
-  function irPerfil() {
-
-    setMenuAbierto(false);
-
-    router.push(
-      "/(tabs)/perfil"
-    );
-  }
-
-
-  function salir() {
-
-    setMenuAbierto(false);
-
-    setMostrarLogout(true);
-  }
-
+  const textColor = useThemeColor({}, "text");
 
   // ========================================================
   // UI
@@ -124,234 +37,83 @@ export default function AppHeader() {
 
   return (
     <View
-      className="
-        relative
-        z-50
-        w-full
-        flex-row
-        items-center
-        justify-between
-        px-5
-        py-2
-      "
       style={{
-        backgroundColor:
-          surfaceColor,
+        width: "100%",
 
-        borderBottomWidth:
-          1,
+        height: esEscritorio ? 72 : 100,
 
-        borderBottomColor:
-          borderColor,
+        flexDirection: "row",
+
+        alignItems: "center",
+
+        justifyContent: esEscritorio ? "flex-end" : "space-between",
+
+        paddingHorizontal: esEscritorio ? 28 : 20,
+
+        backgroundColor: surfaceColor,
+
+        borderBottomWidth: 1,
+
+        borderBottomColor: borderColor,
+
+        ...Platform.select({
+          web: {
+            boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.03)",
+          },
+        }),
       }}
     >
+      {/* ==================================================
+          LOGO
+          SOLO MÓVIL Y TABLET
+      ================================================== */}
 
-      {/* Logo */}
-
-      <Logo />
-
-
-      {/* Usuario */}
-
-      <View className="relative">
-
-        <Pressable
-          onPress={() =>
-            setMenuAbierto(
-              !menuAbierto
-            )
+      {!esEscritorio && (
+        <Image
+          source={
+            isDarkMode
+              ? require("../../assets/images/splash-icon-ps.png")
+              : require("../../assets/images/splash-icon.png")
           }
-
-          className="
-            h-12
-            w-12
-            items-center
-            justify-center
-            rounded-full
-          "
-
+          resizeMode="contain"
           style={{
-            backgroundColor:
-              backgroundColor,
-
-            borderWidth:
-              1,
-
-            borderColor:
-              accentColor,
+            width: 115,
+            height: 65,
           }}
-        >
+        />
+      )}
 
-          <Ionicons
-            name="person-outline"
-            size={23}
-            color={
-              iconColor
-            }
-          />
+      {/* ==================================================
+          PERFIL
+      ================================================== */}
 
-        </Pressable>
+      <Pressable
+        onPress={() => router.push("/(tabs)/perfil")}
+        style={({ pressed }) => ({
+          width: 44,
+          height: 44,
 
+          borderRadius: 22,
 
-        {/* Menú desplegable */}
+          alignItems: "center",
 
-        {menuAbierto && (
+          justifyContent: "center",
 
-          <View
-            className="
-              absolute
-              right-0
-              top-14
-              z-50
-              w-48
-              rounded-2xl
-              py-1
-            "
+          borderWidth: 1,
 
-            style={{
-              backgroundColor:
-                surfaceColor,
+          borderColor,
 
-              borderWidth:
-                1,
+          backgroundColor: pressed ? borderColor : surfaceColor,
 
-              borderColor:
-                accentColor,
-
-              shadowColor:
-                "#000000",
-
-              shadowOffset: {
-                width: 0,
-                height: 4,
-              },
-
-              shadowOpacity:
-                0.15,
-
-              shadowRadius:
-                8,
-
-              elevation:
-                8,
-            }}
-          >
-
-            {/* Mi perfil */}
-
-            <Pressable
-              onPress={
-                irPerfil
-              }
-
-              className="
-                flex-row
-                items-center
-                gap-3
-                px-4
-                py-3
-              "
-            >
-
-              <Ionicons
-                name="person-outline"
-                size={20}
-                color={
-                  primaryColor
-                }
-              />
-
-              <Text
-                style={{
-                  fontFamily:
-                    "Nunito-Bold",
-
-                  fontSize:
-                    14,
-
-                  color:
-                    textColor,
-                }}
-              >
-                Mi perfil
-              </Text>
-
-            </Pressable>
-
-
-            {/* Separador */}
-
-            <View
-              className="
-                mx-3
-                h-px
-              "
-              style={{
-                backgroundColor:
-                  dividerColor,
-              }}
-            />
-
-
-            {/* Cerrar sesión */}
-
-            <Pressable
-              onPress={
-                salir
-              }
-
-              className="
-                flex-row
-                items-center
-                gap-3
-                px-4
-                py-3
-              "
-            >
-
-              <Ionicons
-                name="log-out-outline"
-                size={20}
-                color={
-                  iconColor
-                }
-              />
-
-              <Text
-                style={{
-                  fontFamily:
-                    "Nunito-Bold",
-
-                  fontSize:
-                    14,
-
-                  color:
-                    textColor,
-                }}
-              >
-                Cerrar sesión
-              </Text>
-
-            </Pressable>
-
-          </View>
-        )}
-
-      </View>
-
-
-      <LogoutModal
-        visible={
-          mostrarLogout
-        }
-
-        onClose={() =>
-          setMostrarLogout(
-            false
-          )
-        }
-      />
-
+          opacity: pressed ? 0.8 : 1,
+        })}
+      >
+        <Ionicons
+          name="person-outline"
+          size={24}
+          color={esEscritorio ? textColor : primaryColor}
+        />
+      </Pressable>
     </View>
   );
 }
