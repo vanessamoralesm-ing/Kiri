@@ -1,10 +1,15 @@
 import React from "react";
 
-import { StyleSheet, TextInput, View } from "react-native";
+import {
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 
-import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+import {
+  useThemeColor,
+} from "@/hooks/use-theme-color";
 
-import { useThemeColor } from "@/hooks/use-theme-color";
 
 // ==========================================================
 // PROPS
@@ -13,16 +18,20 @@ import { useThemeColor } from "@/hooks/use-theme-color";
 interface CampoRespuestaProps {
   valor: string;
 
-  onChangeText: (texto: string) => void;
+  onChangeText:
+    (texto: string) => void;
 
-  tipo?: "texto" | "numero";
+  tipo?:
+    | "texto"
+    | "numero";
 
-  placeholder?: string;
+  placeholder?:
+    string;
 
-  disabled?: boolean;
-
-  maxLength?: number;
+  disabled?:
+    boolean;
 }
+
 
 // ==========================================================
 // COMPONENTE
@@ -34,144 +43,239 @@ export default function CampoRespuesta({
   tipo = "texto",
   placeholder,
   disabled = false,
-  maxLength,
 }: CampoRespuestaProps) {
-  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
   // ========================================================
   // COLORES DEL TEMA
   // ========================================================
 
-  const inputBackgroundColor = useThemeColor({}, "inputBackground");
+  const inputBackgroundColor =
+    useThemeColor(
+      {},
+      "inputBackground"
+    );
 
-  const inputBorderColor = useThemeColor({}, "inputBorder");
 
-  const textColor = useThemeColor({}, "text");
+  const inputBorderColor =
+    useThemeColor(
+      {},
+      "inputBorder"
+    );
 
-  const placeholderColor = useThemeColor({}, "placeholder");
 
-  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+  const textColor =
+    useThemeColor(
+      {},
+      "text"
+    );
 
-  const primaryColor = useThemeColor({}, "primary");
+
+  const placeholderColor =
+    useThemeColor(
+      {},
+      "placeholder"
+    );
+
+
+  const surfaceSecondaryColor =
+    useThemeColor(
+      {},
+      "surfaceSecondary"
+    );
+
+
+  const primaryColor =
+    useThemeColor(
+      {},
+      "primary"
+    );
+
 
   // ========================================================
   // CAMBIO DE VALOR
   // ========================================================
 
-  function manejarCambio(texto: string) {
-    if (tipo === "numero") {
-      onChangeText(texto.replace(/\D/g, ""));
+  function manejarCambio(
+    texto: string
+  ) {
+
+    if (
+      tipo === "numero"
+    ) {
+
+      onChangeText(
+        texto.replace(
+          /\D/g,
+          ""
+        )
+      );
 
       return;
+
     }
 
-    onChangeText(texto);
+
+    onChangeText(
+      texto
+    );
+
   }
 
-  // ========================================================
-  // RESPONSIVE
-  // ========================================================
-
-  const minHeightTexto = esEscritorio ? 150 : esTablet ? 140 : 120;
-
-  const alturaNumero = esEscritorio ? 60 : 56;
-
-  const fontSize = esEscritorio ? 16 : 15;
 
   // ========================================================
   // UI
   // ========================================================
 
   return (
-    <View style={styles.contenedor}>
+
+    <View
+      style={
+        styles.contenedor
+      }
+    >
+
       <TextInput
-        value={valor}
+        value={
+          valor
+        }
 
-        onChangeText={manejarCambio}
+        onChangeText={
+          manejarCambio
+        }
 
-        editable={!disabled}
-
-        maxLength={maxLength}
+        editable={
+          !disabled
+        }
 
         placeholder={
           placeholder ??
-          (tipo === "numero"
-            ? "Escribe una cantidad..."
-            : "Escribe tu respuesta...")
+          (
+            tipo === "numero"
+              ? "Escribe una cantidad..."
+              : "Escribe tu respuesta..."
+          )
         }
 
-        placeholderTextColor={placeholderColor}
+        placeholderTextColor={
+          placeholderColor
+        }
 
-        selectionColor={primaryColor}
+        selectionColor={
+          primaryColor
+        }
 
-        cursorColor={primaryColor}
+        cursorColor={
+          primaryColor
+        }
 
-        keyboardType={tipo === "numero" ? "number-pad" : "default"}
+        keyboardType={
+          tipo === "numero"
+            ? "number-pad"
+            : "default"
+        }
 
-        multiline={tipo === "texto"}
+        multiline={
+          tipo === "texto"
+        }
 
-        textAlignVertical={tipo === "texto" ? "top" : "center"}
-
-        returnKeyType={tipo === "numero" ? "done" : "default"}
+        textAlignVertical={
+          tipo === "texto"
+            ? "top"
+            : "center"
+        }
 
         style={[
           styles.campo,
 
           {
-            backgroundColor: disabled
-              ? surfaceSecondaryColor
-              : inputBackgroundColor,
+            backgroundColor:
+              disabled
+                ? surfaceSecondaryColor
+                : inputBackgroundColor,
 
-            borderColor: inputBorderColor,
+            borderColor:
+              inputBorderColor,
 
-            color: textColor,
-
-            fontSize,
+            color:
+              textColor,
           },
 
-          tipo === "texto" && {
-            minHeight: minHeightTexto,
+          tipo === "texto" &&
+            styles.campoTexto,
 
-            paddingTop: 15,
+          tipo === "numero" &&
+            styles.campoNumero,
 
-            paddingBottom: 15,
-
-            lineHeight: 22,
-          },
-
-          tipo === "numero" && {
-            height: alturaNumero,
-          },
-
-          disabled && styles.campoDeshabilitado,
+          disabled &&
+            styles.campoDeshabilitado,
         ]}
       />
+
     </View>
+
   );
+
 }
+
 
 // ==========================================================
 // ESTILOS
 // ==========================================================
 
-const styles = StyleSheet.create({
-  contenedor: {
-    width: "100%",
-  },
+const styles =
+  StyleSheet.create({
 
-  campo: {
-    width: "100%",
+    contenedor: {
+      width:
+        "100%",
+    },
 
-    borderWidth: 1.5,
 
-    borderRadius: 16,
+    campo: {
+      width:
+        "100%",
 
-    paddingHorizontal: 17,
+      borderWidth:
+        1.5,
 
-    fontFamily: "Nunito-Medium",
-  },
+      borderRadius:
+        16,
 
-  campoDeshabilitado: {
-    opacity: 0.6,
-  },
-});
+      paddingHorizontal:
+        17,
+
+      fontSize:
+        16,
+
+      fontFamily:
+        "Nunito-Medium",
+    },
+
+
+    campoTexto: {
+      minHeight:
+        130,
+
+      paddingTop:
+        15,
+
+      paddingBottom:
+        15,
+
+      lineHeight:
+        22,
+    },
+
+
+    campoNumero: {
+      height:
+        58,
+    },
+
+
+    campoDeshabilitado: {
+      opacity:
+        0.6,
+    },
+
+  });

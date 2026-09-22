@@ -49,7 +49,6 @@ export default function SolicitudStatusBadge({
         <View
             style={{
                 alignSelf: "flex-start",
-                maxWidth: "100%",
                 paddingHorizontal: 10,
                 paddingVertical: 5,
                 borderRadius: 999,
@@ -58,7 +57,6 @@ export default function SolicitudStatusBadge({
         >
             <Text
                 style={{
-                    flexShrink: 1,
                     fontFamily: "Nunito-Bold",
                     fontSize: 9,
                     color: configuracion.color,

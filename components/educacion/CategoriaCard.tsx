@@ -3,242 +3,177 @@ import React from "react";
 import {
   Image,
   ImageSourcePropType,
-  Platform,
   Pressable,
   Text,
   View,
 } from "react-native";
 
-import { Ionicons } from "@expo/vector-icons";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
 
-import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
-
-// ==========================================================
+// ========
 // PROPS
-// ==========================================================
+// ========
 
 type CategoriaCardProps = {
   titulo: string;
-
-  imagen: ImageSourcePropType;
-
+  imagen?: ImageSourcePropType;
   onPress: () => void;
 };
 
-// ==========================================================
+// ========
 // COMPONENTE
-// ==========================================================
+// ========
 
 export default function CategoriaCard({
   titulo,
   imagen,
   onPress,
 }: CategoriaCardProps) {
-  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
+  // ======
+  // ANIMACIÓN
+  // ======
+
+  const escala = useSharedValue(1);
+
+  const estiloAnimado = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          scale: escala.value,
+        },
+      ],
+    };
+  });
 
   // ========================================================
-  // TEMA
+  // COLORES DEL TEMA
   // ========================================================
-
   const surfaceColor = useThemeColor({}, "surface");
-
-  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
-
-  const borderColor = useThemeColor({}, "border");
 
   const textColor = useThemeColor({}, "text");
 
-  const textSecondaryColor = useThemeColor({}, "textSecondary");
-
-  const primaryColor = useThemeColor({}, "primary");
-
-  const primarySoftColor = useThemeColor({}, "primarySoft");
-
-  // ========================================================
-  // RESPONSIVE
-  // ========================================================
-
-  const alturaImagen = esEscritorio ? 126 : esTablet ? 118 : 105;
-
-  const anchoImagen = esEscritorio ? 126 : esTablet ? 118 : 105;
-
-  const alturaTarjeta = esEscritorio ? 215 : esTablet ? 205 : 175;
+  const borderColor = useThemeColor({}, "border");
 
   // ========================================================
   // UI
   // ========================================================
 
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => ({
-        width: "100%",
-
-        minHeight: alturaTarjeta,
-
-        borderRadius: esEscritorio ? 22 : 20,
-
-        borderWidth: 1,
-
-        borderColor: pressed ? primaryColor : borderColor,
-
-        backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
-
-        overflow: "hidden",
-
-        padding: esEscritorio ? 18 : 16,
-
-        justifyContent: "space-between",
-
-        opacity: pressed ? 0.92 : 1,
-
-        ...Platform.select({
-          web: {
-            cursor: "pointer",
-
-            boxShadow: pressed
-              ? "0px 5px 14px rgba(0,0,0,0.09)"
-              : "0px 2px 8px rgba(0,0,0,0.04)",
-          },
-
-          ios: {
-            shadowColor: "#000000",
-
-            shadowOffset: {
-              width: 0,
-
-              height: 3,
-            },
-
-            shadowOpacity: pressed ? 0.1 : 0.05,
-
-            shadowRadius: 7,
-          },
-
-          android: {
-            elevation: pressed ? 4 : 2,
-          },
-        }),
-      })}
-    >
-      {/* ==================================================
-          IMAGEN
-      ================================================== */}
-
-      <View
-        style={{
+    <Animated.View
+      style={[
+        estiloAnimado,
+        {
           width: "100%",
+        },
+      ]}
+    >
+      <Pressable
+        onPress={onPress}
+        onPressIn={() => {
+          escala.value = withSpring(0.96);
+        }}
+        onPressOut={() => {
+          escala.value = withSpring(1);
+        }}
+        style={({ pressed }) => ({
+          height: 150,
+
+          paddingHorizontal: 16,
 
           alignItems: "center",
 
           justifyContent: "center",
 
-          flex: 1,
-        }}
+          borderRadius: 20,
+
+          borderWidth: 1,
+
+          borderColor,
+
+          backgroundColor: surfaceColor,
+
+          opacity: pressed ? 0.9 : 1,
+
+          shadowColor: "#000000",
+
+          shadowOffset: {
+            width: 0,
+            height: 3,
+          },
+
+          shadowOpacity: 0.08,
+
+          shadowRadius: 8,
+
+          elevation: 3,
+        })}
       >
+        {/* ==================================================
+            IMAGEN
+            ================================================== */}
+
         <View
           style={{
-            width: anchoImagen + 16,
+            width: "100%",
 
-            height: alturaImagen + 16,
+            height: 100,
 
-            borderRadius: 22,
+            marginBottom: 8,
 
             alignItems: "center",
 
             justifyContent: "center",
-
-            backgroundColor: primarySoftColor,
           }}
         >
-          <Image
-            source={imagen}
-            resizeMode="cover"
-            style={{
-              width: anchoImagen,
+          {imagen && (
+            <Image
+              source={imagen}
 
-              height: alturaImagen,
-
-              borderRadius: 16,
-            }}
-          />
-        </View>
-      </View>
-
-      {/* ==================================================
-          PIE
-      ================================================== */}
-
-      <View
-        style={{
-          width: "100%",
-
-          marginTop: 14,
-
-          flexDirection: "row",
-
-          alignItems: "center",
-        }}
-      >
-        <View
-          style={{
-            flex: 1,
-
-            minWidth: 0,
-          }}
-        >
-          <Text
-            numberOfLines={1}
-            style={{
-              fontFamily: "Nunito-Bold",
-
-              fontSize: esEscritorio ? 17 : 16,
-
-              color: textColor,
-            }}
-          >
-            {titulo}
-          </Text>
-
-          {!esTelefono && (
-            <Text
               style={{
-                marginTop: 2,
+                width: 120,
+                height: 110,
+                borderRadius: 10,
 
-                fontFamily: "Nunito-Medium",
+                alignSelf: "center",
 
-                fontSize: 11,
-
-                color: textSecondaryColor,
+                // Mueve visualmente la imagen
+                // ligeramente hacia la derecha.
+                transform: [
+                  {
+                    translateX: 8,
+                  },
+                ],
               }}
-            >
-              Explorar contenido
-            </Text>
+
+              resizeMode="cover"
+            />
           )}
         </View>
 
-        <View
+        {/* ==================================================
+            TÍTULO
+            ================================================== */}
+
+        <Text
           style={{
-            width: 34,
+            fontFamily: "Nunito-SemiBold",
 
-            height: 34,
+            fontSize: 18,
 
-            marginLeft: 10,
+            textAlign: "center",
 
-            borderRadius: 17,
-
-            alignItems: "center",
-
-            justifyContent: "center",
-
-            backgroundColor: primarySoftColor,
+            color: textColor,
           }}
         >
-          <Ionicons name="arrow-forward" size={17} color={primaryColor} />
-        </View>
-      </View>
-    </Pressable>
+          {titulo}
+        </Text>
+      </Pressable>
+    </Animated.View>
   );
 }

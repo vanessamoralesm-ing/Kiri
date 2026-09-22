@@ -2,10 +2,10 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import {
   ActivityIndicator,
-  LayoutChangeEvent,
   Pressable,
   ScrollView,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -17,47 +17,26 @@ import ResumenDiario from "@/components/diario/ResumenDiario";
 import TarjetaBienvenidaDiario from "@/components/diario/TarjetaBienvenidaDiario";
 import TarjetaEntradaDiario from "@/components/diario/TarjetaEntradaDiario";
 
-import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
-
-import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
-
-import { useThemeColor } from "@/hooks/use-theme-color";
-
 import { useAuth } from "@/services/authProvider";
 
 import { obtenerHistorialDiario } from "@/services/diario/autorregistro.service";
 
 import { EntradaDiarioResumen } from "@/types/diario";
 
-// ==========================================================
-// COMPONENTE
-// ==========================================================
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 export default function DiarioScreen() {
   const { user, profile } = useAuth();
 
-  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
-
-  // ========================================================
-  // ESTADOS
-  // ========================================================
+  const { width } = useWindowDimensions();
 
   const [cargando, setCargando] = useState(true);
 
   const [entradas, setEntradas] = useState<EntradaDiarioResumen[]>([]);
 
-  /*
-   * Guardamos el ancho REAL del grid.
-   *
-   * Esto evita calcular el ancho de las tarjetas usando
-   * todo el ancho de la ventana, ya que en desktop también
-   * existe una sidebar.
-   */
-  const [anchoGrid, setAnchoGrid] = useState(0);
-
-  // ========================================================
+  // ======================================================
   // TEMA
-  // ========================================================
+  // ======================================================
 
   const backgroundColor = useThemeColor({}, "background");
 
@@ -75,44 +54,17 @@ export default function DiarioScreen() {
 
   const primarySoftColor = useThemeColor({}, "primarySoft");
 
-  // ========================================================
+  // ======================================================
   // RESPONSIVE
-  // ========================================================
+  // ======================================================
 
-  const paddingHorizontal = esEscritorio
-    ? PADDING_RESPONSIVE.escritorio
-    : esTablet
-      ? PADDING_RESPONSIVE.tablet
-      : PADDING_RESPONSIVE.telefono;
+  const esTablet = width >= 768;
 
-  const maxWidthContenido = esEscritorio
-    ? MAX_WIDTHS.dashboard
-    : esTablet
-      ? MAX_WIDTHS.contenido
-      : undefined;
+  const esWebGrande = width >= 1100;
 
-  /*
-   * Teléfono   → 1 columna
-   * Tablet     → 2 columnas
-   * Escritorio → 2 columnas
-   *
-   * Como solo mostramos cinco entradas recientes,
-   * dos columnas mantienen las tarjetas legibles.
-   */
-  const numeroColumnas = esTelefono ? 1 : 2;
-
-  const gapEntradas = esEscritorio ? 18 : 16;
-
-  const anchoTarjeta =
-    anchoGrid > 0
-      ? (anchoGrid - gapEntradas * (numeroColumnas - 1)) / numeroColumnas
-      : undefined;
-
-  const paddingBottom = esEscritorio ? 64 : 150;
-
-  // ========================================================
+  // ======================================================
   // NOMBRE DEL USUARIO
-  // ========================================================
+  // ======================================================
 
   const nombreUsuario = useMemo(() => {
     const nombrePreferidoPerfil =
@@ -147,9 +99,9 @@ export default function DiarioScreen() {
     user?.user_metadata?.nombres,
   ]);
 
-  // ========================================================
+  // ======================================================
   // CARGAR DATOS
-  // ========================================================
+  // ======================================================
 
   const cargarDatos = useCallback(async () => {
     try {
@@ -167,9 +119,9 @@ export default function DiarioScreen() {
     }
   }, []);
 
-  // ========================================================
+  // ======================================================
   // ACTUALIZAR AL TOMAR FOCO
-  // ========================================================
+  // ======================================================
 
   useFocusEffect(
     useCallback(() => {
@@ -177,14 +129,13 @@ export default function DiarioScreen() {
     }, [cargarDatos]),
   );
 
-  // ========================================================
+  // ======================================================
   // NAVEGACIÓN
-  // ========================================================
+  // ======================================================
 
   const irANuevoRegistro = () => {
     router.push({
       pathname: "/diario/nuevo" as never,
-
       params: {
         origen: "diario",
       },
@@ -199,9 +150,9 @@ export default function DiarioScreen() {
     router.push(`/diario/${id}` as never);
   };
 
-  // ========================================================
+  // ======================================================
   // FORMATEAR FECHA
-  // ========================================================
+  // ======================================================
 
   const formatearFecha = (fechaIso: string) => {
     const fecha = new Date(fechaIso);
@@ -217,31 +168,14 @@ export default function DiarioScreen() {
     });
   };
 
-  // ========================================================
-  // MEDIR GRID
-  // ========================================================
-
-  const medirGrid = (event: LayoutChangeEvent) => {
-    const nuevoAncho = event.nativeEvent.layout.width;
-
-    /*
-     * Evitamos renders innecesarios por diferencias
-     * mínimas de dimensiones.
-     */
-    if (Math.abs(nuevoAncho - anchoGrid) > 1) {
-      setAnchoGrid(nuevoAncho);
-    }
-  };
-
-  // ========================================================
+  // ======================================================
   // UI
-  // ========================================================
+  // ======================================================
 
   return (
     <View
       style={{
         flex: 1,
-
         backgroundColor,
       }}
     >
@@ -251,29 +185,31 @@ export default function DiarioScreen() {
         }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop: esEscritorio ? 28 : 20,
-
-          paddingBottom,
+          paddingBottom: 110,
         }}
       >
         {/* ==================================================
-            CONTENEDOR PRINCIPAL
-        ================================================== */}
+                    CONTENEDOR PRINCIPAL
+                ================================================== */}
 
         <View
           style={{
             width: "100%",
 
-            maxWidth: maxWidthContenido,
+            maxWidth: esWebGrande ? 1080 : 960,
 
             alignSelf: "center",
 
-            paddingHorizontal,
+            paddingHorizontal: esTablet ? 28 : 20,
+
+            paddingTop: 24,
+
+            paddingBottom: 20,
           }}
         >
           {/* ==================================================
-              BIENVENIDA
-          ================================================== */}
+                        BIENVENIDA
+                    ================================================== */}
 
           <TarjetaBienvenidaDiario
             nombre={nombreUsuario}
@@ -281,8 +217,8 @@ export default function DiarioScreen() {
           />
 
           {/* ==================================================
-              RESUMEN
-          ================================================== */}
+                        RESUMEN
+                    ================================================== */}
 
           <ResumenDiario
             diasRacha={entradas.length > 0 ? 1 : 0}
@@ -290,14 +226,14 @@ export default function DiarioScreen() {
           />
 
           {/* ==================================================
-              ENTRADAS RECIENTES
-          ================================================== */}
+                        ENCABEZADO ENTRADAS RECIENTES
+                    ================================================== */}
 
           <View
             style={{
-              marginTop: esEscritorio ? 36 : 30,
+              marginTop: 32,
 
-              marginBottom: 18,
+              marginBottom: 20,
 
               flexDirection: "row",
 
@@ -317,12 +253,12 @@ export default function DiarioScreen() {
                 style={{
                   fontFamily: "Nunito-Bold",
 
-                  fontSize: esEscritorio ? 21 : 20,
+                  fontSize: 20,
 
                   color: textColor,
                 }}
               >
-                Entradas recientes
+                Entradas Recientes
               </Text>
 
               <Text
@@ -344,9 +280,7 @@ export default function DiarioScreen() {
               onPress={verTodasLasEntradas}
               hitSlop={8}
               style={({ pressed }) => ({
-                minHeight: 40,
-
-                paddingHorizontal: 10,
+                paddingHorizontal: 8,
 
                 paddingVertical: 8,
 
@@ -376,19 +310,15 @@ export default function DiarioScreen() {
           </View>
 
           {/* ==================================================
-              CARGANDO
-          ================================================== */}
+                        CARGANDO
+                    ================================================== */}
 
           {cargando ? (
             <View
               style={{
-                width: "100%",
-
-                minHeight: 180,
+                paddingVertical: 32,
 
                 alignItems: "center",
-
-                justifyContent: "center",
               }}
             >
               <ActivityIndicator size="small" color={primaryColor} />
@@ -408,17 +338,13 @@ export default function DiarioScreen() {
               </Text>
             </View>
           ) : entradas.length === 0 ? (
-            // ==========================================
+            // ==================================================
             // SIN REGISTROS
-            // ==========================================
+            // ==================================================
 
             <View
               style={{
-                width: "100%",
-
-                minHeight: esEscritorio ? 220 : undefined,
-
-                padding: esEscritorio ? 32 : 24,
+                padding: 24,
 
                 borderRadius: 22,
 
@@ -429,17 +355,15 @@ export default function DiarioScreen() {
                 backgroundColor: surfaceColor,
 
                 alignItems: "center",
-
-                justifyContent: "center",
               }}
             >
               <View
                 style={{
-                  width: 60,
+                  width: 58,
 
-                  height: 60,
+                  height: 58,
 
-                  borderRadius: 30,
+                  borderRadius: 29,
 
                   alignItems: "center",
 
@@ -453,13 +377,13 @@ export default function DiarioScreen() {
 
               <Text
                 style={{
-                  marginTop: 14,
+                  marginTop: 12,
 
                   textAlign: "center",
 
                   fontFamily: "Nunito-SemiBold",
 
-                  fontSize: 15,
+                  fontSize: 14,
 
                   color: textSecondaryColor,
                 }}
@@ -469,86 +393,54 @@ export default function DiarioScreen() {
 
               <Text
                 style={{
-                  marginTop: 5,
+                  marginTop: 4,
 
                   textAlign: "center",
 
                   fontFamily: "Nunito-Medium",
 
-                  fontSize: 13,
+                  fontSize: 12,
 
                   color: textMutedColor,
                 }}
               >
                 Tu próximo registro aparecerá aquí.
               </Text>
-
-              <Pressable
-                onPress={irANuevoRegistro}
-                style={({ pressed }) => ({
-                  marginTop: 20,
-
-                  paddingHorizontal: 18,
-
-                  minHeight: 42,
-
-                  borderRadius: 12,
-
-                  flexDirection: "row",
-
-                  alignItems: "center",
-
-                  justifyContent: "center",
-
-                  gap: 7,
-
-                  backgroundColor: primaryColor,
-
-                  opacity: pressed ? 0.8 : 1,
-                })}
-              >
-                <Ionicons name="add" size={19} color="#FFFFFF" />
-
-                <Text
-                  style={{
-                    fontFamily: "Nunito-SemiBold",
-
-                    fontSize: 13,
-
-                    color: "#FFFFFF",
-                  }}
-                >
-                  Crear primer registro
-                </Text>
-              </Pressable>
             </View>
           ) : (
-            // ==========================================
+            // ==================================================
             // REGISTROS
-            // ==========================================
+            // ==================================================
 
             <View
-              onLayout={medirGrid}
-              style={{
-                width: "100%",
+              style={
+                esTablet
+                  ? {
+                      flexDirection: "row",
 
-                flexDirection: numeroColumnas > 1 ? "row" : "column",
+                      flexWrap: "wrap",
 
-                flexWrap: numeroColumnas > 1 ? "wrap" : "nowrap",
-
-                gap: gapEntradas,
-
-                alignItems: "stretch",
-              }}
+                      gap: 16,
+                    }
+                  : undefined
+              }
             >
               {entradas.map((item) => (
                 <View
                   key={item.id_registro}
-                  style={{
-                    width: numeroColumnas === 1 ? "100%" : anchoTarjeta,
+                  style={
+                    esTablet
+                      ? {
+                          width: esWebGrande
+                            ? ("calc(50% - 8px)" as never)
+                            : "48.5%",
+                        }
+                      : {
+                          width: "100%",
 
-                    minWidth: 0,
-                  }}
+                          marginBottom: 18,
+                        }
+                  }
                 >
                   <TarjetaEntradaDiario
                     fecha={formatearFecha(item.fecha_inicio)}
