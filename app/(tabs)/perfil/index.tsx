@@ -10,6 +10,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -36,11 +37,7 @@ import LogoutModal from "@/components/ui/LogoutModal";
 
 import { styles } from "@/styles/perfil.styles";
 
-import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
-
 import { useThemeColor } from "@/hooks/use-theme-color";
-
-import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 import { useThemeMode } from "@/contexts/ThemeModeContext";
 
@@ -72,9 +69,11 @@ const GENEROS = [
 // ==========================================================
 
 export default function PerfilScreen() {
+  const { width } = useWindowDimensions();
+
   const insets = useSafeAreaInsets();
 
-  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
+  const movil = width < 600;
 
   // ========================================================
   // CONTROL GLOBAL DEL TEMA
@@ -113,26 +112,6 @@ export default function PerfilScreen() {
   const inputBorderColor = useThemeColor({}, "inputBorder");
 
   const iconColor = useThemeColor({}, "icon");
-
-  // ========================================================
-  // RESPONSIVE
-  // ========================================================
-
-  const paddingHorizontal = esEscritorio
-    ? PADDING_RESPONSIVE.escritorio
-    : esTablet
-      ? PADDING_RESPONSIVE.tablet
-      : PADDING_RESPONSIVE.telefono;
-
-  const maxWidthContenido = esEscritorio
-    ? 1180
-    : esTablet
-      ? MAX_WIDTHS.formulario
-      : undefined;
-
-  const gapColumnas = esEscritorio ? 28 : 0;
-
-  const paddingBottom = esEscritorio ? 56 : Math.max(insets.bottom + 120, 145);
 
   // ========================================================
   // ESTADOS
@@ -292,11 +271,13 @@ export default function PerfilScreen() {
 
         onPress: tomarFoto,
       },
+
       {
         text: "Galería",
 
         onPress: abrirGaleria,
       },
+
       {
         text: "Cancelar",
 
@@ -478,6 +459,7 @@ export default function PerfilScreen() {
   return (
     <SafeAreaView
       edges={["top"]}
+
       style={[
         styles.pantalla,
 
@@ -488,1011 +470,754 @@ export default function PerfilScreen() {
     >
       <ScrollView
         showsVerticalScrollIndicator={false}
+
         keyboardShouldPersistTaps="handled"
+
         contentContainerStyle={[
           styles.scroll,
 
-          {
-            paddingBottom,
+          movil && {
+            paddingBottom: Math.max(
+              insets.bottom + 120,
+
+              145,
+            ),
           },
         ]}
       >
         {/* =================================================
-            CONTENEDOR RESPONSIVE
+            HEADER
         ================================================= */}
 
-        <View
-          style={{
-            width: "100%",
-
-            maxWidth: maxWidthContenido,
-
-            alignSelf: "center",
-
-            paddingHorizontal,
-          }}
-        >
-          {/* =================================================
-              HEADER
-          ================================================= */}
-
-          <View
+        <View style={styles.header}>
+          <Text
             style={[
-              styles.header,
+              styles.titulo,
 
               {
-                marginBottom: esEscritorio ? 28 : 22,
+                color: textColor,
               },
             ]}
           >
-            <Text
-              style={[
-                styles.titulo,
+            Mi perfil
+          </Text>
 
-                {
-                  color: textColor,
+          <Text
+            style={[
+              styles.subtitulo,
 
-                  fontSize: esEscritorio ? 30 : undefined,
-                },
-              ]}
-            >
-              Mi perfil
-            </Text>
+              {
+                color: textSecondaryColor,
+              },
+            ]}
+          >
+            Administra tu información y tu cuenta
+          </Text>
+        </View>
 
-            <Text
-              style={[
-                styles.subtitulo,
+        {/* =================================================
+            FOTO
+        ================================================= */}
 
-                {
-                  color: textSecondaryColor,
+        <View style={styles.fotoZona}>
+          <View
+            style={[
+              styles.avatar,
 
-                  marginTop: 4,
-                },
-              ]}
-            >
-              Administra tu información y tu cuenta
-            </Text>
+              {
+                backgroundColor: surfaceSecondaryColor,
+
+                borderColor,
+              },
+            ]}
+          >
+            {perfil?.foto_url ? (
+              <Image
+                source={{
+                  uri: perfil.foto_url,
+                }}
+
+                style={styles.foto}
+              />
+            ) : (
+              <Ionicons name="person" size={54} color={primaryColor} />
+            )}
           </View>
 
-          {/* =================================================
-              LAYOUT PRINCIPAL
-          ================================================= */}
+          <TouchableOpacity
+            activeOpacity={0.75}
 
-          <View
-            style={{
-              width: "100%",
+            disabled={subiendoFoto}
 
-              flexDirection: esEscritorio ? "row" : "column",
+            onPress={seleccionarFoto}
 
-              alignItems: esEscritorio ? "flex-start" : "stretch",
+            style={[
+              styles.camara,
 
-              gap: gapColumnas,
-            }}
+              subiendoFoto && styles.deshabilitado,
+
+              {
+                backgroundColor: primaryColor,
+              },
+            ]}
           >
-            {/* =================================================
-                COLUMNA IZQUIERDA
-            ================================================= */}
+            {subiendoFoto ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Ionicons name="camera" size={17} color="#FFFFFF" />
+            )}
+          </TouchableOpacity>
 
-            <View
-              style={{
-                width: esEscritorio ? 320 : "100%",
+          <Text
+            style={[
+              styles.cambiarFoto,
 
-                flexShrink: 0,
-              }}
-            >
-              {/* ===============================================
-                  FOTO
-              =============================================== */}
+              {
+                color: textSecondaryColor,
+              },
+            ]}
+          >
+            Toca la cámara para cambiar tu foto
+          </Text>
+        </View>
 
-              <View
-                style={{
-                  width: "100%",
+        {/* =================================================
+            INFORMACIÓN PERSONAL
+        ================================================= */}
 
-                  borderWidth: esEscritorio ? 1 : 0,
+        <TituloSeccion>INFORMACIÓN PERSONAL</TituloSeccion>
 
-                  borderColor,
+        <Campo
+          titulo="Nombres"
+          valor={nombres}
+          onChange={setNombres}
+          placeholder="Tus nombres"
+          icono="person-outline"
+        />
 
-                  borderRadius: esEscritorio ? 24 : 0,
+        <Campo
+          titulo="Apellidos"
+          valor={apellidos}
+          onChange={setApellidos}
+          placeholder="Tus apellidos"
+          icono="person-outline"
+        />
 
-                  backgroundColor: esEscritorio ? surfaceColor : "transparent",
+        <Campo
+          titulo="Nombre preferido"
+          valor={nombrePreferido}
+          onChange={setNombrePreferido}
+          placeholder="¿Cómo quieres que te llamemos?"
+          icono="happy-outline"
+        />
 
-                  padding: esEscritorio ? 24 : 0,
+        <Campo
+          titulo="Fecha de nacimiento"
+          valor={fechaNacimiento}
+          onChange={setFechaNacimiento}
+          placeholder="AAAA-MM-DD"
+          icono="calendar-outline"
+        />
 
-                  marginBottom: 24,
+        {/* Género */}
+
+        <Text
+          style={[
+            styles.label,
+
+            {
+              color: textColor,
+            },
+          ]}
+        >
+          Género
+        </Text>
+
+        <TouchableOpacity
+          activeOpacity={0.75}
+
+          onPress={() => setMostrarGeneros((actual) => !actual)}
+
+          style={[
+            styles.input,
+
+            {
+              backgroundColor: inputBackgroundColor,
+
+              borderColor: inputBorderColor,
+            },
+          ]}
+        >
+          <Ionicons name="people-outline" size={19} color={primaryColor} />
+
+          <Text
+            style={[
+              styles.inputTexto,
+
+              {
+                color: textColor,
+              },
+            ]}
+          >
+            {generoTexto}
+          </Text>
+
+          <Ionicons
+            name={mostrarGeneros ? "chevron-up" : "chevron-down"}
+
+            size={18}
+
+            color={iconColor}
+          />
+        </TouchableOpacity>
+
+        {mostrarGeneros && (
+          <View
+            style={[
+              styles.listaGenero,
+
+              {
+                backgroundColor: surfaceColor,
+
+                borderColor,
+              },
+            ]}
+          >
+            {GENEROS.map((opcion) => (
+              <TouchableOpacity
+                key={opcion.value}
+
+                activeOpacity={0.7}
+
+                onPress={() => {
+                  setGenero(opcion.value);
+
+                  setMostrarGeneros(false);
                 }}
-              >
-                <View
-                  style={[
-                    styles.fotoZona,
 
-                    {
-                      marginTop: 0,
-
-                      marginBottom: esEscritorio ? 0 : undefined,
-                    },
-                  ]}
-                >
-                  <View
-                    style={[
-                      styles.avatar,
-
-                      {
-                        backgroundColor: surfaceSecondaryColor,
-
-                        borderColor,
-
-                        width: esEscritorio ? 124 : undefined,
-
-                        height: esEscritorio ? 124 : undefined,
-
-                        borderRadius: esEscritorio ? 62 : undefined,
-                      },
-                    ]}
-                  >
-                    {perfil?.foto_url ? (
-                      <Image
-                        source={{
-                          uri: perfil.foto_url,
-                        }}
-                        style={styles.foto}
-                      />
-                    ) : (
-                      <Ionicons
-                        name="person"
-                        size={esEscritorio ? 58 : 54}
-                        color={primaryColor}
-                      />
-                    )}
-                  </View>
-
-                  <TouchableOpacity
-                    activeOpacity={0.75}
-                    disabled={subiendoFoto}
-                    onPress={seleccionarFoto}
-                    style={[
-                      styles.camara,
-
-                      subiendoFoto && styles.deshabilitado,
-
-                      {
-                        backgroundColor: primaryColor,
-                      },
-                    ]}
-                  >
-                    {subiendoFoto ? (
-                      <ActivityIndicator size="small" color="#FFFFFF" />
-                    ) : (
-                      <Ionicons name="camera" size={17} color="#FFFFFF" />
-                    )}
-                  </TouchableOpacity>
-
-                  <Text
-                    style={[
-                      styles.cambiarFoto,
-
-                      {
-                        color: textSecondaryColor,
-
-                        textAlign: "center",
-                      },
-                    ]}
-                  >
-                    Toca la cámara para cambiar tu foto
-                  </Text>
-                </View>
-              </View>
-
-              {/* ===============================================
-                  CUENTA E INSTITUCIÓN
-              =============================================== */}
-
-              <TituloSeccion>CUENTA E INSTITUCIÓN</TituloSeccion>
-
-              <View
                 style={[
-                  styles.tarjetaCuenta,
+                  styles.opcionGenero,
 
                   {
-                    backgroundColor: surfaceColor,
-
-                    borderColor,
-
-                    marginBottom: 24,
+                    borderBottomColor: dividerColor,
                   },
                 ]}
               >
-                <FilaInformacion
-                  icono="person-circle-outline"
-                  color={primaryColor}
-                  titulo="Tipo de cuenta"
-                  valor={perfil?.rol_nombre ?? "Sin rol"}
-                />
-
-                <View
-                  style={[
-                    styles.separador,
-
-                    {
-                      backgroundColor: dividerColor,
-                    },
-                  ]}
-                />
-
-                <FilaInformacion
-                  icono="school-outline"
-                  color={secondaryColor}
-                  titulo="Institución"
-                  valor={perfil?.institucion_nombre ?? "Cuenta independiente"}
-                />
-              </View>
-
-              {/* ===============================================
-                  APARIENCIA
-              =============================================== */}
-
-              <TituloSeccion>APARIENCIA</TituloSeccion>
-
-              <View
-                style={[
-                  styles.opcionSeguridad,
-
-                  {
-                    backgroundColor: surfaceColor,
-
-                    borderColor,
-
-                    marginBottom: 24,
-                  },
-                ]}
-              >
-                <View
-                  style={[
-                    styles.iconoCuenta,
-
-                    {
-                      backgroundColor: primarySoftColor,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name={isDarkMode ? "moon" : "sunny-outline"}
-                    size={21}
-                    color={primaryColor}
-                  />
-                </View>
-
-                <View style={styles.flex}>
-                  <Text
-                    style={[
-                      styles.valorCuenta,
-
-                      {
-                        color: textColor,
-                      },
-                    ]}
-                  >
-                    Modo oscuro
-                  </Text>
-
-                  <Text
-                    style={[
-                      styles.labelCuenta,
-
-                      {
-                        color: textSecondaryColor,
-                      },
-                    ]}
-                  >
-                    {isDarkMode
-                      ? "El tema oscuro está activado"
-                      : "El tema claro está activado"}
-                  </Text>
-                </View>
-
-                <Switch
-                  value={isDarkMode}
-                  onValueChange={toggleDarkMode}
-                  trackColor={{
-                    false: surfaceSecondaryColor,
-
-                    true: primarySoftColor,
-                  }}
-                  thumbColor={isDarkMode ? primaryColor : textMutedColor}
-                  ios_backgroundColor={surfaceSecondaryColor}
-                />
-              </View>
-
-              {/* ===============================================
-                  PRIVACIDAD
-              =============================================== */}
-
-              <TituloSeccion>PRIVACIDAD</TituloSeccion>
-
-              <View
-                style={[
-                  styles.privacidad,
-
-                  {
-                    backgroundColor: primarySoftColor,
-
-                    borderColor,
-
-                    marginBottom: 24,
-                  },
-                ]}
-              >
-                <View
-                  style={[
-                    styles.privacidadIcono,
-
-                    {
-                      backgroundColor: surfaceColor,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name="shield-checkmark-outline"
-                    size={24}
-                    color={primaryColor}
-                  />
-                </View>
-
-                <View style={styles.flex}>
-                  <Text
-                    style={[
-                      styles.privacidadTitulo,
-
-                      {
-                        color: textColor,
-                      },
-                    ]}
-                  >
-                    Privacidad de datos
-                  </Text>
-
-                  <Text
-                    style={[
-                      styles.privacidadTexto,
-
-                      {
-                        color: textSecondaryColor,
-                      },
-                    ]}
-                  >
-                    Tu información personal se mantiene privada y se utiliza
-                    para personalizar tu experiencia dentro de Kiri.
-                  </Text>
-                </View>
-              </View>
-
-              {/* ===============================================
-                  CERRAR SESIÓN - DESKTOP
-              =============================================== */}
-
-              {esEscritorio && (
-                <TouchableOpacity
-                  activeOpacity={0.75}
-                  onPress={() => setMostrarLogout(true)}
-                  style={[
-                    styles.botonSalir,
-
-                    {
-                      backgroundColor: surfaceColor,
-
-                      borderColor,
-
-                      marginTop: 0,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name="log-out-outline"
-                    size={21}
-                    color={iconColor}
-                  />
-
-                  <Text
-                    style={[
-                      styles.textoSalir,
-
-                      {
-                        color: textColor,
-                      },
-                    ]}
-                  >
-                    Cerrar sesión
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-
-            {/* =================================================
-                COLUMNA DERECHA
-            ================================================= */}
-
-            <View
-              style={{
-                flex: esEscritorio ? 1 : undefined,
-
-                width: esEscritorio ? undefined : "100%",
-
-                minWidth: 0,
-              }}
-            >
-              {/* ===============================================
-                  INFORMACIÓN PERSONAL
-              =============================================== */}
-
-              <View
-                style={{
-                  width: "100%",
-
-                  backgroundColor: esEscritorio ? surfaceColor : "transparent",
-
-                  borderWidth: esEscritorio ? 1 : 0,
-
-                  borderColor,
-
-                  borderRadius: esEscritorio ? 24 : 0,
-
-                  padding: esEscritorio ? 24 : 0,
-
-                  marginBottom: 24,
-                }}
-              >
-                <TituloSeccion>INFORMACIÓN PERSONAL</TituloSeccion>
-
-                {/* =============================================
-                    FILA 1
-                ============================================= */}
-
-                <View
-                  style={{
-                    flexDirection: esEscritorio ? "row" : "column",
-
-                    gap: esEscritorio ? 18 : 0,
-                  }}
-                >
-                  <View
-                    style={{
-                      flex: esEscritorio ? 1 : undefined,
-                    }}
-                  >
-                    <Campo
-                      titulo="Nombres"
-                      valor={nombres}
-                      onChange={setNombres}
-                      placeholder="Tus nombres"
-                      icono="person-outline"
-                    />
-                  </View>
-
-                  <View
-                    style={{
-                      flex: esEscritorio ? 1 : undefined,
-                    }}
-                  >
-                    <Campo
-                      titulo="Apellidos"
-                      valor={apellidos}
-                      onChange={setApellidos}
-                      placeholder="Tus apellidos"
-                      icono="person-outline"
-                    />
-                  </View>
-                </View>
-
-                {/* =============================================
-                    FILA 2
-                ============================================= */}
-
-                <View
-                  style={{
-                    flexDirection: esEscritorio ? "row" : "column",
-
-                    gap: esEscritorio ? 18 : 0,
-                  }}
-                >
-                  <View
-                    style={{
-                      flex: esEscritorio ? 1 : undefined,
-                    }}
-                  >
-                    <Campo
-                      titulo="Nombre preferido"
-                      valor={nombrePreferido}
-                      onChange={setNombrePreferido}
-                      placeholder="¿Cómo quieres que te llamemos?"
-                      icono="happy-outline"
-                    />
-                  </View>
-
-                  <View
-                    style={{
-                      flex: esEscritorio ? 1 : undefined,
-                    }}
-                  >
-                    <Campo
-                      titulo="Fecha de nacimiento"
-                      valor={fechaNacimiento}
-                      onChange={setFechaNacimiento}
-                      placeholder="AAAA-MM-DD"
-                      icono="calendar-outline"
-                    />
-                  </View>
-                </View>
-
-                {/* =============================================
-                    FILA 3
-                ============================================= */}
-
-                <View
-                  style={{
-                    flexDirection: esEscritorio ? "row" : "column",
-
-                    gap: esEscritorio ? 18 : 0,
-
-                    alignItems: esEscritorio ? "flex-start" : "stretch",
-                  }}
-                >
-                  {/* GÉNERO */}
-
-                  <View
-                    style={{
-                      flex: esEscritorio ? 1 : undefined,
-
-                      width: esEscritorio ? undefined : "100%",
-                    }}
-                  >
-                    <Text
-                      style={[
-                        styles.label,
-
-                        {
-                          color: textColor,
-                        },
-                      ]}
-                    >
-                      Género
-                    </Text>
-
-                    <TouchableOpacity
-                      activeOpacity={0.75}
-                      onPress={() => setMostrarGeneros((actual) => !actual)}
-                      style={[
-                        styles.input,
-
-                        {
-                          backgroundColor: inputBackgroundColor,
-
-                          borderColor: inputBorderColor,
-                        },
-                      ]}
-                    >
-                      <Ionicons
-                        name="people-outline"
-                        size={19}
-                        color={primaryColor}
-                      />
-
-                      <Text
-                        style={[
-                          styles.inputTexto,
-
-                          {
-                            color: textColor,
-                          },
-                        ]}
-                      >
-                        {generoTexto}
-                      </Text>
-
-                      <Ionicons
-                        name={mostrarGeneros ? "chevron-up" : "chevron-down"}
-                        size={18}
-                        color={iconColor}
-                      />
-                    </TouchableOpacity>
-
-                    {mostrarGeneros && (
-                      <View
-                        style={[
-                          styles.listaGenero,
-
-                          {
-                            backgroundColor: surfaceColor,
-
-                            borderColor,
-                          },
-                        ]}
-                      >
-                        {GENEROS.map((opcion) => (
-                          <TouchableOpacity
-                            key={opcion.value}
-                            activeOpacity={0.7}
-                            onPress={() => {
-                              setGenero(opcion.value);
-
-                              setMostrarGeneros(false);
-                            }}
-                            style={[
-                              styles.opcionGenero,
-
-                              {
-                                borderBottomColor: dividerColor,
-                              },
-                            ]}
-                          >
-                            <Text
-                              style={[
-                                styles.textoGenero,
-
-                                {
-                                  color: textColor,
-                                },
-                              ]}
-                            >
-                              {opcion.label}
-                            </Text>
-
-                            {genero === opcion.value && (
-                              <Ionicons
-                                name="checkmark-circle"
-                                size={20}
-                                color={secondaryColor}
-                              />
-                            )}
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    )}
-                  </View>
-
-                  {/* TELÉFONO */}
-
-                  <View
-                    style={{
-                      flex: esEscritorio ? 1 : undefined,
-
-                      width: esEscritorio ? undefined : "100%",
-                    }}
-                  >
-                    <Campo
-                      titulo="Teléfono"
-                      valor={telefono}
-                      onChange={setTelefono}
-                      placeholder="Número de teléfono"
-                      icono="call-outline"
-                      keyboardType="phone-pad"
-                    />
-                  </View>
-                </View>
-              </View>
-
-              {/* ===============================================
-                  CUENTA
-              =============================================== */}
-
-              <View
-                style={{
-                  width: "100%",
-
-                  backgroundColor: esEscritorio ? surfaceColor : "transparent",
-
-                  borderWidth: esEscritorio ? 1 : 0,
-
-                  borderColor,
-
-                  borderRadius: esEscritorio ? 24 : 0,
-
-                  padding: esEscritorio ? 24 : 0,
-
-                  marginBottom: 24,
-                }}
-              >
-                <TituloSeccion>CUENTA</TituloSeccion>
-
                 <Text
                   style={[
-                    styles.label,
+                    styles.textoGenero,
 
                     {
                       color: textColor,
                     },
                   ]}
                 >
-                  Correo electrónico
+                  {opcion.label}
                 </Text>
 
-                <View
-                  style={[
-                    styles.input,
-                    styles.bloqueado,
-
-                    {
-                      backgroundColor: surfaceSecondaryColor,
-
-                      borderColor,
-                    },
-                  ]}
-                >
+                {genero === opcion.value && (
                   <Ionicons
-                    name="mail-outline"
-                    size={19}
-                    color={primaryColor}
+                    name="checkmark-circle"
+                    size={20}
+                    color={secondaryColor}
                   />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
-                  <Text
-                    numberOfLines={1}
-                    style={[
-                      styles.inputTexto,
+        <Campo
+          titulo="Teléfono"
+          valor={telefono}
+          onChange={setTelefono}
+          placeholder="Número de teléfono"
+          icono="call-outline"
+          keyboardType="phone-pad"
+        />
 
-                      {
-                        color: textSecondaryColor,
-                      },
-                    ]}
-                  >
-                    {perfil?.correo}
-                  </Text>
+        {/* =================================================
+            CUENTA
+        ================================================= */}
 
-                  <Ionicons
-                    name="lock-closed-outline"
-                    size={17}
-                    color={iconColor}
-                  />
-                </View>
-              </View>
+        <TituloSeccion>CUENTA</TituloSeccion>
 
-              {/* ===============================================
-                  SEGURIDAD
-              =============================================== */}
+        <Text
+          style={[
+            styles.label,
 
-              {esIndependiente && (
-                <View
-                  style={{
-                    width: "100%",
+            {
+              color: textColor,
+            },
+          ]}
+        >
+          Correo electrónico
+        </Text>
 
-                    backgroundColor: esEscritorio
-                      ? surfaceColor
-                      : "transparent",
+        <View
+          style={[
+            styles.input,
+            styles.bloqueado,
 
-                    borderWidth: esEscritorio ? 1 : 0,
+            {
+              backgroundColor: surfaceSecondaryColor,
 
-                    borderColor,
+              borderColor,
+            },
+          ]}
+        >
+          <Ionicons name="mail-outline" size={19} color={primaryColor} />
 
-                    borderRadius: esEscritorio ? 24 : 0,
+          <Text
+            numberOfLines={1}
 
-                    padding: esEscritorio ? 24 : 0,
+            style={[
+              styles.inputTexto,
 
-                    marginBottom: 24,
-                  }}
-                >
-                  <TituloSeccion>SEGURIDAD</TituloSeccion>
+              {
+                color: textSecondaryColor,
+              },
+            ]}
+          >
+            {perfil?.correo}
+          </Text>
 
-                  <TouchableOpacity
-                    activeOpacity={0.75}
-                    onPress={() => setMostrarPassword((actual) => !actual)}
-                    style={[
-                      styles.opcionSeguridad,
+          <Ionicons name="lock-closed-outline" size={17} color={iconColor} />
+        </View>
 
-                      {
-                        backgroundColor: surfaceColor,
+        {/* =================================================
+            CUENTA E INSTITUCIÓN
+        ================================================= */}
 
-                        borderColor,
-                      },
-                    ]}
-                  >
-                    <View
-                      style={[
-                        styles.iconoCuenta,
+        <TituloSeccion>CUENTA E INSTITUCIÓN</TituloSeccion>
 
-                        {
-                          backgroundColor: primarySoftColor,
-                        },
-                      ]}
-                    >
-                      <Ionicons
-                        name="key-outline"
-                        size={20}
-                        color={primaryColor}
-                      />
-                    </View>
+        <View
+          style={[
+            styles.tarjetaCuenta,
 
-                    <View style={styles.flex}>
-                      <Text
-                        style={[
-                          styles.valorCuenta,
+            {
+              backgroundColor: surfaceColor,
 
-                          {
-                            color: textColor,
-                          },
-                        ]}
-                      >
-                        Cambiar contraseña
-                      </Text>
+              borderColor,
+            },
+          ]}
+        >
+          <FilaInformacion
+            icono="person-circle-outline"
 
-                      <Text
-                        style={[
-                          styles.labelCuenta,
+            color={primaryColor}
 
-                          {
-                            color: textSecondaryColor,
-                          },
-                        ]}
-                      >
-                        Actualiza la contraseña de tu cuenta
-                      </Text>
-                    </View>
+            titulo="Tipo de cuenta"
 
-                    <Ionicons
-                      name={mostrarPassword ? "chevron-up" : "chevron-down"}
-                      size={19}
-                      color={iconColor}
-                    />
-                  </TouchableOpacity>
+            valor={perfil?.rol_nombre ?? "Sin rol"}
+          />
 
-                  {mostrarPassword && (
-                    <View
-                      style={[
-                        styles.passwordCard,
+          <View
+            style={[
+              styles.separador,
 
-                        {
-                          backgroundColor: surfaceColor,
+              {
+                backgroundColor: dividerColor,
+              },
+            ]}
+          />
 
-                          borderColor,
-                        },
-                      ]}
-                    >
-                      <PasswordInput
-                        titulo="Nueva contraseña"
-                        valor={nuevaPassword}
-                        onChange={setNuevaPassword}
-                        visible={verPassword}
-                        onToggle={() => setVerPassword((actual) => !actual)}
-                      />
+          <FilaInformacion
+            icono="school-outline"
 
-                      <PasswordInput
-                        titulo="Confirmar contraseña"
-                        valor={confirmarPassword}
-                        onChange={setConfirmarPassword}
-                        visible={verConfirmacion}
-                        onToggle={() => setVerConfirmacion((actual) => !actual)}
-                      />
+            color={secondaryColor}
 
-                      <TouchableOpacity
-                        activeOpacity={0.8}
-                        disabled={guardandoPassword}
-                        onPress={actualizarPassword}
-                        style={[
-                          styles.botonPassword,
+            titulo="Institución"
 
-                          guardandoPassword && styles.deshabilitado,
+            valor={perfil?.institucion_nombre ?? "Cuenta independiente"}
+          />
+        </View>
 
-                          {
-                            backgroundColor: primaryColor,
-                          },
-                        ]}
-                      >
-                        {guardandoPassword ? (
-                          <ActivityIndicator size="small" color="#FFFFFF" />
-                        ) : (
-                          <>
-                            <Ionicons
-                              name="shield-checkmark-outline"
-                              size={19}
-                              color="#FFFFFF"
-                            />
+        {/* =================================================
+            APARIENCIA
+        ================================================= */}
 
-                            <Text
-                              style={[
-                                styles.textoBotonPrincipal,
+        <TituloSeccion>APARIENCIA</TituloSeccion>
 
-                                {
-                                  color: "#FFFFFF",
-                                },
-                              ]}
-                            >
-                              Actualizar contraseña
-                            </Text>
-                          </>
-                        )}
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                </View>
-              )}
+        <View
+          style={[
+            styles.opcionSeguridad,
 
-              {/* ===============================================
-                  GUARDAR
-              =============================================== */}
+            {
+              backgroundColor: surfaceColor,
 
-              <TouchableOpacity
-                activeOpacity={0.8}
-                disabled={guardando}
-                onPress={guardarCambios}
+              borderColor,
+            },
+          ]}
+        >
+          {/* Icono del tema */}
+
+          <View
+            style={[
+              styles.iconoCuenta,
+
+              {
+                backgroundColor: primarySoftColor,
+              },
+            ]}
+          >
+            <Ionicons
+              name={isDarkMode ? "moon" : "sunny-outline"}
+
+              size={21}
+
+              color={primaryColor}
+            />
+          </View>
+
+          {/* Información */}
+
+          <View style={styles.flex}>
+            <Text
+              style={[
+                styles.valorCuenta,
+
+                {
+                  color: textColor,
+                },
+              ]}
+            >
+              Modo oscuro
+            </Text>
+
+            <Text
+              style={[
+                styles.labelCuenta,
+
+                {
+                  color: textSecondaryColor,
+                },
+              ]}
+            >
+              {isDarkMode
+                ? "El tema oscuro está activado"
+                : "El tema claro está activado"}
+            </Text>
+          </View>
+
+          {/* Interruptor */}
+
+          <Switch
+            value={isDarkMode}
+
+            onValueChange={toggleDarkMode}
+
+            trackColor={{
+              false: surfaceSecondaryColor,
+
+              true: primarySoftColor,
+            }}
+
+            thumbColor={isDarkMode ? primaryColor : textMutedColor}
+
+            ios_backgroundColor={surfaceSecondaryColor}
+          />
+        </View>
+
+        {/* =================================================
+            SEGURIDAD
+        ================================================= */}
+
+        {esIndependiente && (
+          <>
+            <TituloSeccion>SEGURIDAD</TituloSeccion>
+
+            <TouchableOpacity
+              activeOpacity={0.75}
+
+              onPress={() => setMostrarPassword((actual) => !actual)}
+
+              style={[
+                styles.opcionSeguridad,
+
+                {
+                  backgroundColor: surfaceColor,
+
+                  borderColor,
+                },
+              ]}
+            >
+              <View
                 style={[
-                  styles.botonGuardar,
-
-                  guardando && styles.deshabilitado,
+                  styles.iconoCuenta,
 
                   {
-                    backgroundColor: primaryColor,
-
-                    maxWidth: esEscritorio ? 320 : undefined,
-
-                    alignSelf: esEscritorio ? "flex-end" : "stretch",
-
-                    width: esEscritorio ? 320 : "100%",
-
-                    marginTop: 0,
+                    backgroundColor: primarySoftColor,
                   },
                 ]}
               >
-                {guardando ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
-                ) : (
-                  <>
-                    <Ionicons name="save-outline" size={20} color="#FFFFFF" />
+                <Ionicons name="key-outline" size={20} color={primaryColor} />
+              </View>
 
-                    <Text
-                      style={[
-                        styles.textoBotonPrincipal,
-
-                        {
-                          color: "#FFFFFF",
-                        },
-                      ]}
-                    >
-                      Guardar cambios
-                    </Text>
-                  </>
-                )}
-              </TouchableOpacity>
-
-              {/* ===============================================
-                  CERRAR SESIÓN - MÓVIL / TABLET
-              =============================================== */}
-
-              {!esEscritorio && (
-                <TouchableOpacity
-                  activeOpacity={0.75}
-                  onPress={() => setMostrarLogout(true)}
+              <View style={styles.flex}>
+                <Text
                   style={[
-                    styles.botonSalir,
+                    styles.valorCuenta,
 
                     {
-                      backgroundColor: surfaceColor,
-
-                      borderColor,
+                      color: textColor,
                     },
                   ]}
                 >
-                  <Ionicons
-                    name="log-out-outline"
-                    size={21}
-                    color={iconColor}
-                  />
+                  Cambiar contraseña
+                </Text>
 
-                  <Text
-                    style={[
-                      styles.textoSalir,
+                <Text
+                  style={[
+                    styles.labelCuenta,
 
-                      {
-                        color: textColor,
-                      },
-                    ]}
-                  >
-                    Cerrar sesión
-                  </Text>
+                    {
+                      color: textSecondaryColor,
+                    },
+                  ]}
+                >
+                  Actualiza la contraseña de tu cuenta
+                </Text>
+              </View>
+
+              <Ionicons
+                name={mostrarPassword ? "chevron-up" : "chevron-down"}
+
+                size={19}
+
+                color={iconColor}
+              />
+            </TouchableOpacity>
+
+            {mostrarPassword && (
+              <View
+                style={[
+                  styles.passwordCard,
+
+                  {
+                    backgroundColor: surfaceColor,
+
+                    borderColor,
+                  },
+                ]}
+              >
+                <PasswordInput
+                  titulo="Nueva contraseña"
+
+                  valor={nuevaPassword}
+
+                  onChange={setNuevaPassword}
+
+                  visible={verPassword}
+
+                  onToggle={() => setVerPassword((actual) => !actual)}
+                />
+
+                <PasswordInput
+                  titulo="Confirmar contraseña"
+
+                  valor={confirmarPassword}
+
+                  onChange={setConfirmarPassword}
+
+                  visible={verConfirmacion}
+
+                  onToggle={() => setVerConfirmacion((actual) => !actual)}
+                />
+
+                <TouchableOpacity
+                  activeOpacity={0.8}
+
+                  disabled={guardandoPassword}
+
+                  onPress={actualizarPassword}
+
+                  style={[
+                    styles.botonPassword,
+
+                    guardandoPassword && styles.deshabilitado,
+
+                    {
+                      backgroundColor: primaryColor,
+                    },
+                  ]}
+                >
+                  {guardandoPassword ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <>
+                      <Ionicons
+                        name="shield-checkmark-outline"
+                        size={19}
+                        color="#FFFFFF"
+                      />
+
+                      <Text
+                        style={[
+                          styles.textoBotonPrincipal,
+
+                          {
+                            color: "#FFFFFF",
+                          },
+                        ]}
+                      >
+                        Actualizar contraseña
+                      </Text>
+                    </>
+                  )}
                 </TouchableOpacity>
-              )}
-            </View>
+              </View>
+            )}
+          </>
+        )}
+
+        {/* =================================================
+            PRIVACIDAD
+        ================================================= */}
+
+        <TituloSeccion>PRIVACIDAD</TituloSeccion>
+
+        <View
+          style={[
+            styles.privacidad,
+
+            {
+              backgroundColor: primarySoftColor,
+
+              borderColor,
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.privacidadIcono,
+
+              {
+                backgroundColor: surfaceColor,
+              },
+            ]}
+          >
+            <Ionicons
+              name="shield-checkmark-outline"
+              size={24}
+
+              color={primaryColor}
+            />
+          </View>
+
+          <View style={styles.flex}>
+            <Text
+              style={[
+                styles.privacidadTitulo,
+
+                {
+                  color: textColor,
+                },
+              ]}
+            >
+              Privacidad de datos
+            </Text>
+
+            <Text
+              style={[
+                styles.privacidadTexto,
+
+                {
+                  color: textSecondaryColor,
+                },
+              ]}
+            >
+              Tu información personal se mantiene privada y se utiliza para
+              personalizar tu experiencia dentro de Kiri.
+            </Text>
           </View>
         </View>
+
+        {/* =================================================
+            GUARDAR
+        ================================================= */}
+
+        <TouchableOpacity
+          activeOpacity={0.8}
+
+          disabled={guardando}
+
+          onPress={guardarCambios}
+
+          style={[
+            styles.botonGuardar,
+
+            guardando && styles.deshabilitado,
+
+            {
+              backgroundColor: primaryColor,
+            },
+          ]}
+        >
+          {guardando ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <>
+              <Ionicons name="save-outline" size={20} color="#FFFFFF" />
+
+              <Text
+                style={[
+                  styles.textoBotonPrincipal,
+
+                  {
+                    color: "#FFFFFF",
+                  },
+                ]}
+              >
+                Guardar cambios
+              </Text>
+            </>
+          )}
+        </TouchableOpacity>
+
+        {/* =================================================
+            CERRAR SESIÓN
+        ================================================= */}
+
+        <TouchableOpacity
+          activeOpacity={0.75}
+
+          onPress={() => setMostrarLogout(true)}
+
+          style={[
+            styles.botonSalir,
+
+            {
+              backgroundColor: surfaceColor,
+
+              borderColor,
+            },
+          ]}
+        >
+          <Ionicons
+            name="log-out-outline"
+            size={21}
+
+            color={iconColor}
+          />
+
+          <Text
+            style={[
+              styles.textoSalir,
+
+              {
+                color: textColor,
+              },
+            ]}
+          >
+            Cerrar sesión
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
 
       <LogoutModal
         visible={mostrarLogout}
+
         onClose={() => setMostrarLogout(false)}
       />
     </SafeAreaView>
@@ -1560,15 +1285,27 @@ function Campo({
           },
         ]}
       >
-        <Ionicons name={icono} size={19} color={primaryColor} />
+        <Ionicons
+          name={icono}
+
+          size={19}
+
+          color={primaryColor}
+        />
 
         <TextInput
           value={valor}
+
           onChangeText={onChange}
+
           placeholder={placeholder}
+
           placeholderTextColor={placeholderColor}
+
           selectionColor={primaryColor}
+
           keyboardType={keyboardType}
+
           style={[
             styles.textInput,
 
@@ -1642,16 +1379,28 @@ function PasswordInput({
           },
         ]}
       >
-        <Ionicons name="lock-closed-outline" size={19} color={primaryColor} />
+        <Ionicons
+          name="lock-closed-outline"
+          size={19}
+
+          color={primaryColor}
+        />
 
         <TextInput
           value={valor}
+
           onChangeText={onChange}
+
           secureTextEntry={!visible}
+
           placeholder="••••••••"
+
           placeholderTextColor={placeholderColor}
+
           selectionColor={primaryColor}
+
           autoCapitalize="none"
+
           style={[
             styles.textInput,
 
@@ -1661,10 +1410,16 @@ function PasswordInput({
           ]}
         />
 
-        <TouchableOpacity activeOpacity={0.7} onPress={onToggle}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+
+          onPress={onToggle}
+        >
           <Ionicons
             name={visible ? "eye-off-outline" : "eye-outline"}
+
             size={19}
+
             color={iconColor}
           />
         </TouchableOpacity>
@@ -1705,7 +1460,13 @@ function FilaInformacion({ icono, color, titulo, valor }: FilaProps) {
           },
         ]}
       >
-        <Ionicons name={icono} size={21} color={color} />
+        <Ionicons
+          name={icono}
+
+          size={21}
+
+          color={color}
+        />
       </View>
 
       <View style={styles.flex}>
