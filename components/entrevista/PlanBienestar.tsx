@@ -1,14 +1,20 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
+
 import React, { useEffect, useState } from "react";
+
 import {
   ActivityIndicator,
+  Pressable,
   ScrollView,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 
@@ -27,27 +33,20 @@ import {
   PlanBienestar as TipoPlanBienestar,
 } from "@/services/entrevista/planBienestarService";
 
-import { styles } from "@/styles/planBienestar.styles";
-
 // ==========================================================
-// PROPS
+// TIPOS Y VALIDACIÓN
 // ==========================================================
 
 type Props = {
   modo: "entrevista" | "historial";
 };
 
-// ==========================================================
-// VALIDACIÓN UUID
-// ==========================================================
-
 function esUUID(valor: string | undefined): valor is string {
-  if (!valor || valor === "[id]") {
-    return false;
-  }
-
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    valor,
+  return (
+    !!valor &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      valor,
+    )
   );
 }
 
@@ -58,6 +57,8 @@ function esUUID(valor: string | undefined): valor is string {
 export default function PlanBienestar({ modo }: Props) {
   const router = useRouter();
 
+  const insets = useSafeAreaInsets();
+
   const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
   const params = useLocalSearchParams<{
@@ -65,6 +66,40 @@ export default function PlanBienestar({ modo }: Props) {
   }>();
 
   const idEntrevista = Array.isArray(params.id) ? params.id[0] : params.id;
+
+  // ========================================================
+  // TEMA
+  // ========================================================
+
+  const backgroundColor = useThemeColor({}, "background");
+
+  const surfaceColor = useThemeColor({}, "surface");
+
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+
+  const borderColor = useThemeColor({}, "border");
+
+  const textColor = useThemeColor({}, "text");
+
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
+
+  const textMutedColor = useThemeColor({}, "textMuted");
+
+  const primaryColor = useThemeColor({}, "primary");
+
+  const primarySoftColor = useThemeColor({}, "primarySoft");
+
+  const secondaryColor = useThemeColor({}, "secondary");
+
+  const secondarySoftColor = useThemeColor({}, "secondarySoft");
+
+  const accentColor = useThemeColor({}, "accent");
+
+  const accentSoftColor = useThemeColor({}, "accentSoft");
+
+  const disabledColor = useThemeColor({}, "disabled");
+
+  const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
 
   // ========================================================
   // ESTADOS
@@ -77,40 +112,6 @@ export default function PlanBienestar({ modo }: Props) {
   const [finalizando, setFinalizando] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
-
-  // ========================================================
-  // COLORES DEL TEMA
-  // ========================================================
-
-  const backgroundColor = useThemeColor({}, "background");
-
-  const surfaceColor = useThemeColor({}, "surface");
-
-  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
-
-  const borderColor = useThemeColor({}, "border");
-
-  const dividerColor = useThemeColor({}, "divider");
-
-  const textColor = useThemeColor({}, "text");
-
-  const textSecondaryColor = useThemeColor({}, "textSecondary");
-
-  const textMutedColor = useThemeColor({}, "textMuted");
-
-  const primaryColor = useThemeColor({}, "primary");
-
-  const secondaryColor = useThemeColor({}, "secondary");
-
-  const accentColor = useThemeColor({}, "accent");
-
-  const primarySoftColor = useThemeColor({}, "primarySoft");
-
-  const secondarySoftColor = useThemeColor({}, "secondarySoft");
-
-  const accentSoftColor = useThemeColor({}, "accentSoft");
-
-  const disabledColor = useThemeColor({}, "disabled");
 
   // ========================================================
   // RESPONSIVE
@@ -130,15 +131,13 @@ export default function PlanBienestar({ modo }: Props) {
 
   const maxWidthContenido = esEscritorio ? 1080 : esTablet ? 760 : undefined;
 
-  const anchoBoton = esEscritorio ? 300 : "100%";
+  const paddingBottom = esEscritorio ? 64 : Math.max(130, insets.bottom + 110);
 
   // ========================================================
   // CARGAR PLAN
   // ========================================================
 
   useEffect(() => {
-    console.log("ID recibido en plan:", idEntrevista);
-
     if (!esUUID(idEntrevista)) {
       setError("No se encontró una entrevista válida.");
 
@@ -147,37 +146,29 @@ export default function PlanBienestar({ modo }: Props) {
       return;
     }
 
-    const idEntrevistaValido = idEntrevista;
+    const idValido = idEntrevista;
 
     let activo = true;
 
     async function cargarPlan() {
       try {
         setCargando(true);
-
         setError(null);
 
-        // ==================================================
-        // 1. BUSCAR PLAN EXISTENTE
-        // ==================================================
+        // Buscar plan existente
 
-        const existente = await obtenerPlanBienestar(idEntrevistaValido);
+        const existente = await obtenerPlanBienestar(idValido);
 
         if (!activo) {
           return;
         }
 
         if (existente) {
-          console.log("PLAN EXISTENTE CARGADO:", existente.id_plan);
-
           setPlan(existente);
-
           return;
         }
 
-        // ==================================================
-        // 2. HISTORIAL NO GENERA PLAN
-        // ==================================================
+        // En historial no se genera un plan nuevo
 
         if (modo === "historial") {
           setError("No encontramos un plan asociado a esta entrevista.");
@@ -185,29 +176,27 @@ export default function PlanBienestar({ modo }: Props) {
           return;
         }
 
-        // ==================================================
-        // 3. OBTENER RESULTADOS
-        // ==================================================
+        // Consultar resultados
 
-        const { data, error: resultadosError } = await supabase
+        const { data, error: consultaError } = await supabase
           .from("resultado_entrevista")
           .select(
             `
-                porcentaje,
-                nivel,
-                modulo_entrevista!inner(
-                  codigo,
-                  nombre
-                )
-              `,
+            porcentaje,
+            nivel,
+            modulo_entrevista!inner(
+              codigo,
+              nombre
+            )
+          `,
           )
-          .eq("id_entrevista", idEntrevistaValido)
+          .eq("id_entrevista", idValido)
           .order("porcentaje", {
             ascending: false,
           });
 
-        if (resultadosError) {
-          throw resultadosError;
+        if (consultaError) {
+          throw consultaError;
         }
 
         if (!activo) {
@@ -221,7 +210,6 @@ export default function PlanBienestar({ modo }: Props) {
 
           return {
             codigo: modulo?.codigo ?? "",
-
             nombre: modulo?.nombre ?? "",
 
             porcentaje: Number(item.porcentaje ?? 0),
@@ -230,24 +218,13 @@ export default function PlanBienestar({ modo }: Props) {
           };
         });
 
-        console.log("Resultados para generar plan:", resultados);
+        // Generar plan
 
-        // ==================================================
-        // 4. GENERAR PLAN
-        // ==================================================
+        const nuevoPlan = await generarPlanBienestar(idValido, resultados);
 
-        const nuevoPlan = await generarPlanBienestar(
-          idEntrevistaValido,
-          resultados,
-        );
-
-        if (!activo) {
-          return;
+        if (activo) {
+          setPlan(nuevoPlan);
         }
-
-        console.log("PLAN LISTO:", nuevoPlan);
-
-        setPlan(nuevoPlan);
       } catch (e) {
         console.error("Error cargando plan:", e);
 
@@ -265,7 +242,7 @@ export default function PlanBienestar({ modo }: Props) {
       }
     }
 
-    cargarPlan();
+    void cargarPlan();
 
     return () => {
       activo = false;
@@ -283,12 +260,9 @@ export default function PlanBienestar({ modo }: Props) {
 
     try {
       setFinalizando(true);
-
       setError(null);
 
       await finalizarEntrevista(idEntrevista);
-
-      console.log("Entrevista completada correctamente:", idEntrevista);
 
       router.replace("/(tabs)/home");
     } catch (e) {
@@ -303,225 +277,218 @@ export default function PlanBienestar({ modo }: Props) {
   }
 
   // ========================================================
-  // SALIR
+  // VOLVER
   // ========================================================
 
   function salir() {
-    if (modo === "historial") {
-      router.replace("/(tabs)/entrevistas");
-
-      return;
-    }
-
-    router.replace("/(tabs)/home");
+    router.replace(
+      modo === "historial" ? "/(tabs)/entrevistas" : "/(tabs)/home",
+    );
   }
 
   // ========================================================
-  // CARGANDO
+  // BOTÓN
   // ========================================================
 
-  if (cargando) {
+  const boton = (
+    texto: string,
+    onPress: () => void,
+    icono: keyof typeof Ionicons.glyphMap,
+    deshabilitado = false,
+  ) => (
+    <Pressable
+      disabled={deshabilitado}
+      onPress={onPress}
+      style={({ pressed }) => ({
+        width: esEscritorio ? 310 : "100%",
+
+        alignSelf: esEscritorio ? "flex-end" : "stretch",
+
+        borderRadius: 15,
+        overflow: "hidden",
+
+        opacity: deshabilitado ? 0.6 : pressed ? 0.8 : 1,
+      })}
+    >
+      <View
+        style={{
+          minHeight: 54,
+
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+
+          borderRadius: 15,
+
+          backgroundColor: deshabilitado ? disabledColor : primaryColor,
+
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+
+          gap: 10,
+        }}
+      >
+        {deshabilitado && (
+          <ActivityIndicator size="small" color={textOnPrimaryColor} />
+        )}
+
+        <Text
+          style={{
+            fontFamily: "Nunito-Bold",
+
+            fontSize: 14,
+            lineHeight: 20,
+
+            color: textOnPrimaryColor,
+            textAlign: "center",
+          }}
+        >
+          {texto}
+        </Text>
+
+        {!deshabilitado && (
+          <Ionicons name={icono} size={20} color={textOnPrimaryColor} />
+        )}
+      </View>
+    </Pressable>
+  );
+
+  // ========================================================
+  // CARGANDO / SIN PLAN
+  // ========================================================
+
+  if (cargando || !plan) {
     return (
       <SafeAreaView
-        style={[
-          styles.pantalla,
-
-          {
-            backgroundColor,
-          },
-        ]}
+        edges={[]}
+        style={{
+          flex: 1,
+          backgroundColor,
+        }}
       >
         <View
-          style={[
-            styles.cargando,
+          style={{
+            flex: 1,
 
-            {
-              paddingHorizontal,
-            },
-          ]}
+            paddingHorizontal,
+
+            justifyContent: "center",
+            alignItems: "center",
+
+            gap: 14,
+          }}
         >
           <View
-            style={[
-              styles.cargandoIcono,
+            style={{
+              width: 76,
+              height: 76,
+              borderRadius: 23,
 
-              {
-                backgroundColor: primarySoftColor,
+              backgroundColor: primarySoftColor,
 
-                borderColor,
-              },
-            ]}
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
-            <ActivityIndicator color={primaryColor} />
+            {cargando ? (
+              <ActivityIndicator size="large" color={primaryColor} />
+            ) : (
+              <Ionicons
+                name="alert-circle-outline"
+                size={30}
+                color={primaryColor}
+              />
+            )}
           </View>
 
           <Text
-            style={[
-              styles.cargandoTitulo,
+            style={{
+              fontFamily: "Nunito-Bold",
+              fontSize: 21,
 
-              {
-                color: textColor,
-              },
-            ]}
+              textAlign: "center",
+              color: textColor,
+            }}
           >
-            {modo === "historial" ? "Cargando tu plan" : "Preparando tu plan"}
+            {cargando
+              ? modo === "historial"
+                ? "Cargando tu plan"
+                : "Preparando tu plan"
+              : modo === "historial"
+                ? "No pudimos cargar este plan"
+                : "No pudimos preparar tu plan"}
           </Text>
 
           <Text
-            style={[
-              styles.cargandoTexto,
+            style={{
+              maxWidth: 380,
 
-              {
-                color: textSecondaryColor,
+              fontFamily: "Nunito-Medium",
 
-                maxWidth: esEscritorio ? 520 : 380,
-              },
-            ]}
+              fontSize: 14,
+              lineHeight: 21,
+
+              textAlign: "center",
+              color: textSecondaryColor,
+            }}
           >
-            {modo === "historial"
-              ? "Estamos recuperando el plan asociado a esta entrevista."
-              : "Estamos organizando algunas acciones para acompañar tu bienestar."}
+            {cargando
+              ? modo === "historial"
+                ? "Estamos recuperando el plan asociado a esta entrevista."
+                : "Estamos organizando algunas acciones para acompañar tu bienestar."
+              : (error ?? "Inténtalo nuevamente más tarde.")}
           </Text>
+
+          {!cargando && (
+            <View
+              style={{
+                marginTop: 12,
+
+                width: esEscritorio ? 310 : "100%",
+              }}
+            >
+              {boton(
+                modo === "historial"
+                  ? "Volver a mis entrevistas"
+                  : "Volver al inicio",
+                salir,
+                "arrow-back",
+              )}
+            </View>
+          )}
         </View>
       </SafeAreaView>
     );
   }
 
   // ========================================================
-  // ERROR / SIN PLAN
-  // ========================================================
-
-  if (!plan) {
-    return (
-      <SafeAreaView
-        style={[
-          styles.pantalla,
-
-          {
-            backgroundColor,
-          },
-        ]}
-      >
-        <View
-          style={[
-            styles.cargando,
-
-            {
-              paddingHorizontal,
-            },
-          ]}
-        >
-          <View
-            style={[
-              styles.errorIcono,
-
-              {
-                backgroundColor: primarySoftColor,
-
-                borderColor,
-              },
-            ]}
-          >
-            <Ionicons
-              name="alert-circle-outline"
-              size={28}
-              color={primaryColor}
-            />
-          </View>
-
-          <Text
-            style={[
-              styles.cargandoTitulo,
-
-              {
-                color: textColor,
-              },
-            ]}
-          >
-            {modo === "historial"
-              ? "No pudimos cargar este plan"
-              : "No pudimos preparar tu plan"}
-          </Text>
-
-          <Text
-            style={[
-              styles.cargandoTexto,
-
-              {
-                color: textSecondaryColor,
-
-                maxWidth: esEscritorio ? 520 : 380,
-              },
-            ]}
-          >
-            {error ?? "Inténtalo nuevamente más tarde."}
-          </Text>
-
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={salir}
-            style={[
-              styles.boton,
-
-              esTelefono && styles.botonMovil,
-
-              {
-                width: anchoBoton,
-
-                alignSelf: "center",
-
-                backgroundColor: primaryColor,
-              },
-            ]}
-          >
-            <Text style={styles.botonTexto}>
-              {modo === "historial"
-                ? "Volver a mis entrevistas"
-                : "Volver al inicio"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // ========================================================
-  // UI PRINCIPAL
+  // PANTALLA PRINCIPAL
   // ========================================================
 
   return (
     <SafeAreaView
-      style={[
-        styles.pantalla,
-
-        {
-          backgroundColor,
-        },
-      ]}
+      edges={[]}
+      style={{
+        flex: 1,
+        backgroundColor,
+      }}
     >
       <ScrollView
+        style={{
+          flex: 1,
+        }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.scroll,
-
-          esTelefono && styles.scrollMovil,
-
-          esTelefono && modo === "historial" && styles.scrollHistorialMovil,
-
-          {
-            paddingHorizontal,
-          },
-        ]}
+        contentContainerStyle={{
+          paddingTop: esEscritorio ? 32 : 24,
+          paddingBottom,
+          paddingHorizontal,
+        }}
       >
-        {/* =================================================
-            CONTENEDOR GENERAL
-        ================================================= */}
-
         <View
           style={{
             width: "100%",
 
             maxWidth: maxWidthPantalla,
-
             alignSelf: "center",
           }}
         >
@@ -530,56 +497,47 @@ export default function PlanBienestar({ modo }: Props) {
               width: "100%",
 
               maxWidth: maxWidthContenido,
-
               alignSelf: "center",
             }}
           >
-            {/* =================================================
-                HEADER
-            ================================================= */}
+            {/* ENCABEZADO */}
 
             <Animated.View
-              entering={FadeInUp.duration(550)}
-              style={[
-                styles.header,
+              entering={FadeInUp.duration(450)}
+              style={{
+                alignItems: "center",
+                gap: 9,
 
-                {
-                  marginTop: esEscritorio ? 24 : esTablet ? 18 : 10,
-
-                  marginBottom: esEscritorio ? 28 : 22,
-                },
-              ]}
+                marginBottom: 28,
+              }}
             >
               <View
-                style={[
-                  styles.headerIcono,
+                style={{
+                  width: esTelefono ? 58 : 72,
+                  height: esTelefono ? 58 : 72,
 
-                  {
-                    backgroundColor: primarySoftColor,
+                  borderRadius: 22,
 
-                    borderColor,
-                  },
-                ]}
+                  backgroundColor: primarySoftColor,
+
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
-                <Ionicons
-                  name="leaf"
-                  size={esEscritorio ? 25 : 23}
-                  color={primaryColor}
-                />
+                <Ionicons name="leaf" size={27} color={primaryColor} />
               </View>
 
               <Text
-                style={[
-                  styles.titulo,
+                style={{
+                  fontFamily: "Nunito-Bold",
 
-                  {
-                    color: textColor,
+                  fontSize: esTelefono ? 26 : esTablet ? 30 : 34,
 
-                    fontSize: esEscritorio ? 32 : esTablet ? 29 : 26,
+                  lineHeight: esTelefono ? 34 : 42,
 
-                    lineHeight: esEscritorio ? 40 : 34,
-                  },
-                ]}
+                  textAlign: "center",
+                  color: textColor,
+                }}
               >
                 {modo === "historial"
                   ? "Plan de bienestar"
@@ -587,21 +545,18 @@ export default function PlanBienestar({ modo }: Props) {
               </Text>
 
               <Text
-                style={[
-                  styles.subtitulo,
+                style={{
+                  maxWidth: 600,
 
-                  {
-                    color: textSecondaryColor,
+                  fontFamily: "Nunito-Medium",
 
-                    maxWidth: 650,
+                  fontSize: esTelefono ? 14 : 16,
 
-                    alignSelf: "center",
+                  lineHeight: 22,
+                  textAlign: "center",
 
-                    fontSize: esEscritorio ? 16 : 14,
-
-                    lineHeight: esEscritorio ? 24 : 21,
-                  },
-                ]}
+                  color: textSecondaryColor,
+                }}
               >
                 {modo === "historial"
                   ? "Estas son las recomendaciones asociadas a esta evaluación."
@@ -609,60 +564,77 @@ export default function PlanBienestar({ modo }: Props) {
               </Text>
             </Animated.View>
 
-            {/* =================================================
-                OBJETIVO
-            ================================================= */}
+            {/* OBJETIVO PRINCIPAL */}
 
             <Animated.View
-              entering={FadeInUp.delay(120).duration(500)}
-              style={[
-                styles.objetivoCard,
+              entering={FadeInUp.delay(120).duration(450)}
+              style={{
+                padding: esTelefono ? 20 : 27,
 
-                esTelefono && styles.objetivoCardMovil,
+                borderRadius: 22,
+                backgroundColor: primaryColor,
 
-                {
-                  backgroundColor: primaryColor,
-
-                  padding: esEscritorio ? 28 : esTablet ? 24 : 20,
-
-                  borderRadius: esEscritorio ? 24 : 20,
-                },
-              ]}
+                gap: 15,
+              }}
             >
-              <View style={styles.objetivoSuperior}>
-                <View
-                  style={[
-                    styles.objetivoIcono,
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
 
-                    {
-                      backgroundColor: "rgba(255,255,255,0.18)",
-                    },
-                  ]}
+                  gap: 14,
+                }}
+              >
+                <View
+                  style={{
+                    width: 52,
+                    height: 52,
+
+                    borderRadius: 16,
+                    flexShrink: 0,
+
+                    backgroundColor: "rgba(255,255,255,0.18)",
+
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
                 >
-                  <Ionicons name="compass-outline" size={21} color="#FFFFFF" />
+                  <Ionicons
+                    name="compass-outline"
+                    size={23}
+                    color={textOnPrimaryColor}
+                  />
                 </View>
 
-                <View style={styles.objetivoInfo}>
+                <View
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    gap: 3,
+                  }}
+                >
                   <Text
-                    style={[
-                      styles.objetivoEtiqueta,
+                    style={{
+                      fontFamily: "Nunito-Bold",
 
-                      {
-                        color: "rgba(255,255,255,0.80)",
-                      },
-                    ]}
+                      fontSize: 11,
+                      letterSpacing: 0.7,
+
+                      color: "#EAF2FF",
+                    }}
                   >
                     TU ENFOQUE
                   </Text>
 
                   <Text
-                    style={[
-                      styles.objetivoTitulo,
+                    style={{
+                      fontFamily: "Nunito-Bold",
 
-                      {
-                        color: "#FFFFFF",
-                      },
-                    ]}
+                      fontSize: 19,
+                      lineHeight: 25,
+
+                      color: textOnPrimaryColor,
+                    }}
                   >
                     Objetivo principal
                   </Text>
@@ -670,221 +642,239 @@ export default function PlanBienestar({ modo }: Props) {
               </View>
 
               <Text
-                style={[
-                  styles.objetivoTexto,
+                style={{
+                  fontFamily: "Nunito-Medium",
 
-                  {
-                    color: "#FFFFFF",
-                  },
-                ]}
+                  fontSize: esTelefono ? 15 : 17,
+
+                  lineHeight: esTelefono ? 23 : 26,
+
+                  color: textOnPrimaryColor,
+                }}
               >
                 {plan.objetivo_principal}
               </Text>
             </Animated.View>
 
-            {/* =================================================
-                INTRODUCCIÓN
-            ================================================= */}
+            {/* INTRODUCCIÓN */}
 
             <Animated.View
-              entering={FadeIn.delay(200).duration(450)}
-              style={[
-                styles.seccion,
+              entering={FadeIn.delay(200)}
+              style={{
+                marginTop: 26,
+                marginBottom: 16,
 
-                {
-                  marginTop: esEscritorio ? 30 : undefined,
-                },
-              ]}
+                gap: 6,
+              }}
             >
               <Text
-                style={[
-                  styles.seccionTitulo,
-
-                  {
-                    color: textColor,
-
-                    fontSize: esEscritorio ? 21 : undefined,
-                  },
-                ]}
+                style={{
+                  fontFamily: "Nunito-Bold",
+                  fontSize: 21,
+                  color: textColor,
+                }}
               >
                 Para comenzar
               </Text>
 
               <Text
-                style={[
-                  styles.seccionTexto,
+                style={{
+                  fontFamily: "Nunito-Medium",
 
-                  {
-                    color: textSecondaryColor,
+                  fontSize: 14,
+                  lineHeight: 22,
 
-                    maxWidth: esEscritorio ? 760 : undefined,
-
-                    fontSize: esEscritorio ? 15 : undefined,
-
-                    lineHeight: esEscritorio ? 23 : undefined,
-                  },
-                ]}
+                  color: textSecondaryColor,
+                }}
               >
                 No tienes que hacer todo al mismo tiempo. Empieza con una
                 actividad que se sienta posible para ti.
               </Text>
             </Animated.View>
 
-            {/* =================================================
-                ACTIVIDADES
-            ================================================= */}
+            {/* ACTIVIDADES */}
 
             <View
-              style={[
-                styles.lista,
+              style={{
+                width: "100%",
 
-                {
-                  width: "100%",
+                flexDirection: esEscritorio ? "row" : "column",
 
-                  flexDirection: esEscritorio ? "row" : "column",
+                flexWrap: esEscritorio ? "wrap" : "nowrap",
 
-                  flexWrap: esEscritorio ? "wrap" : "nowrap",
-
-                  gap: esEscritorio ? 16 : 12,
-                },
-              ]}
+                gap: 14,
+              }}
             >
-              {plan.actividades_recomendadas.length > 0 ? (
+              {plan.actividades_recomendadas.length ? (
                 plan.actividades_recomendadas.map((actividad, index) => (
                   <Animated.View
                     key={`${actividad.codigo}-${index}`}
-                    entering={FadeInUp.delay(240 + index * 80).duration(500)}
-                    style={[
-                      styles.actividadCard,
+                    entering={FadeInUp.delay(240 + index * 70).duration(450)}
+                    style={{
+                      width: esEscritorio ? "48%" : "100%",
 
-                      esTelefono && styles.actividadCardMovil,
-
-                      {
-                        backgroundColor: surfaceColor,
-
-                        borderColor,
-
-                        width: esEscritorio ? "48.8%" : "100%",
-
-                        flexGrow: esEscritorio ? 1 : 0,
-
-                        flexBasis: esEscritorio ? "48%" : "100%",
-
-                        minWidth: esEscritorio ? 420 : undefined,
-
-                        padding: esEscritorio ? 20 : undefined,
-                      },
-                    ]}
-                  >
-                    {/* NÚMERO */}
-
-                    <View
-                      style={[
-                        styles.numero,
-
-                        {
-                          backgroundColor: primarySoftColor,
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.numeroTexto,
-
-                          {
-                            color: primaryColor,
-                          },
-                        ]}
-                      >
-                        {index + 1}
-                      </Text>
-                    </View>
-
-                    <View style={styles.actividadContenido}>
-                      <View style={styles.actividadTituloFila}>
-                        <View
-                          style={[
-                            styles.actividadIcono,
-
-                            {
-                              backgroundColor: primarySoftColor,
-                            },
-                          ]}
-                        >
-                          <Ionicons
-                            name={
-                              actividad.icono as keyof typeof Ionicons.glyphMap
-                            }
-                            size={20}
-                            color={primaryColor}
-                          />
-                        </View>
-
-                        <Text
-                          style={[
-                            styles.actividadTitulo,
-
-                            {
-                              color: textColor,
-                            },
-                          ]}
-                        >
-                          {actividad.titulo}
-                        </Text>
-                      </View>
-
-                      <Text
-                        style={[
-                          styles.actividadDescripcion,
-
-                          {
-                            color: textSecondaryColor,
-                          },
-                        ]}
-                      >
-                        {actividad.descripcion}
-                      </Text>
-                    </View>
-                  </Animated.View>
-                ))
-              ) : (
-                <View
-                  style={[
-                    styles.sinActividades,
-
-                    {
-                      width: "100%",
+                      flexGrow: esEscritorio ? 1 : 0,
 
                       backgroundColor: surfaceColor,
 
                       borderColor,
-                    },
-                  ]}
+                      borderWidth: 1,
+                      borderRadius: 20,
+
+                      padding: esTelefono ? 16 : 20,
+
+                      gap: 14,
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+
+                        gap: 11,
+                      }}
+                    >
+                      {/* NÚMERO */}
+
+                      <View
+                        style={{
+                          width: 30,
+                          height: 30,
+
+                          borderRadius: 15,
+
+                          backgroundColor: primarySoftColor,
+
+                          alignItems: "center",
+                          justifyContent: "center",
+
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontFamily: "Nunito-Bold",
+
+                            fontSize: 13,
+
+                            color: primaryColor,
+                          }}
+                        >
+                          {index + 1}
+                        </Text>
+                      </View>
+
+                      {/* ICONO */}
+
+                      <View
+                        style={{
+                          width: 43,
+                          height: 43,
+
+                          borderRadius: 13,
+
+                          backgroundColor: primarySoftColor,
+
+                          alignItems: "center",
+                          justifyContent: "center",
+
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Ionicons
+                          name={
+                            actividad.icono as keyof typeof Ionicons.glyphMap
+                          }
+                          size={21}
+                          color={primaryColor}
+                        />
+                      </View>
+
+                      {/* TÍTULO */}
+
+                      <Text
+                        style={{
+                          flex: 1,
+                          minWidth: 0,
+
+                          fontFamily: "Nunito-Bold",
+
+                          fontSize: esTelefono ? 15 : 17,
+
+                          lineHeight: 22,
+
+                          color: textColor,
+                        }}
+                      >
+                        {actividad.titulo}
+                      </Text>
+                    </View>
+
+                    {/* DESCRIPCIÓN */}
+
+                    <Text
+                      style={{
+                        fontFamily: "Nunito-Medium",
+
+                        fontSize: 13,
+                        lineHeight: 21,
+
+                        color: textSecondaryColor,
+                      }}
+                    >
+                      {actividad.descripcion}
+                    </Text>
+                  </Animated.View>
+                ))
+              ) : (
+                <View
+                  style={{
+                    width: "100%",
+
+                    padding: 24,
+
+                    backgroundColor: surfaceColor,
+
+                    borderColor,
+                    borderWidth: 1,
+
+                    borderRadius: 20,
+
+                    alignItems: "center",
+                    gap: 10,
+                  }}
                 >
                   <View
-                    style={[
-                      styles.sinActividadesIcono,
+                    style={{
+                      width: 50,
+                      height: 50,
 
-                      {
-                        backgroundColor: secondarySoftColor,
-                      },
-                    ]}
+                      borderRadius: 16,
+
+                      backgroundColor: secondarySoftColor,
+
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
                   >
                     <Ionicons
                       name="leaf-outline"
-                      size={21}
+                      size={24}
                       color={secondaryColor}
                     />
                   </View>
 
                   <Text
-                    style={[
-                      styles.sinActividadesTexto,
+                    style={{
+                      fontFamily: "Nunito-Medium",
 
-                      {
-                        color: textSecondaryColor,
-                      },
-                    ]}
+                      fontSize: 14,
+                      lineHeight: 21,
+
+                      textAlign: "center",
+
+                      color: textSecondaryColor,
+                    }}
                   >
                     Continúa fortaleciendo los hábitos que actualmente favorecen
                     tu bienestar.
@@ -893,65 +883,80 @@ export default function PlanBienestar({ modo }: Props) {
               )}
             </View>
 
-            {/* =================================================
-                RECORDATORIO
-            ================================================= */}
+            {/* RECORDATORIO */}
 
             <Animated.View
-              entering={FadeIn.delay(500).duration(500)}
-              style={[
-                styles.recordatorio,
+              entering={FadeIn.delay(500)}
+              style={{
+                width: "100%",
 
-                esTelefono && styles.recordatorioMovil,
+                marginTop: 24,
 
-                {
-                  backgroundColor: secondarySoftColor,
+                borderRadius: 20,
 
-                  borderColor: secondaryColor,
+                borderWidth: 1,
+                borderColor: secondaryColor,
 
-                  padding: esEscritorio ? 20 : undefined,
+                backgroundColor: secondarySoftColor,
 
-                  borderRadius: esEscritorio ? 20 : undefined,
-                },
-              ]}
+                padding: esTelefono ? 16 : 20,
+
+                flexDirection: "row",
+                alignItems: "flex-start",
+
+                gap: 12,
+              }}
             >
               <View
-                style={[
-                  styles.recordatorioIcono,
+                style={{
+                  width: 42,
+                  height: 42,
 
-                  {
-                    backgroundColor: surfaceColor,
-                  },
-                ]}
+                  flexShrink: 0,
+                  borderRadius: 13,
+
+                  backgroundColor: surfaceColor,
+
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
                 <Ionicons
                   name="heart-outline"
-                  size={20}
+                  size={22}
                   color={secondaryColor}
                 />
               </View>
 
-              <View style={styles.recordatorioContenido}>
+              <View
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  gap: 6,
+                }}
+              >
                 <Text
-                  style={[
-                    styles.recordatorioTitulo,
+                  style={{
+                    fontFamily: "Nunito-Bold",
 
-                    {
-                      color: textColor,
-                    },
-                  ]}
+                    fontSize: 16,
+                    lineHeight: 22,
+
+                    color: textColor,
+                  }}
                 >
                   Avanza a tu propio ritmo
                 </Text>
 
                 <Text
-                  style={[
-                    styles.recordatorioTexto,
+                  style={{
+                    fontFamily: "Nunito-Medium",
 
-                    {
-                      color: textSecondaryColor,
-                    },
-                  ]}
+                    fontSize: 13,
+                    lineHeight: 20,
+
+                    color: textSecondaryColor,
+                  }}
                 >
                   Tu plan puede cambiar con el tiempo. Lo importante es observar
                   cómo te sientes y avanzar de forma gradual.
@@ -959,191 +964,138 @@ export default function PlanBienestar({ modo }: Props) {
               </View>
             </Animated.View>
 
-            {/* =================================================
-                AVISO
-            ================================================= */}
+            {/* AVISO */}
 
             <View
-              style={[
-                styles.aviso,
+              style={{
+                width: "100%",
 
-                esTelefono && styles.avisoMovil,
+                marginTop: 18,
+                padding: 16,
 
-                {
-                  backgroundColor: surfaceSecondaryColor,
+                borderWidth: 1,
+                borderColor,
 
-                  borderColor,
+                borderRadius: 18,
 
-                  maxWidth: esEscritorio ? 850 : undefined,
+                backgroundColor: surfaceSecondaryColor,
 
-                  alignSelf: "center",
-                },
-              ]}
+                flexDirection: "row",
+                alignItems: "flex-start",
+
+                gap: 10,
+              }}
             >
               <Ionicons
                 name="information-circle-outline"
-                size={19}
-                color={textSecondaryColor}
+                size={21}
+                color={textMutedColor}
               />
 
               <Text
-                style={[
-                  styles.avisoTexto,
+                style={{
+                  flex: 1,
+                  minWidth: 0,
 
-                  {
-                    color: textSecondaryColor,
-                  },
-                ]}
+                  fontFamily: "Nunito-Medium",
+
+                  fontSize: 12,
+                  lineHeight: 19,
+
+                  color: textSecondaryColor,
+                }}
               >
                 Estas recomendaciones son de autocuidado y orientación. No
                 sustituyen la valoración o atención de un profesional de salud.
               </Text>
             </View>
 
-            {/* =================================================
-                ERROR FINAL
-            ================================================= */}
+            {/* ERROR AL FINALIZAR */}
 
             {error && (
               <Animated.View
-                entering={FadeIn.duration(350)}
-                style={[
-                  styles.errorFinal,
+                entering={FadeIn.duration(300)}
+                style={{
+                  width: "100%",
 
-                  {
-                    backgroundColor: accentSoftColor,
+                  marginTop: 16,
+                  padding: 14,
 
-                    borderColor: accentColor,
-                  },
-                ]}
+                  borderRadius: 15,
+
+                  backgroundColor: accentSoftColor,
+
+                  borderColor: accentColor,
+
+                  borderWidth: 1,
+
+                  flexDirection: "row",
+                  alignItems: "center",
+
+                  gap: 10,
+                }}
               >
                 <Ionicons
                   name="alert-circle-outline"
-                  size={19}
+                  size={21}
                   color={accentColor}
                 />
 
                 <Text
-                  style={[
-                    styles.errorFinalTexto,
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
 
-                    {
-                      color: textColor,
-                    },
-                  ]}
+                    color: textColor,
+
+                    fontFamily: "Nunito-Medium",
+
+                    fontSize: 13,
+                  }}
                 >
                   {error}
                 </Text>
               </Animated.View>
             )}
 
-            {/* =================================================
-                BOTÓN
-            ================================================= */}
+            {/* FINALIZAR / REGRESAR */}
 
-            {modo === "entrevista" ? (
-              <>
-                <View
-                  style={{
-                    width: "100%",
+            <View
+              style={{
+                marginTop: 24,
+              }}
+            >
+              {modo === "entrevista"
+                ? boton(
+                  finalizando ? "Finalizando..." : "Finalizar entrevista",
+                  finalizar,
+                  "checkmark-circle-outline",
+                  finalizando,
+                )
+                : boton("Volver a mis entrevistas", salir, "arrow-back")}
+            </View>
 
-                    marginTop: esEscritorio ? 28 : 20,
-
-                    alignItems: esEscritorio ? "flex-end" : "stretch",
-                  }}
-                >
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={finalizar}
-                    disabled={finalizando}
-                    style={[
-                      styles.boton,
-
-                      esTelefono && styles.botonMovil,
-
-                      {
-                        width: anchoBoton,
-
-                        backgroundColor: finalizando
-                          ? disabledColor
-                          : primaryColor,
-                      },
-
-                      finalizando && styles.botonDeshabilitado,
-                    ]}
-                  >
-                    {finalizando ? (
-                      <>
-                        <ActivityIndicator size="small" color="#FFFFFF" />
-
-                        <Text style={styles.botonTexto}>Finalizando...</Text>
-                      </>
-                    ) : (
-                      <>
-                        <Text style={styles.botonTexto}>
-                          Finalizar entrevista
-                        </Text>
-
-                        <Ionicons
-                          name="checkmark-circle-outline"
-                          size={21}
-                          color="#FFFFFF"
-                        />
-                      </>
-                    )}
-                  </TouchableOpacity>
-                </View>
-
-                <Text
-                  style={[
-                    styles.textoFinal,
-
-                    {
-                      color: textMutedColor,
-
-                      textAlign: esEscritorio ? "right" : "center",
-
-                      alignSelf: esEscritorio ? "flex-end" : "center",
-
-                      maxWidth: esEscritorio ? 380 : undefined,
-                    },
-                  ]}
-                >
-                  Al finalizar, esta evaluación se guardará en tu historial.
-                </Text>
-              </>
-            ) : (
-              <View
+            {modo === "entrevista" && (
+              <Text
                 style={{
-                  width: "100%",
+                  maxWidth: esEscritorio ? 310 : undefined,
 
-                  marginTop: esEscritorio ? 28 : 20,
+                  alignSelf: esEscritorio ? "flex-end" : "center",
 
-                  alignItems: esEscritorio ? "flex-end" : "stretch",
+                  marginTop: 10,
+
+                  textAlign: esEscritorio ? "right" : "center",
+
+                  fontFamily: "Nunito-Medium",
+
+                  fontSize: 12,
+                  lineHeight: 18,
+
+                  color: textMutedColor,
                 }}
               >
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={salir}
-                  style={[
-                    styles.boton,
-
-                    esTelefono && styles.botonMovil,
-
-                    {
-                      width: anchoBoton,
-
-                      backgroundColor: primaryColor,
-                    },
-                  ]}
-                >
-                  <Text style={styles.botonTexto}>
-                    Volver a mis entrevistas
-                  </Text>
-
-                  <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
-                </TouchableOpacity>
-              </View>
+                Al finalizar, esta evaluación se guardará en tu historial.
+              </Text>
             )}
           </View>
         </View>

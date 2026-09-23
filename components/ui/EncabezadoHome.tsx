@@ -1,62 +1,57 @@
 import React from "react";
 
-import {
-  Image,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useAuth } from "@/services/authProvider";
 
 export function EncabezadoHome() {
-  const {
-    profile,
-    user,
-  } = useAuth();
+  const { profile, user } = useAuth();
 
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
+  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
-  const textSecondaryColor =
-    useThemeColor(
-      {},
-      "textSecondary"
-    );
+  const textColor = useThemeColor({}, "text");
 
-  // Prioridad:
-  // 1. Nombre preferido
-  // 2. Primer nombre
-  // 3. Metadata del usuario
-  // 4. Valor por defecto
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
+
+  // Mantener la prioridad actual del nombre
   const nombreUsuario =
     profile?.nombre_preferido ||
     profile?.nombres?.split(" ")[0] ||
     user?.user_metadata?.nombres ||
     "Usuario";
 
+  const anchoAvatar = esTelefono ? 64 : esTablet ? 80 : 100;
+
+  const altoAvatar = esTelefono ? 76 : esTablet ? 96 : 116;
+
   return (
     <View
-      style={
-        styles.contenedorSimple
-      }
+      style={[
+        styles.contenedor,
+        {
+          paddingHorizontal: esTelefono ? 16 : esTablet ? 24 : 32,
+
+          paddingVertical: esTelefono ? 8 : 16,
+
+          marginTop: esTelefono ? 0 : 8,
+        },
+      ]}
     >
-      {/* Texto */}
-      <View
-        style={
-          styles.bloqueTexto
-        }
-      >
+      {/* SALUDO */}
+
+      <View style={styles.bloqueTexto}>
         <Text
+          numberOfLines={2}
           style={[
             styles.saludo,
             {
-              color:
-                textColor,
+              color: textColor,
+
+              fontSize: esTelefono ? 23 : esTablet ? 27 : 30,
+
+              lineHeight: esTelefono ? 29 : esTablet ? 34 : 38,
             },
           ]}
         >
@@ -67,8 +62,11 @@ export function EncabezadoHome() {
           style={[
             styles.cita,
             {
-              color:
-                textSecondaryColor,
+              color: textSecondaryColor,
+
+              fontSize: esTelefono ? 12 : 14,
+
+              lineHeight: esTelefono ? 17 : 20,
             },
           ]}
         >
@@ -76,19 +74,26 @@ export function EncabezadoHome() {
         </Text>
       </View>
 
-      {/* Avatar Kiri */}
+      {/* MASCOTA */}
+
       <View
-        style={
-          styles.contenedorAvatar
-        }
+        style={{
+          width: anchoAvatar,
+
+          height: altoAvatar,
+
+          marginLeft: esTelefono ? 8 : 16,
+
+          flexShrink: 0,
+
+          alignItems: "center",
+
+          justifyContent: "center",
+        }}
       >
         <Image
-          source={require(
-            "@/assets/images/mascota.png"
-          )}
-          style={
-            styles.imagenAvatar
-          }
+          source={require("@/assets/images/mascota.png")}
+          style={styles.imagenAvatar}
           resizeMode="contain"
         />
       </View>
@@ -96,82 +101,40 @@ export function EncabezadoHome() {
   );
 }
 
-const styles =
-  StyleSheet.create({
-    contenedorSimple: {
-      flexDirection:
-        "row",
+const styles = StyleSheet.create({
+  contenedor: {
+    width: "100%",
 
-      justifyContent:
-        "space-between",
+    flexDirection: "row",
 
-      alignItems:
-        "center",
+    alignItems: "center",
 
-      paddingHorizontal:
-        20,
+    justifyContent: "space-between",
 
-      paddingVertical:
-        12,
+    backgroundColor: "transparent",
+  },
 
-      marginTop:
-        8,
+  bloqueTexto: {
+    flex: 1,
 
-      backgroundColor:
-        "transparent",
-    },
+    minWidth: 0,
+  },
 
-    bloqueTexto: {
-      flex: 1,
-    },
+  saludo: {
+    fontFamily: "Nunito-Bold",
+  },
 
-    saludo: {
-      fontFamily:
-        "Nunito-Bold",
+  cita: {
+    fontFamily: "Nunito-Medium",
 
-      fontSize:
-        30,
+    marginTop: 4,
 
-      lineHeight:
-        36,
-    },
+    flexShrink: 1,
+  },
 
-    cita: {
-      fontFamily:
-        "Nunito-Medium",
+  imagenAvatar: {
+    width: "100%",
 
-      fontSize:
-        14,
-
-      lineHeight:
-        20,
-
-      marginTop:
-        2,
-    },
-
-    contenedorAvatar: {
-      width:
-        80,
-
-      height:
-        110,
-
-      justifyContent:
-        "center",
-
-      alignItems:
-        "center",
-
-      marginLeft:
-        12,
-    },
-
-    imagenAvatar: {
-      width:
-        "100%",
-
-      height:
-        "100%",
-    },
-  });
+    height: "100%",
+  },
+});

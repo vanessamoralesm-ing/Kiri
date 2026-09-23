@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
+
 import {
   ActivityIndicator,
   Alert,
@@ -11,6 +12,7 @@ import {
   Text,
   View,
 } from "react-native";
+
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -26,7 +28,15 @@ import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 import { crearEntrevista } from "@/services/entrevista/entrevistaService";
 
+// ==========================================================
+// TIPOS
+// ==========================================================
+
 type RangoEdad = "nino" | "adolescente" | "adulto";
+
+// ==========================================================
+// OPCIONES
+// ==========================================================
 
 const OPCIONES_EDAD = [
   {
@@ -49,8 +59,13 @@ const OPCIONES_EDAD = [
   },
 ];
 
+// ==========================================================
+// PANTALLA
+// ==========================================================
+
 export default function RangoEdadPantalla() {
   const router = useRouter();
+
   const insets = useSafeAreaInsets();
 
   const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
@@ -60,14 +75,23 @@ export default function RangoEdadPantalla() {
   // ========================================================
 
   const backgroundColor = useThemeColor({}, "background");
+
   const surfaceColor = useThemeColor({}, "surface");
+
   const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+
   const borderColor = useThemeColor({}, "border");
+
   const textColor = useThemeColor({}, "text");
+
   const textSecondaryColor = useThemeColor({}, "textSecondary");
+
   const textMutedColor = useThemeColor({}, "textMuted");
+
   const primaryColor = useThemeColor({}, "primary");
+
   const primarySoftColor = useThemeColor({}, "primarySoft");
+
   const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
 
   // ========================================================
@@ -95,11 +119,17 @@ export default function RangoEdadPantalla() {
       ? MAX_WIDTHS.contenido
       : undefined;
 
-  const maxWidthContenido = esEscritorio ? 1050 : esTablet ? 760 : undefined;
+  const maxWidthContenido = esEscritorio ? 1050 : esTablet ? 760 : 560;
 
-  const paddingTop = esEscritorio ? 28 : Math.max(insets.top + 8, 18);
+  const paddingTop = esEscritorio ? 28 : Math.max(insets.top + 12, 24);
 
   const paddingBottom = esEscritorio ? 48 : Math.max(insets.bottom + 28, 40);
+
+  const tarjetasHorizontales = !esEscritorio;
+
+  const anchoImagen = esEscritorio ? 118 : esTelefono ? 74 : 88;
+
+  const altoImagen = anchoImagen;
 
   // ========================================================
   // CONTINUAR
@@ -153,6 +183,10 @@ export default function RangoEdadPantalla() {
       }}
     >
       <ScrollView
+        style={{
+          flex: 1,
+          width: "100%",
+        }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           flexGrow: 1,
@@ -165,6 +199,7 @@ export default function RangoEdadPantalla() {
             flex: 1,
 
             width: "100%",
+
             maxWidth: maxWidthPantalla,
 
             alignSelf: "center",
@@ -173,15 +208,20 @@ export default function RangoEdadPantalla() {
           }}
         >
           {/* ==================================================
-              CABECERA
+              LOGOTIPO
           ================================================== */}
 
           <View
             style={{
-              minHeight: 58,
+              width: "100%",
+
+              minHeight: esEscritorio ? 66 : 54,
 
               flexDirection: "row",
+
               alignItems: "center",
+
+              justifyContent: "flex-start",
             }}
           >
             <Logo />
@@ -194,26 +234,30 @@ export default function RangoEdadPantalla() {
           <View
             style={{
               width: "100%",
+
               maxWidth: 720,
 
               alignSelf: "center",
 
               alignItems: "center",
 
-              marginTop: esEscritorio ? 26 : 18,
+              marginTop: esEscritorio ? 26 : esTablet ? 22 : 18,
 
-              marginBottom: esEscritorio ? 30 : 24,
+              marginBottom: esEscritorio ? 30 : esTablet ? 26 : 22,
             }}
           >
+            {/* ICONO */}
+
             <View
               style={{
-                width: esEscritorio ? 62 : 54,
+                width: esEscritorio ? 64 : esTelefono ? 54 : 60,
 
-                height: esEscritorio ? 62 : 54,
+                height: esEscritorio ? 64 : esTelefono ? 54 : 60,
 
                 borderRadius: esEscritorio ? 20 : 17,
 
                 alignItems: "center",
+
                 justifyContent: "center",
 
                 backgroundColor: primarySoftColor,
@@ -221,20 +265,24 @@ export default function RangoEdadPantalla() {
             >
               <Ionicons
                 name="people-outline"
-                size={esEscritorio ? 29 : 25}
+                size={esEscritorio ? 30 : 26}
                 color={primaryColor}
               />
             </View>
 
+            {/* TÍTULO */}
+
             <Text
               style={{
-                marginTop: 15,
+                width: "100%",
+
+                marginTop: esTelefono ? 12 : 16,
 
                 fontFamily: "Nunito-Bold",
 
-                fontSize: esEscritorio ? 34 : esTablet ? 30 : 27,
+                fontSize: esEscritorio ? 34 : esTablet ? 30 : 25,
 
-                lineHeight: esEscritorio ? 42 : 35,
+                lineHeight: esEscritorio ? 42 : esTablet ? 38 : 33,
 
                 textAlign: "center",
 
@@ -244,17 +292,21 @@ export default function RangoEdadPantalla() {
               ¿Cuál es tu rango de edad?
             </Text>
 
+            {/* DESCRIPCIÓN */}
+
             <Text
               style={{
-                marginTop: 8,
+                width: "100%",
 
                 maxWidth: 620,
 
+                marginTop: 9,
+
                 fontFamily: "Nunito-Medium",
 
-                fontSize: esEscritorio ? 16 : 15,
+                fontSize: esEscritorio ? 16 : 14,
 
-                lineHeight: esEscritorio ? 23 : 21,
+                lineHeight: esEscritorio ? 24 : 21,
 
                 textAlign: "center",
 
@@ -267,19 +319,22 @@ export default function RangoEdadPantalla() {
           </View>
 
           {/* ==================================================
-              OPCIONES
+              OPCIONES DE EDAD
           ================================================== */}
 
           <View
             style={{
               width: "100%",
+
               maxWidth: maxWidthContenido,
 
               alignSelf: "center",
 
-              flexDirection: esEscritorio ? "row" : "column",
+              flexDirection: tarjetasHorizontales ? "column" : "row",
 
-              gap: esEscritorio ? 18 : 14,
+              alignItems: "stretch",
+
+              gap: esEscritorio ? 18 : 12,
             }}
           >
             {OPCIONES_EDAD.map((opcion) => {
@@ -290,34 +345,22 @@ export default function RangoEdadPantalla() {
                   key={opcion.id}
                   disabled={cargando}
                   onPress={() => setOpcionSeleccionada(opcion.id)}
+                  accessibilityRole="radio"
+                  accessibilityState={{
+                    checked: seleccionada,
+                    disabled: cargando,
+                  }}
+                  accessibilityLabel={`${opcion.titulo}, ${opcion.subtitulo}`}
                   style={({ pressed }) => ({
-                    flex: esEscritorio ? 1 : undefined,
-
                     width: esEscritorio ? undefined : "100%",
 
-                    minHeight: esEscritorio ? 255 : 118,
+                    flex: esEscritorio ? 1 : undefined,
 
-                    padding: esEscritorio ? 22 : 16,
+                    borderRadius: esEscritorio ? 24 : 18,
 
-                    borderWidth: seleccionada ? 2 : 1,
+                    overflow: "hidden",
 
-                    borderRadius: esEscritorio ? 24 : 20,
-
-                    borderColor: seleccionada ? primaryColor : borderColor,
-
-                    flexDirection: esEscritorio ? "column" : "row",
-
-                    alignItems: "center",
-
-                    justifyContent: esEscritorio ? "center" : "flex-start",
-
-                    backgroundColor: seleccionada
-                      ? primarySoftColor
-                      : pressed
-                        ? surfaceSecondaryColor
-                        : surfaceColor,
-
-                    opacity: cargando ? 0.65 : pressed ? 0.86 : 1,
+                    opacity: cargando ? 0.65 : pressed ? 0.82 : 1,
 
                     ...(Platform.OS === "web"
                       ? ({
@@ -337,6 +380,7 @@ export default function RangoEdadPantalla() {
                         },
 
                         shadowOpacity: 0.05,
+
                         shadowRadius: 7,
                       }
                       : {}),
@@ -348,148 +392,233 @@ export default function RangoEdadPantalla() {
                       : {}),
                   })}
                 >
-                  {/* IMAGEN */}
+                  {/* Superficie visual separada del Pressable */}
 
                   <View
                     style={{
-                      width: esEscritorio ? 125 : 78,
+                      width: "100%",
 
-                      height: esEscritorio ? 125 : 78,
+                      minHeight: esEscritorio ? 255 : esTelefono ? 106 : 120,
 
-                      flexShrink: 0,
+                      padding: esEscritorio ? 20 : esTelefono ? 13 : 16,
 
-                      borderRadius: esEscritorio ? 38 : 24,
+                      borderWidth: seleccionada ? 2 : 1,
+
+                      borderColor: seleccionada ? primaryColor : borderColor,
+
+                      borderRadius: esEscritorio ? 24 : 18,
+
+                      flexDirection: tarjetasHorizontales ? "row" : "column",
 
                       alignItems: "center",
-                      justifyContent: "center",
+
+                      justifyContent: esEscritorio ? "center" : "flex-start",
 
                       backgroundColor: seleccionada
-                        ? surfaceColor
-                        : surfaceSecondaryColor,
+                        ? primarySoftColor
+                        : surfaceColor,
                     }}
                   >
-                    <Image
-                      source={opcion.imagen}
-                      resizeMode="contain"
-                      style={{
-                        width: esEscritorio ? 110 : 68,
+                    {/* ======================================
+                        IMAGEN
+                    ====================================== */}
 
-                        height: esEscritorio ? 110 : 68,
-                      }}
-                    />
-                  </View>
-
-                  {/* TEXTO */}
-
-                  <View
-                    style={{
-                      flex: esEscritorio ? undefined : 1,
-
-                      minWidth: 0,
-
-                      marginLeft: esEscritorio ? 0 : 16,
-
-                      marginTop: esEscritorio ? 16 : 0,
-
-                      alignItems: esEscritorio ? "center" : "flex-start",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontFamily: "Nunito-Bold",
-
-                        fontSize: esEscritorio ? 21 : 18,
-
-                        color: textColor,
-
-                        textAlign: esEscritorio ? "center" : "left",
-                      }}
-                    >
-                      {opcion.titulo}
-                    </Text>
-
-                    <Text
-                      style={{
-                        marginTop: 4,
-
-                        fontFamily: "Nunito-Medium",
-
-                        fontSize: esEscritorio ? 14 : 13,
-
-                        color: textSecondaryColor,
-
-                        textAlign: esEscritorio ? "center" : "left",
-                      }}
-                    >
-                      {opcion.subtitulo}
-                    </Text>
-                  </View>
-
-                  {/* CHECK */}
-
-                  {seleccionada && (
                     <View
                       style={{
-                        position: esEscritorio ? "absolute" : "relative",
+                        width: anchoImagen,
 
-                        top: esEscritorio ? 14 : undefined,
+                        height: altoImagen,
 
-                        right: esEscritorio ? 14 : undefined,
+                        flexShrink: 0,
 
-                        marginLeft: esEscritorio ? 0 : 10,
-
-                        width: 30,
-                        height: 30,
-
-                        borderRadius: 15,
+                        borderRadius: esEscritorio ? 34 : 19,
 
                         alignItems: "center",
+
                         justifyContent: "center",
 
-                        backgroundColor: primaryColor,
+                        overflow: "hidden",
+
+                        backgroundColor: seleccionada
+                          ? surfaceColor
+                          : surfaceSecondaryColor,
                       }}
                     >
-                      <Ionicons
-                        name="checkmark"
-                        size={18}
-                        color={textOnPrimaryColor}
+                      <Image
+                        source={opcion.imagen}
+                        resizeMode="contain"
+                        style={{
+                          width: anchoImagen - 8,
+
+                          height: altoImagen - 8,
+                        }}
                       />
                     </View>
-                  )}
+
+                    {/* ======================================
+                        INFORMACIÓN
+                    ====================================== */}
+
+                    <View
+                      style={{
+                        flex: tarjetasHorizontales ? 1 : undefined,
+
+                        minWidth: 0,
+
+                        marginLeft: tarjetasHorizontales
+                          ? esTelefono
+                            ? 13
+                            : 16
+                          : 0,
+
+                        marginTop: esEscritorio ? 16 : 0,
+
+                        alignItems: esEscritorio ? "center" : "flex-start",
+
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: "Nunito-Bold",
+
+                          fontSize: esEscritorio ? 21 : esTelefono ? 17 : 19,
+
+                          lineHeight: esEscritorio ? 28 : 24,
+
+                          textAlign: esEscritorio ? "center" : "left",
+
+                          color: textColor,
+                        }}
+                      >
+                        {opcion.titulo}
+                      </Text>
+
+                      <Text
+                        style={{
+                          marginTop: 4,
+
+                          fontFamily: "Nunito-Medium",
+
+                          fontSize: esEscritorio ? 14 : 13,
+
+                          lineHeight: 19,
+
+                          textAlign: esEscritorio ? "center" : "left",
+
+                          color: textSecondaryColor,
+                        }}
+                      >
+                        {opcion.subtitulo}
+                      </Text>
+                    </View>
+
+                    {/* ======================================
+                        INDICADOR
+                    ====================================== */}
+
+                    {esEscritorio ? (
+                      seleccionada && (
+                        <View
+                          style={{
+                            position: "absolute",
+
+                            top: 14,
+
+                            right: 14,
+
+                            width: 30,
+
+                            height: 30,
+
+                            borderRadius: 15,
+
+                            alignItems: "center",
+
+                            justifyContent: "center",
+
+                            backgroundColor: primaryColor,
+                          }}
+                        >
+                          <Ionicons
+                            name="checkmark"
+                            size={18}
+                            color={textOnPrimaryColor}
+                          />
+                        </View>
+                      )
+                    ) : (
+                      <View
+                        style={{
+                          width: 30,
+
+                          height: 30,
+
+                          marginLeft: 8,
+
+                          flexShrink: 0,
+
+                          borderRadius: 15,
+
+                          alignItems: "center",
+
+                          justifyContent: "center",
+
+                          backgroundColor: seleccionada
+                            ? primaryColor
+                            : surfaceSecondaryColor,
+                        }}
+                      >
+                        <Ionicons
+                          name={seleccionada ? "checkmark" : "chevron-forward"}
+                          size={seleccionada ? 18 : 19}
+                          color={
+                            seleccionada ? textOnPrimaryColor : primaryColor
+                          }
+                        />
+                      </View>
+                    )}
+                  </View>
                 </Pressable>
               );
             })}
           </View>
 
           {/* ==================================================
-              AYUDA
+              INFORMACIÓN DE AYUDA
           ================================================== */}
 
           <View
             style={{
               width: "100%",
+
               maxWidth: maxWidthContenido,
 
               alignSelf: "center",
 
-              marginTop: esEscritorio ? 24 : 20,
+              marginTop: esEscritorio ? 24 : 18,
 
-              padding: 14,
+              padding: esTelefono ? 13 : 16,
 
               borderWidth: 1,
+
               borderRadius: 16,
 
               borderColor,
 
               flexDirection: "row",
-              alignItems: "flex-start",
+
+              alignItems: "center",
 
               backgroundColor: surfaceColor,
             }}
           >
+            {/* ICONO */}
+
             <View
               style={{
                 width: 38,
+
                 height: 38,
 
                 flexShrink: 0,
@@ -497,6 +626,7 @@ export default function RangoEdadPantalla() {
                 borderRadius: 12,
 
                 alignItems: "center",
+
                 justifyContent: "center",
 
                 backgroundColor: primarySoftColor,
@@ -509,37 +639,49 @@ export default function RangoEdadPantalla() {
               />
             </View>
 
-            <Text
+            {/* TEXTO */}
+
+            <View
               style={{
                 flex: 1,
 
-                marginLeft: 11,
+                minWidth: 0,
 
-                fontFamily: "Nunito-Medium",
+                marginLeft: 12,
 
-                fontSize: 13,
-                lineHeight: 19,
-
-                color: textMutedColor,
+                justifyContent: "center",
               }}
             >
-              Selecciona la opción que corresponde a tu edad actual. Esto nos
-              permitirá dirigir la entrevista al formato más adecuado para ti.
-            </Text>
+              <Text
+                style={{
+                  fontFamily: "Nunito-Medium",
+
+                  fontSize: 13,
+
+                  lineHeight: 19,
+
+                  color: textMutedColor,
+                }}
+              >
+                Selecciona la opción que corresponde a tu edad actual. Esto nos
+                permitirá dirigir la entrevista al formato más adecuado para ti.
+              </Text>
+            </View>
           </View>
 
           {/* ==================================================
-              BOTÓN
+              BOTÓN CONTINUAR
           ================================================== */}
 
           <View
             style={{
               width: "100%",
+
               maxWidth: maxWidthContenido,
 
               alignSelf: "center",
 
-              marginTop: esEscritorio ? 28 : 24,
+              marginTop: esEscritorio ? 28 : 22,
 
               alignItems: esEscritorio ? "flex-end" : "stretch",
             }}
@@ -550,6 +692,7 @@ export default function RangoEdadPantalla() {
                   marginBottom: 10,
 
                   flexDirection: "row",
+
                   alignItems: "center",
 
                   gap: 8,
@@ -583,6 +726,7 @@ export default function RangoEdadPantalla() {
                 disabled={!opcionSeleccionada || cargando}
                 style={{
                   minHeight: 56,
+
                   borderRadius: 16,
 
                   opacity: !opcionSeleccionada || cargando ? 0.55 : 1,
