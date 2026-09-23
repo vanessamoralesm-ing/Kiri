@@ -118,9 +118,18 @@ export default function AppHeader() {
   }
 
 
-  // ========================================================
-  // UI
-  // ========================================================
+    return () => {
+      activo = false;
+    };
+  }, [pathname, versionFoto]);
+
+  // ACTUALIZAR CACHÉ SOLO EN URL REMOTAS
+  const uriFoto = fotoPerfil
+    ? /^https?:\/\//i.test(fotoPerfil)
+      ? `${fotoPerfil}${fotoPerfil.includes("?") ? "&" : "?"
+      }kiri_avatar_v=${versionFoto}`
+      : fotoPerfil
+    : null;
 
   return (
     <View

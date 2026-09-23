@@ -1,101 +1,224 @@
-import React from 'react';
+import React, { useState } from "react";
+
 import {
-  View,
+  StyleProp,
+  StyleSheet,
   Text,
   TextInput,
-  StyleSheet,
   TextInputProps,
-  StyleProp,
+  View,
   ViewStyle,
-} from 'react-native';
+} from "react-native";
 
-// Definimos las propiedades que recibira nuestro Input
+import { useThemeColor } from "@/hooks/use-theme-color";
+
+// ==========================================================
+// PROPIEDADES
+// ==========================================================
+
 interface InputProps extends TextInputProps {
-  label: string;                // Texto de la etiqueta
-  rightLabel?: React.ReactNode; // Enlace u opcion a la derecha
-  rightIcon?: React.ReactNode;  // Icono dentro del input a la derecha
+  label: string;
+
+  rightLabel?: React.ReactNode;
+
+  rightIcon?: React.ReactNode;
+
   estiloContenedor?: StyleProp<ViewStyle>;
 }
+
+// ==========================================================
+// COMPONENTE
+// ==========================================================
 
 export default function Input({
   label,
   rightLabel,
   rightIcon,
-  estiloContenedor,//Recibimos la propiedad
+  estiloContenedor,
   style,
+  placeholderTextColor,
+  onFocus,
+  onBlur,
   ...props
 }: InputProps) {
+  // ========================================================
+  // ESTADO
+  // ========================================================
+
+  const [enfocado, setEnfocado] = useState(false);
+
+  // ========================================================
+  // TEMA
+  // ========================================================
+
+  const textColor = useThemeColor({}, "text");
+
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
+
+  const inputBackgroundColor = useThemeColor({}, "inputBackground");
+
+  const inputBorderColor = useThemeColor({}, "inputBorder");
+
+  const placeholderColor = useThemeColor({}, "placeholder");
+
+  const primaryColor = useThemeColor({}, "primary");
+
+  // ========================================================
+  // UI
+  // ========================================================
+
   return (
     <View style={[styles.container, estiloContenedor]}>
-      {/*Encabezado del Input*/}
+      {/* ==================================================
+          ETIQUETA
+      ================================================== */}
+
       <View style={styles.labelContainer}>
-        <Text style={styles.label}>{label}</Text>
-        {rightLabel && rightLabel}
+        <Text
+          style={[
+            styles.label,
+            {
+              color: textColor,
+            },
+          ]}
+        >
+          {label}
+        </Text>
+
+        {rightLabel}
       </View>
 
-      {/* Campo de texto de entrada */}
-      <View style={styles.inputContainer}>
+      {/* ==================================================
+          CAMPO
+      ================================================== */}
+
+      <View
+        style={[
+          styles.inputContainer,
+          {
+            backgroundColor: inputBackgroundColor,
+
+            borderColor: enfocado ? primaryColor : inputBorderColor,
+
+            borderWidth: enfocado ? 2 : 1,
+          },
+        ]}
+      >
         <TextInput
+          {...props}
           style={[
             styles.input,
-            rightIcon ? styles.inputConIcono : undefined,
+            {
+              color: textColor,
+
+              paddingRight: rightIcon ? 52 : 16,
+            },
             style,
           ]}
-          placeholderTextColor="#8491a3"
-          {...props}
+          placeholderTextColor={placeholderTextColor ?? placeholderColor}
+          selectionColor={primaryColor}
+          onFocus={(event) => {
+            setEnfocado(true);
+
+            onFocus?.(event);
+          }}
+          onBlur={(event) => {
+            setEnfocado(false);
+
+            onBlur?.(event);
+          }}
         />
 
-        {/* Icono dentro del input */}
-        {rightIcon && (
-          <View style={styles.rightIcon}>
-            {rightIcon}
-          </View>
-        )}
+        {/* ==================================================
+            ICONO DERECHO
+        ================================================== */}
+
+        {rightIcon && <View style={styles.rightIcon}>{rightIcon}</View>}
       </View>
     </View>
   );
 }
 
+// ==========================================================
+// ESTILOS
+// ==========================================================
+
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
-    marginBottom: 20,              // Separacion entre campos de texto
+    width: "100%",
+
+    marginBottom: 20,
   },
+
   labelContainer: {
-    flexDirection: 'row',          // Alinea el label y el rightLabel en la misma linea
-    justifyContent: 'space-between', // Separa el label a la izquierda y el rightLabel a la derecha
-    alignItems: 'center',
-    marginBottom: 8,               // Espacio entre la etiqueta y el cuadro de texto
+    width: "100%",
+
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    justifyContent: "space-between",
+
+    gap: 10,
+
+    marginBottom: 9,
   },
+
   label: {
-    fontSize: 18,
-    fontFamily: 'Nunito-Bold',
-    fontWeight: '500',
-    color: '#2D3748',
+    flexShrink: 1,
+
+    fontSize: 15,
+
+    lineHeight: 21,
+
+    fontFamily: "Nunito-SemiBold",
   },
+
   inputContainer: {
-    width: '100%',
-    position: 'relative',
+    width: "100%",
+
+    minHeight: 54,
+
+    position: "relative",
+
+    borderRadius: 14,
+
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    overflow: "hidden",
   },
+
   input: {
-    width: '100%',
-    height: 52,                    // Altura ideal para escribir cmodamente
-    backgroundColor: '#e0e6fc',    // Fondo lila
-    borderRadius: 14,              // Bordes suaves
-    paddingHorizontal: 16,         // Espacio interno a los lados
-    fontSize: 16,
-    fontFamily: 'Nunito-Medium',
-    color: '#2D3748',
+    flex: 1,
+
+    minWidth: 0,
+
+    height: 54,
+
+    paddingHorizontal: 16,
+
+    paddingVertical: 10,
+
+    fontSize: 15,
+
+    fontFamily: "Nunito-Medium",
   },
-  inputConIcono: {
-    paddingRight: 52,              // Evita que el texto choque con el icono
-  },
+
   rightIcon: {
-    position: 'absolute',
+    position: "absolute",
+
     right: 14,
+
     top: 0,
-    height: 52,
-    justifyContent: 'center',
-    alignItems: 'center',
+
+    bottom: 0,
+
+    width: 28,
+
+    alignItems: "center",
+
+    justifyContent: "center",
   },
 });

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 import {
   ActivityIndicator,
   Alert,
@@ -16,7 +17,15 @@ import Button from "@/components/ui/Button";
 import Logo from "@/components/ui/Logo_izq";
 import { crearEntrevista } from "@/services/entrevista/entrevistaService";
 
+// ==========================================================
+// TIPOS
+// ==========================================================
+
 type RangoEdad = "nino" | "adolescente" | "adulto";
+
+// ==========================================================
+// OPCIONES
+// ==========================================================
 
 const OPCIONES_EDAD = [
   {
@@ -38,6 +47,10 @@ const OPCIONES_EDAD = [
     imagen: require("@/assets/images/adulto_edad.png"),
   },
 ];
+
+// ==========================================================
+// PANTALLA
+// ==========================================================
 
 export default function RangoEdadPantalla() {
   const router = useRouter();

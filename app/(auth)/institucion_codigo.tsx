@@ -45,10 +45,9 @@ export default function InstitucionCodigoPantalla() {
         <View style={styles.cabecera}>
           <Logo/>{/*Se llama al componente logo izq */}
 
-          <TouchableOpacity onPress={regresar} activeOpacity={0.7}>
-            <Text style={styles.botonCerrar}>✕</Text>
-          </TouchableOpacity>
-        </View>
+  const textColor = useThemeColor({}, "text");
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
+  const textMutedColor = useThemeColor({}, "textMuted");
 
         {/* Apartado de titulo y subtitulo*/}
         <Text style={styles.titulo}>Acceso Institucional</Text>
@@ -67,10 +66,7 @@ export default function InstitucionCodigoPantalla() {
           onPress={escanearQR}
           style={styles.botonEscanear}/>
 
-          <Text style={styles.textoIndicacion}>
-            Coloca el código QR frente a tu cámara
-          </Text>
-        </View>
+  const anchoMaximo = esEscritorio ? 720 : 560;
 
         {/*Separador*/}
         <View style={styles.divisorContenedor}>

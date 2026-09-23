@@ -92,6 +92,10 @@ export default function RegisterScreen() {
 
   // REGISTRAR
   const registrar = async () => {
+    if (submitting) {
+      return;
+    }
+
     setError(null);
 
     // VALIDAR GÉNERO ANTES DE CONSTRUIR SignUpInput
@@ -165,6 +169,7 @@ export default function RegisterScreen() {
     <ScrollView
       contentContainerStyle={styles.scrollContainer}
       keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.container}>

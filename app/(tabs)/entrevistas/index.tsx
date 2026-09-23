@@ -8,9 +8,9 @@ import {
 import { styles } from "@/styles/entrevistas.styles";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 import { Ionicons } from "@expo/vector-icons";
-
 import { useFocusEffect, useRouter } from "expo-router";
 
 import React, { useCallback, useState } from "react";
@@ -37,11 +37,21 @@ const formatoFecha = new Intl.DateTimeFormat("es-NI", {
 });
 
 function formatearFecha(fecha: string | null) {
-  return fecha ? formatoFecha.format(new Date(fecha)) : "Sin fecha";
+  if (!fecha) {
+    return "Sin fecha";
+  }
+
+  const fechaConvertida = new Date(fecha);
+
+  if (Number.isNaN(fechaConvertida.getTime())) {
+    return "Sin fecha";
+  }
+
+  return formatoFecha.format(fechaConvertida);
 }
 
 // ==========================================================
-// COMPONENTE
+// COMPONENTE PRINCIPAL
 // ==========================================================
 
 export default function MisEntrevistasScreen() {
@@ -56,27 +66,21 @@ export default function MisEntrevistasScreen() {
   // ========================================================
 
   const backgroundColor = useThemeColor({}, "background");
-
   const surfaceColor = useThemeColor({}, "surface");
-
   const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
   const borderColor = useThemeColor({}, "border");
 
   const textColor = useThemeColor({}, "text");
-
   const textSecondaryColor = useThemeColor({}, "textSecondary");
-
   const textMutedColor = useThemeColor({}, "textMuted");
 
   const iconColor = useThemeColor({}, "icon");
 
   const primaryColor = useThemeColor({}, "primary");
-
   const primarySoftColor = useThemeColor({}, "primarySoft");
 
   const secondaryColor = useThemeColor({}, "secondary");
-
   const secondarySoftColor = useThemeColor({}, "secondarySoft");
 
   // ========================================================
@@ -86,7 +90,6 @@ export default function MisEntrevistasScreen() {
   const [entrevistas, setEntrevistas] = useState<EntrevistaHistorial[]>([]);
 
   const [cargando, setCargando] = useState(true);
-
   const [creando, setCreando] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
@@ -102,7 +105,6 @@ export default function MisEntrevistasScreen() {
       async function cargar() {
         try {
           setCargando(true);
-
           setError(null);
 
           const data = await obtenerHistorialEntrevistas();
@@ -142,7 +144,6 @@ export default function MisEntrevistasScreen() {
 
     try {
       setCreando(true);
-
       setError(null);
 
       const entrevista = await crearEntrevista();
@@ -167,11 +168,13 @@ export default function MisEntrevistasScreen() {
   // NAVEGACIÓN
   // ========================================================
 
-  const verResultado = (id: string) =>
+  const verResultado = (id: string) => {
     router.push(`/(tabs)/entrevistas/${id}/resultado` as any);
+  };
 
-  const verPlan = (id: string) =>
+  const verPlan = (id: string) => {
     router.push(`/(tabs)/entrevistas/${id}/plan` as any);
+  };
 
   // ========================================================
   // DATOS
@@ -198,6 +201,9 @@ export default function MisEntrevistasScreen() {
       ]}
     >
       <ScrollView
+        style={{
+          flex: 1,
+        }}
         showsVerticalScrollIndicator={false}
 
         contentContainerStyle={[styles.scroll, movil && styles.scrollMovil]}
@@ -699,19 +705,14 @@ function EstadoVacio({
   movil: boolean;
 
   icono: keyof typeof Ionicons.glyphMap;
-
   titulo: string;
-
   texto: string;
-
   children?: React.ReactNode;
 }) {
   const surfaceColor = useThemeColor({}, "surface");
-
   const borderColor = useThemeColor({}, "border");
 
   const primaryColor = useThemeColor({}, "primary");
-
   const primarySoftColor = useThemeColor({}, "primarySoft");
 
   const textColor = useThemeColor({}, "text");
@@ -732,6 +733,8 @@ function EstadoVacio({
         },
       ]}
     >
+      {/* ICONO */}
+
       <View
         style={[
           styles.vacioIcono,
@@ -750,6 +753,8 @@ function EstadoVacio({
         />
       </View>
 
+      {/* TÍTULO */}
+
       <Text
         style={[
           styles.vacioTitulo,
@@ -761,6 +766,8 @@ function EstadoVacio({
       >
         {titulo}
       </Text>
+
+      {/* DESCRIPCIÓN */}
 
       <Text
         style={[
@@ -780,24 +787,22 @@ function EstadoVacio({
 }
 
 // ==========================================================
-// BOTÓN DE ACCIÓN
+// BOTÓN DE ACCIÓN RESPONSIVE
 // ==========================================================
 
 function BotonAccion({
   icono,
   texto,
   onPress,
+  esTelefono,
 }: {
   icono: keyof typeof Ionicons.glyphMap;
-
   texto: string;
-
   onPress: () => void;
+  esTelefono: boolean;
 }) {
   const primaryColor = useThemeColor({}, "primary");
-
   const primarySoftColor = useThemeColor({}, "primarySoft");
-
   const borderColor = useThemeColor({}, "border");
 
   return (

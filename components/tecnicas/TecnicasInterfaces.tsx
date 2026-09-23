@@ -5,7 +5,6 @@ import {
   Image,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -30,7 +29,7 @@ import type {
 } from "@/types/tecnicas";
 
 // ============================================================
-// CONFIGURACIÓN VISUAL
+// CONFIGURACIÓN
 // ============================================================
 
 const NECESIDADES = [
@@ -54,18 +53,37 @@ const NECESIDADES = [
   },
 ];
 
-// ============================================================
-// HOOK DE COLORES
-// ============================================================
-
 function useTecnicasColors() {
   const { isDarkMode } = useThemeMode();
-
   return isDarkMode ? Colors.dark : Colors.light;
 }
 
+function useTecnicasLayout() {
+  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
+
+  const paddingHorizontal = esEscritorio
+    ? PADDING_RESPONSIVE.escritorio
+    : esTablet
+      ? PADDING_RESPONSIVE.tablet
+      : PADDING_RESPONSIVE.telefono;
+
+  const maxWidth = esEscritorio
+    ? MAX_WIDTHS.dashboard
+    : esTablet
+      ? MAX_WIDTHS.contenido
+      : undefined;
+
+  return {
+    esTelefono,
+    esTablet,
+    esEscritorio,
+    paddingHorizontal,
+    maxWidth,
+  };
+}
+
 // ============================================================
-// ESTADO DE CARGA / ERROR
+// COMPONENTES COMPARTIDOS
 // ============================================================
 
 function Estado({
@@ -81,7 +99,12 @@ function Estado({
 
   if (cargando) {
     return (
-      <View style={styles.estado}>
+      <View
+        style={{
+          paddingVertical: 40,
+          alignItems: "center",
+        }}
+      >
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
@@ -90,14 +113,44 @@ function Estado({
   if (!error) return null;
 
   return (
-    <View style={styles.estado}>
-      <Text style={[styles.error, { color: colors.textSecondary }]}>
+    <View
+      style={{
+        padding: 24,
+        alignItems: "center",
+        gap: 14,
+      }}
+    >
+      <Text
+        style={{
+          fontFamily: "Nunito-Medium",
+          fontSize: 14,
+          lineHeight: 21,
+          textAlign: "center",
+          color: colors.textSecondary,
+        }}
+      >
         {error}
       </Text>
 
-      {reintentar && (
-        <Pressable onPress={reintentar}>
-          <Text style={[styles.reintentar, { color: colors.primary }]}>
+      {!!reintentar && (
+        <Pressable
+          onPress={reintentar}
+          style={({ pressed }) => ({
+            minHeight: 44,
+            paddingHorizontal: 18,
+            borderRadius: 12,
+            justifyContent: "center",
+            backgroundColor: colors.primarySoft,
+            opacity: pressed ? 0.75 : 1,
+          })}
+        >
+          <Text
+            style={{
+              fontFamily: "Nunito-Bold",
+              fontSize: 14,
+              color: colors.primary,
+            }}
+          >
             Intentar nuevamente
           </Text>
         </Pressable>
@@ -106,9 +159,61 @@ function Estado({
   );
 }
 
-// ============================================================
-// TÍTULO DE SECCIÓN
-// ============================================================
+function BotonPrimario({
+  titulo,
+  icono = "arrow-forward",
+  onPress,
+  disabled = false,
+}: {
+  titulo: string;
+  icono?: keyof typeof Ionicons.glyphMap;
+  onPress: () => void;
+  disabled?: boolean;
+}) {
+  const colors = useTecnicasColors();
+
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      style={({ pressed }) => ({
+        width: "100%",
+        borderRadius: 16,
+        overflow: "hidden",
+        opacity: disabled ? 0.6 : pressed ? 0.8 : 1,
+      })}
+    >
+      <View
+        style={{
+          width: "100%",
+          minHeight: 56,
+          paddingHorizontal: 18,
+          paddingVertical: 12,
+          borderRadius: 16,
+          backgroundColor: colors.primary,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 10,
+        }}
+      >
+        <Text
+          style={{
+            fontFamily: "Nunito-Bold",
+            fontSize: 16,
+            textAlign: "center",
+            color: colors.textOnPrimary,
+          }}
+        >
+          {titulo}
+        </Text>
+
+        <Ionicons name={icono} size={21} color={colors.textOnPrimary} />
+      </View>
+    </Pressable>
+  );
+}
 
 function TituloSeccion({
   children,
@@ -118,14 +223,46 @@ function TituloSeccion({
   const colors = useTecnicasColors();
 
   return (
-    <Text style={[styles.subtituloDetalle, { color: colors.text }]}>
-      {children}
-    </Text>
+    <Pressable
+      onPress={onPress}
+      hitSlop={8}
+      accessibilityRole="button"
+      style={({ pressed }) => ({
+        alignSelf: "flex-start",
+        borderRadius: 12,
+        opacity: pressed ? 0.7 : 1,
+        overflow: "hidden",
+      })}
+    >
+      <View
+        style={{
+          minHeight: 44,
+          paddingHorizontal: 12,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 9,
+          borderRadius: 12,
+          backgroundColor: colors.surfaceSecondary,
+        }}
+      >
+        <Ionicons name="arrow-back" size={20} color={colors.primary} />
+
+        <Text
+          style={{
+            fontFamily: "Nunito-SemiBold",
+            fontSize: 14,
+            color: colors.text,
+          }}
+        >
+          {texto}
+        </Text>
+      </View>
+    </Pressable>
   );
 }
 
 // ============================================================
-// PANTALLA PRINCIPAL
+// 1. PANTALLA PRINCIPAL DE TÉCNICAS
 // ============================================================
 
 export function TecnicasInicioInterface({
@@ -143,18 +280,19 @@ export function TecnicasInicioInterface({
   onAbrir: (id: string) => void;
   onHistorial: () => void;
 }) {
-  const insets = useSafeAreaInsets();
   const colors = useTecnicasColors();
+  const insets = useSafeAreaInsets();
 
   const [busqueda, setBusqueda] = useState("");
 
   const tecnicasFiltradas = useMemo(() => {
-    const valor = busqueda.trim().toLowerCase();
+    const texto = busqueda.trim().toLowerCase();
 
-    if (!valor) return tecnicas;
+    if (!texto) return tecnicas;
 
     return tecnicas.filter((tecnica) =>
-      `${tecnica.nombre} ${tecnica.descripcion} ${tecnica.objetivo}`
+      [tecnica.nombre, tecnica.descripcion, tecnica.objetivo]
+        .join(" ")
         .toLowerCase()
         .includes(valor)
     );
@@ -395,7 +533,7 @@ export function TecnicasInicioInterface({
 }
 
 // ============================================================
-// DETALLE DE TÉCNICA
+// 2. DETALLE DE TÉCNICA
 // ============================================================
 
 export function DetalleTecnicaInterface({
@@ -418,6 +556,7 @@ export function DetalleTecnicaInterface({
   const colors = useTecnicasColors();
 
   const tipo = tecnica ? obtenerTipoTecnica(tecnica.nombre) : null;
+
   const info = tipo ? INFO_TECNICAS[tipo] : null;
 
   const colorTecnica =
@@ -551,6 +690,8 @@ export function DetalleTecnicaInterface({
               <>
                 <TituloSeccion>Antes de comenzar</TituloSeccion>
 
+                {/* DURACIÓN */}
+
                 <View
                   style={[
                     styles.objetivo,
@@ -640,7 +781,7 @@ export function DetalleTecnicaInterface({
 }
 
 // ============================================================
-// EJERCICIO
+// 3. EJERCICIO DE TÉCNICA
 // ============================================================
 
 export function EjercicioTecnicaInterface({
@@ -677,6 +818,7 @@ export function EjercicioTecnicaInterface({
   const detalle = obtenerDetallePaso(tipo, paso?.orden);
 
   const [respuestas, setRespuestas] = useState<Record<string, string[]>>({});
+
   const [repeticion, setRepeticion] = useState(1);
 
   useEffect(() => {
@@ -687,26 +829,10 @@ export function EjercicioTecnicaInterface({
     ? respuestas[paso.id_paso] ?? Array(cantidad).fill("")
     : [];
 
-  const actualizarRespuesta = (posicion: number, valor: string) => {
-    if (!paso) return;
+  const colorTecnica = tipo === "jacobson" ? colors.accent : colors.primary;
 
-    const nuevas = [...valores];
-    nuevas[posicion] = valor;
-
-    setRespuestas((prev) => ({
-      ...prev,
-      [paso.id_paso]: nuevas,
-    }));
-  };
-
-  const avanzar = () => {
-    if (tipo === "jacobson" && repeticion < REPETICIONES_JACOBSON) {
-      setRepeticion((actual) => actual + 1);
-      return;
-    }
-
-    onSiguiente();
-  };
+  const fondoTecnica =
+    tipo === "jacobson" ? colors.accentSoft : colors.primarySoft;
 
   const ultimo = indice === pasos.length - 1;
 
@@ -720,17 +846,15 @@ export function EjercicioTecnicaInterface({
   const colorTecnica =
     tipo === "jacobson" ? colors.accent : colors.primary;
 
-  const fondoTecnica =
-    tipo === "jacobson" ? colors.accentSoft : colors.primarySoft;
+    const nuevasRespuestas = [...valores];
+    nuevasRespuestas[posicion] = valor;
 
   return (
     <View
-      style={[
-        styles.pantalla,
-        {
-          backgroundColor: colors.background,
-        },
-      ]}
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+      }}
     >
       <Estado
         cargando={cargando}
@@ -773,6 +897,8 @@ export function EjercicioTecnicaInterface({
               />
             ))}
           </View>
+
+          {/* CONTENIDO DESPLAZABLE */}
 
           <ScrollView
             showsVerticalScrollIndicator={false}
@@ -937,7 +1063,7 @@ export function EjercicioTecnicaInterface({
 }
 
 // ============================================================
-// HISTORIAL
+// 4. HISTORIAL DE TÉCNICAS
 // ============================================================
 
 export function HistorialTecnicasInterface({
@@ -953,7 +1079,6 @@ export function HistorialTecnicasInterface({
   onVolver: () => void;
   onReintentar: () => void;
 }) {
-  const insets = useSafeAreaInsets();
   const colors = useTecnicasColors();
 
   return (
@@ -1092,7 +1217,7 @@ export function HistorialTecnicasInterface({
 }
 
 // ============================================================
-// TÉCNICA COMPLETADA
+// 5. TÉCNICA COMPLETADA
 // ============================================================
 
 export function TecnicaCompletadaInterface({
@@ -1107,6 +1232,9 @@ export function TecnicaCompletadaInterface({
   onHistorial: () => void;
 }) {
   const colors = useTecnicasColors();
+  const insets = useSafeAreaInsets();
+
+  const { esEscritorio, paddingHorizontal } = useTecnicasLayout();
 
   const tipo = obtenerTipoTecnica(nombre);
 
@@ -1120,13 +1248,12 @@ export function TecnicaCompletadaInterface({
   if (cargando) {
     return (
       <View
-        style={[
-          styles.pantalla,
-          styles.centro,
-          {
-            backgroundColor: colors.background,
-          },
-        ]}
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: colors.background,
+        }}
       >
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
@@ -1135,13 +1262,10 @@ export function TecnicaCompletadaInterface({
 
   return (
     <View
-      style={[
-        styles.pantalla,
-        styles.completada,
-        {
-          backgroundColor: colors.background,
-        },
-      ]}
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+      }}
     >
       <View
         style={[
@@ -1183,602 +1307,102 @@ export function TecnicaCompletadaInterface({
           },
         ]}
       >
-        <Text
-          style={[
-            styles.mensajeTexto,
-            {
-              color: colors.textSecondary,
-            },
-          ]}
-        >
-          {mensaje}
-        </Text>
-      </View>
-
-      <View style={styles.flex} />
-
-      <Pressable
-        onPress={onVolver}
-        style={[
-          styles.boton,
-          {
+        <View
+          style={{
             width: "100%",
-            backgroundColor: colors.primary,
-          },
-        ]}
-      >
-        <Text style={styles.botonTexto}>Volver a técnicas</Text>
-      </Pressable>
-
-      <Pressable style={styles.enlace} onPress={onHistorial}>
-        <Text style={[styles.enlaceTexto, { color: colors.primary }]}>
-          Ver mi historial
-        </Text>
-      </Pressable>
-    </View>
-  );
-}
-
-// ============================================================
-// ESTILOS
-// ============================================================
-
-const styles = StyleSheet.create({
-  pantalla: {
-    flex: 1,
-  },
-
-  flex: {
-    flex: 1,
-  },
-
-  scroll: {
-    padding: 18,
-  },
-
-  tituloInicio: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 24,
-    marginTop: 8,
-  },
-
-  descripcion: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 13,
-    lineHeight: 18,
-    marginTop: 8,
-  },
-
-  // ==========================================================
-  // BUSCADOR
-  // ==========================================================
-
-  buscador: {
-    height: 54,
-    borderWidth: 1,
-    borderRadius: 17,
-    marginTop: 18,
-    paddingHorizontal: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 11,
-  },
-
-  inputBusqueda: {
-    flex: 1,
-    fontFamily: "Nunito-Medium",
-    fontSize: 15,
-  },
-
-  sinResultados: {
-    alignItems: "center",
-    paddingVertical: 35,
-    gap: 10,
-  },
-
-  sinResultadosTexto: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 14,
-    textAlign: "center",
-    lineHeight: 20,
-  },
-
-  // ==========================================================
-  // TÍTULOS
-  // ==========================================================
-
-  filaTitulo: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 25,
-    marginBottom: 14,
-  },
-
-  seccionTitulo: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 18,
-    maxWidth: "85%",
-  },
-
-  // ==========================================================
-  // NECESIDADES
-  // ==========================================================
-
-  necesidades: {
-    flexDirection: "row",
-    gap: 10,
-  },
-
-  necesidad: {
-    flex: 1,
-    minHeight: 125,
-    borderWidth: 1,
-    borderRadius: 20,
-    padding: 14,
-    justifyContent: "space-between",
-  },
-
-  iconoNecesidad: {
-    width: 58,
-    height: 58,
-    borderRadius: 19,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  necesidadTexto: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 14,
-    lineHeight: 18,
-  },
-
-  historialIcono: {
-    padding: 3,
-  },
-
-  // ==========================================================
-  // TARJETAS
-  // ==========================================================
-
-  tarjeta: {
-    borderWidth: 1,
-    borderRadius: 21,
-    padding: 16,
-    marginBottom: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-  },
-
-  icono: {
-    width: 68,
-    height: 68,
-    borderRadius: 21,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  nombre: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 16,
-    lineHeight: 21,
-  },
-
-  resumen: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 13,
-    lineHeight: 18,
-    marginTop: 4,
-  },
-
-  filaDuracion: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginTop: 7,
-  },
-
-  duracion: {
-    fontFamily: "Nunito-SemiBold",
-    fontSize: 12,
-  },
-
-  // ==========================================================
-  // ESTADOS
-  // ==========================================================
-
-  estado: {
-    paddingVertical: 40,
-    alignItems: "center",
-    gap: 12,
-  },
-
-  error: {
-    fontFamily: "Nunito-Medium",
-    textAlign: "center",
-  },
-
-  reintentar: {
-    fontFamily: "Nunito-Bold",
-  },
-
-  // ==========================================================
-  // DETALLE
-  // ==========================================================
-
-  detalleScroll: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-
-  volver: {
-    width: 42,
-    height: 42,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: -8,
-  },
-
-  iconoGrande: {
-    width: 96,
-    height: 96,
-    borderRadius: 30,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 20,
-  },
-
-  tituloDetalle: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 27,
-    lineHeight: 33,
-    marginTop: 22,
-  },
-
-  subtituloDetalle: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 18,
-    marginTop: 25,
-    marginBottom: 7,
-  },
-
-  descripcionDetalle: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 15,
-    lineHeight: 23,
-  },
-
-  info: {
-    borderWidth: 1,
-    borderRadius: 17,
-    padding: 16,
-    marginTop: 25,
-    flexDirection: "row",
-    gap: 12,
-    alignItems: "center",
-  },
-
-  objetivo: {
-    borderWidth: 1,
-    borderRadius: 17,
-    padding: 16,
-  },
-
-  infoTitulo: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 15,
-  },
-
-  infoTexto: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 3,
-  },
-
-  itemLista: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 9,
-    marginTop: 9,
-  },
-
-  itemTexto: {
-    flex: 1,
-    fontFamily: "Nunito-Medium",
-    fontSize: 14,
-    lineHeight: 20,
-  },
-
-  advertencia: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-    padding: 15,
-    borderRadius: 16,
-    marginTop: 15,
-  },
-
-  advertenciaTexto: {
-    flex: 1,
-    fontFamily: "Nunito-Medium",
-    fontSize: 13,
-    lineHeight: 19,
-  },
-
-  botonDetalle: {
-    marginTop: 25,
-  },
-
-  // ==========================================================
-  // BOTONES
-  // ==========================================================
-
-  boton: {
-    minHeight: 56,
-    borderRadius: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-  },
-
-  botonTexto: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 16,
-    color: "#FFFFFF",
-  },
-
-  // ==========================================================
-  // EJERCICIO
-  // ==========================================================
-
-  ejercicio: {
-    flex: 1,
-    padding: 20,
-    paddingBottom: 30,
-  },
-
-  ejercicioScroll: {
-    paddingBottom: 20,
-  },
-
-  cabecera: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-
-  progreso: {
-    fontFamily: "Nunito-SemiBold",
-    fontSize: 13,
-  },
-
-  barras: {
-    flexDirection: "row",
-    gap: 4,
-    marginTop: 18,
-  },
-
-  barra: {
-    height: 5,
-    borderRadius: 4,
-    flex: 1,
-  },
-
-  nombreTecnica: {
-    fontFamily: "Nunito-SemiBold",
-    fontSize: 13,
-    textAlign: "center",
-    marginTop: 25,
-  },
-
-  pasoCard: {
-    borderWidth: 1,
-    borderRadius: 24,
-    padding: 22,
-    marginTop: 15,
-    alignItems: "center",
-  },
-
-  numero: {
-    width: 55,
-    height: 55,
-    borderRadius: 28,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  numeroTexto: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 23,
-  },
-
-  tituloPaso: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 23,
-    textAlign: "center",
-    marginTop: 18,
-  },
-
-  instruccion: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 15,
-    lineHeight: 23,
-    textAlign: "center",
-    marginTop: 13,
-  },
-
-  detallePaso: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 13,
-    lineHeight: 20,
-    textAlign: "center",
-    marginTop: 10,
-  },
-
-  imagenPaso: {
-    width: "100%",
-    height: 220,
-    marginTop: 18,
-  },
-
-  // ==========================================================
-  // GROUNDING
-  // ==========================================================
-
-  inputsGrounding: {
-    width: "100%",
-    marginTop: 18,
-    gap: 10,
-  },
-
-  inputFila: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-
-  numeroInput: {
-    width: 22,
-    fontFamily: "Nunito-Bold",
-    fontSize: 14,
-  },
-
-  inputGrounding: {
-    flex: 1,
-    minHeight: 46,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 13,
-    fontFamily: "Nunito-Medium",
-    fontSize: 14,
-  },
-
-  // ==========================================================
-  // JACOBSON
-  // ==========================================================
-
-  repeticion: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "center",
-    gap: 7,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 20,
-    marginTop: 20,
-  },
-
-  repeticionTexto: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 13,
-  },
-
-  // ==========================================================
-  // HISTORIAL
-  // ==========================================================
-
-  volverConTexto: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 7,
-    marginTop: 8,
-  },
-
-  volverTexto: {
-    fontFamily: "Nunito-SemiBold",
-    fontSize: 14,
-  },
-
-  tituloHistorial: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 25,
-    marginTop: 20,
-  },
-
-  vacio: {
-    fontFamily: "Nunito-Medium",
-    textAlign: "center",
-  },
-
-  iconoHistorial: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  fecha: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 12,
-    marginTop: 3,
-  },
-
-  estadoTexto: {
-    fontFamily: "Nunito-SemiBold",
-    fontSize: 11,
-    maxWidth: 73,
-    textAlign: "right",
-  },
-
-  // ==========================================================
-  // COMPLETADA
-  // ==========================================================
-
-  centro: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  completada: {
-    alignItems: "center",
-    padding: 25,
-    paddingTop: 100,
-  },
-
-  check: {
-    width: 105,
-    height: 105,
-    borderRadius: 53,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  tituloCompletada: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 30,
-    textAlign: "center",
-    marginTop: 27,
-  },
-
-  descripcionCompletada: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 16,
-    lineHeight: 24,
-    textAlign: "center",
-    marginTop: 10,
-  },
-
-  mensaje: {
-    borderWidth: 1,
-    borderRadius: 18,
-    padding: 18,
-    marginTop: 28,
-  },
-
-  mensajeTexto: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 14,
-    lineHeight: 21,
-    textAlign: "center",
-  },
-
-  enlace: {
-    padding: 18,
-  },
+            maxWidth: 560,
+            flex: 1,
+            alignItems: "center",
+          }}
+        >
+          {/* CONFIRMACIÓN */}
+
+          <View
+            style={{
+              width: 105,
+              height: 105,
+              borderRadius: 53,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: colors.success,
+            }}
+          >
+            <Ionicons name="checkmark" size={55} color={colors.textOnPrimary} />
+          </View>
+
+          <Text
+            style={{
+              marginTop: 27,
+              fontFamily: "Nunito-Bold",
+              fontSize: esEscritorio ? 32 : 28,
+              lineHeight: 38,
+              textAlign: "center",
+              color: colors.text,
+            }}
+          >
+            ¡Técnica completada!
+          </Text>
+
+          <Text
+            style={{
+              marginTop: 12,
+              fontFamily: "Nunito-Medium",
+              fontSize: 16,
+              lineHeight: 24,
+              textAlign: "center",
+              color: colors.textSecondary,
+            }}
+          >
+            Has terminado{"\n"}
+            {nombre ?? "la técnica complementaria"}.
+          </Text>
+
+          {/* MENSAJE */}
+
+          <View
+            style={{
+              width: "100%",
+              marginTop: 28,
+              padding: 20,
+              borderWidth: 1,
+              borderRadius: 18,
+              borderColor: colors.border,
+              backgroundColor: colors.surface,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: "Nunito-Medium",
+                fontSize: 14,
+                lineHeight: 22,
+                textAlign: "center",
+                color: colors.textSecondary,
+              }}
+            >
+              {mensaje}
+            </Text>
+          </View>
+
+          <View
+            style={{
+              flexGrow: 1,
+              minHeight: 28,
+            }}
+          />
+
+          {/* ACCIONES */}
+
+          <View
+            style={{
+              width: "100%",
+              marginTop: 28,
+            }}
+          >
+            <BotonPrimario
+              titulo="Volver a técnicas"
+              icono="arrow-back"
+              onPress={onVolver}
+            />
 
   enlaceTexto: {
     fontFamily: "Nunito-Bold",
