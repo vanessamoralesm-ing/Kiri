@@ -1,4 +1,5 @@
-# 🌿 Kiri
+# Kiri
+
 **Kiri** es una plataforma digital orientada a la promoción del bienestar emocional, la educación en salud mental y la detección temprana de señales de alerta.
 
 Su propósito no es realizar diagnósticos psicológicos, sino acompañar a las personas en el desarrollo del autoconocimiento emocional, la comprensión de sus conductas y la identificación de patrones que puedan afectar su bienestar.
@@ -7,7 +8,8 @@ La plataforma integra herramientas de autorregistro emocional, psicoeducación, 
 
 ---
 
-## 🎯 Objetivo del proyecto
+## Objetivo del proyecto
+
 Kiri busca convertirse en una herramienta preventiva, educativa y de acompañamiento que ayude a:
 
 - Fortalecer el autoconocimiento emocional.
@@ -23,56 +25,40 @@ Kiri busca convertirse en una herramienta preventiva, educativa y de acompañami
 
 ---
 
-# 📱 Producto Mínimo Viable (MVP)
+# Producto Mínimo Viable (MVP)
 
-Las interfaces actualmente desarrolladas corresponden al **Producto Mínimo Viable (MVP)** de Kiri.
+Las interfaces actualmente desarrolladas corresponden al **Producto Mínimo Viable (MVP)** de Kiri, enfocados especificamente en el usuario final.
 
 El MVP se enfoca principalmente en validar:
 
-- La experiencia del usuario final.
 - El proceso de registro y autenticación.
 - La evaluación de la entrevista inicial.
-- La personalización de recomendaciones con el plan de bienestar emocional.
-- El autorregistro emocional.
+- La personalización de recomendaciones con el Plan de Bienestar Emocional.
+- El Módulo de Autorregistro.
 - El acceso a recursos de psicoeducación.
 - Las técnicas complementarias.
-- Foro Comunitario.
+- Los test y cuestionarios orientativos.
+- El Foro Comunitario.
+- La gestión básica del perfil del usuario.
+- El funcionamiento del modo claro y oscuro.
+- Las primeras funcionalidades correspondientes al rol de Superadministrador.
 
 Las interfaces institucionales y administrativas forman parte de la visión integral de Kiri y serán incorporadas progresivamente en versiones posteriores.
-
 ---
 
-# ✨ Funcionalidades principales
+# Funcionalidades principales
 
-
-# 🏠 Pantalla principal
-
-La pantalla **Home** funciona como centro de navegación de Kiri.
-
-Puede incluir:
-
-- Saludo personalizado.
-- Nombre del usuario.
-- Frase motivacional.
-- Estado emocional actual.
-- Racha.
-- Objetivos diarios.
-- Acceso a funcionalidades principales.
-- Recomendaciones personalizadas.
-- Plan del día.
-
-Las principales opciones pueden mostrarse mediante tarjetas o **cards**.
-
----
-
-## 📝 Entrevista inicial
+## Entrevista inicial
 
 Al comenzar su experiencia en Kiri, el usuario realiza una entrevista inicial mediante preguntas orientativas.
 
-La información recopilada permite conocer su estado emocional actual. Una vez finalizada la entrevista inicial, la aplicación analiza las respuestas proporcionadas y presenta un resumen visual del estado emocional identificado.
+Una vez finalizada la entrevista inicial, la aplicación analiza las respuestas proporcionadas y presenta un resumen visual del estado emocional identificado.
+
+Esta información sirve como base para personalizar la experiencia del usuario dentro de la plataforma.
+
 ---
 
-## 🎯 PLan de Bienestar Emocional
+## Plan de Bienestar Emocional
 
 Con base en el estado emocional del usuario, Kiri puede recomendar:
 
@@ -83,26 +69,57 @@ Con base en el estado emocional del usuario, Kiri puede recomendar:
 - Lecturas.
 - Actividades de bienestar.
 - Retos diarios.
+
+El Plan de Bienestar Emocional busca orientar al usuario hacia recursos que puedan contribuir con su proceso de autocuidado y autoconocimiento.
+
 ---
 
-## 📔 Autoregistro emocional
+# Módulo de Autorregistro
 
-El **Autoregistro ** permite al usuario registrar periódicamente:
-
-- Emociones.
-- Pensamientos.
-- Síntomas físicos.
-- Situaciones desencadenantes.
-- Conductas asociadas.
-- Intensidad emocional.
+El **Módulo de Autorregistro** permite al usuario registrar periódicamente información relacionada con sus emociones, pensamientos, situaciones y conductas.
 
 Estos registros permiten identificar patrones emocionales y realizar un seguimiento continuo del bienestar del usuario.
 
+Actualmente Kiri incorpora tres métodos de autorregistro:
+
+## Diario emocional
+
+Permite registrar:
+
+- Emoción experimentada.
+- Situación o motivo relacionado.
+- Reacción ante la situación.
+- Una idea útil obtenida de la experiencia.
+
+## Observando mis pensamientos
+
+Permite registrar y reflexionar sobre:
+
+- Situaciones.
+- Pensamientos.
+- Sentimientos.
+- Reacciones.
+
+## Autorregistro ABCDE
+
+Permite reflexionar de manera estructurada sobre una situación, las creencias asociadas y nuevas formas de responder.
+
+El Módulo de Autorregistro también permite:
+
+- Acceder al historial de autorregistros.
+- Visualizar el detalle de un registro.
+- Editar registros existentes.
+- Eliminar registros.
+- Identificar emociones asociadas.
+
+> Los autorregistros tienen una finalidad de autoconocimiento y seguimiento personal y no constituyen una evaluación diagnóstica.
+
 ---
 
-## 🧠 Test y cuestionarios
+# Test y cuestionarios
 
-Kiri incorpora diferentes test y cuestionarios psicológicos de carácter **orientativo**.
+Kiri incorpora diferentes test ó cuestionarios psicológicos de carácter **orientativo**.
+
 Estos instrumentos permiten explorar aspectos relacionados con:
 
 - Bienestar emocional.
@@ -115,31 +132,57 @@ Estos instrumentos permiten explorar aspectos relacionados con:
 
 Los resultados pueden representarse mediante porcentajes, niveles y gráficos interpretativos.
 
-Los test incorporados actualmente en la plataforma son:
-- 
-- 
-- 
-- 
-- 
-- 
+## Instrumentos incorporados
 
+Actualmente se encuentran implementados en la plataforma:
+
+1. Test de Asertividad de Rathus.
+2. Test de Autoestima para Adultos.
+3. Test de Autoestima para Niños.
+4. Escala de Depresión de Calgary.
+5. Escala de Evitación y Angustia Social.
+6. Escala de Ideación Suicida de Beck.
+7. Escala de Intensidad de Fatiga.
 
 > Los resultados no constituyen un diagnóstico clínico.
 
 ---
 
-## 🧘 Técnicas complementarias
+# Técnicas complementarias
 
-Kiri ofrece ejercicios y estrategias de afrontamiento basadas en evidencia, entre ellas:
+Kiri ofrece ejercicios y estrategias de afrontamiento orientadas al bienestar emocional.
 
-- Técnicas de .
-- Técnicas de .
+Actualmente se encuentran disponibles las siguientes técnicas:
+
+## Grounding 5-4-3-2-1
+
+Técnica de anclaje que utiliza los sentidos para dirigir la atención al momento presente.
+
+Su objetivo es ayudar al usuario a centrar su atención en el entorno inmediato.
+
+Duración aproximada:
+
+```text
+5 minutos
+```
+
+## Relajación Muscular Progresiva de Jacobson
+
+Técnica de relajación basada en tensar y posteriormente relajar diferentes grupos musculares del cuerpo.
+
+Su objetivo es contribuir a la disminución de la tensión física y favorecer un estado de relajación.
+
+Duración aproximada:
+
+```text
+20 minutos
+```
 
 Las técnicas podrán recomendarse de acuerdo con las necesidades y condiciones del usuario.
 
 ---
 
-## 📚 Psicoeducación
+# Psicoeducación
 
 La sección de Psicoeducación proporciona recursos relacionados con:
 
@@ -154,67 +197,255 @@ La sección de Psicoeducación proporciona recursos relacionados con:
 
 También incluye:
 
-### 📖 Biblioterapia
+## Biblioterapia
 
 Recopilación de testimonios, experiencias y lecturas orientadas a brindar acompañamiento y estrategias de afrontamiento.
 
-### 💡 Mitos y Realidades
+## Mitos y Realidades
 
 Contenido diseñado para combatir la desinformación relacionada con la salud mental y promover información basada en evidencia.
 
 ---
 
-## 💬 Foro comunitario
+# Foro Comunitario
 
-El foro comunitario permite a los usuarios compartir:
+El Foro Comunitario permite a los usuarios compartir:
 
 - Experiencias.
 - Recomendaciones.
 - Estrategias de afrontamiento.
 
+El módulo contempla la interacción mediante publicaciones, comentarios y reacciones.
+
 Las publicaciones están sujetas a moderación con el objetivo de mantener un entorno seguro, respetuoso y de apoyo mutuo.
 
 ---
 
-## 👤 Mi perfil
+# Mi perfil
 
 Desde el perfil, el usuario puede:
 
 - Administrar sus datos personales.
 - Modificar información de la cuenta.
-- Configurar el modo claro y oscuro de la aplicación.
+- Configurar preferencias de la aplicación.
+- Configurar el modo claro y oscuro.
+- Cerrar sesión.
+
+---
+
+# Modo claro y oscuro
+
+Kiri incorpora soporte para **modo claro y modo oscuro**.
+
+El sistema visual utiliza una configuración centralizada de colores para adaptar elementos como:
+
+- Fondos.
+- Superficies.
+- Textos.
+- Bordes.
+- Campos de entrada.
+- Iconos.
+- Botones.
+- Colores principales y secundarios.
+- Elementos de interacción.
+
+Esto permite mantener consistencia visual en los diferentes módulos de la aplicación.
+
 ---
 
 
-# 🧭 Navegación principal
+# Roles del sistema
 
-La barra de navegación inferior contempla accesos rápidos a:
+Kiri utiliza un modelo de control de acceso basado en roles (**RBAC - Role-Based Access Control**).
 
-```text
-Home
-Diario
-Psicoeducación
-Técnicas
-Perfil
-```
+Los roles contemplados son:
+
+| Rol                             | Alcance                                                                                   |
+| ------------------------------- | ----------------------------------------------------------------------------------------- |
+| **Usuario Independiente**        | Utiliza Kiri de forma personal, sin pertenecer a una institución, accediendo a las herramientas de autocuidado, evaluaciones orientativas, seguimiento personal y contenido psicoeducativo.. |
+| **Superadministrador**          | Administra toda la plataforma, instituciones, usuarios, contenido y configuración global. |
+| **Administrador Institucional** | Administra únicamente la institución a la que pertenece.                                  |
+| **Psicólogo Institucional**     | Realiza seguimiento emocional de estudiantes autorizados y gestiona alertas.              |
+| **Docente**                     | Accede a información general de sus grupos y funcionalidades preventivas autorizadas.     |
+| **Estudiante**                  | Utiliza las herramientas de bienestar emocional y consulta su progreso personal.          |
+
+---
+## Estado actual de implementación de roles
+
+Actualmente, Kiri contempla los seis roles descritos anteriormente. Sin embargo, las funcionalidades completas de todos los roles todavía se encuentran en desarrollo.
+
+A nivel de base de datos, backend y flujo de autenticación, actualmente se encuentran implementados los siguientes roles:
+
+### Usuario Independiente
+
+El Usuario Independiente puede registrarse directamente en la aplicación sin necesidad de pertenecer a una institución. Este usuario puede utilizar las funcionalidades personales de Kiri orientadas al bienestar emocional, el autocuidado y el seguimiento individual.
+En la base de datos, este tipo de usuario se identifica porque no posee una institución asociada:
+
+id_institucion = null
+
 ---
 
-# 🏫 Vinculación institucional
+### Superadministrador
+
+El rol de Superadministrador ya se encuentra implementado en la base de datos, backend y panel administrativo.
+Actualmente dispone de las siguientes funcionalidades:
+
+- Visualizar las solicitudes de incorporación de instituciones.
+- Consultar el detalle de cada solicitud.
+- Aprobar solicitudes institucionales.
+- Rechazar solicitudes institucionales.
+- Crear automáticamente una institución cuando una solicitud es aprobada.
+- Crear la cuenta correspondiente al Administrador Institucional.
+- Asociar al nuevo Administrador Institucional con la institución aprobada.
+- Actualizar el estado de la solicitud institucional.
+
+### Cuenta de prueba del Superadministrador
+Para acceder al panel del Superadministrador se encuentra disponible la siguiente cuenta de prueba:
+
+Correo: auxiliadora.morales22@est.unanleon.edu.ni
+Contraseña: 123456
+
+Esta cuenta permite comprobar las funcionalidades que actualmente están disponibles para este rol.
+
+---
+
+### Administrador Institucional
+
+El rol de Administrador Institucional también se encuentra implementado a nivel de base de datos y backend.
+Su cuenta no se crea mediante un registro tradicional. El proceso inicia cuando una institución envía una solicitud de incorporación a Kiri y el Superadministrador la aprueba.
+
+El flujo implementado actualmente es el siguiente:
+
+        Institución envía solicitud
+                ↓
+        Solicitud queda pendiente
+                ↓
+        Superadministrador revisa la solicitud
+                ↓
+        Superadministrador aprueba
+                ↓
+        Se crea la institución
+                ↓
+        Se crea el Administrador Institucional
+                ↓
+        Se genera una contraseña temporal
+                ↓
+        Las credenciales son enviadas por correo electrónico
+                ↓
+        Administrador Institucional inicia sesión
+                ↓
+        Debe cambiar la contraseña temporal
+                ↓
+        Accede al panel correspondiente a su institución
+
+Cuando una solicitud es aprobada, el sistema genera automáticamente la cuenta del responsable de la institución y envía a su correo electrónico:
+
+- El correo utilizado para iniciar sesión.
+- Una contraseña temporal.
+
+La cuenta se crea inicialmente con el siguiente indicador:
+
+- debe_cambiar_password = true
+
+Este valor permite identificar que el Administrador Institucional todavía utiliza la contraseña temporal. En su primer acceso, debe establecer una nueva contraseña personal.
+
+Una vez completado el cambio, el sistema actualiza el indicador a:
+
+- debe_cambiar_password = false
+
+Después de este proceso, el Administrador Institucional puede acceder normalmente a las funcionalidades correspondientes a la institución a la que pertenece.
+
+---
+
+# Roles pendientes de implementación funcional
+
+Los siguientes roles ya forman parte del modelo de acceso de Kiri y en la base de datos, pero sus funcionalidades específicas todavía están pendientes de implementación o integración completa:
+
+- Psicólogo Institucional.
+- Docente.
+- Estudiante.
+
+Estos roles serán incorporados progresivamente junto con sus respectivos permisos, interfaces y restricciones de acceso.
+
+El objetivo del modelo de roles es garantizar que cada usuario pueda acceder únicamente a la información y funcionalidades correspondientes a su nivel de autorización y, cuando aplique, a la institución a la que pertenece.
+
+---
+
+# Vinculación institucional
 
 Los usuarios pueden utilizar Kiri de forma:
 
 - Independiente.
 - Vinculada a una institución educativa.
 
-Cuando un estudiante pertenece a una institución podrá ingresar o escanear un código institucional para vincular su cuenta con:
+En versiones posteriores se implementará que el estudiante que pertenece a una institución podrá ingresar o escanear un código institucional para vincular su cuenta con:
 
 - Institución.
 - Grado.
 - Grupo o sección.
 
 ---
+# Diseño multiplataforma y responsividad
 
-# 🔐 Privacidad y seguridad
+Es importante destacar que las interfaces desarrolladas actualmente para Kiri están orientadas principalmente a la versión móvil de la aplicación. En esta etapa del proyecto todavía no se ha implementado una adaptación responsiva completa pensada específicamente para navegadores web.
+
+La excepción corresponde al dashboard administrativo, cuya interfaz sí fue diseñada considerando su uso desde una computadora y una visualización adecuada en entorno web.
+
+En versiones posteriores se contempla realizar la adaptación responsiva de las demás interfaces para que puedan utilizarse correctamente en distintos tamaños de pantalla.
+Cuando la aplicación se ejecuta en web mediante React Native Web, estos componentes son adaptados automáticamente a elementos compatibles con el navegador. Esto permite reutilizar gran parte de la lógica, los componentes y los estilos existentes.
+
+La arquitectura puede representarse de forma simplificada así:
+
+                    Código React Native
+                           │
+              ┌────────────┴────────────┐
+              │                         │
+              ▼                         ▼
+        Android / iOS                  Web
+              │                         │
+      Componentes nativos       React Native Web
+                                        │
+                                        ▼
+                                  Navegador web
+
+Sin embargo, que React Native permita ejecutar la aplicación en web no significa que todas las interfaces sean automáticamente responsivas.
+
+Para lograr una experiencia adecuada en pantallas más grandes será necesario adaptar algunos componentes.
+
+# Tecnologías utilizadas
+
+El proyecto de Kiri utiliza:
+
+- **React Native**
+- **Expo**
+- **TypeScript**
+- **Expo Router**
+- **React Navigation**
+- **Supabase**
+- **PostgreSQL**
+
+Supabase es utilizado como servicio backend para funciones como autenticación, acceso a datos y almacenamiento.
+
+---
+
+# Backend como Servicio
+
+Kiri utiliza Supabase como plataforma de backend en la nube.
+
+Supabase funciona bajo un modelo Backend as a Service (BaaS), proporcionando servicios que permiten gestionar la lógica y los datos de la aplicación sin necesidad de administrar directamente un servidor propio.
+
+Entre los principales servicios utilizados se encuentran:
+
+- Base de datos PostgreSQL.
+- Autenticación y gestión de usuarios.
+- Gestión de sesiones.
+- APIs automáticas.
+- Row Level Security (RLS) para el control de acceso a los datos.
+- Edge Functions para ejecutar lógica del lado del servidor.
+- Almacenamiento de archivos. 
+- Gestión de roles y permisos.
+
+# Privacidad y seguridad
 
 Kiri contempla medidas orientadas a proteger la información personal y emocional de los usuarios.
 
@@ -229,50 +460,471 @@ Entre los principios principales se encuentran:
 
 ---
 
-# 👥 Roles del sistema
+# Arquitectura del proyecto
 
-Kiri utiliza un modelo de control de acceso basado en roles (**RBAC - Role-Based Access Control**).
+Kiri utiliza una arquitectura modular que separa la navegación, los componentes visuales, la lógica de negocio, los servicios, los tipos de datos y las configuraciones generales de la aplicación.
 
-Los roles contemplados son:
+La estructura actual del proyecto se organiza de manera general de la siguiente forma:
 
-| Rol | Alcance |
-|---|---|
-| **Superadministrador** | Administra toda la plataforma, instituciones, usuarios, contenido y configuración global. |
-| **Administrador Institucional** | Administra únicamente la institución a la que pertenece. |
-| **Psicólogo Institucional** | Realiza seguimiento emocional de estudiantes autorizados y gestiona alertas. |
-| **Docente** | Accede a información general de sus grupos y funcionalidades preventivas autorizadas. |
-| **Estudiante** | Utiliza las herramientas de bienestar emocional y consulta su progreso personal. |
+```text
+Kiri/
+├── .claude/
+├── .expo/
+├── .vscode/
+├── android/
+│
+├── app/
+│   ├── (auth)/
+│   ├── (entrevista)/
+│   ├── (superadmin)/
+│   ├── (tabs)/
+│   │   ├── cuestionarios/
+│   │   ├── diario/
+│   │   │   ├── [id]/
+│   │   │   ├── nuevo/
+│   │   │   ├── _layout.tsx
+│   │   │   ├── historial.tsx
+│   │   │   └── index.tsx
+│   │   ├── educacion/
+│   │   ├── entrevistas/
+│   │   ├── foro/
+│   │   ├── home/
+│   │   ├── perfil/
+│   │   ├── tecnicas/
+│   │   └── _layout.tsx
+│   ├── (tecnica)/
+│   └── _layout.tsx
+│
+├── assets/
+│   ├── gifs/
+│   ├── fonts/
+│   ├── images/
+│   ├── images_educacion/
+│   └── images_kids/
+│
+├── components/
+│   ├── cuestionarios/
+│   ├── diario/
+│   ├── educacion/
+│   ├── entrevista/
+│   ├── foro/
+│   ├── institution/
+│   ├── layout/
+│   ├── solicitudes/
+│   ├── superadmin/
+│   │   └── layout/
+│   ├── tecnicas/
+│   └── ui/
+│
+├── constants/
+│   ├── superadmin/
+│   ├── preguntas_kids.ts
+│   ├── tecnicas.ts
+│   └── theme.ts
+│
+├── contexts/
+│
+├── hooks/
+│   ├── superadmin/
+│   ├── use-color-scheme.ts
+│   ├── use-color-scheme.web.ts
+│   ├── use-theme-color.ts
+│   ├── useEntrevistaFormulario.ts
+│   └── useResumenBienestar.ts
+│
+├── lib/
+├── scripts/
+│
+├── services/
+│   ├── cuestionarios/
+│   ├── diario/
+│   ├── entrevista/
+│   ├── foro/
+│   ├── instituciones/
+│   ├── perfil/
+│   ├── superadmin/
+│   │   ├── aprobarSolicitudService.ts
+│   │   ├── dashboardService.ts
+│   │   └── solicitudServices.ts
+│   ├── tecnicas/
+│   └── authProvider.tsx
+│
+├── styles/
+│
+├── types/
+│   ├── superadmin/
+│   ├── auth.ts
+│   ├── cuestionarios.ts
+│   ├── diario.ts
+│   ├── entrevistas.ts
+│   ├── foro.ts
+│   └── tecnicas.ts
+│
+├── utils/
+│
+├── .env.local
+├── .gitignore
+├── app.json
+├── babel.config.js
+├── eslint.config.js
+├── expo-env.d.ts
+├── global.css
+├── metro.config.js
+├── nativewind-env.d.ts
+├── package-lock.json
+├── package.json
+└── README.md
+```
+
+## Carpeta `app`
+
+La carpeta `app` contiene las rutas y pantallas de la aplicación utilizando **Expo Router**.
+
+La navegación está organizada mediante grupos de rutas.
+
+### `(auth)`
+
+Contiene las pantallas relacionadas con el proceso de autenticación y acceso de los usuarios.
+
+### `(entrevista)`
+
+Contiene el flujo correspondiente a la entrevista inicial.
+
+### `(superadmin)`
+
+Contiene las rutas correspondientes al módulo de Superadministrador.
+
+### `(tabs)`
+
+Contiene las principales funcionalidades disponibles desde la navegación inferior.
+
+Entre ellas:
+
+- Home.
+- Cuestionarios.
+- Módulo de Autorregistro.
+- Psicoeducación.
+- Foro Comunitario.
+- Técnicas.
+- Perfil.
+
+### `(tecnica)`
+
+Contiene pantallas relacionadas con la ejecución o visualización detallada de las técnicas complementarias.
+
+### `_layout.tsx`
+
+El layout raíz se encarga de integrar funcionalidades globales como:
+
+- Navegación.
+- Proveedores de contexto.
+- Autenticación.
+- Gestión de sesiones.
+- Control de roles.
+- Tema claro y oscuro.
+- Splash Screen.
+- Carga de fuentes.
+- Redirecciones iniciales.
 
 ---
 
-# 🛡️ Superadministrador
+## Carpeta `components`
 
-El Superadministrador posee el mayor nivel de privilegios.
-Entre sus principales funciones se encuentran:
+Contiene componentes reutilizables utilizados en las diferentes interfaces.
 
-### Solicitudes
+Los componentes se organizan según el módulo al que pertenecen:
 
-- Aprobar solicitudes institucionales.
-- Rechazar solicitudes institucionales.
+```text
+components/
+├── cuestionarios/
+├── diario/
+├── educacion/
+├── entrevista/
+├── foro/
+├── institution/
+├── layout/
+├── solicitudes/
+├── superadmin/
+├── tecnicas/
+└── ui/
+```
 
-** En versiones posteriorees se incluirán más funcionalidades a los roles de superadministrador, administrador institucional, psicólogo y docente.
+### `components/diario`
 
+Contiene componentes visuales correspondientes al **Módulo de Autorregistro**.
 
+Aunque internamente la carpeta conserva el nombre `diario`, funcionalmente representa el módulo de autorregistro.
 
-# 🛠️ Tecnologías utilizadas
+Incluye componentes para:
 
-El proyecto móvil de Kiri utiliza:
+- Selección de emociones.
+- Campos de preguntas.
+- Tarjetas de registros.
+- Tarjetas de métodos de autorregistro.
+- Resumen de registros.
+- Visualización del detalle.
+- Estados de carga.
+- Encabezados del módulo.
 
-- **React Native**
-- **Expo**
-- **TypeScript**
-- **Expo Router**
-- **React Navigation**
-- **Supabase**
-- **PostgreSQL**
+### `components/ui`
+
+Contiene componentes generales reutilizables en diferentes módulos de la aplicación.
+
+Entre ellos pueden encontrarse:
+
+- Botones.
+- Logos.
+- Elementos de navegación.
+- Inputs.
+- Componentes visuales compartidos.
+
+### `components/superadmin`
+
+Contiene los componentes correspondientes a las interfaces administrativas del Superadministrador.
+
 ---
 
-# 🎨 Paleta de colores
+## Carpeta `services`
+
+La carpeta `services` contiene la lógica encargada de acceder a los datos y comunicarse con Supabase.
+
+Su objetivo es separar la lógica de negocio de las interfaces visuales.
+
+```text
+services/
+├── cuestionarios/
+├── diario/
+├── entrevista/
+├── foro/
+├── instituciones/
+├── perfil/
+├── superadmin/
+├── tecnicas/
+└── authProvider.tsx
+```
+
+### `services/cuestionarios`
+
+Gestiona la lógica relacionada con los test y cuestionarios.
+
+### `services/diario`
+
+Gestiona las operaciones correspondientes al Módulo de Autorregistro, como:
+
+- Crear registros.
+- Consultar registros.
+- Obtener detalles.
+- Actualizar registros.
+- Eliminar registros.
+- Consultar emociones.
+
+### `services/entrevista`
+
+Gestiona las operaciones correspondientes a la entrevista inicial.
+
+### `services/foro`
+
+Contiene la lógica utilizada por el Foro Comunitario.
+
+### `services/instituciones`
+
+Contiene operaciones relacionadas con instituciones y vinculación institucional.
+
+### `services/perfil`
+
+Gestiona operaciones relacionadas con la información del perfil del usuario.
+
+### `services/superadmin`
+
+Contiene servicios utilizados por las funcionalidades administrativas.
+
+Entre los servicios actuales se encuentran:
+
+- Gestión de solicitudes.
+- Aprobación de solicitudes.
+- Información del dashboard administrativo.
+
+### `services/tecnicas`
+
+Gestiona la información y operaciones relacionadas con las técnicas complementarias.
+
+### `authProvider.tsx`
+
+Administra el estado global de autenticación de Kiri.
+
+Entre sus responsabilidades se encuentran:
+
+- Obtener la sesión activa.
+- Identificar al usuario autenticado.
+- Obtener el perfil.
+- Obtener el rol.
+- Registrar usuarios.
+- Iniciar sesión.
+- Cerrar sesión.
+
+---
+
+## Carpeta `constants`
+
+Contiene valores y configuraciones compartidas por la aplicación.
+
+Incluye archivos relacionados con:
+
+- Configuración de técnicas.
+- Preguntas.
+- Configuración del Superadministrador.
+- Sistema de temas.
+
+El archivo `theme.ts` centraliza los colores utilizados por los modos claro y oscuro.
+
+---
+
+## Carpeta `contexts`
+
+Contiene contextos globales utilizados por distintos módulos de la aplicación.
+
+Entre ellos se encuentra el contexto utilizado para administrar el modo visual de Kiri.
+
+---
+
+## Carpeta `hooks`
+
+Contiene hooks personalizados reutilizables.
+
+Entre ellos:
+
+```text
+use-color-scheme.ts
+use-color-scheme.web.ts
+use-theme-color.ts
+useEntrevistaFormulario.ts
+useResumenBienestar.ts
+```
+
+`use-theme-color.ts` permite obtener colores de manera dinámica según el tema claro u oscuro activo.
+
+---
+
+## Carpeta `types`
+
+Contiene interfaces y tipos de TypeScript utilizados por la aplicación.
+
+```text
+types/
+├── superadmin/
+├── auth.ts
+├── cuestionarios.ts
+├── diario.ts
+├── entrevistas.ts
+├── foro.ts
+└── tecnicas.ts
+```
+
+Estos tipos permiten mantener estructuras consistentes entre:
+
+- Componentes.
+- Servicios.
+- Formularios.
+- Datos provenientes de Supabase.
+- Autorregistros.
+- Entrevistas.
+- Cuestionarios.
+- Foro Comunitario.
+- Técnicas.
+- Funcionalidades administrativas.
+
+---
+
+## Carpeta `assets`
+
+Contiene los recursos gráficos y multimedia utilizados por la plataforma.
+
+```text
+assets/
+├── gifs/
+├── fonts/
+├── images/
+├── images_educacion/
+└── images_kids/
+```
+
+Incluye:
+
+- Logos.
+- Ilustraciones.
+- Avatares.
+- Recursos educativos.
+- Imágenes.
+- GIF.
+- Fuentes tipográficas.
+
+---
+
+## Carpeta `styles`
+
+Contiene estilos adicionales utilizados por la aplicación.
+
+---
+
+## Carpeta `utils`
+
+Contiene funciones auxiliares reutilizables.
+
+---
+
+## `global.css`
+
+Contiene estilos globales utilizados por la aplicación y la integración con **NativeWind**.
+
+Este archivo se carga desde la configuración principal para permitir el funcionamiento de los estilos definidos mediante `className`.
+
+---
+
+## Flujo general de la aplicación
+
+De forma simplificada, el flujo principal puede representarse de la siguiente manera:
+
+```text
+Usuario
+   │
+   ▼
+Registro / Inicio de sesión
+   │
+   ▼
+Autenticación
+   │
+   ▼
+Perfil y rol del usuario
+   │
+   ├──────────── Superadministrador
+   │                    │
+   │                    ▼
+   │          Módulo administrativo
+   │
+   └──────────── Usuario final
+                        │
+                        ▼
+                Entrevista inicial
+                        │
+                        ▼
+             Estado emocional inicial
+                        │
+                        ▼
+          Plan de Bienestar Emocional
+                        │
+          ┌─────────────┼───────────────┐
+          │             │               │
+          ▼             ▼               ▼
+    Autorregistro   Cuestionarios   Psicoeducación
+          │
+          ├──────── Técnicas
+          ├──────── Foro Comunitario
+          └──────── Perfil
+```
+
+---
+
+# Paleta de colores
 
 ```text
 Primary:    #4F8EF7
@@ -282,19 +934,22 @@ Mist White: #F8FAFC
 Dark Gray:  #2D3748
 ```
 
+La aplicación utiliza variantes adicionales de estos colores para mantener compatibilidad con los modos claro y oscuro.
+
 ---
 
-# 🚀 Instalación
+# Instalación
+
 ## 1. Clonar el repositorio
 
 ```bash
-git https://github.com/vanessamoralesm-ing/Kiri.git 
+git clone https://github.com/vanessamoralesm-ing/Kiri.git
 ```
 
 ## 2. Entrar al proyecto
 
 ```bash
-cd app_kiri
+cd Kiri
 ```
 
 ## 3. Instalar dependencias
@@ -303,91 +958,44 @@ cd app_kiri
 npm install
 ```
 
----
-# 🔐 Variables de entorno
+2. Start the app
 
-Crear el archivo:
-```text
-.env.local
-```
+   ```bash
+   npx expo start
+   ```
 
-Agregar:
-```env
-EXPO_PUBLIC_SUPABASE_URL=SUPABASE_URL
-EXPO_PUBLIC_SUPABASE_KEY=SUPABASE_KEY
-```
----
-# 📦 Verificar Expo SDK
+In the output, you'll find options to open the app in a
 
-```bash
-npm list expo
-```
+- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
+- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
+- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
+- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-Este proyecto corresponde a:
-```text
-Expo SDK 54
-```
----
+You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-# 🩺 Revisar dependencias
+## Get a fresh project
+
+When you're ready, run:
 
 ```bash
-npx expo-doctor@latest
+npm run reset-project
 ```
 
-También:
+This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-```bash
-npx expo install --check
-```
+## Learn more
 
----
+To learn more about developing your project with Expo, look at the following resources:
 
-# ▶️ Ejecutar el proyecto
+- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
+- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
 
-### Android
+## Join the community
 
-```bash
-npx expo start --android
-```
+Join our community of developers creating universal apps.
 
-### Web
-
-```bash
-npx expo start --web
-```
-
----
-
-
-# ⚠️ Aviso importante
-
-Kiri es una herramienta tecnológica de promoción, prevención, educación y acompañamiento en salud mental.
-
-Las evaluaciones, recomendaciones, alertas y recursos proporcionados por la plataforma tienen un carácter orientativo.
-
-**Kiri no realiza diagnósticos clínicos y no sustituye a psicólogos, psiquiatras ni otros profesionales de la salud mental.**
-
----
-
-# 👩‍💻 Equipo
-
-Desarrollado por:
-
-## NeuroCode
-
----
-
-# 📄 Estado del proyecto
-
-Kiri se encuentra actualmente en desarrollo.
-
-La primera versión funcional está enfocada en el MVP para usuarios finales, mientras que los módulos institucionales y administrativos forman parte de la evolución progresiva de la plataforma.
-
----
-
-# 📄 Licencia
-
-Proyecto de uso privado.
-
-**Todos los derechos reservados.**
+- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
+- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+=======
+# Kiri
+>>>>>>> f2a1286df842a762d4b35bddd171102d6779a53d
