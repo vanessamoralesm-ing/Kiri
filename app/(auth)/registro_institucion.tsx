@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Pressable,
   ScrollView,
@@ -27,29 +28,39 @@ export default function RegistroInstitucionPantalla() {
 
   // ESTADOS GENERALES
   const [pasoActual, setPasoActual] = useState(1);
+
   const [enviando, setEnviando] = useState(false);
 
   // PASO 1 - DATOS DE LA INSTITUCIÓN
   const [nombreInstitucion, setNombreInstitucion] = useState("");
+
   const [codigoInstitucional, setCodigoInstitucional] = useState("");
   const [tipoInstitucion, setTipoInstitucion] = useState<TipoInstitucion | null>(null);
   const [departamento, setDepartamento] = useState("");
+
   const [municipio, setMunicipio] = useState("");
+
   const [direccion, setDireccion] = useState("");
 
   // PASO 2 - DATOS DEL SOLICITANTE
   const [nombreSolicitante, setNombreSolicitante] = useState("");
+
   const [apellidoSolicitante, setApellidoSolicitante] = useState("");
+
   const [cedula, setCedula] = useState("");
+
   const [cargo, setCargo] = useState("");
+
   const [correo, setCorreo] = useState("");
+
   const [telefono, setTelefono] = useState("");
+
   const [motivo, setMotivo] = useState("");
 
   function regresar() {
     if (enviando) return;
     if (pasoActual === 2) {
-      setPasoActual(1);
+      cambiarPaso(1);
       return;
     }
     router.back();
@@ -79,7 +90,9 @@ export default function RegistroInstitucionPantalla() {
   }
 
   async function enviarSolicitud() {
-    if (enviando) return;
+    if (enviando) {
+      return;
+    }
 
     if (
       !nombreSolicitante.trim() ||
@@ -336,8 +349,8 @@ export default function RegistroInstitucionPantalla() {
             </>
           )}
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 

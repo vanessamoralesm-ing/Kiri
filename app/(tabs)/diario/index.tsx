@@ -9,16 +9,14 @@ import {
   View,
 } from "react-native";
 
-import { router, useFocusEffect } from "expo-router";
-
 import { Ionicons } from "@expo/vector-icons";
+import { router, useFocusEffect } from "expo-router";
 
 import ResumenDiario from "@/components/diario/ResumenDiario";
 import TarjetaBienvenidaDiario from "@/components/diario/TarjetaBienvenidaDiario";
 import TarjetaEntradaDiario from "@/components/diario/TarjetaEntradaDiario";
 
 import { useAuth } from "@/services/authProvider";
-
 import { obtenerHistorialDiario } from "@/services/diario/autorregistro.service";
 
 import { EntradaDiarioResumen } from "@/types/diario";
@@ -39,20 +37,16 @@ export default function DiarioScreen() {
   // ======================================================
 
   const backgroundColor = useThemeColor({}, "background");
-
   const surfaceColor = useThemeColor({}, "surface");
-
   const borderColor = useThemeColor({}, "border");
 
   const textColor = useThemeColor({}, "text");
-
   const textSecondaryColor = useThemeColor({}, "textSecondary");
-
   const textMutedColor = useThemeColor({}, "textMuted");
 
   const primaryColor = useThemeColor({}, "primary");
-
   const primarySoftColor = useThemeColor({}, "primarySoft");
+  const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
 
   // ======================================================
   // RESPONSIVE
@@ -159,11 +153,8 @@ export default function DiarioScreen() {
 
     return fecha.toLocaleDateString("es-ES", {
       day: "numeric",
-
       month: "short",
-
       hour: "2-digit",
-
       minute: "2-digit",
     });
   };
@@ -182,8 +173,10 @@ export default function DiarioScreen() {
       <ScrollView
         style={{
           flex: 1,
+          width: "100%",
         }}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
           paddingBottom: 110,
         }}
@@ -211,19 +204,34 @@ export default function DiarioScreen() {
                         BIENVENIDA
                     ================================================== */}
 
-          <TarjetaBienvenidaDiario
-            nombre={nombreUsuario}
-            onNuevoRegistro={irANuevoRegistro}
-          />
+          <View
+            style={{
+              width: "100%",
+              minWidth: 0,
+            }}
+          >
+            <TarjetaBienvenidaDiario
+              nombre={nombreUsuario}
+              onNuevoRegistro={irANuevoRegistro}
+            />
+          </View>
 
           {/* ==================================================
                         RESUMEN
                     ================================================== */}
 
-          <ResumenDiario
-            diasRacha={entradas.length > 0 ? 1 : 0}
-            totalEntradas={entradas.length}
-          />
+          <View
+            style={{
+              width: "100%",
+              minWidth: 0,
+              marginTop: esEscritorio ? 24 : 20,
+            }}
+          >
+            <ResumenDiario
+              diasRacha={entradas.length > 0 ? 1 : 0}
+              totalEntradas={entradas.length}
+            />
+          </View>
 
           {/* ==================================================
                         ENCABEZADO ENTRADAS RECIENTES
@@ -244,12 +252,14 @@ export default function DiarioScreen() {
           >
             <View
               style={{
-                flex: 1,
-
-                paddingRight: 12,
+                width: "100%",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 10,
               }}
             >
-              <Text
+              <View
                 style={{
                   fontFamily: "Nunito-Bold",
 
@@ -269,11 +279,50 @@ export default function DiarioScreen() {
 
                   fontSize: 13,
 
-                  color: textMutedColor,
-                }}
+              <Pressable
+                onPress={verTodasLasEntradas}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="Ver todas las entradas"
+                style={({ pressed }) => ({
+                  flexShrink: 0,
+                  borderRadius: 12,
+                  opacity: pressed ? 0.7 : 1,
+                })}
               >
-                Tus últimos momentos registrados
-              </Text>
+                <View
+                  style={{
+                    minHeight: 40,
+                    paddingHorizontal: 12,
+                    borderRadius: 12,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: primarySoftColor,
+                  }}
+                >
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      fontFamily: "Nunito-SemiBold",
+                      fontSize: esTelefono ? 12 : 13,
+                      lineHeight: 18,
+                      color: primaryColor,
+                    }}
+                  >
+                    Ver todas
+                  </Text>
+
+                  <Ionicons
+                    name="chevron-forward"
+                    size={17}
+                    color={primaryColor}
+                    style={{
+                      marginLeft: 5,
+                    }}
+                  />
+                </View>
+              </Pressable>
             </View>
 
             <Pressable
@@ -293,20 +342,8 @@ export default function DiarioScreen() {
                 backgroundColor: pressed ? primarySoftColor : "transparent",
               })}
             >
-              <Text
-                style={{
-                  fontFamily: "Nunito-SemiBold",
-
-                  fontSize: 13,
-
-                  color: primaryColor,
-                }}
-              >
-                Ver todas
-              </Text>
-
-              <Ionicons name="chevron-forward" size={18} color={primaryColor} />
-            </Pressable>
+              Tus últimos momentos registrados
+            </Text>
           </View>
 
           {/* ==================================================
@@ -314,6 +351,10 @@ export default function DiarioScreen() {
                     ================================================== */}
 
           {cargando ? (
+            // ==================================================
+            // CARGANDO
+            // ==================================================
+
             <View
               style={{
                 paddingVertical: 32,
@@ -325,13 +366,12 @@ export default function DiarioScreen() {
 
               <Text
                 style={{
-                  marginTop: 12,
-
+                  marginTop: 14,
                   fontFamily: "Nunito-Medium",
-
                   fontSize: 14,
-
+                  lineHeight: 20,
                   color: textMutedColor,
+                  textAlign: "center",
                 }}
               >
                 Cargando tus entradas...
@@ -348,15 +388,16 @@ export default function DiarioScreen() {
 
                 borderRadius: 22,
 
+                borderRadius: 24,
                 borderWidth: 1,
-
                 borderColor,
-
                 backgroundColor: surfaceColor,
 
                 alignItems: "center",
               }}
             >
+              {/* ICONO */}
+
               <View
                 style={{
                   width: 58,
@@ -366,13 +407,14 @@ export default function DiarioScreen() {
                   borderRadius: 29,
 
                   alignItems: "center",
-
                   justifyContent: "center",
-
-                  backgroundColor: primarySoftColor,
                 }}
               >
-                <Ionicons name="book-outline" size={28} color={primaryColor} />
+                <Ionicons
+                  name="book-outline"
+                  size={esTelefono ? 30 : 34}
+                  color={primaryColor}
+                />
               </View>
 
               <Text

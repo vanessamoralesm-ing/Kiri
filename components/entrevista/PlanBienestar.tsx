@@ -5,6 +5,7 @@ import React, {
 
 import {
   ActivityIndicator,
+  Pressable,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -54,7 +55,7 @@ import {
 
 
 // ==========================================================
-// PROPS
+// TIPOS Y VALIDACIÓN
 // ==========================================================
 
 type Props = {
@@ -639,7 +640,7 @@ export default function PlanBienestar({
 
 
   // ========================================================
-  // SALIR
+  // VOLVER
   // ========================================================
 
   function salir() {
@@ -667,7 +668,7 @@ export default function PlanBienestar({
 
 
   // ========================================================
-  // CARGANDO
+  // BOTÓN
   // ========================================================
 
   if (
@@ -765,7 +766,7 @@ export default function PlanBienestar({
 
 
   // ========================================================
-  // ERROR / SIN PLAN
+  // CARGANDO / SIN PLAN
   // ========================================================
 
   if (
@@ -775,13 +776,11 @@ export default function PlanBienestar({
     return (
 
       <SafeAreaView
-        style={[
-          styles.pantalla,
-
-          {
-            backgroundColor,
-          },
-        ]}
+        edges={[]}
+        style={{
+          flex: 1,
+          backgroundColor,
+        }}
       >
 
         <View
@@ -791,16 +790,18 @@ export default function PlanBienestar({
         >
 
           <View
-            style={[
-              styles.errorIcono,
+            style={{
+              width: 76,
+              height: 76,
+              borderRadius: 23,
 
               {
                 backgroundColor:
                   primarySoftColor,
 
-                borderColor,
-              },
-            ]}
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
 
             <Ionicons
@@ -815,8 +816,9 @@ export default function PlanBienestar({
 
 
           <Text
-            style={[
-              styles.cargandoTitulo,
+            style={{
+              fontFamily: "Nunito-Bold",
+              fontSize: 21,
 
               {
                 color:
@@ -836,8 +838,8 @@ export default function PlanBienestar({
 
 
           <Text
-            style={[
-              styles.cargandoTexto,
+            style={{
+              maxWidth: 380,
 
               {
                 color:
@@ -901,19 +903,17 @@ export default function PlanBienestar({
 
 
   // ========================================================
-  // UI PRINCIPAL
+  // PANTALLA PRINCIPAL
   // ========================================================
 
   return (
 
     <SafeAreaView
-      style={[
-        styles.pantalla,
-
-        {
-          backgroundColor,
-        },
-      ]}
+      edges={[]}
+      style={{
+        flex: 1,
+        backgroundColor,
+      }}
     >
 
       <ScrollView
@@ -1347,21 +1347,31 @@ export default function PlanBienestar({
               : (
 
                 <View
-                  style={[
-                    styles.sinActividades,
+                  style={{
+                    width: "100%",
 
                     {
                       backgroundColor:
                         surfaceColor,
 
-                      borderColor,
-                    },
-                  ]}
+                    borderColor,
+                    borderWidth: 1,
+
+                    borderRadius: 20,
+
+                    alignItems: "center",
+                    gap: 10,
+                  }}
                 >
 
                   <View
-                    style={[
-                      styles.sinActividadesIcono,
+                    style={{
+                      width: 50,
+                      height: 50,
+
+                      borderRadius: 16,
+
+                      backgroundColor: secondarySoftColor,
 
                       {
                         backgroundColor:
@@ -1382,8 +1392,8 @@ export default function PlanBienestar({
 
 
                   <Text
-                    style={[
-                      styles.sinActividadesTexto,
+                    style={{
+                      fontFamily: "Nunito-Medium",
 
                       {
                         color:
@@ -1688,9 +1698,10 @@ export default function PlanBienestar({
                 </TouchableOpacity>
 
 
-                <Text
-                  style={[
-                    styles.textoFinal,
+            {modo === "entrevista" && (
+              <Text
+                style={{
+                  maxWidth: esEscritorio ? 310 : undefined,
 
                     {
                       color:

@@ -12,6 +12,7 @@ import {
 import CategoriaCard from "@/components/educacion/CategoriaCard";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 // ==========================================================
 // CATEGORÍAS
@@ -63,12 +64,12 @@ const categorias = [
 ];
 
 // ==========================================================
-// EDUCACIÓN
+// PANTALLA
 // ==========================================================
 
 export default function EducacionScreen() {
   // ========================================================
-  // COLORES DEL TEMA
+  // TEMA
   // ========================================================
 
   const backgroundColor = useThemeColor(
@@ -152,6 +153,7 @@ export default function EducacionScreen() {
         backgroundColor,
       }}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
       contentContainerStyle={{
         paddingBottom: 130,
       }}
@@ -227,6 +229,7 @@ export default function EducacionScreen() {
             placeholder="¿Qué tema te gustaría explorar hoy?"
             placeholderTextColor={placeholderColor}
             selectionColor={primaryColor}
+            returnKeyType="search"
             style={{
               flex: 1,
               marginLeft: 12,
@@ -236,6 +239,22 @@ export default function EducacionScreen() {
               color: textColor,
             }}
           />
+
+          {busqueda.length > 0 && (
+            <Pressable
+              onPress={() => setBusqueda("")}
+              hitSlop={10}
+              style={{
+                width: 32,
+                height: 32,
+                marginLeft: 6,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Ionicons name="close-circle" size={20} color={textMutedColor} />
+            </Pressable>
+          )}
         </View>
 
         {/* ==================================================
@@ -354,8 +373,6 @@ export default function EducacionScreen() {
                 color={primaryColor}
               />
             </View>
-
-            {/* TEXTO */}
 
             <View
               style={{

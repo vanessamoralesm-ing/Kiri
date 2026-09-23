@@ -6,6 +6,7 @@ import React, {
 
 import {
   ActivityIndicator,
+  Pressable,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -48,38 +49,27 @@ import {
 // TIPOS
 // ==========================================================
 
-type NivelResultado =
-  | "BAJO"
-  | "MODERADO"
-  | "ALTO";
+type NivelResultado = "BAJO" | "MODERADO" | "ALTO";
 
 
 type Resultado = {
   id_resultado: string;
-
   id_modulo: string;
-
   codigo: string;
-
   nombre: string;
-
   puntaje: number;
-
   porcentaje: number;
-
   nivel: NivelResultado;
 };
 
 
 type Props = {
-  modo:
-  | "entrevista"
-  | "historial";
+  modo: "entrevista" | "historial";
 };
 
 
 // ==========================================================
-// CONFIGURACIÓN DE ÁREAS
+// CONFIGURACIÓN
 // ==========================================================
 
 const CONFIG:
@@ -257,7 +247,7 @@ function anchoBarra(
 
 
 // ==========================================================
-// COMPONENTE
+// COMPONENTE PRINCIPAL
 // ==========================================================
 
 export default function ResultadoEntrevista({
@@ -293,7 +283,7 @@ export default function ResultadoEntrevista({
 
 
   // ========================================================
-  // ESTADOS
+  // TEMA
   // ========================================================
 
   const [
@@ -323,9 +313,7 @@ export default function ResultadoEntrevista({
     >(null);
 
 
-  // ========================================================
-  // COLORES DEL TEMA
-  // ========================================================
+  const surfaceColor = useThemeColor({}, "surface");
 
   const backgroundColor =
     useThemeColor(
@@ -645,6 +633,7 @@ export default function ResultadoEntrevista({
         }
 
       }
+    }
 
 
       cargarResultados();
@@ -665,7 +654,7 @@ export default function ResultadoEntrevista({
 
 
   // ========================================================
-  // PRIORIDADES
+  // CÁLCULOS
   // ========================================================
 
   const prioridades =
@@ -698,10 +687,20 @@ export default function ResultadoEntrevista({
         resultados,
       ]
     );
+  }, [resultados]);
+
+  const promedio = useMemo(
+    () =>
+      resultados.length
+        ? resultados.reduce((suma, item) => suma + item.porcentaje, 0) /
+        resultados.length
+        : 0,
+    [resultados],
+  );
 
 
   // ========================================================
-  // PROMEDIO
+  // NAVEGACIÓN
   // ========================================================
 
   const promedio =
@@ -792,7 +791,7 @@ export default function ResultadoEntrevista({
 
 
   // ========================================================
-  // SALIR
+  // BOTÓN PRINCIPAL
   // ========================================================
 
   function salir() {
@@ -833,10 +832,8 @@ export default function ResultadoEntrevista({
         style={[
           styles.pantalla,
 
-          {
-            backgroundColor,
-          },
-        ]}
+          gap: 10,
+        }}
       >
 
         <View
@@ -904,7 +901,7 @@ export default function ResultadoEntrevista({
 
 
   // ========================================================
-  // ERROR
+  // CARGANDO / ERROR
   // ========================================================
 
   if (
@@ -914,13 +911,11 @@ export default function ResultadoEntrevista({
     return (
 
       <SafeAreaView
-        style={[
-          styles.pantalla,
-
-          {
-            backgroundColor,
-          },
-        ]}
+        edges={[]}
+        style={{
+          flex: 1,
+          backgroundColor,
+        }}
       >
 
         <View
@@ -930,17 +925,16 @@ export default function ResultadoEntrevista({
         >
 
           <View
-            style={[
-              styles.errorCirculo,
+            style={{
+              width: 76,
+              height: 76,
+              borderRadius: 24,
 
-              {
-                backgroundColor:
-                  accentSoftColor,
+              backgroundColor: cargando ? primarySoftColor : accentSoftColor,
 
-                borderColor:
-                  accentColor,
-              },
-            ]}
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
 
             <Ionicons
@@ -955,16 +949,16 @@ export default function ResultadoEntrevista({
 
 
           <Text
-            style={[
-              styles.cargandoTitulo,
-
-              {
-                color:
-                  textColor,
-              },
-            ]}
+            style={{
+              fontFamily: "Nunito-Bold",
+              fontSize: 21,
+              textAlign: "center",
+              color: textColor,
+            }}
           >
-            No pudimos mostrar tus resultados
+            {cargando
+              ? "Preparando tu perfil"
+              : "No pudimos mostrar tus resultados"}
           </Text>
 
 
@@ -978,7 +972,9 @@ export default function ResultadoEntrevista({
               },
             ]}
           >
-            {error}
+            {cargando
+              ? "Estamos organizando los resultados de tu entrevista."
+              : error}
           </Text>
 
 
@@ -1044,13 +1040,11 @@ export default function ResultadoEntrevista({
   return (
 
     <SafeAreaView
-      style={[
-        styles.pantalla,
-
-        {
-          backgroundColor,
-        },
-      ]}
+      edges={[]}
+      style={{
+        flex: 1,
+        backgroundColor,
+      }}
     >
 
       <ScrollView
@@ -1184,22 +1178,22 @@ export default function ResultadoEntrevista({
               >
 
                 <View
-                  style={[
-                    styles.estableIcono,
+                  style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 20,
 
-                    {
-                      backgroundColor:
-                        secondarySoftColor,
-                    },
-                  ]}
+                    backgroundColor: secondarySoftColor,
+
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
                 >
 
                   <Ionicons
                     name="leaf-outline"
-                    size={26}
-                    color={
-                      secondaryColor
-                    }
+                    size={28}
+                    color={secondaryColor}
                   />
 
                 </View>
@@ -1220,8 +1214,8 @@ export default function ResultadoEntrevista({
 
 
                 <Text
-                  style={[
-                    styles.estableTexto,
+                  style={{
+                    fontFamily: "Nunito-Medium",
 
                     {
                       color:
@@ -1271,26 +1265,33 @@ export default function ResultadoEntrevista({
                 >
 
                   <View
-                    style={
-                      styles.resumenSuperior
-                    }
+                    style={{
+                      padding: esTelefono ? 18 : 24,
+
+                      flexDirection: "row",
+                      alignItems: "center",
+
+                      gap: 12,
+                    }}
                   >
 
                     <View
-                      style={
-                        styles.resumenInfo
-                      }
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        gap: 5,
+                      }}
                     >
 
                       <Text
-                        style={[
-                          styles.resumenEtiqueta,
+                        style={{
+                          fontFamily: "Nunito-Bold",
 
-                          {
-                            color:
-                              primaryColor,
-                          },
-                        ]}
+                          fontSize: 11,
+                          letterSpacing: 0.6,
+
+                          color: primaryColor,
+                        }}
                       >
                         RESUMEN DE TU ENTREVISTA
                       </Text>
@@ -1322,22 +1323,22 @@ export default function ResultadoEntrevista({
 
 
                     <View
-                      style={[
-                        styles.resumenIcono,
+                      style={{
+                        width: 54,
+                        height: 54,
+                        borderRadius: 17,
 
-                        {
-                          backgroundColor:
-                            primarySoftColor,
-                        },
-                      ]}
+                        backgroundColor: primarySoftColor,
+
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
                     >
 
                       <Ionicons
                         name="analytics-outline"
-                        size={22}
-                        color={
-                          primaryColor
-                        }
+                        size={25}
+                        color={primaryColor}
                       />
 
                     </View>
@@ -1346,27 +1347,30 @@ export default function ResultadoEntrevista({
 
 
                   <View
-                    style={[
-                      styles.resumenSeparador,
-
-                      {
-                        backgroundColor:
-                          dividerColor,
-                      },
-                    ]}
+                    style={{
+                      height: 1,
+                      backgroundColor: borderColor,
+                    }}
                   />
 
 
                   <View
-                    style={
-                      styles.resumenInferior
-                    }
+                    style={{
+                      flexDirection: "row",
+
+                      paddingVertical: 20,
+                      paddingHorizontal: 10,
+
+                      alignItems: "stretch",
+                    }}
                   >
 
                     <View
-                      style={
-                        styles.resumenDato
-                      }
+                      style={{
+                        flex: 1,
+                        alignItems: "center",
+                        paddingHorizontal: 4,
+                      }}
                     >
 
                       <Text
@@ -1388,14 +1392,16 @@ export default function ResultadoEntrevista({
 
 
                       <Text
-                        style={[
-                          styles.resumenDatoTexto,
+                        style={{
+                          marginTop: 4,
 
-                          {
-                            color:
-                              textSecondaryColor,
-                          },
-                        ]}
+                          fontFamily: "Nunito-Medium",
+
+                          fontSize: 12,
+                          textAlign: "center",
+
+                          color: textSecondaryColor,
+                        }}
                       >
                         promedio general
                       </Text>
@@ -1404,21 +1410,21 @@ export default function ResultadoEntrevista({
 
 
                     <View
-                      style={[
-                        styles.divisorVertical,
+                      style={{
+                        width: 1,
+                        alignSelf: "stretch",
 
-                        {
-                          backgroundColor:
-                            dividerColor,
-                        },
-                      ]}
+                        backgroundColor: borderColor,
+                      }}
                     />
 
 
                     <View
-                      style={
-                        styles.resumenDato
-                      }
+                      style={{
+                        flex: 1,
+                        alignItems: "center",
+                        paddingHorizontal: 4,
+                      }}
                     >
 
                       <Text
@@ -1441,14 +1447,16 @@ export default function ResultadoEntrevista({
 
 
                       <Text
-                        style={[
-                          styles.resumenDatoTexto,
+                        style={{
+                          marginTop: 4,
 
-                          {
-                            color:
-                              textSecondaryColor,
-                          },
-                        ]}
+                          fontFamily: "Nunito-Medium",
+
+                          fontSize: 12,
+                          textAlign: "center",
+
+                          color: textSecondaryColor,
+                        }}
                       >
                         mayor indicador
                       </Text>
@@ -1481,9 +1489,11 @@ export default function ResultadoEntrevista({
                 >
 
                   <View
-                    style={
-                      styles.seccionInfo
-                    }
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      gap: 4,
+                    }}
                   >
 
                     <Text
@@ -1501,14 +1511,14 @@ export default function ResultadoEntrevista({
 
 
                     <Text
-                      style={[
-                        styles.seccionTexto,
+                      style={{
+                        fontFamily: "Nunito-Medium",
 
-                        {
-                          color:
-                            textSecondaryColor,
-                        },
-                      ]}
+                        fontSize: 13,
+                        lineHeight: 19,
+
+                        color: textSecondaryColor,
+                      }}
                     >
                       De mayor a menor necesidad de atención.
                     </Text>
@@ -1517,29 +1527,26 @@ export default function ResultadoEntrevista({
 
 
                   <View
-                    style={[
-                      styles.cantidad,
+                    style={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: 19,
 
-                      {
-                        backgroundColor:
-                          primarySoftColor,
-                      },
-                    ]}
+                      backgroundColor: primarySoftColor,
+
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
                   >
 
                     <Text
-                      style={[
-                        styles.cantidadTexto,
+                      style={{
+                        fontFamily: "Nunito-Bold",
 
-                        {
-                          color:
-                            primaryColor,
-                        },
-                      ]}
+                        color: primaryColor,
+                      }}
                     >
-                      {
-                        resultados.length
-                      }
+                      {resultados.length}
                     </Text>
 
                   </View>
