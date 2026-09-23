@@ -1,10 +1,10 @@
-import { supabase } from "@/lib/supabase";
-import type { SignUpInput, SignUpResult, UsuarioPerfil } from "@/types/auth";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import type { ReactNode } from "react";
+import { Platform } from "react-native";
 import type { Session, User } from "@supabase/supabase-js";
 import * as Linking from "expo-linking";
-import type { ReactNode } from "react";
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { Platform } from "react-native";
+import { supabase } from "@/lib/supabase";
+import type { SignUpInput, SignUpResult, UsuarioPerfil } from "@/types/auth";
 
 // ==========================================================
 // TIPOS
@@ -127,6 +127,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(newSession);
       setUser(newSession?.user ?? null);
 
+      /*
+       * IMPORTANTE:
+       *
+       * TOKEN_REFRESHED no debe limpiar el perfil
+       * ni activar profileLoading.
+       *
+       * La carga del perfil se controla exclusivamente
+       * mediante el useEffect que depende de user?.id.
+       */
 
       if (!newSession?.user) {
         setProfile(null);

@@ -1,86 +1,91 @@
 import { Slot } from "expo-router";
 import React from "react";
-import { View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Platform, Text, View } from "react-native";
 
-import AdminBottomNav from "@/components/superadmin/layout/AdminBottomNav";
 import AdminHeader from "@/components/superadmin/layout/AdminHeader";
 import AdminSidebar from "@/components/superadmin/layout/AdminSidebar";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+
 
 // ==========================================================
 // LAYOUT SUPERADMIN
 // ==========================================================
 
 export default function SuperAdminLayout() {
-    const { esEscritorio } = useResponsiveLayout();
 
-    // ========================================================
+    // ======================================================
     // TEMA
-    // ========================================================
+    // ======================================================
 
     const backgroundColor = useThemeColor({}, "background");
-
     const surfaceColor = useThemeColor({}, "surface");
+    const textColor = useThemeColor({}, "text");
+    const textSecondaryColor = useThemeColor({}, "textSecondary");
 
-    // ========================================================
-    // ESCRITORIO
-    // ========================================================
 
-    if (esEscritorio) {
+    // ======================================================
+    // SOLO WEB
+    // ======================================================
+
+    if (Platform.OS !== "web") {
         return (
             <View
                 style={{
                     flex: 1,
-                    flexDirection: "row",
+                    paddingHorizontal: 24,
+                    alignItems: "center",
+                    justifyContent: "center",
                     backgroundColor,
                 }}
             >
-                <AdminSidebar />
-
-                <View
+                <Text
                     style={{
-                        flex: 1,
-                        minWidth: 0,
-                        backgroundColor,
+                        fontFamily: "Nunito-Bold",
+                        fontSize: 20,
+                        color: textColor,
+                        textAlign: "center",
                     }}
                 >
-                    <AdminHeader />
+                    Panel de superadministrador
+                </Text>
 
-                    <View
-                        style={{
-                            flex: 1,
-                            minWidth: 0,
-                            minHeight: 0,
-                            backgroundColor: surfaceColor,
-                        }}
-                    >
-                        <Slot />
-                    </View>
-                </View>
+                <Text
+                    style={{
+                        marginTop: 8,
+                        maxWidth: 420,
+                        fontFamily: "Nunito-Medium",
+                        fontSize: 14,
+                        lineHeight: 21,
+                        color: textSecondaryColor,
+                        textAlign: "center",
+                    }}
+                >
+                    Este módulo está disponible únicamente desde la versión web de Kiri.
+                </Text>
             </View>
         );
     }
 
-    // ========================================================
-    // TABLET / MÓVIL
-    // ========================================================
+
+    // ======================================================
+    // UI WEB
+    // ======================================================
 
     return (
-        <SafeAreaView
-            edges={["top"]}
+        <View
             style={{
                 flex: 1,
+                flexDirection: "row",
                 backgroundColor,
             }}
         >
+            <AdminSidebar />
+
             <View
                 style={{
                     flex: 1,
-                    position: "relative",
-                    overflow: "hidden",
+                    minWidth: 0,
                     backgroundColor,
                 }}
             >
@@ -89,16 +94,13 @@ export default function SuperAdminLayout() {
                 <View
                     style={{
                         flex: 1,
-                        minWidth: 0,
                         minHeight: 0,
                         backgroundColor: surfaceColor,
                     }}
                 >
                     <Slot />
                 </View>
-
-                <AdminBottomNav />
             </View>
-        </SafeAreaView>
+        </View>
     );
 }

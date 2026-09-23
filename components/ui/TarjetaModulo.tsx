@@ -1,187 +1,153 @@
-
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "@react-navigation/native";
 import React from "react";
+
 import {
-  Platform,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 
-import { useThemeColor } from "@/hooks/use-theme-color";
-import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+import {
+  Ionicons,
+} from "@expo/vector-icons";
 
-type TarjetaModuloProps = {
+import {
+  useThemeColor,
+} from "@/hooks/use-theme-color";
+
+interface TarjetaModuloProps {
   titulo: string;
-  descripcion?: string;
-  nombreIcono: keyof typeof Ionicons.glyphMap;
-  colorAcento?: string;
-  fondoIconoClaro?: string;
-  fondoIconoOscuro?: string;
+
+  nombreIcono:
+    keyof typeof Ionicons.glyphMap;
+
   onPress: () => void;
-};
+}
 
-export function TarjetaModulo({
+export const TarjetaModulo = ({
   titulo,
-  descripcion,
   nombreIcono,
-  colorAcento,
-  fondoIconoClaro,
-  fondoIconoOscuro,
   onPress,
-}: TarjetaModuloProps) {
-  const { dark: isDarkMode } = useTheme();
-  const { esTelefono, esTablet } = useResponsiveLayout();
+}: TarjetaModuloProps) => {
 
-  const surfaceColor = useThemeColor({}, "surface");
-  const textColor = useThemeColor({}, "text");
-  const textSecondaryColor = useThemeColor({}, "textSecondary");
-  const borderColor = useThemeColor({}, "border");
-  const primaryColor = useThemeColor({}, "primary");
-  const primarySoftColor = useThemeColor({}, "primarySoft");
-  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+  const surfaceColor =
+    useThemeColor(
+      {},
+      "surface"
+    );
 
-  const colorIcono = colorAcento ?? primaryColor;
+  const borderColor =
+    useThemeColor(
+      {},
+      "border"
+    );
 
-  const fondoIcono = isDarkMode
-    ? (fondoIconoOscuro ?? primarySoftColor)
-    : (fondoIconoClaro ?? primarySoftColor);
+  const textColor =
+    useThemeColor(
+      {},
+      "text"
+    );
+
+  const primaryColor =
+    useThemeColor(
+      {},
+      "primary"
+    );
+
+  const primarySoftColor =
+    useThemeColor(
+      {},
+      "primarySoft"
+    );
 
   return (
     <TouchableOpacity
-      activeOpacity={0.82}
+      activeOpacity={0.8}
       onPress={onPress}
+
+      className="
+        w-[48%]
+        p-4
+        rounded-3xl
+        items-center
+        justify-center
+        my-2
+      "
+
       style={{
-        width: "100%",
+        backgroundColor:
+          surfaceColor,
 
-        // La altura se adapta al contenido en móvil.
-        // Sin height: "100%" ni flex: 1.
-        minHeight: esTelefono ? 104 : esTablet ? 180 : 175,
-
-        borderRadius: 20,
         borderWidth: 1,
-        borderColor,
 
-        paddingHorizontal: esTelefono ? 14 : 18,
-        paddingVertical: esTelefono ? 14 : 18,
+        borderColor:
+          borderColor,
 
-        backgroundColor: surfaceColor,
+        shadowColor:
+          "#000000",
 
-        flexDirection: esTelefono ? "row" : "column",
-        alignItems: esTelefono ? "center" : "stretch",
-        justifyContent: esTelefono ? "flex-start" : "space-between",
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
 
-        ...(Platform.OS === "web"
-          ? ({
-              boxShadow: "0px 3px 8px rgba(0,0,0,0.05)",
-            } as any)
-          : Platform.OS === "ios"
-            ? {
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 3 },
-                shadowOpacity: 0.05,
-                shadowRadius: 8,
-              }
-            : Platform.OS === "android"
-              ? { elevation: 3 }
-              : {}),
+        shadowOpacity:
+          0.12,
+
+        shadowRadius:
+          5,
+
+        elevation:
+          3,
       }}
     >
-      {/* ICONO */}
+
+      {/* Fondo del icono */}
 
       <View
+        className="
+          p-4
+          rounded-2xl
+          mb-3
+        "
+
         style={{
-          width: esTelefono ? 52 : 56,
-          height: esTelefono ? 52 : 56,
-          borderRadius: 16,
-
-          flexShrink: 0,
-          alignSelf: esTelefono ? "center" : "center",
-
-          alignItems: "center",
-          justifyContent: "center",
-
-          backgroundColor: fondoIcono,
+          backgroundColor:
+            primarySoftColor,
         }}
       >
+
         <Ionicons
           name={nombreIcono}
-          size={esTelefono ? 25 : 27}
-          color={colorIcono}
+          size={30}
+          color={primaryColor}
         />
+
       </View>
 
-      {/* TÍTULO Y DESCRIPCIÓN */}
 
-      <View
+      {/* Título */}
+
+      <Text
         style={{
-          flex: esTelefono ? 1 : undefined,
-          minWidth: 0,
+          fontFamily:
+            "Nunito-SemiBold",
 
-          marginLeft: esTelefono ? 12 : 0,
-          marginTop: esTelefono ? 0 : 12,
+          fontSize:
+            13,
 
-          alignItems: esTelefono ? "flex-start" : "center",
-          justifyContent: "center",
+          lineHeight:
+            17,
+
+          textAlign:
+            "center",
+
+          color:
+            textColor,
         }}
       >
-        <Text
-          style={{
-            fontFamily: "Nunito-Bold",
-            fontSize: esTelefono ? 15 : 15,
-            lineHeight: 20,
-            color: textColor,
-            textAlign: esTelefono ? "left" : "center",
-          }}
-        >
-          {titulo}
-        </Text>
+        {titulo}
+      </Text>
 
-        {!!descripcion && (
-          <Text
-            numberOfLines={esTelefono ? 3 : 3}
-            style={{
-              marginTop: 5,
-              fontFamily: "Nunito-Medium",
-              fontSize: esTelefono ? 12 : 12,
-              lineHeight: 17,
-              color: textSecondaryColor,
-              textAlign: esTelefono ? "left" : "center",
-            }}
-          >
-            {descripcion}
-          </Text>
-        )}
-      </View>
-
-      {/* FLECHA */}
-
-      <View
-        style={{
-          width: 30,
-          height: 30,
-          borderRadius: 15,
-
-          flexShrink: 0,
-
-          marginLeft: esTelefono ? 8 : 0,
-          marginTop: esTelefono ? 0 : 12,
-
-          alignSelf: esTelefono ? "center" : "flex-end",
-
-          alignItems: "center",
-          justifyContent: "center",
-
-          backgroundColor: surfaceSecondaryColor,
-        }}
-      >
-        <Ionicons
-          name="arrow-forward"
-          size={16}
-          color={colorIcono}
-        />
-      </View>
     </TouchableOpacity>
   );
-}
+};

@@ -7,6 +7,7 @@ import {
   Pressable,
   ScrollView,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -14,10 +15,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 
 import { Ionicons } from "@expo/vector-icons";
 
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
   eliminarRegistroDiario,
@@ -26,15 +24,7 @@ import {
 
 import { EntradaDiarioResumen } from "@/types/diario";
 
-import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
-
-import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
-
 import { useThemeColor } from "@/hooks/use-theme-color";
-
-// ==========================================================
-// FILTROS
-// ==========================================================
 
 const FILTROS = [
   {
@@ -47,20 +37,10 @@ const FILTROS = [
   },
 ];
 
-// ==========================================================
-// COMPONENTE
-// ==========================================================
-
 export default function HistorialDiarioScreen() {
   const router = useRouter();
 
-  const insets = useSafeAreaInsets();
-
-  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
-
-  // ========================================================
-  // ESTADOS
-  // ========================================================
+  const { width } = useWindowDimensions();
 
   const [cargando, setCargando] = useState(true);
 
@@ -68,9 +48,9 @@ export default function HistorialDiarioScreen() {
 
   const [filtroSeleccionado, setFiltroSeleccionado] = useState("todas");
 
-  // ========================================================
+  // ======================================================
   // TEMA
-  // ========================================================
+  // ======================================================
 
   const backgroundColor = useThemeColor({}, "background");
 
@@ -94,31 +74,17 @@ export default function HistorialDiarioScreen() {
 
   const dangerColor = useThemeColor({}, "danger");
 
-  // ========================================================
+  // ======================================================
   // RESPONSIVE
-  // ========================================================
+  // ======================================================
 
-  const paddingHorizontal = esEscritorio
-    ? PADDING_RESPONSIVE.escritorio
-    : esTablet
-      ? PADDING_RESPONSIVE.tablet
-      : PADDING_RESPONSIVE.telefono;
+  const numeroColumnas = width >= 1100 ? 3 : width >= 650 ? 2 : 1;
 
-  const maxWidthContenido = esEscritorio
-    ? MAX_WIDTHS.dashboard
-    : esTablet
-      ? MAX_WIDTHS.contenido
-      : undefined;
+  const anchoMaximo = width >= 1100 ? 1100 : undefined;
 
-  const numeroColumnas = esEscritorio ? 3 : esTablet ? 2 : 1;
-
-  const gapColumnas = esEscritorio ? 18 : 16;
-
-  const paddingBottom = esEscritorio ? 56 : Math.max(insets.bottom + 130, 155);
-
-  // ========================================================
+  // ======================================================
   // CARGAR HISTORIAL
-  // ========================================================
+  // ======================================================
 
   const cargarHistorial = useCallback(async () => {
     try {
@@ -136,9 +102,9 @@ export default function HistorialDiarioScreen() {
     }
   }, []);
 
-  // ========================================================
+  // ======================================================
   // ACTUALIZAR AL VOLVER
-  // ========================================================
+  // ======================================================
 
   useFocusEffect(
     useCallback(() => {
@@ -146,9 +112,9 @@ export default function HistorialDiarioScreen() {
     }, [cargarHistorial]),
   );
 
-  // ========================================================
+  // ======================================================
   // ELIMINAR
-  // ========================================================
+  // ======================================================
 
   const confirmarEliminar = (id: string) => {
     Alert.alert(
@@ -181,9 +147,9 @@ export default function HistorialDiarioScreen() {
     );
   };
 
-  // ========================================================
+  // ======================================================
   // FILTRAR
-  // ========================================================
+  // ======================================================
 
   const registrosFiltrados = useMemo(() => {
     if (filtroSeleccionado === "todas") {
@@ -199,9 +165,9 @@ export default function HistorialDiarioScreen() {
     return registros;
   }, [registros, filtroSeleccionado]);
 
-  // ========================================================
+  // ======================================================
   // FORMATEAR FECHA
-  // ========================================================
+  // ======================================================
 
   const formatearFechaHora = (fechaIso: string) => {
     const fecha = new Date(fechaIso);
@@ -223,47 +189,37 @@ export default function HistorialDiarioScreen() {
     return `${fechaFormateada}, ${horaFormateada}`;
   };
 
-  // ========================================================
+  // ======================================================
   // UI
-  // ========================================================
+  // ======================================================
 
   return (
     <SafeAreaView
-      edges={["top"]}
       style={{
         flex: 1,
-
         backgroundColor,
       }}
     >
       {/* ==================================================
-          ENCABEZADO
-      ================================================== */}
+                ENCABEZADO
+            ================================================== */}
 
       <View
         style={{
           borderBottomWidth: 1,
-
           borderBottomColor: borderColor,
-
           backgroundColor: surfaceColor,
         }}
       >
         <View
           style={{
             width: "100%",
-
-            maxWidth: maxWidthContenido,
-
+            maxWidth: anchoMaximo,
             alignSelf: "center",
-
             flexDirection: "row",
-
             alignItems: "center",
-
-            paddingHorizontal,
-
-            paddingVertical: esEscritorio ? 18 : 14,
+            paddingHorizontal: 20,
+            paddingVertical: 16,
           }}
         >
           <Pressable
@@ -271,98 +227,56 @@ export default function HistorialDiarioScreen() {
             hitSlop={8}
             style={({ pressed }) => ({
               width: 44,
-
               height: 44,
-
-              borderRadius: 14,
-
+              borderRadius: 16,
               alignItems: "center",
-
               justifyContent: "center",
-
               backgroundColor: pressed
-                ? primarySoftColor
+                ? surfaceSecondaryColor
                 : surfaceSecondaryColor,
             })}
           >
             <Ionicons name="arrow-back" size={22} color={textColor} />
           </Pressable>
 
-          <View
+          <Text
             style={{
               flex: 1,
-
-              paddingHorizontal: 14,
+              textAlign: "center",
+              fontFamily: "Nunito-Bold",
+              fontSize: 19,
+              color: textColor,
             }}
           >
-            <Text
-              numberOfLines={1}
-              style={{
-                textAlign: esEscritorio ? "left" : "center",
+            Historial de Registros
+          </Text>
 
-                fontFamily: "Nunito-Bold",
-
-                fontSize: esEscritorio ? 22 : 19,
-
-                color: textColor,
-              }}
-            >
-              Historial de registros
-            </Text>
-
-            {esEscritorio && (
-              <Text
-                style={{
-                  marginTop: 2,
-
-                  fontFamily: "Nunito-Medium",
-
-                  fontSize: 13,
-
-                  color: textMutedColor,
-                }}
-              >
-                Consulta, edita o elimina tus registros anteriores.
-              </Text>
-            )}
-          </View>
-
-          {!esEscritorio && (
-            <View
-              style={{
-                width: 44,
-
-                height: 44,
-              }}
-            />
-          )}
+          <View
+            style={{
+              width: 44,
+              height: 44,
+            }}
+          />
         </View>
       </View>
 
       {/* ==================================================
-          FILTROS
-      ================================================== */}
+                FILTROS
+            ================================================== */}
 
       <View
         style={{
           width: "100%",
-
-          maxWidth: maxWidthContenido,
-
+          maxWidth: anchoMaximo,
           alignSelf: "center",
-
-          paddingTop: esEscritorio ? 22 : 16,
-
-          paddingBottom: 14,
+          paddingVertical: 16,
         }}
       >
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
-            paddingHorizontal,
-
-            gap: 10,
+            paddingHorizontal: 20,
           }}
         >
           {FILTROS.map((filtro) => {
@@ -373,16 +287,12 @@ export default function HistorialDiarioScreen() {
                 key={filtro.id}
                 onPress={() => setFiltroSeleccionado(filtro.id)}
                 style={({ pressed }) => ({
-                  paddingHorizontal: esEscritorio ? 18 : 16,
-
-                  paddingVertical: 9,
-
+                  marginRight: 12,
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
                   borderRadius: 999,
-
                   borderWidth: 1,
-
                   borderColor: activo ? primaryColor : borderColor,
-
                   backgroundColor: activo
                     ? primaryColor
                     : pressed
@@ -393,9 +303,7 @@ export default function HistorialDiarioScreen() {
                 <Text
                   style={{
                     fontFamily: "Nunito-Bold",
-
                     fontSize: 13,
-
                     color: activo ? textOnPrimaryColor : textSecondaryColor,
                   }}
                 >
@@ -408,16 +316,14 @@ export default function HistorialDiarioScreen() {
       </View>
 
       {/* ==================================================
-          CARGANDO
-      ================================================== */}
+                CARGANDO
+            ================================================== */}
 
       {cargando ? (
         <View
           style={{
             flex: 1,
-
             alignItems: "center",
-
             justifyContent: "center",
           }}
         >
@@ -426,11 +332,8 @@ export default function HistorialDiarioScreen() {
           <Text
             style={{
               marginTop: 12,
-
               fontFamily: "Nunito-Medium",
-
               fontSize: 14,
-
               color: textMutedColor,
             }}
           >
@@ -447,21 +350,21 @@ export default function HistorialDiarioScreen() {
           style={{
             width: "100%",
 
-            maxWidth: maxWidthContenido,
+            maxWidth: anchoMaximo,
 
             alignSelf: "center",
           }}
           contentContainerStyle={{
-            paddingHorizontal,
+            paddingHorizontal: 20,
 
-            paddingTop: 8,
+            paddingTop: 4,
 
-            paddingBottom,
+            paddingBottom: 40,
           }}
           columnWrapperStyle={
             numeroColumnas > 1
               ? {
-                  gap: gapColumnas,
+                  gap: 16,
                 }
               : undefined
           }
@@ -473,43 +376,31 @@ export default function HistorialDiarioScreen() {
           ListEmptyComponent={
             <View
               style={{
-                marginTop: esEscritorio ? 80 : 60,
-
+                marginTop: 64,
                 paddingHorizontal: 24,
-
                 alignItems: "center",
-
                 justifyContent: "center",
               }}
             >
               <View
                 style={{
-                  width: 68,
-
-                  height: 68,
-
-                  borderRadius: 34,
-
+                  width: 64,
+                  height: 64,
+                  borderRadius: 32,
                   alignItems: "center",
-
                   justifyContent: "center",
-
                   backgroundColor: primarySoftColor,
                 }}
               >
-                <Ionicons name="book-outline" size={30} color={primaryColor} />
+                <Ionicons name="book-outline" size={28} color={primaryColor} />
               </View>
 
               <Text
                 style={{
                   marginTop: 16,
-
                   textAlign: "center",
-
                   fontFamily: "Nunito-Bold",
-
-                  fontSize: 17,
-
+                  fontSize: 16,
                   color: textColor,
                 }}
               >
@@ -518,18 +409,10 @@ export default function HistorialDiarioScreen() {
 
               <Text
                 style={{
-                  marginTop: 5,
-
-                  maxWidth: 420,
-
+                  marginTop: 4,
                   textAlign: "center",
-
                   fontFamily: "Nunito-Medium",
-
                   fontSize: 14,
-
-                  lineHeight: 20,
-
                   color: textMutedColor,
                 }}
               >
@@ -550,9 +433,10 @@ export default function HistorialDiarioScreen() {
               style={({ pressed }) => ({
                 flex: 1,
 
-                minWidth: 0,
+                maxWidth:
+                  numeroColumnas === 1 ? undefined : `${100 / numeroColumnas}%`,
 
-                marginBottom: gapColumnas,
+                marginBottom: 16,
 
                 overflow: "hidden",
 
@@ -580,8 +464,8 @@ export default function HistorialDiarioScreen() {
               })}
             >
               {/* ==========================================
-                      LÍNEA SUPERIOR
-                  ========================================== */}
+                                LÍNEA SUPERIOR
+                            ========================================== */}
 
               <View
                 style={{
@@ -594,9 +478,7 @@ export default function HistorialDiarioScreen() {
               <View
                 style={{
                   flex: 1,
-
-                  padding: esEscritorio ? 18 : 16,
-
+                  padding: 16,
                   justifyContent: "space-between",
                 }}
               >
@@ -606,7 +488,7 @@ export default function HistorialDiarioScreen() {
                     style={{
                       fontFamily: "Nunito-Bold",
 
-                      fontSize: esEscritorio ? 16 : 15,
+                      fontSize: 15,
 
                       color: textColor,
                     }}
@@ -640,8 +522,6 @@ export default function HistorialDiarioScreen() {
 
                         alignSelf: "flex-start",
 
-                        maxWidth: "100%",
-
                         paddingHorizontal: 12,
 
                         paddingVertical: 6,
@@ -668,8 +548,8 @@ export default function HistorialDiarioScreen() {
                 </View>
 
                 {/* ======================================
-                        PIE
-                    ====================================== */}
+                                    PIE
+                                ====================================== */}
 
                 <View
                   style={{
