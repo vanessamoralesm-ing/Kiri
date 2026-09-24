@@ -958,227 +958,44 @@ cd Kiri
 npm install
 ```
 
----
+2. Start the app
 
-# Variables de entorno
+   ```bash
+   npx expo start
+   ```
 
-Crear el archivo:
+In the output, you'll find options to open the app in a
 
-```text
-.env.local
-```
+- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
+- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
+- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
+- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-Agregar:
+You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-```env
-EXPO_PUBLIC_SUPABASE_URL=SUPABASE_URL
-EXPO_PUBLIC_SUPABASE_KEY=SUPABASE_KEY
-```
+## Get a fresh project
 
-Las credenciales correspondientes deben ser proporcionadas por el equipo encargado del proyecto.
-
----
-
-# Verificar Expo SDK
+When you're ready, run:
 
 ```bash
-npm list expo
+npm run reset-project
 ```
 
-Este proyecto corresponde a:
+This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-```text
-Expo SDK 54
-```
-# Instalación de Expo Go
-Para probarlas desde su versión móvil, desde un celular se deberá usar expo go, se recomienda instalarlo desde su página oficial de la web,seleccionando la versiób 54 del SDK.
+## Learn more
 
-página web: [text](https://expo.dev/go)
----
+To learn more about developing your project with Expo, look at the following resources:
 
-# Revisar dependencias
+- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
+- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
 
-```bash
-npx expo-doctor@latest
-```
+## Join the community
 
-También:
+Join our community of developers creating universal apps.
 
-```bash
-npx expo install --check
-```
-
----
-
-# Ejecutar el proyecto
-
-## Iniciar Expo
-
-```bash
-npx expo start -c
-```
-
-## Android
-
-```bash
-Para probarlo desde el de celular de deberá usar expo go, que se descargó anteriormente y se hará el escaneo del código QR o bien escribir la dirección IP que se nos proporciona al momento de la ejecución.
-```
-
-## Web
-
-```bash
-Para probarlo desde la web solo se debe escribir la letra "w" en la terminal para que se nos abrá en el navegador web.
-```
-
-
-# Estado del proyecto
-
-Kiri se encuentra actualmente **en desarrollo**.
-
-El proyecto se encuentra en una etapa de construcción y validación de su **Producto Mínimo Viable (MVP)**.
-
-La versión actual se encuentra enfocada principalmente en las funcionalidades dirigidas al usuario final, entre ellas:
-
-- Registro e inicio de sesión.
-- Entrevista inicial.
-- Identificación inicial del estado emocional.
-- Plan de Bienestar Emocional.
-- Módulo de Autorregistro.
-- Test y cuestionarios.
-- Técnicas complementarias.
-- Psicoeducación.
-- Foro Comunitario.
-- Perfil de usuario.
-- Modo claro y oscuro.
-
-También se ha iniciado el desarrollo del módulo correspondiente al **Superadministrador**, específicamente en funcionalidades relacionadas con solicitudes institucionales.
-
-Las funciones correspondientes a Administradores Institucionales, Psicólogos Institucionales y Docentes forman parte de etapas posteriores del proyecto.
-
----
-
-# Roadmap
-
-El desarrollo de Kiri se plantea de forma progresiva.
-
-## Fase 1 - Producto Mínimo Viable
-
-Principales funcionalidades dirigidas al usuario final:
-
-- Registro y autenticación.
-- Entrevista inicial.
-- Plan de Bienestar Emocional.
-- Módulo de Autorregistro.
-- Test y cuestionarios orientativos.
-- Técnicas complementarias.
-- Psicoeducación.
-- Foro Comunitario.
-- Gestión del perfil.
-- Modo claro y oscuro.
-
-## Fase 2 - Consolidación del Superadministrador
-
-Ampliación del panel administrativo con funcionalidades como:
-
-- Gestión completa de solicitudes institucionales.
-- Gestión de instituciones.
-- Gestión de usuarios.
-- Gestión de contenido.
-- Administración de cuestionarios.
-- Reportes globales.
-- Configuración general de la plataforma.
-
-## Fase 3 - Administración institucional
-
-Implementación de herramientas para el rol de **Administrador Institucional**, incluyendo:
-
-- Gestión de la institución.
-- Gestión de usuarios vinculados.
-- Gestión de grupos y secciones.
-- Administración de personal autorizado.
-- Vinculación institucional mediante códigos.
-
-## Fase 4 - Herramientas para psicólogos
-
-Implementación progresiva de funcionalidades para **Psicólogos Institucionales**, orientadas al acompañamiento autorizado de los usuarios.
-
-## Fase 5 - Funcionalidades para docentes
-
-Incorporación de herramientas preventivas y de acompañamiento para docentes, respetando los permisos y restricciones definidos por el sistema.
-
-## Fase 6 - Evolución de la plataforma
-
-Ampliación progresiva de:
-
-- Métodos de autorregistro.
-- Técnicas complementarias.
-- Test y cuestionarios.
-- Recursos de psicoeducación.
-- Biblioterapia.
-- Mitos y Realidades.
-- Herramientas del Foro Comunitario.
-- Seguimiento del progreso.
-- Gamificación.
-- Personalización del Plan de Bienestar Emocional.
-- Asistente virtual.
-
----
-
-# Funcionalidades a futuro
-
-Entre las funcionalidades contempladas para futuras versiones de Kiri se encuentran:
-
-- Ampliación del panel de Superadministrador.
-- Panel del Administrador Institucional.
-- Panel del Psicólogo Institucional.
-- Funcionalidades específicas para docentes.
-- Gestión completa de instituciones.
-- Generación y administración de códigos de vinculación institucional.
-- Gestión de grados, grupos y secciones.
-- Ampliación de los mecanismos de seguimiento del progreso.
-- Nuevos métodos de autorregistro.
-- Nuevas técnicas complementarias.
-- Incorporación de nuevos cuestionarios.
-- Ampliación del contenido de psicoeducación.
-- Mayor desarrollo de Biblioterapia.
-- Mayor desarrollo de Mitos y Realidades.
-- Ampliación del sistema de gamificación.
-- Nuevos retos y actividades de bienestar.
-- Mayor personalización del Plan de Bienestar Emocional.
-- Evolución del Foro Comunitario.
-- Mejoras en los mecanismos de moderación.
-- Desarrollo progresivo del asistente virtual.
-- Reportes y visualizaciones de progreso.
-- Mejoras de accesibilidad.
-- Optimización para distintos tamaños de pantalla y dispositivos.
-- Mejoras continuas de privacidad y seguridad.
-
-Las funcionalidades futuras estarán sujetas al avance del proyecto, validación del MVP y necesidades identificadas durante las pruebas con usuarios.
-
----
-
-# Aviso importante
-
-Kiri es una herramienta tecnológica de promoción, prevención, educación y acompañamiento en salud mental.
-
-Las evaluaciones, recomendaciones, alertas y recursos proporcionados por la plataforma tienen un carácter orientativo.
-
-**Kiri no realiza diagnósticos clínicos y no sustituye a psicólogos, psiquiatras ni otros profesionales de la salud mental.**
-
-En situaciones que requieran evaluación, diagnóstico o intervención clínica, se debe recurrir a profesionales de la salud mental debidamente calificados.
-
----
-
-# Equipo
-
-Desarrollado por:
-
-## NeuroCode
-
----
-
-# Licencia
-
-Proyecto de uso privado.
-
-**Todos los derechos reservados.**
+- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
+- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+=======
+# Kiri
+>>>>>>> f2a1286df842a762d4b35bddd171102d6779a53d
