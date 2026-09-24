@@ -4,6 +4,7 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
+
 import {
   ActivityIndicator,
   Platform,
@@ -12,6 +13,7 @@ import {
   Text,
   View,
 } from "react-native";
+
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Button from "@/components/ui/Button";
@@ -24,10 +26,35 @@ import { useThemeColor } from "@/hooks/use-theme-color";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 import { useAuth } from "@/services/authProvider";
-
 import type { Genero } from "@/types/auth";
 
 import { EDAD_MINIMA, validateRegister } from "@/utils/validations";
+
+// ==========================================================
+// OPCIONES DE GÉNERO
+// ==========================================================
+
+const OPCIONES_GENERO: {
+  label: string;
+  value: Genero;
+}[] = [
+    {
+      label: "Femenino",
+      value: "femenino",
+    },
+    {
+      label: "Masculino",
+      value: "masculino",
+    },
+    {
+      label: "Otro",
+      value: "otro",
+    },
+    {
+      label: "Prefiero no decir",
+      value: "prefiero_no_decir",
+    },
+  ];
 
 // ==========================================================
 // COMPONENTE
@@ -35,7 +62,6 @@ import { EDAD_MINIMA, validateRegister } from "@/utils/validations";
 
 export default function RegisterScreen() {
   const router = useRouter();
-
   const insets = useSafeAreaInsets();
 
   const { signUp } = useAuth();
@@ -49,15 +75,17 @@ export default function RegisterScreen() {
   const backgroundColor = useThemeColor({}, "background");
   const surfaceColor = useThemeColor({}, "surface");
   const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+
   const borderColor = useThemeColor({}, "border");
   const dividerColor = useThemeColor({}, "divider");
+
   const textColor = useThemeColor({}, "text");
   const textSecondaryColor = useThemeColor({}, "textSecondary");
   const textMutedColor = useThemeColor({}, "textMuted");
-  const placeholderColor = useThemeColor({}, "placeholder");
-  const iconColor = useThemeColor({}, "icon");
+
   const primaryColor = useThemeColor({}, "primary");
   const primarySoftColor = useThemeColor({}, "primarySoft");
+
   const dangerColor = useThemeColor({}, "danger");
   const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
 
@@ -69,8 +97,8 @@ export default function RegisterScreen() {
   const [apellidos, setApellidos] = useState("");
   const [nombrePreferido, setNombrePreferido] = useState("");
   const [telefono, setTelefono] = useState("");
-  const [fechaNacimiento, setFechaNacimiento] = useState("");
 
+  const [fechaNacimiento, setFechaNacimiento] = useState("");
   const [mostrarCalendario, setMostrarCalendario] = useState(false);
 
   const [fechaSeleccionada, setFechaSeleccionada] = useState<Date | null>(null);
@@ -90,44 +118,12 @@ export default function RegisterScreen() {
   const [mostrarConfirmar, setMostrarConfirmar] = useState(false);
 
   // ========================================================
-  // TÉRMINOS
+  // TÉRMINOS Y PROCESO
   // ========================================================
 
   const [aceptoCondi, setAceptoCondi] = useState(false);
-
-  // ========================================================
-  // ESTADOS DEL PROCESO
-  // ========================================================
-
   const [submitting, setSubmitting] = useState(false);
-
   const [error, setError] = useState<string | null>(null);
-
-  // ========================================================
-  // OPCIONES DE GÉNERO
-  // ========================================================
-
-  const opcionesGenero: {
-    label: string;
-    value: Genero;
-  }[] = [
-      {
-        label: "Femenino",
-        value: "femenino",
-      },
-      {
-        label: "Masculino",
-        value: "masculino",
-      },
-      {
-        label: "Otro",
-        value: "otro",
-      },
-      {
-        label: "Prefiero no decir",
-        value: "prefiero_no_decir",
-      },
-    ];
 
   // ========================================================
   // RESPONSIVE
@@ -163,14 +159,19 @@ export default function RegisterScreen() {
         ? 0
         : 22;
 
+  // Género: dos columnas en móvil, cuatro en pantallas mayores.
+  const columnasGenero = esTelefono ? 2 : 4;
+
+  // Porcentajes ligeramente inferiores al ancho teórico
+  // para dejar espacio al gap y evitar desbordamientos.
+  const anchoOpcionGenero = columnasGenero === 2 ? "48%" : "23.5%";
+
   // ========================================================
   // UTILIDADES
   // ========================================================
 
   const limpiarError = () => {
-    if (error) {
-      setError(null);
-    }
+    setError(null);
   };
 
   const irALogin = () => {
@@ -179,16 +180,36 @@ export default function RegisterScreen() {
 
   const formatearFecha = (fecha: Date) => {
     const year = fecha.getFullYear();
-
     const month = String(fecha.getMonth() + 1).padStart(2, "0");
-
     const day = String(fecha.getDate()).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
   };
 
+  const mostrarFecha = () => {
+    if (!fechaSeleccionada) {
+      return "Selecciona tu fecha de nacimiento";
+    }
+
+    return fechaSeleccionada.toLocaleDateString("es-NI", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  const obtenerFechaMaxima = () => {
+    const hoy = new Date();
+
+    return new Date(
+      hoy.getFullYear() - EDAD_MINIMA,
+      hoy.getMonth(),
+      hoy.getDate(),
+    );
+  };
+
   // ========================================================
-  // FECHA
+  // FECHA DE NACIMIENTO
   // ========================================================
 
   const handleFechaChange = (
@@ -209,26 +230,19 @@ export default function RegisterScreen() {
     limpiarError();
   };
 
-  const obtenerFechaMaxima = () => {
-    const hoy = new Date();
-
-    return new Date(
-      hoy.getFullYear() - EDAD_MINIMA,
-      hoy.getMonth(),
-      hoy.getDate(),
-    );
-  };
-
   // ========================================================
   // REGISTRAR
   // ========================================================
 
   const registrar = async () => {
+    if (submitting) {
+      return;
+    }
+
     setError(null);
 
     if (!genero) {
       setError("Selecciona una opción de género.");
-
       return;
     }
 
@@ -249,7 +263,6 @@ export default function RegisterScreen() {
 
     if (firstError) {
       setError(firstError);
-
       return;
     }
 
@@ -258,26 +271,18 @@ export default function RegisterScreen() {
 
       const result = await signUp({
         email: correo.trim().toLowerCase(),
-
         password: contraseña,
-
         nombres: nombres.trim(),
-
         apellidos: apellidos.trim(),
-
         nombrePreferido: nombrePreferido.trim(),
-
         telefono: telefono.trim(),
-
         fechaNacimiento: fechaNacimiento.trim(),
-
         genero,
       });
 
       if (result.requiresEmailConfirmation) {
         router.replace({
           pathname: "/(auth)/registro_exitoso",
-
           params: {
             email: correo.trim().toLowerCase(),
           },
@@ -314,10 +319,14 @@ export default function RegisterScreen() {
   return (
     <ScrollView
       keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
       showsVerticalScrollIndicator={false}
+      style={{
+        flex: 1,
+        backgroundColor,
+      }}
       contentContainerStyle={{
         flexGrow: 1,
-        backgroundColor,
         paddingTop,
         paddingBottom,
       }}
@@ -327,27 +336,20 @@ export default function RegisterScreen() {
           width: "100%",
           maxWidth: maxWidthPantalla,
           alignSelf: "center",
-
           paddingHorizontal,
-
           alignItems: "center",
         }}
       >
-        {/* ==================================================
-            CONTENEDOR PRINCIPAL
-        ================================================== */}
+        {/* CONTENEDOR PRINCIPAL */}
 
         <View
           style={{
             width: "100%",
             maxWidth: maxWidthFormulario,
-
             padding: paddingTarjeta,
 
             borderWidth: esTelefono ? 0 : 1,
-
             borderRadius: esTelefono ? 0 : 26,
-
             borderColor,
 
             backgroundColor: esTelefono ? "transparent" : surfaceColor,
@@ -361,12 +363,10 @@ export default function RegisterScreen() {
             ...(Platform.OS === "ios" && !esTelefono
               ? {
                 shadowColor: "#000000",
-
                 shadowOffset: {
                   width: 0,
                   height: 4,
                 },
-
                 shadowOpacity: 0.05,
                 shadowRadius: 12,
               }
@@ -379,9 +379,7 @@ export default function RegisterScreen() {
               : {}),
           }}
         >
-          {/* ==================================================
-              LOGO
-          ================================================== */}
+          {/* LOGO */}
 
           <View
             style={{
@@ -390,11 +388,9 @@ export default function RegisterScreen() {
           >
             <View
               style={{
-                width: esEscritorio ? 92 : 82,
-
-                height: esEscritorio ? 92 : 82,
-
-                borderRadius: esEscritorio ? 28 : 25,
+                width: esEscritorio ? 92 : 76,
+                height: esEscritorio ? 92 : 76,
+                borderRadius: esEscritorio ? 28 : 23,
 
                 alignItems: "center",
                 justifyContent: "center",
@@ -404,28 +400,23 @@ export default function RegisterScreen() {
             >
               <Ionicons
                 name="heart-outline"
-                size={esEscritorio ? 42 : 36}
+                size={esEscritorio ? 42 : 34}
                 color={primaryColor}
               />
             </View>
           </View>
 
-          {/* ==================================================
-              TÍTULO
-          ================================================== */}
+          {/* TÍTULO */}
 
           <Text
             style={{
               marginTop: 16,
 
               fontFamily: "Nunito-Bold",
-
               fontSize: esEscritorio ? 32 : esTablet ? 29 : 27,
 
-              lineHeight: esEscritorio ? 40 : 34,
-
+              lineHeight: esEscritorio ? 40 : 35,
               textAlign: "center",
-
               color: primaryColor,
             }}
           >
@@ -435,32 +426,27 @@ export default function RegisterScreen() {
           <Text
             style={{
               marginTop: 4,
-              marginBottom: 26,
+              marginBottom: esTelefono ? 24 : 30,
 
               fontFamily: "Nunito-Medium",
-
               fontSize: esEscritorio ? 16 : 15,
-
               lineHeight: 22,
 
               textAlign: "center",
-
               color: textSecondaryColor,
             }}
           >
             Tu refugio emocional comienza hoy
           </Text>
 
-          {/* ==================================================
-              FORMULARIO
-          ================================================== */}
+          {/* FORMULARIO */}
 
           <View
             style={{
               width: "100%",
             }}
           >
-            {/* NOMBRES + APELLIDOS */}
+            {/* NOMBRES Y APELLIDOS */}
 
             <View
               style={{
@@ -472,6 +458,7 @@ export default function RegisterScreen() {
               <View
                 style={{
                   flex: esTelefono ? undefined : 1,
+                  minWidth: 0,
                 }}
               >
                 <Input
@@ -489,6 +476,7 @@ export default function RegisterScreen() {
               <View
                 style={{
                   flex: esTelefono ? undefined : 1,
+                  minWidth: 0,
                 }}
               >
                 <Input
@@ -504,7 +492,7 @@ export default function RegisterScreen() {
               </View>
             </View>
 
-            {/* PREFERIDO + TELÉFONO */}
+            {/* NOMBRE PREFERIDO Y TELÉFONO */}
 
             <View
               style={{
@@ -516,6 +504,7 @@ export default function RegisterScreen() {
               <View
                 style={{
                   flex: esTelefono ? undefined : 1,
+                  minWidth: 0,
                 }}
               >
                 <Input
@@ -533,6 +522,7 @@ export default function RegisterScreen() {
               <View
                 style={{
                   flex: esTelefono ? undefined : 1,
+                  minWidth: 0,
                 }}
               >
                 <Input
@@ -542,9 +532,8 @@ export default function RegisterScreen() {
                   onChangeText={(value) => {
                     const soloNumeros = value.replace(/\D/g, "");
 
-                    const limitado = soloNumeros.slice(0, 8);
+                    setTelefono(soloNumeros.slice(0, 8));
 
-                    setTelefono(limitado);
                     limpiarError();
                   }}
                   keyboardType="number-pad"
@@ -569,18 +558,14 @@ export default function RegisterScreen() {
               autoComplete="email"
             />
 
-            {/* ==================================================
-                FECHA
-            ================================================== */}
+            {/* FECHA DE NACIMIENTO */}
 
             <Text
               style={{
-                marginBottom: 8,
+                marginBottom: 10,
 
                 fontFamily: "Nunito-SemiBold",
-
                 fontSize: 15,
-
                 color: textColor,
               }}
             >
@@ -591,21 +576,17 @@ export default function RegisterScreen() {
               <View
                 style={{
                   width: "100%",
+                  minHeight: 56,
 
-                  minHeight: 52,
-
-                  marginBottom: 18,
-
+                  marginBottom: 24,
                   paddingHorizontal: 15,
 
                   borderWidth: 1,
-                  borderRadius: 12,
-
+                  borderRadius: 14,
                   borderColor,
 
                   justifyContent: "center",
-
-                  backgroundColor: surfaceColor,
+                  backgroundColor: surfaceSecondaryColor,
                 }}
               >
                 <input
@@ -622,80 +603,114 @@ export default function RegisterScreen() {
                       const [year, month, day] = value.split("-").map(Number);
 
                       setFechaSeleccionada(new Date(year, month - 1, day));
+                    } else {
+                      setFechaSeleccionada(null);
                     }
 
                     limpiarError();
                   }}
                   style={{
                     width: "100%",
-                    height: 50,
+                    height: 52,
 
                     border: "none",
                     outline: "none",
-
                     background: "transparent",
 
                     fontSize: 15,
-
-                    color: textColor,
-
                     fontFamily: "Nunito-Medium",
 
+                    color: textColor,
                     cursor: "pointer",
+
+                    colorScheme:
+                      backgroundColor === "#FFFFFF" ? "light" : "dark",
                   }}
                 />
               </View>
             ) : (
               <>
                 <Pressable
-                  onPress={() => setMostrarCalendario(true)}
+                  onPress={() => {
+                    setMostrarCalendario(true);
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Seleccionar fecha de nacimiento"
                   style={({ pressed }) => ({
                     width: "100%",
+                    marginBottom: 24,
 
-                    minHeight: 52,
+                    borderRadius: 14,
+                    overflow: "hidden",
 
-                    marginBottom: 18,
-
-                    paddingHorizontal: 15,
-
-                    borderWidth: 1,
-                    borderRadius: 12,
-
-                    borderColor,
-
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-
-                    backgroundColor: pressed
-                      ? surfaceSecondaryColor
-                      : surfaceColor,
+                    opacity: pressed ? 0.85 : 1,
                   })}
                 >
-                  <Text
+                  <View
                     style={{
-                      flex: 1,
+                      width: "100%",
+                      minHeight: 58,
 
-                      fontFamily: "Nunito-Medium",
+                      paddingHorizontal: 16,
+                      paddingVertical: 12,
 
-                      fontSize: 15,
+                      borderWidth: 1,
+                      borderColor,
+                      borderRadius: 14,
 
-                      color: fechaNacimiento ? textColor : placeholderColor,
+                      backgroundColor: surfaceSecondaryColor,
+
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+
+                      gap: 12,
                     }}
                   >
-                    {fechaNacimiento || "Selecciona tu fecha de nacimiento"}
-                  </Text>
+                    <Text
+                      numberOfLines={2}
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
 
-                  <Ionicons
-                    name="calendar-outline"
-                    size={20}
-                    color={iconColor}
-                  />
+                        fontFamily: "Nunito-Medium",
+                        fontSize: 14,
+                        lineHeight: 20,
+
+                        color: fechaNacimiento ? textColor : textSecondaryColor,
+                      }}
+                    >
+                      {mostrarFecha()}
+                    </Text>
+
+                    <View
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 10,
+
+                        flexShrink: 0,
+
+                        backgroundColor: primarySoftColor,
+
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Ionicons
+                        name="calendar-outline"
+                        size={20}
+                        color={primaryColor}
+                      />
+                    </View>
+                  </View>
                 </Pressable>
+
+                {/* CALENDARIO NATIVO */}
 
                 {mostrarCalendario && (
                   <DateTimePicker
-                    value={fechaSeleccionada ?? new Date(2000, 0, 1)}
+                    value={fechaSeleccionada ?? obtenerFechaMaxima()}
                     mode="date"
                     display={Platform.OS === "ios" ? "spinner" : "calendar"}
                     minimumDate={new Date(1900, 0, 1)}
@@ -704,9 +719,13 @@ export default function RegisterScreen() {
                   />
                 )}
 
+                {/* CERRAR CALENDARIO EN IOS */}
+
                 {Platform.OS === "ios" && mostrarCalendario && (
                   <Pressable
-                    onPress={() => setMostrarCalendario(false)}
+                    onPress={() => {
+                      setMostrarCalendario(false);
+                    }}
                     style={{
                       alignSelf: "flex-end",
 
@@ -714,19 +733,16 @@ export default function RegisterScreen() {
                       marginBottom: 18,
 
                       paddingHorizontal: 18,
-                      paddingVertical: 8,
+                      paddingVertical: 10,
 
                       borderRadius: 10,
-
                       backgroundColor: primaryColor,
                     }}
                   >
                     <Text
                       style={{
                         fontFamily: "Nunito-SemiBold",
-
                         fontSize: 14,
-
                         color: textOnPrimaryColor,
                       }}
                     >
@@ -737,18 +753,16 @@ export default function RegisterScreen() {
               </>
             )}
 
-            {/* ==================================================
-                GÉNERO
-            ================================================== */}
+            {/* ============================================
+                GÉNERO — CORREGIDO
+            ============================================ */}
 
             <Text
               style={{
-                marginBottom: 8,
+                marginBottom: 12,
 
                 fontFamily: "Nunito-SemiBold",
-
                 fontSize: 15,
-
                 color: textColor,
               }}
             >
@@ -756,18 +770,22 @@ export default function RegisterScreen() {
             </Text>
 
             <View
+              accessibilityRole="radiogroup"
               style={{
                 width: "100%",
 
                 flexDirection: "row",
                 flexWrap: "wrap",
 
-                gap: 8,
+                alignItems: "flex-start",
+                justifyContent: "space-between",
 
-                marginBottom: 18,
+                rowGap: 12,
+
+                marginBottom: 26,
               }}
             >
-              {opcionesGenero.map((opcion) => {
+              {OPCIONES_GENERO.map((opcion) => {
                 const activo = genero === opcion.value;
 
                 return (
@@ -775,51 +793,81 @@ export default function RegisterScreen() {
                     key={opcion.value}
                     onPress={() => {
                       setGenero(opcion.value);
-
                       limpiarError();
                     }}
+                    accessibilityRole="radio"
+                    accessibilityLabel={opcion.label}
+                    accessibilityState={{
+                      checked: activo,
+                    }}
                     style={({ pressed }) => ({
-                      minHeight: 42,
+                      // Cada tarjeta tiene su ancho.
+                      // No usar flexGrow ni flex: 1.
+                      width: anchoOpcionGenero,
 
-                      paddingHorizontal: 14,
-                      paddingVertical: 9,
+                      minHeight: 64,
 
-                      borderWidth: 1,
-                      borderRadius: 12,
+                      borderRadius: 14,
+                      overflow: "hidden",
 
-                      borderColor: activo ? primaryColor : borderColor,
-
-                      alignItems: "center",
-                      justifyContent: "center",
-
-                      backgroundColor: activo
-                        ? primarySoftColor
-                        : pressed
-                          ? surfaceSecondaryColor
-                          : surfaceColor,
+                      opacity: pressed ? 0.8 : 1,
                     })}
                   >
-                    <Text
+                    <View
                       style={{
-                        fontFamily: activo
-                          ? "Nunito-SemiBold"
-                          : "Nunito-Medium",
+                        // No usar flex: 1 aquí:
+                        // causaba el estiramiento vertical.
+                        width: "100%",
+                        minHeight: 64,
 
-                        fontSize: 13,
+                        paddingHorizontal: esTelefono ? 10 : 12,
 
-                        color: activo ? primaryColor : textSecondaryColor,
+                        paddingVertical: 12,
+
+                        borderRadius: 14,
+                        borderWidth: activo ? 2 : 1,
+
+                        borderColor: activo ? primaryColor : borderColor,
+
+                        backgroundColor: activo
+                          ? primarySoftColor
+                          : surfaceSecondaryColor,
+
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "flex-start",
+
+                        gap: 9,
                       }}
                     >
-                      {opcion.label}
-                    </Text>
+                      <Ionicons
+                        name={activo ? "radio-button-on" : "radio-button-off"}
+                        size={20}
+                        color={activo ? primaryColor : textSecondaryColor}
+                      />
+
+                      <Text
+                        style={{
+                          flexShrink: 1,
+
+                          fontFamily: activo ? "Nunito-Bold" : "Nunito-Medium",
+
+                          fontSize: esTelefono ? 12 : 13,
+
+                          lineHeight: 18,
+
+                          color: activo ? primaryColor : textColor,
+                        }}
+                      >
+                        {opcion.label}
+                      </Text>
+                    </View>
                   </Pressable>
                 );
               })}
             </View>
 
-            {/* ==================================================
-                CONTRASEÑAS
-            ================================================== */}
+            {/* CONTRASEÑAS */}
 
             <View
               style={{
@@ -831,6 +879,8 @@ export default function RegisterScreen() {
               <View
                 style={{
                   flex: esTelefono ? undefined : 1,
+
+                  minWidth: 0,
                 }}
               >
                 <Input
@@ -848,12 +898,14 @@ export default function RegisterScreen() {
                   rightIcon={
                     <Pressable
                       hitSlop={8}
-                      onPress={() => setMostrarContraseña(!mostrarContraseña)}
+                      onPress={() => {
+                        setMostrarContraseña(!mostrarContraseña);
+                      }}
                     >
                       <Ionicons
                         name={mostrarContraseña ? "eye-off" : "eye"}
                         size={22}
-                        color={iconColor}
+                        color={textSecondaryColor}
                       />
                     </Pressable>
                   }
@@ -863,6 +915,8 @@ export default function RegisterScreen() {
               <View
                 style={{
                   flex: esTelefono ? undefined : 1,
+
+                  minWidth: 0,
                 }}
               >
                 <Input
@@ -879,12 +933,14 @@ export default function RegisterScreen() {
                   rightIcon={
                     <Pressable
                       hitSlop={8}
-                      onPress={() => setMostrarConfirmar(!mostrarConfirmar)}
+                      onPress={() => {
+                        setMostrarConfirmar(!mostrarConfirmar);
+                      }}
                     >
                       <Ionicons
                         name={mostrarConfirmar ? "eye-off" : "eye"}
                         size={22}
-                        color={iconColor}
+                        color={textSecondaryColor}
                       />
                     </Pressable>
                   }
@@ -892,16 +948,14 @@ export default function RegisterScreen() {
               </View>
             </View>
 
-            {/* ==================================================
-                TÉRMINOS
-            ================================================== */}
+            {/* TÉRMINOS Y CONDICIONES */}
 
             <View
               style={{
                 width: "100%",
 
                 marginTop: 2,
-                marginBottom: 20,
+                marginBottom: 22,
 
                 flexDirection: "row",
                 alignItems: "flex-start",
@@ -910,34 +964,38 @@ export default function RegisterScreen() {
               <Pressable
                 onPress={() => {
                   setAceptoCondi(!aceptoCondi);
-
                   limpiarError();
                 }}
-                hitSlop={6}
+                accessibilityRole="checkbox"
+                accessibilityState={{
+                  checked: aceptoCondi,
+                }}
+                hitSlop={8}
                 style={{
-                  width: 22,
-                  height: 22,
+                  width: 24,
+                  height: 24,
 
                   flexShrink: 0,
 
-                  marginTop: 2,
-                  marginRight: 10,
+                  marginTop: 1,
+                  marginRight: 11,
 
                   borderWidth: 2,
-                  borderRadius: 6,
-
+                  borderRadius: 7,
                   borderColor: primaryColor,
 
                   alignItems: "center",
                   justifyContent: "center",
 
-                  backgroundColor: aceptoCondi ? primaryColor : surfaceColor,
+                  backgroundColor: aceptoCondi
+                    ? primaryColor
+                    : surfaceSecondaryColor,
                 }}
               >
                 {aceptoCondi && (
                   <Ionicons
                     name="checkmark"
-                    size={15}
+                    size={16}
                     color={textOnPrimaryColor}
                   />
                 )}
@@ -946,11 +1004,11 @@ export default function RegisterScreen() {
               <Text
                 style={{
                   flex: 1,
+                  minWidth: 0,
 
                   fontFamily: "Nunito-Medium",
-
                   fontSize: 13,
-                  lineHeight: 19,
+                  lineHeight: 20,
 
                   color: textSecondaryColor,
                 }}
@@ -959,10 +1017,11 @@ export default function RegisterScreen() {
                 <Text
                   style={{
                     fontFamily: "Nunito-SemiBold",
-
                     color: primaryColor,
                   }}
-                  onPress={() => console.log("Ver Términos")}
+                  onPress={() => {
+                    console.log("Ver Términos");
+                  }}
                 >
                   Términos y Condiciones
                 </Text>{" "}
@@ -970,10 +1029,11 @@ export default function RegisterScreen() {
                 <Text
                   style={{
                     fontFamily: "Nunito-SemiBold",
-
                     color: primaryColor,
                   }}
-                  onPress={() => console.log("Ver Política de Privacidad")}
+                  onPress={() => {
+                    console.log("Ver Política de Privacidad");
+                  }}
                 >
                   Política de Privacidad
                 </Text>{" "}
@@ -981,41 +1041,37 @@ export default function RegisterScreen() {
               </Text>
             </View>
 
-            {/* ==================================================
-                ERROR
-            ================================================== */}
+            {/* ERROR */}
 
             {error && (
               <View
                 style={{
                   width: "100%",
+                  marginBottom: 16,
 
-                  marginBottom: 14,
-
-                  padding: 13,
-
+                  padding: 14,
                   borderRadius: 13,
 
                   flexDirection: "row",
                   alignItems: "flex-start",
 
-                  gap: 8,
+                  gap: 10,
 
                   backgroundColor: surfaceSecondaryColor,
                 }}
               >
                 <Ionicons
                   name="alert-circle-outline"
-                  size={20}
+                  size={21}
                   color={dangerColor}
                 />
 
                 <Text
                   style={{
                     flex: 1,
+                    minWidth: 0,
 
                     fontFamily: "Nunito-Medium",
-
                     fontSize: 13,
                     lineHeight: 19,
 
@@ -1027,9 +1083,7 @@ export default function RegisterScreen() {
               </View>
             )}
 
-            {/* ==================================================
-                CREAR CUENTA
-            ================================================== */}
+            {/* CREAR CUENTA */}
 
             <Button
               title={submitting ? "Creando cuenta..." : "Crear cuenta"}
@@ -1047,15 +1101,13 @@ export default function RegisterScreen() {
               />
             )}
 
-            {/* ==================================================
-                SEPARADOR
-            ================================================== */}
+            {/* SEPARADOR */}
 
             <View
               style={{
                 width: "100%",
 
-                marginVertical: 18,
+                marginVertical: 20,
 
                 flexDirection: "row",
                 alignItems: "center",
@@ -1065,7 +1117,6 @@ export default function RegisterScreen() {
                 style={{
                   flex: 1,
                   height: 1,
-
                   backgroundColor: dividerColor,
                 }}
               />
@@ -1075,7 +1126,6 @@ export default function RegisterScreen() {
                   marginHorizontal: 14,
 
                   fontFamily: "Nunito-Medium",
-
                   fontSize: 13,
 
                   color: textMutedColor,
@@ -1088,29 +1138,24 @@ export default function RegisterScreen() {
                 style={{
                   flex: 1,
                   height: 1,
-
                   backgroundColor: dividerColor,
                 }}
               />
             </View>
 
-            {/* ==================================================
-                GOOGLE
-            ================================================== */}
+            {/* GOOGLE */}
 
             <GoogleButton
-              onPress={() =>
-                console.log("Registro con Google — pendiente de implementar")
-              }
+              onPress={() => {
+                console.log("Registro con Google — pendiente de implementar");
+              }}
             />
 
-            {/* ==================================================
-                LOGIN
-            ================================================== */}
+            {/* INICIAR SESIÓN */}
 
             <View
               style={{
-                marginTop: 20,
+                marginTop: 22,
 
                 flexDirection: "row",
                 flexWrap: "wrap",
@@ -1122,22 +1167,18 @@ export default function RegisterScreen() {
               <Text
                 style={{
                   fontFamily: "Nunito-Medium",
-
                   fontSize: 14,
-
                   color: textSecondaryColor,
                 }}
               >
                 ¿Ya tienes una cuenta?{" "}
               </Text>
 
-              <Pressable onPress={irALogin}>
+              <Pressable onPress={irALogin} hitSlop={8}>
                 <Text
                   style={{
                     fontFamily: "Nunito-SemiBold",
-
                     fontSize: 14,
-
                     color: primaryColor,
                   }}
                 >

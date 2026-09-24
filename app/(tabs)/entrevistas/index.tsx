@@ -7,12 +7,10 @@ import {
 
 import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
 
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
-import { useThemeColor } from "@/hooks/use-theme-color";
-
 import { Ionicons } from "@expo/vector-icons";
-
 import { useFocusEffect, useRouter } from "expo-router";
 
 import React, { useCallback, useState } from "react";
@@ -42,11 +40,21 @@ const formatoFecha = new Intl.DateTimeFormat("es-NI", {
 });
 
 function formatearFecha(fecha: string | null) {
-  return fecha ? formatoFecha.format(new Date(fecha)) : "Sin fecha";
+  if (!fecha) {
+    return "Sin fecha";
+  }
+
+  const fechaConvertida = new Date(fecha);
+
+  if (Number.isNaN(fechaConvertida.getTime())) {
+    return "Sin fecha";
+  }
+
+  return formatoFecha.format(fechaConvertida);
 }
 
 // ==========================================================
-// COMPONENTE
+// COMPONENTE PRINCIPAL
 // ==========================================================
 
 export default function MisEntrevistasScreen() {
@@ -61,27 +69,21 @@ export default function MisEntrevistasScreen() {
   // ========================================================
 
   const backgroundColor = useThemeColor({}, "background");
-
   const surfaceColor = useThemeColor({}, "surface");
-
   const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
   const borderColor = useThemeColor({}, "border");
 
   const textColor = useThemeColor({}, "text");
-
   const textSecondaryColor = useThemeColor({}, "textSecondary");
-
   const textMutedColor = useThemeColor({}, "textMuted");
 
   const iconColor = useThemeColor({}, "icon");
 
   const primaryColor = useThemeColor({}, "primary");
-
   const primarySoftColor = useThemeColor({}, "primarySoft");
 
   const secondaryColor = useThemeColor({}, "secondary");
-
   const secondarySoftColor = useThemeColor({}, "secondarySoft");
 
   const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
@@ -93,7 +95,6 @@ export default function MisEntrevistasScreen() {
   const [entrevistas, setEntrevistas] = useState<EntrevistaHistorial[]>([]);
 
   const [cargando, setCargando] = useState(true);
-
   const [creando, setCreando] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
@@ -131,7 +132,6 @@ export default function MisEntrevistasScreen() {
       async function cargar() {
         try {
           setCargando(true);
-
           setError(null);
 
           const data = await obtenerHistorialEntrevistas();
@@ -171,7 +171,6 @@ export default function MisEntrevistasScreen() {
 
     try {
       setCreando(true);
-
       setError(null);
 
       const entrevista = await crearEntrevista();
@@ -196,11 +195,13 @@ export default function MisEntrevistasScreen() {
   // NAVEGACIÓN
   // ========================================================
 
-  const verResultado = (id: string) =>
+  const verResultado = (id: string) => {
     router.push(`/(tabs)/entrevistas/${id}/resultado` as any);
+  };
 
-  const verPlan = (id: string) =>
+  const verPlan = (id: string) => {
     router.push(`/(tabs)/entrevistas/${id}/plan` as any);
+  };
 
   // ========================================================
   // DATOS
@@ -219,113 +220,96 @@ export default function MisEntrevistasScreen() {
       edges={[]}
       style={{
         flex: 1,
-
         backgroundColor,
       }}
     >
       <ScrollView
+        style={{
+          flex: 1,
+        }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingTop,
-
           paddingBottom,
         }}
       >
         <View
           style={{
             width: "100%",
-
             maxWidth: maxWidthContenido,
-
             alignSelf: "center",
-
             paddingHorizontal,
           }}
         >
           {/* ==================================================
-              HEADER
+              ENCABEZADO
           ================================================== */}
 
           <View
             style={{
               width: "100%",
-
               maxWidth: maxWidthCabecera,
 
-              marginBottom: esEscritorio ? 26 : 22,
+              marginBottom: esEscritorio ? 28 : 24,
 
               flexDirection: "row",
-
               alignItems: "flex-start",
             }}
           >
+            {/* VOLVER */}
+
             <Pressable
-              onPress={() => router.replace("/(tabs)/home")}
+              onPress={() => {
+                router.replace("/(tabs)/home");
+              }}
               hitSlop={8}
               style={({ pressed }) => ({
-                width: 46,
-
-                height: 46,
-
                 flexShrink: 0,
 
-                borderRadius: 15,
+                borderRadius: 14,
 
-                borderWidth: 1,
+                opacity: pressed ? 0.75 : 1,
 
-                borderColor,
-
-                alignItems: "center",
-
-                justifyContent: "center",
-
-                backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
-
-                opacity: pressed ? 0.8 : 1,
-
-                ...Platform.select({
-                  web: {
-                    boxShadow: "0px 2px 8px rgba(0,0,0,0.04)",
-                  },
-
-                  ios: {
-                    shadowColor: "#000000",
-
-                    shadowOffset: {
-                      width: 0,
-                      height: 2,
-                    },
-
-                    shadowOpacity: 0.05,
-
-                    shadowRadius: 5,
-                  },
-
-                  android: {
-                    elevation: 2,
-                  },
-                }),
+                overflow: "hidden",
               })}
             >
-              <Ionicons name="arrow-back" size={22} color={iconColor} />
+              <View
+                style={{
+                  width: esTelefono ? 42 : 46,
+                  height: esTelefono ? 42 : 46,
+
+                  borderRadius: 14,
+
+                  borderWidth: 1,
+                  borderColor,
+
+                  alignItems: "center",
+                  justifyContent: "center",
+
+                  backgroundColor: surfaceColor,
+                }}
+              >
+                <Ionicons name="arrow-back" size={22} color={iconColor} />
+              </View>
             </Pressable>
+
+            {/* TÍTULO Y DESCRIPCIÓN */}
 
             <View
               style={{
                 flex: 1,
-
                 minWidth: 0,
 
-                marginLeft: 16,
+                marginLeft: esTelefono ? 12 : 16,
               }}
             >
               <Text
                 style={{
                   fontFamily: "Nunito-Bold",
 
-                  fontSize: esEscritorio ? 30 : esTablet ? 27 : 24,
+                  fontSize: esEscritorio ? 30 : esTablet ? 27 : 23,
 
-                  lineHeight: esEscritorio ? 38 : 32,
+                  lineHeight: esEscritorio ? 38 : 31,
 
                   color: textColor,
                 }}
@@ -335,15 +319,14 @@ export default function MisEntrevistasScreen() {
 
               <Text
                 style={{
-                  marginTop: 5,
+                  marginTop: 7,
 
                   maxWidth: 650,
 
                   fontFamily: "Nunito-Medium",
 
                   fontSize: esEscritorio ? 15 : 14,
-
-                  lineHeight: 21,
+                  lineHeight: esTelefono ? 21 : 23,
 
                   color: textSecondaryColor,
                 }}
@@ -363,122 +346,147 @@ export default function MisEntrevistasScreen() {
             style={({ pressed }) => ({
               width: "100%",
 
-              minHeight: esEscritorio ? 126 : 112,
+              marginBottom: esTelefono ? 28 : 32,
 
-              marginBottom: 28,
+              borderRadius: 22,
 
-              padding: esEscritorio ? 24 : 20,
+              overflow: "hidden",
 
-              borderRadius: 24,
+              opacity: creando ? 0.65 : pressed ? 0.85 : 1,
 
-              borderWidth: 1,
-
-              borderColor: primaryColor,
-
-              flexDirection: "row",
-
-              alignItems: "center",
-
-              backgroundColor: primaryColor,
-
-              opacity: creando ? 0.65 : pressed ? 0.88 : 1,
-
-              ...Platform.select({
-                web: {
+              ...(Platform.OS === "web"
+                ? ({
                   boxShadow: "0px 4px 12px rgba(0,0,0,0.08)",
-                },
-
-                ios: {
-                  shadowColor: "#000000",
-
-                  shadowOffset: {
-                    width: 0,
-                    height: 4,
-                  },
-
-                  shadowOpacity: 0.08,
-
-                  shadowRadius: 10,
-                },
-
-                android: {
-                  elevation: 4,
-                },
-              }),
+                } as any)
+                : Platform.OS === "android"
+                  ? {
+                    elevation: 3,
+                  }
+                  : Platform.OS === "ios"
+                    ? {
+                      shadowColor: "#000000",
+                      shadowOffset: {
+                        width: 0,
+                        height: 4,
+                      },
+                      shadowOpacity: 0.08,
+                      shadowRadius: 10,
+                    }
+                    : {}),
             })}
           >
             <View
               style={{
-                width: esEscritorio ? 58 : 52,
+                width: "100%",
 
-                height: esEscritorio ? 58 : 52,
+                minHeight: esTelefono ? 112 : 126,
 
-                borderRadius: 18,
+                paddingHorizontal: esTelefono ? 14 : 24,
+                paddingVertical: esTelefono ? 18 : 22,
 
-                flexShrink: 0,
+                borderRadius: 22,
 
+                backgroundColor: primaryColor,
+
+                flexDirection: "row",
                 alignItems: "center",
-
-                justifyContent: "center",
-
-                backgroundColor: surfaceColor,
               }}
             >
-              {creando ? (
-                <ActivityIndicator size="small" color={primaryColor} />
-              ) : (
-                <Ionicons name="add" size={27} color={primaryColor} />
+              {/* ICONO */}
+
+              <View
+                style={{
+                  width: esTelefono ? 50 : 58,
+                  height: esTelefono ? 50 : 58,
+
+                  borderRadius: 17,
+
+                  flexShrink: 0,
+
+                  alignItems: "center",
+                  justifyContent: "center",
+
+                  backgroundColor: "#FFFFFF",
+                }}
+              >
+                {creando ? (
+                  <ActivityIndicator size="small" color={primaryColor} />
+                ) : (
+                  <Ionicons name="add" size={29} color={primaryColor} />
+                )}
+              </View>
+
+              {/* TEXTO */}
+
+              <View
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+
+                  marginLeft: esTelefono ? 12 : 18,
+
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: "Nunito-Bold",
+
+                    fontSize: esTelefono ? 17 : 19,
+                    lineHeight: esTelefono ? 23 : 26,
+
+                    color: textOnPrimaryColor,
+                  }}
+                >
+                  {creando ? "Preparando evaluación..." : "Nueva evaluación"}
+                </Text>
+
+                <Text
+                  style={{
+                    marginTop: 5,
+
+                    fontFamily: "Nunito-Medium",
+
+                    fontSize: esTelefono ? 12 : 14,
+                    lineHeight: esTelefono ? 18 : 20,
+
+                    color: "#EAF2FF",
+                  }}
+                >
+                  {creando
+                    ? "Estamos preparando una nueva entrevista."
+                    : "Cuéntanos cómo te sientes actualmente y recibe una evaluación de bienestar."}
+                </Text>
+              </View>
+
+              {/* FLECHA */}
+
+              {!creando && (
+                <View
+                  style={{
+                    width: esTelefono ? 30 : 38,
+                    height: esTelefono ? 30 : 38,
+
+                    marginLeft: esTelefono ? 6 : 12,
+
+                    borderRadius: 999,
+
+                    flexShrink: 0,
+
+                    alignItems: "center",
+                    justifyContent: "center",
+
+                    backgroundColor: "rgba(255,255,255,0.18)",
+                  }}
+                >
+                  <Ionicons
+                    name="chevron-forward"
+                    size={esTelefono ? 20 : 24}
+                    color={textOnPrimaryColor}
+                  />
+                </View>
               )}
             </View>
-
-            <View
-              style={{
-                flex: 1,
-
-                minWidth: 0,
-
-                marginLeft: 16,
-              }}
-            >
-              <Text
-                style={{
-                  fontFamily: "Nunito-Bold",
-
-                  fontSize: esEscritorio ? 18 : 16,
-
-                  color: textOnPrimaryColor,
-                }}
-              >
-                {creando ? "Preparando evaluación..." : "Nueva evaluación"}
-              </Text>
-
-              <Text
-                numberOfLines={esTelefono ? 2 : 1}
-                style={{
-                  marginTop: 4,
-
-                  fontFamily: "Nunito-Medium",
-
-                  fontSize: 13,
-
-                  lineHeight: 19,
-
-                  color: "#EAF2FF",
-                }}
-              >
-                {creando
-                  ? "Estamos preparando una nueva entrevista."
-                  : "Cuéntanos cómo te sientes actualmente y recibe una evaluación de bienestar."}
-              </Text>
-            </View>
-
-            {!creando && (
-              <Ionicons
-                name="chevron-forward"
-                size={22}
-                color={textOnPrimaryColor}
-              />
-            )}
           </Pressable>
 
           {/* ==================================================
@@ -488,10 +496,10 @@ export default function MisEntrevistasScreen() {
           {cargando ? (
             <View
               style={{
-                minHeight: 260,
+                width: "100%",
+                minHeight: 250,
 
                 alignItems: "center",
-
                 justifyContent: "center",
               }}
             >
@@ -502,7 +510,6 @@ export default function MisEntrevistasScreen() {
                   marginTop: 12,
 
                   fontFamily: "Nunito-Medium",
-
                   fontSize: 14,
 
                   color: textSecondaryColor,
@@ -517,7 +524,7 @@ export default function MisEntrevistasScreen() {
               titulo="No pudimos cargar tus entrevistas"
               texto={error}
             />
-          ) : !entrevistas.length ? (
+          ) : entrevistas.length === 0 ? (
             <EstadoVacio
               icono="heart-outline"
               titulo="Aún no tienes evaluaciones"
@@ -527,42 +534,59 @@ export default function MisEntrevistasScreen() {
                 disabled={creando}
                 onPress={nuevaEntrevista}
                 style={({ pressed }) => ({
-                  minHeight: 46,
+                  width: "100%",
+                  maxWidth: 310,
 
-                  marginTop: 20,
-
-                  paddingHorizontal: 20,
+                  marginTop: 22,
 
                   borderRadius: 14,
 
-                  flexDirection: "row",
-
-                  alignItems: "center",
-
-                  justifyContent: "center",
-
-                  gap: 8,
-
-                  backgroundColor: primaryColor,
+                  overflow: "hidden",
 
                   opacity: creando ? 0.6 : pressed ? 0.8 : 1,
                 })}
               >
-                {creando && (
-                  <ActivityIndicator size="small" color={textOnPrimaryColor} />
-                )}
-
-                <Text
+                <View
                   style={{
-                    fontFamily: "Nunito-Bold",
+                    minHeight: 48,
 
-                    fontSize: 13,
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
 
-                    color: textOnPrimaryColor,
+                    borderRadius: 14,
+
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+
+                    backgroundColor: primaryColor,
                   }}
                 >
-                  {creando ? "Preparando..." : "Realizar mi primera entrevista"}
-                </Text>
+                  {creando && (
+                    <ActivityIndicator
+                      size="small"
+                      color={textOnPrimaryColor}
+                      style={{
+                        marginRight: 8,
+                      }}
+                    />
+                  )}
+
+                  <Text
+                    style={{
+                      fontFamily: "Nunito-Bold",
+                      fontSize: 13,
+
+                      textAlign: "center",
+
+                      color: textOnPrimaryColor,
+                    }}
+                  >
+                    {creando
+                      ? "Preparando..."
+                      : "Realizar mi primera entrevista"}
+                  </Text>
+                </View>
               </Pressable>
             </EstadoVacio>
           ) : (
@@ -573,12 +597,11 @@ export default function MisEntrevistasScreen() {
 
               <Text
                 style={{
-                  marginBottom: 16,
+                  marginTop: esTelefono ? 12 : 16,
+                  marginBottom: esTelefono ? 22 : 24,
 
                   fontFamily: "Nunito-Bold",
-
                   fontSize: esEscritorio ? 22 : 20,
-
                   color: textColor,
                 }}
               >
@@ -589,74 +612,75 @@ export default function MisEntrevistasScreen() {
                 style={{
                   width: "100%",
 
-                  padding: esEscritorio ? 24 : 20,
+                  padding: esEscritorio ? 24 : esTelefono ? 16 : 20,
 
                   borderRadius: 24,
 
                   borderWidth: 1,
-
                   borderColor,
 
                   backgroundColor: surfaceColor,
 
-                  ...Platform.select({
-                    web: {
+                  ...(Platform.OS === "web"
+                    ? ({
                       boxShadow: "0px 3px 10px rgba(0,0,0,0.05)",
-                    },
-
-                    ios: {
-                      shadowColor: "#000000",
-
-                      shadowOffset: {
-                        width: 0,
-                        height: 3,
-                      },
-
-                      shadowOpacity: 0.06,
-
-                      shadowRadius: 8,
-                    },
-
-                    android: {
-                      elevation: 3,
-                    },
-                  }),
+                    } as any)
+                    : Platform.OS === "android"
+                      ? {
+                        elevation: 2,
+                      }
+                      : Platform.OS === "ios"
+                        ? {
+                          shadowColor: "#000000",
+                          shadowOffset: {
+                            width: 0,
+                            height: 3,
+                          },
+                          shadowOpacity: 0.06,
+                          shadowRadius: 8,
+                        }
+                        : {}),
                 }}
               >
                 {/* ==============================================
-                    FECHA
+                    FECHA Y ESTADO
                 ============================================== */}
 
                 <View
                   style={{
+                    width: "100%",
+
                     flexDirection: esTelefono ? "column" : "row",
 
                     alignItems: esTelefono ? "flex-start" : "center",
 
-                    gap: esTelefono ? 12 : 0,
+                    gap: 12,
                   }}
                 >
+                  {/* FECHA */}
+
                   <View
                     style={{
-                      flex: 1,
+                      width: esTelefono ? "100%" : undefined,
+
+                      flex: esTelefono ? undefined : 1,
 
                       minWidth: 0,
 
                       flexDirection: "row",
-
                       alignItems: "center",
                     }}
                   >
                     <View
                       style={{
-                        width: 46,
-
-                        height: 46,
+                        width: 48,
+                        height: 48,
 
                         borderRadius: 15,
 
-                        alignItems: "center",
+                        flexShrink: 0,
 
+                        alignItems: "center",
                         justifyContent: "center",
 
                         backgroundColor: primarySoftColor,
@@ -664,7 +688,7 @@ export default function MisEntrevistasScreen() {
                     >
                       <Ionicons
                         name="calendar-outline"
-                        size={21}
+                        size={22}
                         color={primaryColor}
                       />
                     </View>
@@ -672,14 +696,14 @@ export default function MisEntrevistasScreen() {
                     <View
                       style={{
                         flex: 1,
+                        minWidth: 0,
 
-                        marginLeft: 13,
+                        marginLeft: 12,
                       }}
                     >
                       <Text
                         style={{
                           fontFamily: "Nunito-Medium",
-
                           fontSize: 12,
 
                           color: textMutedColor,
@@ -690,11 +714,12 @@ export default function MisEntrevistasScreen() {
 
                       <Text
                         style={{
-                          marginTop: 2,
+                          marginTop: 3,
 
                           fontFamily: "Nunito-Bold",
 
-                          fontSize: 15,
+                          fontSize: esTelefono ? 14 : 15,
+                          lineHeight: 21,
 
                           color: textColor,
                         }}
@@ -704,10 +729,13 @@ export default function MisEntrevistasScreen() {
                     </View>
                   </View>
 
+                  {/* ESTADO */}
+
                   <View
                     style={{
-                      paddingHorizontal: 12,
+                      alignSelf: esTelefono ? "flex-start" : "center",
 
+                      paddingHorizontal: 13,
                       paddingVertical: 7,
 
                       borderRadius: 999,
@@ -730,20 +758,21 @@ export default function MisEntrevistasScreen() {
                 </View>
 
                 {/* ==============================================
-                    ÁREA PRIORITARIA
+                    ENFOQUE PRINCIPAL
                 ============================================== */}
 
-                {!!ultima.areas_prioritarias.length && (
+                {ultima.areas_prioritarias.length > 0 && (
                   <View
                     style={{
+                      width: "100%",
+
                       marginTop: 20,
 
-                      padding: 18,
+                      padding: esTelefono ? 16 : 18,
 
                       borderRadius: 18,
 
                       borderWidth: 1,
-
                       borderColor,
 
                       backgroundColor: surfaceSecondaryColor,
@@ -763,25 +792,24 @@ export default function MisEntrevistasScreen() {
 
                     <View
                       style={{
-                        marginTop: 6,
+                        width: "100%",
+
+                        marginTop: 8,
 
                         flexDirection: "row",
-
                         alignItems: "center",
 
-                        justifyContent: "space-between",
-
-                        gap: 12,
+                        gap: 10,
                       }}
                     >
                       <Text
                         style={{
                           flex: 1,
+                          minWidth: 0,
 
                           fontFamily: "Nunito-Bold",
 
-                          fontSize: 15,
-
+                          fontSize: esTelefono ? 14 : 15,
                           lineHeight: 21,
 
                           color: textColor,
@@ -793,9 +821,11 @@ export default function MisEntrevistasScreen() {
                       {ultima.porcentaje !== null && (
                         <Text
                           style={{
+                            flexShrink: 0,
+
                             fontFamily: "Nunito-Bold",
 
-                            fontSize: 21,
+                            fontSize: esTelefono ? 20 : 22,
 
                             color: primaryColor,
                           }}
@@ -808,14 +838,17 @@ export default function MisEntrevistasScreen() {
                 )}
 
                 {/* ==============================================
-                    ACCIONES
+                    ACCIONES RESPONSIVE
                 ============================================== */}
 
                 <View
                   style={{
+                    width: "100%",
+
                     marginTop: 20,
 
                     flexDirection: esTelefono ? "column" : "row",
+                    alignItems: "stretch",
 
                     gap: 12,
                   }}
@@ -823,14 +856,20 @@ export default function MisEntrevistasScreen() {
                   <BotonAccion
                     icono="analytics-outline"
                     texto="Ver resultados"
-                    onPress={() => verResultado(ultima.id_entrevista)}
+                    esTelefono={esTelefono}
+                    onPress={() => {
+                      verResultado(ultima.id_entrevista);
+                    }}
                   />
 
                   {ultima.tiene_plan && (
                     <BotonAccion
                       icono="clipboard-outline"
                       texto="Ver plan"
-                      onPress={() => verPlan(ultima.id_entrevista)}
+                      esTelefono={esTelefono}
+                      onPress={() => {
+                        verPlan(ultima.id_entrevista);
+                      }}
                     />
                   )}
                 </View>
@@ -840,12 +879,11 @@ export default function MisEntrevistasScreen() {
                   HISTORIAL
               ================================================== */}
 
-              {!!anteriores.length && (
+              {anteriores.length > 0 && (
                 <>
                   <View
                     style={{
                       marginTop: esEscritorio ? 36 : 30,
-
                       marginBottom: 16,
                     }}
                   >
@@ -863,11 +901,12 @@ export default function MisEntrevistasScreen() {
 
                     <Text
                       style={{
-                        marginTop: 3,
+                        marginTop: 4,
 
                         fontFamily: "Nunito-Medium",
 
                         fontSize: 13,
+                        lineHeight: 19,
 
                         color: textMutedColor,
                       }}
@@ -890,124 +929,139 @@ export default function MisEntrevistasScreen() {
                     {anteriores.map((entrevista) => (
                       <Pressable
                         key={entrevista.id_entrevista}
-                        onPress={() => verResultado(entrevista.id_entrevista)}
+                        onPress={() => {
+                          verResultado(entrevista.id_entrevista);
+                        }}
                         style={({ pressed }) => ({
-                          width: esEscritorio ? "49.3%" : "100%",
-
-                          minHeight: 96,
-
-                          padding: 16,
+                          width: esEscritorio ? "49%" : "100%",
 
                           borderRadius: 18,
 
-                          borderWidth: 1,
+                          overflow: "hidden",
 
-                          borderColor: pressed ? primaryColor : borderColor,
-
-                          flexDirection: "row",
-
-                          alignItems: "center",
-
-                          backgroundColor: pressed
-                            ? primarySoftColor
-                            : surfaceColor,
-
-                          opacity: pressed ? 0.9 : 1,
+                          opacity: pressed ? 0.85 : 1,
                         })}
                       >
                         <View
                           style={{
-                            width: 44,
+                            width: "100%",
 
-                            height: 44,
+                            minHeight: 96,
 
-                            borderRadius: 14,
+                            padding: esTelefono ? 14 : 16,
 
+                            borderRadius: 18,
+
+                            borderWidth: 1,
+                            borderColor,
+
+                            backgroundColor: surfaceColor,
+
+                            flexDirection: "row",
                             alignItems: "center",
-
-                            justifyContent: "center",
-
-                            backgroundColor: primarySoftColor,
                           }}
                         >
-                          <Ionicons
-                            name="heart-outline"
-                            size={20}
-                            color={primaryColor}
-                          />
-                        </View>
+                          {/* ICONO */}
 
-                        <View
-                          style={{
-                            flex: 1,
-
-                            minWidth: 0,
-
-                            marginLeft: 13,
-                          }}
-                        >
-                          <Text
+                          <View
                             style={{
-                              fontFamily: "Nunito-Bold",
+                              width: 44,
+                              height: 44,
 
-                              fontSize: 14,
+                              borderRadius: 14,
 
-                              color: textColor,
+                              flexShrink: 0,
+
+                              alignItems: "center",
+                              justifyContent: "center",
+
+                              backgroundColor: primarySoftColor,
                             }}
                           >
-                            {formatearFecha(entrevista.fecha_fin)}
-                          </Text>
+                            <Ionicons
+                              name="heart-outline"
+                              size={20}
+                              color={primaryColor}
+                            />
+                          </View>
 
-                          {!!entrevista.areas_prioritarias.length && (
-                            <Text
-                              numberOfLines={2}
-                              style={{
-                                marginTop: 3,
+                          {/* INFORMACIÓN */}
 
-                                fontFamily: "Nunito-Medium",
+                          <View
+                            style={{
+                              flex: 1,
+                              minWidth: 0,
 
-                                fontSize: 12,
-
-                                lineHeight: 17,
-
-                                color: textSecondaryColor,
-                              }}
-                            >
-                              {entrevista.areas_prioritarias.join(" y ")}
-                            </Text>
-                          )}
-                        </View>
-
-                        <View
-                          style={{
-                            marginLeft: 10,
-
-                            alignItems: "flex-end",
-
-                            justifyContent: "center",
-
-                            gap: 4,
-                          }}
-                        >
-                          {entrevista.porcentaje !== null && (
+                              marginLeft: 12,
+                            }}
+                          >
                             <Text
                               style={{
                                 fontFamily: "Nunito-Bold",
 
-                                fontSize: 16,
+                                fontSize: 14,
+                                lineHeight: 20,
 
-                                color: primaryColor,
+                                color: textColor,
                               }}
                             >
-                              {Math.round(entrevista.porcentaje)}%
+                              {formatearFecha(entrevista.fecha_fin)}
                             </Text>
-                          )}
 
-                          <Ionicons
-                            name="chevron-forward"
-                            size={19}
-                            color={primaryColor}
-                          />
+                            {entrevista.areas_prioritarias.length > 0 && (
+                              <Text
+                                numberOfLines={2}
+                                style={{
+                                  marginTop: 4,
+
+                                  fontFamily: "Nunito-Medium",
+
+                                  fontSize: 12,
+                                  lineHeight: 17,
+
+                                  color: textSecondaryColor,
+                                }}
+                              >
+                                {entrevista.areas_prioritarias.join(" y ")}
+                              </Text>
+                            )}
+                          </View>
+
+                          {/* PORCENTAJE Y FLECHA */}
+
+                          <View
+                            style={{
+                              flexShrink: 0,
+
+                              marginLeft: 8,
+
+                              alignItems: "flex-end",
+
+                              justifyContent: "center",
+
+                              gap: 5,
+                            }}
+                          >
+                            {entrevista.porcentaje !== null && (
+                              <Text
+                                style={{
+                                  fontFamily: "Nunito-Bold",
+
+                                  fontSize: 16,
+
+                                  color: primaryColor,
+                                }}
+                              >
+                                {Math.round(entrevista.porcentaje)}%
+                              </Text>
+                            )}
+
+                            <Ionicons
+                              name="chevron-forward"
+                              size={19}
+                              color={primaryColor}
+                            />
+                          </View>
                         </View>
                       </Pressable>
                     ))}
@@ -1033,21 +1087,16 @@ function EstadoVacio({
   children,
 }: {
   icono: keyof typeof Ionicons.glyphMap;
-
   titulo: string;
-
   texto: string;
-
   children?: React.ReactNode;
 }) {
   const { esTelefono } = useResponsiveLayout();
 
   const surfaceColor = useThemeColor({}, "surface");
-
   const borderColor = useThemeColor({}, "border");
 
   const primaryColor = useThemeColor({}, "primary");
-
   const primarySoftColor = useThemeColor({}, "primarySoft");
 
   const textColor = useThemeColor({}, "text");
@@ -1066,26 +1115,24 @@ function EstadoVacio({
         borderRadius: 24,
 
         borderWidth: 1,
-
         borderColor,
 
-        alignItems: "center",
-
-        justifyContent: "center",
-
         backgroundColor: surfaceColor,
+
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
+      {/* ICONO */}
+
       <View
         style={{
           width: 64,
-
           height: 64,
 
           borderRadius: 32,
 
           alignItems: "center",
-
           justifyContent: "center",
 
           backgroundColor: primarySoftColor,
@@ -1094,6 +1141,8 @@ function EstadoVacio({
         <Ionicons name={icono} size={29} color={primaryColor} />
       </View>
 
+      {/* TÍTULO */}
+
       <Text
         style={{
           marginTop: 16,
@@ -1101,6 +1150,7 @@ function EstadoVacio({
           fontFamily: "Nunito-Bold",
 
           fontSize: 18,
+          lineHeight: 24,
 
           textAlign: "center",
 
@@ -1109,6 +1159,8 @@ function EstadoVacio({
       >
         {titulo}
       </Text>
+
+      {/* DESCRIPCIÓN */}
 
       <Text
         style={{
@@ -1119,7 +1171,6 @@ function EstadoVacio({
           fontFamily: "Nunito-Medium",
 
           fontSize: 14,
-
           lineHeight: 20,
 
           textAlign: "center",
@@ -1136,72 +1187,77 @@ function EstadoVacio({
 }
 
 // ==========================================================
-// BOTÓN DE ACCIÓN
+// BOTÓN DE ACCIÓN RESPONSIVE
 // ==========================================================
 
 function BotonAccion({
   icono,
   texto,
   onPress,
+  esTelefono,
 }: {
   icono: keyof typeof Ionicons.glyphMap;
-
   texto: string;
-
   onPress: () => void;
+  esTelefono: boolean;
 }) {
-  const { esTelefono } = useResponsiveLayout();
-
   const primaryColor = useThemeColor({}, "primary");
-
   const primarySoftColor = useThemeColor({}, "primarySoft");
-
   const borderColor = useThemeColor({}, "border");
 
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => ({
-        flex: esTelefono ? undefined : 1,
-
         width: esTelefono ? "100%" : undefined,
-
-        minHeight: 46,
-
-        paddingHorizontal: 16,
+        flex: esTelefono ? undefined : 1,
+        minWidth: 0,
 
         borderRadius: 14,
-
-        borderWidth: 1,
-
-        borderColor: pressed ? primaryColor : borderColor,
-
-        flexDirection: "row",
-
-        alignItems: "center",
-
-        justifyContent: "center",
-
-        gap: 8,
-
-        backgroundColor: primarySoftColor,
+        overflow: "hidden",
 
         opacity: pressed ? 0.76 : 1,
       })}
     >
-      <Ionicons name={icono} size={18} color={primaryColor} />
-
-      <Text
+      <View
         style={{
-          fontFamily: "Nunito-SemiBold",
+          width: "100%",
 
-          fontSize: 13,
+          minHeight: 52,
 
-          color: primaryColor,
+          paddingHorizontal: 14,
+          paddingVertical: 10,
+
+          borderRadius: 14,
+
+          borderWidth: 1,
+          borderColor,
+
+          backgroundColor: primarySoftColor,
+
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        {texto}
-      </Text>
+        <Ionicons name={icono} size={19} color={primaryColor} />
+
+        <Text
+          style={{
+            flexShrink: 1,
+            marginLeft: 9,
+
+            fontFamily: "Nunito-Bold",
+            fontSize: 13,
+            lineHeight: 18,
+            textAlign: "center",
+
+            color: primaryColor,
+          }}
+        >
+          {texto}
+        </Text>
+      </View>
     </Pressable>
   );
 }

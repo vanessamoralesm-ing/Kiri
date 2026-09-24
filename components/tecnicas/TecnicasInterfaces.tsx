@@ -7,7 +7,6 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -23,6 +22,7 @@ import {
 } from "@/constants/tecnicas";
 
 import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
+
 import { Colors } from "@/constants/theme";
 import { useThemeMode } from "@/contexts/ThemeModeContext";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
@@ -34,7 +34,7 @@ import type {
 } from "@/types/tecnicas";
 
 // ============================================================
-// CONFIGURACIÓN VISUAL
+// CONFIGURACIÓN
 // ============================================================
 
 const NECESIDADES = [
@@ -58,18 +58,37 @@ const NECESIDADES = [
   },
 ];
 
-// ============================================================
-// HOOK DE COLORES
-// ============================================================
-
 function useTecnicasColors() {
   const { isDarkMode } = useThemeMode();
-
   return isDarkMode ? Colors.dark : Colors.light;
 }
 
+function useTecnicasLayout() {
+  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
+
+  const paddingHorizontal = esEscritorio
+    ? PADDING_RESPONSIVE.escritorio
+    : esTablet
+      ? PADDING_RESPONSIVE.tablet
+      : PADDING_RESPONSIVE.telefono;
+
+  const maxWidth = esEscritorio
+    ? MAX_WIDTHS.dashboard
+    : esTablet
+      ? MAX_WIDTHS.contenido
+      : undefined;
+
+  return {
+    esTelefono,
+    esTablet,
+    esEscritorio,
+    paddingHorizontal,
+    maxWidth,
+  };
+}
+
 // ============================================================
-// ESTADO DE CARGA / ERROR
+// COMPONENTES COMPARTIDOS
 // ============================================================
 
 function Estado({
@@ -85,7 +104,12 @@ function Estado({
 
   if (cargando) {
     return (
-      <View style={styles.estado}>
+      <View
+        style={{
+          paddingVertical: 40,
+          alignItems: "center",
+        }}
+      >
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
@@ -94,14 +118,44 @@ function Estado({
   if (!error) return null;
 
   return (
-    <View style={styles.estado}>
-      <Text style={[styles.error, { color: colors.textSecondary }]}>
+    <View
+      style={{
+        padding: 24,
+        alignItems: "center",
+        gap: 14,
+      }}
+    >
+      <Text
+        style={{
+          fontFamily: "Nunito-Medium",
+          fontSize: 14,
+          lineHeight: 21,
+          textAlign: "center",
+          color: colors.textSecondary,
+        }}
+      >
         {error}
       </Text>
 
-      {reintentar && (
-        <Pressable onPress={reintentar}>
-          <Text style={[styles.reintentar, { color: colors.primary }]}>
+      {!!reintentar && (
+        <Pressable
+          onPress={reintentar}
+          style={({ pressed }) => ({
+            minHeight: 44,
+            paddingHorizontal: 18,
+            borderRadius: 12,
+            justifyContent: "center",
+            backgroundColor: colors.primarySoft,
+            opacity: pressed ? 0.75 : 1,
+          })}
+        >
+          <Text
+            style={{
+              fontFamily: "Nunito-Bold",
+              fontSize: 14,
+              color: colors.primary,
+            }}
+          >
             Intentar nuevamente
           </Text>
         </Pressable>
@@ -110,22 +164,112 @@ function Estado({
   );
 }
 
-// ============================================================
-// TÍTULO DE SECCIÓN
-// ============================================================
-
-function TituloSeccion({ children }: { children: React.ReactNode }) {
+function BotonPrimario({
+  titulo,
+  icono = "arrow-forward",
+  onPress,
+  disabled = false,
+}: {
+  titulo: string;
+  icono?: keyof typeof Ionicons.glyphMap;
+  onPress: () => void;
+  disabled?: boolean;
+}) {
   const colors = useTecnicasColors();
 
   return (
-    <Text style={[styles.subtituloDetalle, { color: colors.text }]}>
-      {children}
-    </Text>
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      style={({ pressed }) => ({
+        width: "100%",
+        borderRadius: 16,
+        overflow: "hidden",
+        opacity: disabled ? 0.6 : pressed ? 0.8 : 1,
+      })}
+    >
+      <View
+        style={{
+          width: "100%",
+          minHeight: 56,
+          paddingHorizontal: 18,
+          paddingVertical: 12,
+          borderRadius: 16,
+          backgroundColor: colors.primary,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 10,
+        }}
+      >
+        <Text
+          style={{
+            fontFamily: "Nunito-Bold",
+            fontSize: 16,
+            textAlign: "center",
+            color: colors.textOnPrimary,
+          }}
+        >
+          {titulo}
+        </Text>
+
+        <Ionicons name={icono} size={21} color={colors.textOnPrimary} />
+      </View>
+    </Pressable>
+  );
+}
+
+function BotonVolver({
+  onPress,
+  texto = "Volver",
+}: {
+  onPress: () => void;
+  texto?: string;
+}) {
+  const colors = useTecnicasColors();
+
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={8}
+      accessibilityRole="button"
+      style={({ pressed }) => ({
+        alignSelf: "flex-start",
+        borderRadius: 12,
+        opacity: pressed ? 0.7 : 1,
+        overflow: "hidden",
+      })}
+    >
+      <View
+        style={{
+          minHeight: 44,
+          paddingHorizontal: 12,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 9,
+          borderRadius: 12,
+          backgroundColor: colors.surfaceSecondary,
+        }}
+      >
+        <Ionicons name="arrow-back" size={20} color={colors.primary} />
+
+        <Text
+          style={{
+            fontFamily: "Nunito-SemiBold",
+            fontSize: 14,
+            color: colors.text,
+          }}
+        >
+          {texto}
+        </Text>
+      </View>
+    </Pressable>
   );
 }
 
 // ============================================================
-// PANTALLA PRINCIPAL
+// 1. PANTALLA PRINCIPAL DE TÉCNICAS
 // ============================================================
 
 export function TecnicasInicioInterface({
@@ -143,77 +287,43 @@ export function TecnicasInicioInterface({
   onAbrir: (id: string) => void;
   onHistorial: () => void;
 }) {
-  const insets = useSafeAreaInsets();
   const colors = useTecnicasColors();
+  const insets = useSafeAreaInsets();
 
-  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
+  const { esTelefono, esTablet, esEscritorio, paddingHorizontal, maxWidth } =
+    useTecnicasLayout();
 
   const [busqueda, setBusqueda] = useState("");
-  const [anchoGridTecnicas, setAnchoGridTecnicas] = useState(0);
-
-  // ========================================================
-  // RESPONSIVE
-  // ========================================================
-
-  const paddingHorizontal = esEscritorio
-    ? PADDING_RESPONSIVE.escritorio
-    : esTablet
-      ? PADDING_RESPONSIVE.tablet
-      : PADDING_RESPONSIVE.telefono;
-
-  const maxWidthContenido = esEscritorio
-    ? MAX_WIDTHS.dashboard
-    : esTablet
-      ? MAX_WIDTHS.contenido
-      : undefined;
-
-  const maxWidthCabecera = esEscritorio ? 820 : undefined;
-  const maxWidthBuscador = esEscritorio ? 760 : undefined;
-
-  const numeroColumnasTecnicas = esEscritorio ? 2 : 1;
-  const gapTecnicas = esEscritorio ? 18 : 14;
-
-  const anchoTarjetaTecnica =
-    anchoGridTecnicas > 0 && numeroColumnasTecnicas > 1
-      ? (anchoGridTecnicas - gapTecnicas * (numeroColumnasTecnicas - 1)) /
-      numeroColumnasTecnicas
-      : undefined;
-
-  const paddingTop = esEscritorio ? 30 : esTablet ? 26 : 22;
-
-  const paddingBottom = esEscritorio ? 64 : Math.max(insets.bottom + 118, 145);
-
-  // ========================================================
-  // FILTRADO
-  // ========================================================
+  const [anchoGrid, setAnchoGrid] = useState(0);
 
   const tecnicasFiltradas = useMemo(() => {
-    const valor = busqueda.trim().toLowerCase();
+    const texto = busqueda.trim().toLowerCase();
 
-    if (!valor) return tecnicas;
+    if (!texto) return tecnicas;
 
     return tecnicas.filter((tecnica) =>
-      `${tecnica.nombre} ${tecnica.descripcion} ${tecnica.objetivo}`
+      [tecnica.nombre, tecnica.descripcion, tecnica.objetivo]
+        .join(" ")
         .toLowerCase()
-        .includes(valor),
+        .includes(texto),
     );
   }, [tecnicas, busqueda]);
 
-  // ========================================================
-  // MEDIR GRID
-  // ========================================================
+  const columnasTecnicas = esEscritorio ? 2 : 1;
+  const gapTecnicas = esEscritorio ? 18 : 14;
 
-  function medirGridTecnicas(event: LayoutChangeEvent) {
-    const nuevoAncho = event.nativeEvent.layout.width;
+  const anchoTarjeta =
+    columnasTecnicas > 1 && anchoGrid > 0
+      ? (anchoGrid - gapTecnicas) / 2
+      : undefined;
 
-    if (Math.abs(nuevoAncho - anchoGridTecnicas) > 1) {
-      setAnchoGridTecnicas(nuevoAncho);
+  function medirGrid(event: LayoutChangeEvent) {
+    const ancho = event.nativeEvent.layout.width;
+
+    if (Math.abs(ancho - anchoGrid) > 1) {
+      setAnchoGrid(ancho);
     }
   }
-
-  // ========================================================
-  // UI
-  // ========================================================
 
   return (
     <View
@@ -224,93 +334,66 @@ export function TecnicasInicioInterface({
     >
       <ScrollView
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
-          paddingTop,
-          paddingBottom,
+          paddingTop: esEscritorio ? 30 : 22,
+          paddingBottom: esEscritorio ? 64 : Math.max(insets.bottom + 118, 145),
         }}
       >
         <View
           style={{
             width: "100%",
-            maxWidth: maxWidthContenido,
+            maxWidth,
             alignSelf: "center",
             paddingHorizontal,
           }}
         >
-          {/* ==================================================
-              ENCABEZADO
-          ================================================== */}
+          {/* ENCABEZADO */}
 
-          <View
+          <Text
             style={{
-              width: "100%",
-              maxWidth: maxWidthCabecera,
+              fontFamily: "Nunito-Bold",
+              fontSize: esEscritorio ? 32 : esTablet ? 28 : 24,
+              lineHeight: esEscritorio ? 40 : 33,
+              color: colors.primary,
             }}
           >
-            <Text
-              style={{
-                fontFamily: "Nunito-Bold",
-                fontSize: esEscritorio ? 32 : esTablet ? 28 : 24,
-                lineHeight: esEscritorio ? 40 : 32,
-                color: colors.primary,
-              }}
-            >
-              Técnicas Complementarias
-            </Text>
+            Técnicas Complementarias
+          </Text>
 
-            <Text
-              style={{
-                marginTop: 8,
-                maxWidth: esEscritorio ? 720 : undefined,
-                fontFamily: "Nunito-Medium",
-                fontSize: esEscritorio ? 15 : 13,
-                lineHeight: esEscritorio ? 22 : 19,
-                color: colors.textSecondary,
-              }}
-            >
-              Explora técnicas basadas en evidencia para ayudarte a comprender,
-              regular y afrontar tus emociones de manera saludable.
-            </Text>
-          </View>
+          <Text
+            style={{
+              maxWidth: 720,
+              marginTop: 8,
+              fontFamily: "Nunito-Medium",
+              fontSize: esEscritorio ? 15 : 13,
+              lineHeight: esEscritorio ? 23 : 20,
+              color: colors.textSecondary,
+            }}
+          >
+            Explora técnicas basadas en evidencia para ayudarte a comprender,
+            regular y afrontar tus emociones de manera saludable.
+          </Text>
 
-          {/* ==================================================
-              BUSCADOR
-          ================================================== */}
+          {/* BUSCADOR */}
 
           <View
             style={{
               width: "100%",
-              maxWidth: maxWidthBuscador,
+              maxWidth: esEscritorio ? 760 : undefined,
               minHeight: 56,
-              marginTop: esEscritorio ? 26 : 20,
-              paddingHorizontal: 16,
+              marginTop: 22,
+              paddingHorizontal: 15,
+              borderWidth: 1,
+              borderColor: colors.inputBorder,
+              borderRadius: 16,
+              backgroundColor: colors.inputBackground,
               flexDirection: "row",
               alignItems: "center",
-              gap: 11,
-              borderWidth: 1,
-              borderRadius: 17,
-              borderColor: colors.inputBorder,
-              backgroundColor: colors.inputBackground,
-              ...Platform.select({
-                web: {
-                  boxShadow: "0px 2px 8px rgba(0,0,0,0.04)",
-                },
-                ios: {
-                  shadowColor: "#000000",
-                  shadowOffset: {
-                    width: 0,
-                    height: 2,
-                  },
-                  shadowOpacity: 0.05,
-                  shadowRadius: 5,
-                },
-                android: {
-                  elevation: 2,
-                },
-              }),
+              gap: 10,
             }}
           >
-            <Ionicons name="search-outline" size={23} color={colors.icon} />
+            <Ionicons name="search-outline" size={22} color={colors.icon} />
 
             <TextInput
               value={busqueda}
@@ -320,28 +403,29 @@ export function TecnicasInicioInterface({
               selectionColor={colors.primary}
               style={{
                 flex: 1,
-                paddingVertical: 15,
+                minWidth: 0,
+                paddingVertical: 12,
                 fontFamily: "Nunito-Medium",
                 fontSize: 15,
                 color: colors.text,
-                outlineStyle: "none" as any,
+                ...(Platform.OS === "web"
+                  ? ({ outlineStyle: "none" } as any)
+                  : {}),
               }}
             />
 
             {!!busqueda && (
-              <Pressable hitSlop={8} onPress={() => setBusqueda("")}>
+              <Pressable onPress={() => setBusqueda("")} hitSlop={8}>
                 <Ionicons name="close-circle" size={22} color={colors.icon} />
               </Pressable>
             )}
           </View>
 
-          {/* ==================================================
-              NECESIDADES
-          ================================================== */}
+          {/* NECESIDADES */}
 
           <View
             style={{
-              marginTop: esEscritorio ? 32 : 26,
+              marginTop: 28,
               marginBottom: 15,
             }}
           >
@@ -349,6 +433,7 @@ export function TecnicasInicioInterface({
               style={{
                 fontFamily: "Nunito-Bold",
                 fontSize: esEscritorio ? 22 : 18,
+                lineHeight: 26,
                 color: colors.text,
               }}
             >
@@ -358,7 +443,7 @@ export function TecnicasInicioInterface({
             {!esTelefono && (
               <Text
                 style={{
-                  marginTop: 3,
+                  marginTop: 5,
                   fontFamily: "Nunito-Medium",
                   fontSize: 13,
                   color: colors.textMuted,
@@ -372,139 +457,149 @@ export function TecnicasInicioInterface({
           <View
             style={{
               width: "100%",
-              flexDirection: "row",
-              flexWrap: esTelefono ? "wrap" : "nowrap",
-              gap: esEscritorio ? 16 : 10,
+              flexDirection: esTelefono ? "column" : "row",
+              alignItems: "stretch",
+              gap: 12,
             }}
           >
             {NECESIDADES.map((item, index) => {
+              // Asociación conservada del código original.
               const tecnica = tecnicas.length
                 ? tecnicas[index % tecnicas.length]
                 : undefined;
 
+              const color = colors[item.color];
+              const fondo = colors[item.fondo];
+
               return (
                 <Pressable
                   key={item.nombre}
-                  onPress={() => tecnica && onAbrir(tecnica.id_tecnica)}
+                  disabled={!tecnica || cargando}
+                  onPress={() => {
+                    if (tecnica) {
+                      onAbrir(tecnica.id_tecnica);
+                    }
+                  }}
                   style={({ pressed }) => ({
                     flex: esTelefono ? undefined : 1,
                     width: esTelefono ? "100%" : undefined,
-                    minHeight: esEscritorio ? 150 : esTablet ? 140 : 108,
-                    padding: esEscritorio ? 18 : 14,
-                    borderWidth: 1,
+                    minWidth: 0,
                     borderRadius: 20,
-                    borderColor: pressed ? colors[item.color] : colors.border,
-                    flexDirection: esTelefono ? "row" : "column",
-                    alignItems: esTelefono ? "center" : "flex-start",
-                    justifyContent: esTelefono ? "flex-start" : "space-between",
-                    backgroundColor: colors[item.fondo],
-                    opacity: pressed ? 0.82 : 1,
-                    ...Platform.select({
-                      web: {
-                        cursor: "pointer",
-                        boxShadow: "0px 2px 8px rgba(0,0,0,0.035)",
-                      },
-                      ios: {
-                        shadowColor: "#000000",
-                        shadowOffset: {
-                          width: 0,
-                          height: 2,
-                        },
-                        shadowOpacity: 0.04,
-                        shadowRadius: 5,
-                      },
-                      android: {
-                        elevation: 1,
-                      },
-                    }),
+                    overflow: "hidden",
+                    opacity: !tecnica || cargando ? 0.6 : pressed ? 0.8 : 1,
                   })}
                 >
                   <View
                     style={{
-                      width: esEscritorio ? 62 : 54,
-                      height: esEscritorio ? 62 : 54,
-                      flexShrink: 0,
-                      borderRadius: 18,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backgroundColor: colors.surface,
+                      width: "100%",
+                      minHeight: esTelefono ? 86 : esEscritorio ? 150 : 140,
+                      padding: esEscritorio ? 18 : 14,
+                      borderWidth: 1,
+                      borderRadius: 20,
+                      borderColor: colors.border,
+                      backgroundColor: fondo,
+                      flexDirection: esTelefono ? "row" : "column",
+                      alignItems: esTelefono ? "center" : "flex-start",
+                      justifyContent: esTelefono
+                        ? "flex-start"
+                        : "space-between",
                     }}
                   >
-                    <Ionicons
-                      name={item.icono}
-                      size={esEscritorio ? 31 : 27}
-                      color={colors[item.color]}
-                    />
-                  </View>
-
-                  <View
-                    style={{
-                      flex: esTelefono ? 1 : undefined,
-                      marginLeft: esTelefono ? 14 : 0,
-                      marginTop: esTelefono ? 0 : 12,
-                    }}
-                  >
-                    <Text
+                    <View
                       style={{
-                        fontFamily: "Nunito-Bold",
-                        fontSize: esEscritorio ? 16 : 14,
-                        lineHeight: 20,
-                        color: colors.text,
+                        width: esEscritorio ? 62 : 54,
+                        height: esEscritorio ? 62 : 54,
+                        borderRadius: 17,
+                        flexShrink: 0,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: colors.surface,
                       }}
                     >
-                      {item.nombre}
-                    </Text>
+                      <Ionicons
+                        name={item.icono}
+                        size={esEscritorio ? 31 : 27}
+                        color={color}
+                      />
+                    </View>
 
-                    {esEscritorio && (
+                    <View
+                      style={{
+                        flex: esTelefono ? 1 : undefined,
+                        minWidth: 0,
+                        marginLeft: esTelefono ? 14 : 0,
+                        marginTop: esTelefono ? 0 : 12,
+                        justifyContent: "center",
+                      }}
+                    >
                       <Text
                         style={{
-                          marginTop: 3,
-                          fontFamily: "Nunito-Medium",
-                          fontSize: 12,
-                          color: colors.textSecondary,
+                          fontFamily: "Nunito-Bold",
+                          fontSize: esEscritorio ? 17 : 15,
+                          lineHeight: 21,
+                          color: colors.text,
                         }}
                       >
-                        Comenzar práctica
+                        {item.nombre}
                       </Text>
+
+                      {!esTelefono && (
+                        <Text
+                          style={{
+                            marginTop: 4,
+                            fontFamily: "Nunito-Medium",
+                            fontSize: 12,
+                            color: colors.textSecondary,
+                          }}
+                        >
+                          Comenzar práctica
+                        </Text>
+                      )}
+                    </View>
+
+                    {esTelefono && (
+                      <View
+                        style={{
+                          width: 32,
+                          height: 32,
+                          marginLeft: 8,
+                          borderRadius: 16,
+                          flexShrink: 0,
+                          alignItems: "center",
+                          justifyContent: "center",
+                          backgroundColor: colors.surface,
+                        }}
+                      >
+                        <Ionicons
+                          name="chevron-forward"
+                          size={20}
+                          color={color}
+                        />
+                      </View>
                     )}
                   </View>
-
-                  {esTelefono && (
-                    <Ionicons
-                      name="chevron-forward"
-                      size={20}
-                      color={colors[item.color]}
-                    />
-                  )}
                 </Pressable>
               );
             })}
           </View>
 
-          {/* ==================================================
-              TÉCNICAS RECOMENDADAS
-          ================================================== */}
+          {/* RECOMENDACIONES: ENCABEZADO */}
 
           <View
             style={{
-              marginTop: esEscritorio ? 36 : 30,
+              marginTop: 34,
               marginBottom: 16,
               flexDirection: "row",
               alignItems: "center",
-              justifyContent: "space-between",
+              gap: 10,
             }}
           >
-            <View
-              style={{
-                flex: 1,
-                minWidth: 0,
-                paddingRight: 12,
-              }}
-            >
+            <View style={{ flex: 1, minWidth: 0 }}>
               <Text
                 style={{
                   fontFamily: "Nunito-Bold",
                   fontSize: esEscritorio ? 22 : 18,
+                  lineHeight: 26,
                   color: colors.text,
                 }}
               >
@@ -514,7 +609,7 @@ export function TecnicasInicioInterface({
               {!esTelefono && (
                 <Text
                   style={{
-                    marginTop: 3,
+                    marginTop: 5,
                     fontFamily: "Nunito-Medium",
                     fontSize: 13,
                     color: colors.textMuted,
@@ -527,60 +622,68 @@ export function TecnicasInicioInterface({
 
             <Pressable
               onPress={onHistorial}
-              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Ver historial de técnicas"
               style={({ pressed }) => ({
-                minHeight: 40,
-                paddingHorizontal: esEscritorio ? 12 : 8,
                 borderRadius: 12,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 6,
-                backgroundColor: pressed ? colors.primarySoft : "transparent",
+                opacity: pressed ? 0.75 : 1,
+                overflow: "hidden",
               })}
             >
-              <Ionicons name="time-outline" size={22} color={colors.primary} />
+              <View
+                style={{
+                  minHeight: 42,
+                  paddingHorizontal: 12,
+                  borderRadius: 12,
+                  backgroundColor: colors.primarySoft,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 7,
+                }}
+              >
+                <Ionicons
+                  name="time-outline"
+                  size={21}
+                  color={colors.primary}
+                />
 
-              {!esTelefono && (
-                <Text
-                  style={{
-                    fontFamily: "Nunito-SemiBold",
-                    fontSize: 13,
-                    color: colors.primary,
-                  }}
-                >
-                  Historial
-                </Text>
-              )}
+                {!esTelefono && (
+                  <Text
+                    style={{
+                      fontFamily: "Nunito-SemiBold",
+                      fontSize: 13,
+                      color: colors.primary,
+                    }}
+                  >
+                    Historial
+                  </Text>
+                )}
+              </View>
             </Pressable>
           </View>
 
-          {/* ==================================================
-              CARGA / ERROR
-          ================================================== */}
-
           <Estado cargando={cargando} error={error} reintentar={onReintentar} />
 
-          {/* ==================================================
-              GRID DE TÉCNICAS
-          ================================================== */}
+          {/* TARJETAS DE TÉCNICAS */}
 
           {!cargando && !error && tecnicasFiltradas.length > 0 && (
             <View
-              onLayout={medirGridTecnicas}
+              onLayout={medirGrid}
               style={{
                 width: "100%",
-                flexDirection: numeroColumnasTecnicas > 1 ? "row" : "column",
-                flexWrap: numeroColumnasTecnicas > 1 ? "wrap" : "nowrap",
-                gap: gapTecnicas,
+                flexDirection: columnasTecnicas === 2 ? "row" : "column",
+                flexWrap: columnasTecnicas === 2 ? "wrap" : "nowrap",
                 alignItems: "stretch",
+                gap: gapTecnicas,
               }}
             >
               {tecnicasFiltradas.map((tecnica) => {
                 const tipo = obtenerTipoTecnica(tecnica.nombre);
+
                 const esJacobson = tipo === "jacobson";
 
                 const color = esJacobson ? colors.accent : colors.primary;
+
                 const fondo = esJacobson
                   ? colors.accentSoft
                   : colors.primarySoft;
@@ -589,10 +692,7 @@ export function TecnicasInicioInterface({
                   <View
                     key={tecnica.id_tecnica}
                     style={{
-                      width:
-                        numeroColumnasTecnicas === 1
-                          ? "100%"
-                          : anchoTarjetaTecnica,
+                      width: columnasTecnicas === 1 ? "100%" : anchoTarjeta,
                       minWidth: 0,
                     }}
                   >
@@ -600,129 +700,133 @@ export function TecnicasInicioInterface({
                       onPress={() => onAbrir(tecnica.id_tecnica)}
                       style={({ pressed }) => ({
                         width: "100%",
-                        minHeight: esEscritorio ? 150 : 118,
-                        padding: esEscritorio ? 18 : 16,
-                        borderWidth: 1,
                         borderRadius: 21,
-                        borderColor: pressed ? color : colors.border,
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 14,
-                        backgroundColor: colors.surface,
-                        opacity: pressed ? 0.85 : 1,
-                        ...Platform.select({
-                          web: {
-                            cursor: "pointer",
-                            boxShadow: pressed
-                              ? "0px 4px 12px rgba(0,0,0,0.08)"
-                              : "0px 2px 8px rgba(0,0,0,0.035)",
-                          },
-                          ios: {
-                            shadowColor: "#000000",
-                            shadowOffset: {
-                              width: 0,
-                              height: 2,
-                            },
-                            shadowOpacity: 0.04,
-                            shadowRadius: 5,
-                          },
-                          android: {
-                            elevation: 1,
-                          },
-                        }),
+                        overflow: "hidden",
+                        opacity: pressed ? 0.8 : 1,
                       })}
                     >
                       <View
                         style={{
-                          width: esEscritorio ? 72 : 64,
-                          height: esEscritorio ? 72 : 64,
-                          flexShrink: 0,
+                          width: "100%",
+                          minHeight: esEscritorio ? 150 : 120,
+                          padding: esTelefono ? 14 : 18,
+                          borderWidth: 1,
+                          borderColor: colors.border,
                           borderRadius: 21,
+                          backgroundColor: colors.surface,
+                          flexDirection: "row",
                           alignItems: "center",
-                          justifyContent: "center",
-                          backgroundColor: fondo,
+                          gap: esTelefono ? 11 : 14,
                         }}
                       >
-                        <Ionicons
-                          name={esJacobson ? "body-outline" : "eye-outline"}
-                          size={esEscritorio ? 34 : 30}
-                          color={color}
-                        />
-                      </View>
-
-                      <View
-                        style={{
-                          flex: 1,
-                          minWidth: 0,
-                        }}
-                      >
-                        <Text
-                          numberOfLines={2}
-                          style={{
-                            fontFamily: "Nunito-Bold",
-                            fontSize: esEscritorio ? 17 : 16,
-                            lineHeight: 22,
-                            color: colors.text,
-                          }}
-                        >
-                          {tecnica.nombre}
-                        </Text>
-
-                        <Text
-                          numberOfLines={esEscritorio ? 3 : 2}
-                          style={{
-                            marginTop: 4,
-                            fontFamily: "Nunito-Medium",
-                            fontSize: 13,
-                            lineHeight: 18,
-                            color: colors.textSecondary,
-                          }}
-                        >
-                          {tecnica.descripcion}
-                        </Text>
+                        {/* ICONO */}
 
                         <View
                           style={{
-                            marginTop: 8,
-                            flexDirection: "row",
+                            width: esTelefono ? 56 : 70,
+                            height: esTelefono ? 56 : 70,
+                            borderRadius: 19,
+                            flexShrink: 0,
                             alignItems: "center",
-                            gap: 4,
+                            justifyContent: "center",
+                            backgroundColor: fondo,
                           }}
                         >
                           <Ionicons
-                            name="time-outline"
-                            size={16}
+                            name={esJacobson ? "body-outline" : "eye-outline"}
+                            size={esTelefono ? 27 : 32}
                             color={color}
                           />
+                        </View>
 
+                        {/* INFORMACIÓN */}
+
+                        <View
+                          style={{
+                            flex: 1,
+                            minWidth: 0,
+                          }}
+                        >
                           <Text
+                            numberOfLines={3}
                             style={{
-                              fontFamily: "Nunito-SemiBold",
-                              fontSize: 12,
-                              color,
+                              fontFamily: "Nunito-Bold",
+                              fontSize: esTelefono ? 15 : 17,
+                              lineHeight: 22,
+                              color: colors.text,
                             }}
                           >
-                            {tecnica.duracion_estimada ?? "—"} min
+                            {tecnica.nombre}
                           </Text>
-                        </View>
-                      </View>
 
-                      <View
-                        style={{
-                          width: 32,
-                          height: 32,
-                          flexShrink: 0,
-                          borderRadius: 16,
-                          alignItems: "center",
-                          justifyContent: "center",
-                          backgroundColor: fondo,
-                        }}
-                      >
-                        <Ionicons
-                          name="chevron-forward"
-                          size={18}
-                          color={color}
-                        />
+                          <Text
+                            numberOfLines={esEscritorio ? 3 : 2}
+                            style={{
+                              marginTop: 5,
+                              fontFamily: "Nunito-Medium",
+                              fontSize: 12,
+                              lineHeight: 18,
+                              color: colors.textSecondary,
+                            }}
+                          >
+                            {tecnica.descripcion}
+                          </Text>
+
+                          <View
+                            style={{
+                              alignSelf: "flex-start",
+                              marginTop: 9,
+                              paddingHorizontal: 9,
+                              paddingVertical: 5,
+                              borderRadius: 9,
+                              backgroundColor: fondo,
+                            }}
+                          >
+                            <View
+                              style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                gap: 5,
+                              }}
+                            >
+                              <Ionicons
+                                name="time-outline"
+                                size={15}
+                                color={color}
+                              />
+
+                              <Text
+                                style={{
+                                  fontFamily: "Nunito-SemiBold",
+                                  fontSize: 12,
+                                  color,
+                                }}
+                              >
+                                {tecnica.duracion_estimada ?? "—"} min
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+
+                        {/* FLECHA */}
+
+                        <View
+                          style={{
+                            width: 30,
+                            height: 30,
+                            borderRadius: 15,
+                            flexShrink: 0,
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backgroundColor: fondo,
+                          }}
+                        >
+                          <Ionicons
+                            name="chevron-forward"
+                            size={18}
+                            color={color}
+                          />
+                        </View>
                       </View>
                     </Pressable>
                   </View>
@@ -731,22 +835,19 @@ export function TecnicasInicioInterface({
             </View>
           )}
 
-          {/* ==================================================
-              SIN RESULTADOS
-          ================================================== */}
+          {/* SIN RESULTADOS */}
 
           {!cargando && !error && tecnicasFiltradas.length === 0 && (
             <View
               style={{
-                width: "100%",
                 minHeight: 220,
+                padding: 24,
                 borderWidth: 1,
                 borderRadius: 22,
                 borderColor: colors.border,
                 backgroundColor: colors.surface,
                 alignItems: "center",
                 justifyContent: "center",
-                padding: 24,
               }}
             >
               <View
@@ -780,8 +881,7 @@ export function TecnicasInicioInterface({
 
               <Text
                 style={{
-                  marginTop: 5,
-                  maxWidth: 420,
+                  marginTop: 6,
                   fontFamily: "Nunito-Medium",
                   fontSize: 13,
                   lineHeight: 19,
@@ -789,8 +889,9 @@ export function TecnicasInicioInterface({
                   color: colors.textSecondary,
                 }}
               >
-                No encontramos técnicas relacionadas con &quot;{busqueda}&quot;.
-                Prueba utilizando otra palabra.
+                {busqueda.trim()
+                  ? `No encontramos técnicas relacionadas con "${busqueda}". Prueba utilizando otra palabra.`
+                  : "Todavía no hay técnicas disponibles."}
               </Text>
             </View>
           )}
@@ -801,7 +902,7 @@ export function TecnicasInicioInterface({
 }
 
 // ============================================================
-// DETALLE DE TÉCNICA
+// 2. DETALLE DE TÉCNICA
 // ============================================================
 
 export function DetalleTecnicaInterface({
@@ -822,9 +923,12 @@ export function DetalleTecnicaInterface({
   onComenzar: () => void;
 }) {
   const colors = useTecnicasColors();
-  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
+
+  const { esTelefono, esTablet, esEscritorio, paddingHorizontal, maxWidth } =
+    useTecnicasLayout();
 
   const tipo = tecnica ? obtenerTipoTecnica(tecnica.nombre) : null;
+
   const info = tipo ? INFO_TECNICAS[tipo] : null;
 
   const colorTecnica = tipo === "jacobson" ? colors.accent : colors.primary;
@@ -832,32 +936,24 @@ export function DetalleTecnicaInterface({
   const fondoTecnica =
     tipo === "jacobson" ? colors.accentSoft : colors.primarySoft;
 
-  const paddingHorizontal = esEscritorio
-    ? PADDING_RESPONSIVE.escritorio
-    : esTablet
-      ? PADDING_RESPONSIVE.tablet
-      : PADDING_RESPONSIVE.telefono;
-
-  const maxWidthContenido = esEscritorio
-    ? MAX_WIDTHS.dashboard
-    : esTablet
-      ? MAX_WIDTHS.contenido
-      : undefined;
-
-  const maxWidthDetalle = esEscritorio ? 900 : esTablet ? 760 : undefined;
-  const paddingTop = esEscritorio ? 28 : esTablet ? 24 : 20;
-  const paddingBottom = esEscritorio ? 64 : 48;
-
   return (
-    <View style={[styles.pantalla, { backgroundColor: colors.background }]}>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+      }}
+    >
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop, paddingBottom }}
+        contentContainerStyle={{
+          paddingTop: esEscritorio ? 28 : 20,
+          paddingBottom: esEscritorio ? 64 : 48,
+        }}
       >
         <View
           style={{
             width: "100%",
-            maxWidth: maxWidthContenido,
+            maxWidth,
             alignSelf: "center",
             paddingHorizontal,
           }}
@@ -865,42 +961,11 @@ export function DetalleTecnicaInterface({
           <View
             style={{
               width: "100%",
-              maxWidth: maxWidthDetalle,
+              maxWidth: esEscritorio ? 900 : esTablet ? 760 : undefined,
               alignSelf: "center",
             }}
           >
-            <Pressable
-              onPress={onVolver}
-              hitSlop={8}
-              style={({ pressed }) => ({
-                width: 46,
-                height: 46,
-                borderRadius: 15,
-                borderWidth: 1,
-                borderColor: colors.border,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: pressed
-                  ? colors.surfaceSecondary
-                  : colors.surface,
-                ...Platform.select({
-                  web: {
-                    boxShadow: "0px 2px 8px rgba(0,0,0,0.04)",
-                  },
-                  ios: {
-                    shadowColor: "#000000",
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.05,
-                    shadowRadius: 5,
-                  },
-                  android: {
-                    elevation: 2,
-                  },
-                }),
-              })}
-            >
-              <Ionicons name="arrow-back" size={22} color={colors.text} />
-            </Pressable>
+            <BotonVolver onPress={onVolver} texto="Volver a técnicas" />
 
             <Estado
               cargando={cargando}
@@ -908,11 +973,13 @@ export function DetalleTecnicaInterface({
               reintentar={onReintentar}
             />
 
-            {tecnica && (
+            {!!tecnica && (
               <>
+                {/* CABECERA */}
+
                 <View
                   style={{
-                    marginTop: esEscritorio ? 24 : 20,
+                    marginTop: 24,
                     flexDirection: esEscritorio ? "row" : "column",
                     alignItems: esEscritorio ? "center" : "flex-start",
                     gap: esEscritorio ? 22 : 0,
@@ -922,8 +989,7 @@ export function DetalleTecnicaInterface({
                     style={{
                       width: esEscritorio ? 108 : 92,
                       height: esEscritorio ? 108 : 92,
-                      borderRadius: esEscritorio ? 32 : 28,
-                      flexShrink: 0,
+                      borderRadius: 28,
                       alignItems: "center",
                       justifyContent: "center",
                       backgroundColor: fondoTecnica,
@@ -949,26 +1015,29 @@ export function DetalleTecnicaInterface({
                       style={{
                         fontFamily: "Nunito-Bold",
                         fontSize: esEscritorio ? 32 : esTablet ? 29 : 27,
-                        lineHeight: esEscritorio ? 40 : 34,
+                        lineHeight: esEscritorio ? 40 : 35,
                         color: colors.text,
                       }}
                     >
                       {tecnica.nombre}
                     </Text>
 
-                    {tecnica.duracion_estimada !== null &&
-                      tecnica.duracion_estimada !== undefined && (
+                    {tecnica.duracion_estimada != null && (
+                      <View
+                        style={{
+                          alignSelf: "flex-start",
+                          marginTop: 12,
+                          paddingHorizontal: 12,
+                          paddingVertical: 8,
+                          borderRadius: 999,
+                          backgroundColor: fondoTecnica,
+                        }}
+                      >
                         <View
                           style={{
-                            alignSelf: "flex-start",
-                            marginTop: 10,
-                            paddingHorizontal: 12,
-                            paddingVertical: 7,
-                            borderRadius: 999,
                             flexDirection: "row",
                             alignItems: "center",
-                            gap: 5,
-                            backgroundColor: fondoTecnica,
+                            gap: 6,
                           }}
                         >
                           <Ionicons
@@ -976,6 +1045,7 @@ export function DetalleTecnicaInterface({
                             size={16}
                             color={colorTecnica}
                           />
+
                           <Text
                             style={{
                               fontFamily: "Nunito-SemiBold",
@@ -986,15 +1056,18 @@ export function DetalleTecnicaInterface({
                             {tecnica.duracion_estimada} min
                           </Text>
                         </View>
-                      )}
+                      </View>
+                    )}
                   </View>
                 </View>
 
-                <View style={{ marginTop: esEscritorio ? 34 : 28 }}>
+                {/* DESCRIPCIÓN */}
+
+                <View style={{ marginTop: 30 }}>
                   <Text
                     style={{
                       fontFamily: "Nunito-Bold",
-                      fontSize: esEscritorio ? 21 : 18,
+                      fontSize: 19,
                       color: colors.text,
                     }}
                   >
@@ -1003,10 +1076,10 @@ export function DetalleTecnicaInterface({
 
                   <Text
                     style={{
-                      marginTop: 8,
+                      marginTop: 9,
                       fontFamily: "Nunito-Medium",
                       fontSize: esEscritorio ? 15 : 14,
-                      lineHeight: esEscritorio ? 24 : 22,
+                      lineHeight: 23,
                       color: colors.textSecondary,
                     }}
                   >
@@ -1014,20 +1087,23 @@ export function DetalleTecnicaInterface({
                   </Text>
                 </View>
 
+                {/* OBJETIVO Y BENEFICIOS */}
+
                 <View
                   style={{
-                    marginTop: esEscritorio ? 32 : 26,
+                    marginTop: 27,
                     flexDirection: esEscritorio ? "row" : "column",
-                    gap: esEscritorio ? 18 : 0,
+                    gap: 16,
                   }}
                 >
                   <View
                     style={{
                       flex: esEscritorio ? 1 : undefined,
-                      padding: esEscritorio ? 20 : 18,
+                      minWidth: 0,
+                      padding: 18,
                       borderWidth: 1,
-                      borderRadius: 20,
                       borderColor: colors.border,
+                      borderRadius: 20,
                       backgroundColor: colors.surface,
                     }}
                   >
@@ -1035,13 +1111,13 @@ export function DetalleTecnicaInterface({
                       style={{
                         flexDirection: "row",
                         alignItems: "center",
-                        gap: 9,
+                        gap: 10,
                       }}
                     >
                       <View
                         style={{
-                          width: 40,
-                          height: 40,
+                          width: 42,
+                          height: 42,
                           borderRadius: 13,
                           alignItems: "center",
                           justifyContent: "center",
@@ -1050,7 +1126,7 @@ export function DetalleTecnicaInterface({
                       >
                         <Ionicons
                           name="sparkles-outline"
-                          size={20}
+                          size={21}
                           color={colorTecnica}
                         />
                       </View>
@@ -1080,15 +1156,15 @@ export function DetalleTecnicaInterface({
                     </Text>
                   </View>
 
-                  {info?.beneficios && info.beneficios.length > 0 && (
+                  {!!info?.beneficios?.length && (
                     <View
                       style={{
                         flex: esEscritorio ? 1 : undefined,
-                        marginTop: esEscritorio ? 0 : 16,
-                        padding: esEscritorio ? 20 : 18,
+                        minWidth: 0,
+                        padding: 18,
                         borderWidth: 1,
-                        borderRadius: 20,
                         borderColor: colors.border,
+                        borderRadius: 20,
                         backgroundColor: colors.surface,
                       }}
                     >
@@ -1096,13 +1172,13 @@ export function DetalleTecnicaInterface({
                         style={{
                           flexDirection: "row",
                           alignItems: "center",
-                          gap: 9,
+                          gap: 10,
                         }}
                       >
                         <View
                           style={{
-                            width: 40,
-                            height: 40,
+                            width: 42,
+                            height: 42,
                             borderRadius: 13,
                             alignItems: "center",
                             justifyContent: "center",
@@ -1127,52 +1203,53 @@ export function DetalleTecnicaInterface({
                         </Text>
                       </View>
 
-                      <View style={{ marginTop: 8 }}>
-                        {info.beneficios.map((item) => (
-                          <View
-                            key={item}
+                      {info.beneficios.map((beneficio) => (
+                        <View
+                          key={beneficio}
+                          style={{
+                            marginTop: 12,
+                            flexDirection: "row",
+                            alignItems: "flex-start",
+                            gap: 9,
+                          }}
+                        >
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={19}
+                            color={colorTecnica}
+                          />
+
+                          <Text
                             style={{
-                              marginTop: 9,
-                              flexDirection: "row",
-                              alignItems: "flex-start",
-                              gap: 8,
+                              flex: 1,
+                              minWidth: 0,
+                              fontFamily: "Nunito-Medium",
+                              fontSize: 14,
+                              lineHeight: 21,
+                              color: colors.textSecondary,
                             }}
                           >
-                            <Ionicons
-                              name="checkmark-circle"
-                              size={19}
-                              color={colorTecnica}
-                            />
-
-                            <Text
-                              style={{
-                                flex: 1,
-                                fontFamily: "Nunito-Medium",
-                                fontSize: 14,
-                                lineHeight: 20,
-                                color: colors.textSecondary,
-                              }}
-                            >
-                              {item}
-                            </Text>
-                          </View>
-                        ))}
-                      </View>
+                            {beneficio}
+                          </Text>
+                        </View>
+                      ))}
                     </View>
                   )}
                 </View>
+
+                {/* DURACIÓN */}
 
                 <View
                   style={{
                     marginTop: 18,
                     padding: 18,
                     borderWidth: 1,
-                    borderRadius: 18,
                     borderColor: colors.border,
+                    borderRadius: 19,
+                    backgroundColor: colors.surface,
                     flexDirection: "row",
                     alignItems: "center",
                     gap: 12,
-                    backgroundColor: colors.surface,
                   }}
                 >
                   <View
@@ -1205,7 +1282,7 @@ export function DetalleTecnicaInterface({
 
                     <Text
                       style={{
-                        marginTop: 2,
+                        marginTop: 3,
                         fontFamily: "Nunito-Medium",
                         fontSize: 14,
                         color: colors.textSecondary,
@@ -1217,12 +1294,14 @@ export function DetalleTecnicaInterface({
                   </View>
                 </View>
 
-                {info && (
-                  <View style={{ marginTop: esEscritorio ? 32 : 26 }}>
+                {/* ANTES DE COMENZAR */}
+
+                {!!info && (
+                  <View style={{ marginTop: 28 }}>
                     <Text
                       style={{
                         fontFamily: "Nunito-Bold",
-                        fontSize: esEscritorio ? 21 : 18,
+                        fontSize: 19,
                         color: colors.text,
                       }}
                     >
@@ -1232,10 +1311,10 @@ export function DetalleTecnicaInterface({
                     <View
                       style={{
                         marginTop: 12,
-                        padding: esEscritorio ? 20 : 18,
+                        padding: esTelefono ? 16 : 20,
                         borderWidth: 1,
-                        borderRadius: 20,
                         borderColor: colors.border,
+                        borderRadius: 20,
                         backgroundColor: colors.surface,
                       }}
                     >
@@ -1243,10 +1322,10 @@ export function DetalleTecnicaInterface({
                         <View
                           key={item}
                           style={{
-                            marginTop: 9,
+                            marginTop: 10,
                             flexDirection: "row",
                             alignItems: "flex-start",
-                            gap: 8,
+                            gap: 9,
                           }}
                         >
                           <Ionicons
@@ -1254,12 +1333,14 @@ export function DetalleTecnicaInterface({
                             size={19}
                             color={colorTecnica}
                           />
+
                           <Text
                             style={{
                               flex: 1,
+                              minWidth: 0,
                               fontFamily: "Nunito-Medium",
                               fontSize: 14,
-                              lineHeight: 20,
+                              lineHeight: 21,
                               color: colors.textSecondary,
                             }}
                           >
@@ -1267,78 +1348,63 @@ export function DetalleTecnicaInterface({
                           </Text>
                         </View>
                       ))}
-                    </View>
 
-                    <View
-                      style={{
-                        marginTop: 14,
-                        padding: 16,
-                        borderRadius: 17,
-                        flexDirection: "row",
-                        alignItems: "flex-start",
-                        gap: 10,
-                        backgroundColor: fondoTecnica,
-                      }}
-                    >
-                      <Ionicons
-                        name="information-circle-outline"
-                        size={23}
-                        color={colorTecnica}
-                      />
-
-                      <Text
+                      <View
                         style={{
-                          flex: 1,
-                          fontFamily: "Nunito-Medium",
-                          fontSize: 13,
-                          lineHeight: 19,
-                          color: colors.text,
+                          marginTop: 17,
+                          padding: 15,
+                          borderRadius: 16,
+                          backgroundColor: fondoTecnica,
+                          flexDirection: "row",
+                          alignItems: "flex-start",
+                          gap: 10,
                         }}
                       >
-                        {info.advertencia}
-                      </Text>
+                        <Ionicons
+                          name="information-circle-outline"
+                          size={23}
+                          color={colorTecnica}
+                        />
+
+                        <Text
+                          style={{
+                            flex: 1,
+                            minWidth: 0,
+                            fontFamily: "Nunito-Medium",
+                            fontSize: 13,
+                            lineHeight: 20,
+                            color: colors.text,
+                          }}
+                        >
+                          {info.advertencia}
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 )}
 
-                <Pressable
-                  onPress={onComenzar}
-                  disabled={iniciando}
-                  style={({ pressed }) => ({
-                    width: "100%",
-                    minHeight: 56,
-                    marginTop: esEscritorio ? 32 : 28,
-                    borderRadius: 16,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 10,
-                    backgroundColor: colors.primary,
-                    opacity: iniciando ? 0.65 : pressed ? 0.82 : 1,
-                  })}
-                >
-                  {iniciando ? (
-                    <ActivityIndicator color={colors.textOnPrimary} />
-                  ) : (
-                    <>
-                      <Text
-                        style={{
-                          fontFamily: "Nunito-Bold",
-                          fontSize: 16,
-                          color: colors.textOnPrimary,
-                        }}
-                      >
-                        Comenzar práctica
-                      </Text>
+                {/* COMENZAR */}
 
-                      <Ionicons
-                        name="arrow-forward"
-                        size={21}
-                        color={colors.textOnPrimary}
-                      />
-                    </>
+                <View style={{ marginTop: 28 }}>
+                  {iniciando ? (
+                    <View
+                      style={{
+                        minHeight: 56,
+                        borderRadius: 16,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: colors.primary,
+                      }}
+                    >
+                      <ActivityIndicator color={colors.textOnPrimary} />
+                    </View>
+                  ) : (
+                    <BotonPrimario
+                      titulo="Comenzar práctica"
+                      onPress={onComenzar}
+                    />
                   )}
-                </Pressable>
+                </View>
               </>
             )}
           </View>
@@ -1349,7 +1415,7 @@ export function DetalleTecnicaInterface({
 }
 
 // ============================================================
-// EJERCICIO
+// 3. EJERCICIO DE TÉCNICA
 // ============================================================
 
 export function EjercicioTecnicaInterface({
@@ -1374,7 +1440,9 @@ export function EjercicioTecnicaInterface({
   onSiguiente: () => void;
 }) {
   const colors = useTecnicasColors();
-  const { esTablet, esEscritorio } = useResponsiveLayout();
+
+  const { esTablet, esEscritorio, paddingHorizontal, maxWidth } =
+    useTecnicasLayout();
 
   const paso = pasos[indice];
   const tipo = obtenerTipoTecnica(tecnica?.nombre);
@@ -1385,6 +1453,7 @@ export function EjercicioTecnicaInterface({
   const detalle = obtenerDetallePaso(tipo, paso?.orden);
 
   const [respuestas, setRespuestas] = useState<Record<string, string[]>>({});
+
   const [repeticion, setRepeticion] = useState(1);
 
   useEffect(() => {
@@ -1395,26 +1464,10 @@ export function EjercicioTecnicaInterface({
     ? (respuestas[paso.id_paso] ?? Array(cantidad).fill(""))
     : [];
 
-  const actualizarRespuesta = (posicion: number, valor: string) => {
-    if (!paso) return;
+  const colorTecnica = tipo === "jacobson" ? colors.accent : colors.primary;
 
-    const nuevas = [...valores];
-    nuevas[posicion] = valor;
-
-    setRespuestas((prev) => ({
-      ...prev,
-      [paso.id_paso]: nuevas,
-    }));
-  };
-
-  const avanzar = () => {
-    if (tipo === "jacobson" && repeticion < REPETICIONES_JACOBSON) {
-      setRepeticion((actual) => actual + 1);
-      return;
-    }
-
-    onSiguiente();
-  };
+  const fondoTecnica =
+    tipo === "jacobson" ? colors.accentSoft : colors.primarySoft;
 
   const ultimo = indice === pasos.length - 1;
 
@@ -1425,47 +1478,49 @@ export function EjercicioTecnicaInterface({
         ? "Finalizar práctica"
         : "Siguiente";
 
-  const colorTecnica = tipo === "jacobson" ? colors.accent : colors.primary;
+  function actualizarRespuesta(posicion: number, valor: string) {
+    if (!paso) return;
 
-  const fondoTecnica =
-    tipo === "jacobson" ? colors.accentSoft : colors.primarySoft;
+    const nuevasRespuestas = [...valores];
+    nuevasRespuestas[posicion] = valor;
 
-  const paddingHorizontal = esEscritorio
-    ? PADDING_RESPONSIVE.escritorio
-    : esTablet
-      ? PADDING_RESPONSIVE.tablet
-      : PADDING_RESPONSIVE.telefono;
+    setRespuestas((anteriores) => ({
+      ...anteriores,
+      [paso.id_paso]: nuevasRespuestas,
+    }));
+  }
 
-  const maxWidthContenido = esEscritorio
-    ? MAX_WIDTHS.dashboard
-    : esTablet
-      ? MAX_WIDTHS.contenido
-      : undefined;
+  function avanzar() {
+    if (tipo === "jacobson" && repeticion < REPETICIONES_JACOBSON) {
+      setRepeticion((actual) => actual + 1);
+      return;
+    }
+
+    onSiguiente();
+  }
 
   const maxWidthEjercicio = esEscritorio ? 900 : esTablet ? 760 : undefined;
-  const paddingTop = esEscritorio ? 26 : esTablet ? 22 : 18;
-  const paddingBottom = esEscritorio ? 30 : 24;
 
   return (
     <View
-      style={[
-        styles.pantalla,
-        {
-          backgroundColor: colors.background,
-        },
-      ]}
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+      }}
     >
       <Estado cargando={cargando} error={error} reintentar={onReintentar} />
 
-      {!cargando && !error && paso && (
+      {!cargando && !error && !!paso && (
         <View style={{ flex: 1 }}>
+          {/* ENCABEZADO FIJO */}
+
           <View
             style={{
               width: "100%",
-              maxWidth: maxWidthContenido,
+              maxWidth,
               alignSelf: "center",
               paddingHorizontal,
-              paddingTop,
+              paddingTop: 20,
             }}
           >
             <View
@@ -1479,38 +1534,24 @@ export function EjercicioTecnicaInterface({
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  justifyContent: "space-between",
+                  gap: 14,
                 }}
               >
                 <Pressable
                   onPress={onCerrar}
-                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Cerrar práctica"
                   style={({ pressed }) => ({
                     width: 46,
                     height: 46,
-                    borderRadius: 15,
                     borderWidth: 1,
                     borderColor: colors.border,
+                    borderRadius: 15,
                     alignItems: "center",
                     justifyContent: "center",
                     backgroundColor: pressed
                       ? colors.surfaceSecondary
                       : colors.surface,
-                    ...Platform.select({
-                      web: {
-                        cursor: "pointer",
-                        boxShadow: "0px 2px 8px rgba(0,0,0,0.04)",
-                      },
-                      ios: {
-                        shadowColor: "#000000",
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.04,
-                        shadowRadius: 5,
-                      },
-                      android: {
-                        elevation: 1,
-                      },
-                    }),
                   })}
                 >
                   <Ionicons name="close" size={24} color={colors.text} />
@@ -1520,14 +1561,13 @@ export function EjercicioTecnicaInterface({
                   style={{
                     flex: 1,
                     minWidth: 0,
-                    marginLeft: 14,
                   }}
                 >
                   <Text
                     numberOfLines={1}
                     style={{
                       fontFamily: "Nunito-Bold",
-                      fontSize: esEscritorio ? 18 : 16,
+                      fontSize: 16,
                       color: colors.text,
                     }}
                   >
@@ -1536,7 +1576,7 @@ export function EjercicioTecnicaInterface({
 
                   <Text
                     style={{
-                      marginTop: 2,
+                      marginTop: 3,
                       fontFamily: "Nunito-Medium",
                       fontSize: 12,
                       color: colors.textSecondary,
@@ -1547,11 +1587,13 @@ export function EjercicioTecnicaInterface({
                 </View>
               </View>
 
+              {/* PROGRESO */}
+
               <View
                 style={{
+                  marginTop: 18,
                   flexDirection: "row",
                   gap: 5,
-                  marginTop: 18,
                 }}
               >
                 {pasos.map((_, i) => (
@@ -1570,15 +1612,20 @@ export function EjercicioTecnicaInterface({
             </View>
           </View>
 
+          {/* CONTENIDO DESPLAZABLE */}
+
           <ScrollView
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ paddingBottom: 24 }}
+            contentContainerStyle={{
+              paddingTop: 22,
+              paddingBottom: 24,
+            }}
           >
             <View
               style={{
                 width: "100%",
-                maxWidth: maxWidthContenido,
+                maxWidth,
                 alignSelf: "center",
                 paddingHorizontal,
               }}
@@ -1588,229 +1635,226 @@ export function EjercicioTecnicaInterface({
                   width: "100%",
                   maxWidth: maxWidthEjercicio,
                   alignSelf: "center",
+                  padding: esEscritorio ? 30 : esTablet ? 26 : 20,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: 24,
+                  backgroundColor: colors.surface,
+                  alignItems: "center",
                 }}
               >
+                {/* NÚMERO */}
+
                 <View
                   style={{
-                    marginTop: esEscritorio ? 28 : 22,
-                    padding: esEscritorio ? 30 : esTablet ? 26 : 20,
-                    borderWidth: 1,
-                    borderRadius: 24,
-                    borderColor: colors.border,
+                    width: 58,
+                    height: 58,
+                    borderRadius: 29,
                     alignItems: "center",
-                    backgroundColor: colors.surface,
-                    ...Platform.select({
-                      web: {
-                        boxShadow: "0px 3px 10px rgba(0,0,0,0.04)",
-                      },
-                      ios: {
-                        shadowColor: "#000000",
-                        shadowOffset: { width: 0, height: 3 },
-                        shadowOpacity: 0.05,
-                        shadowRadius: 7,
-                      },
-                      android: {
-                        elevation: 2,
-                      },
-                    }),
+                    justifyContent: "center",
+                    backgroundColor: fondoTecnica,
                   }}
                 >
+                  <Text
+                    style={{
+                      fontFamily: "Nunito-Bold",
+                      fontSize: 23,
+                      color: colorTecnica,
+                    }}
+                  >
+                    {indice + 1}
+                  </Text>
+                </View>
+
+                {/* TÍTULO */}
+
+                <Text
+                  style={{
+                    marginTop: 18,
+                    maxWidth: 680,
+                    fontFamily: "Nunito-Bold",
+                    fontSize: esEscritorio ? 28 : esTablet ? 25 : 22,
+                    lineHeight: esEscritorio ? 36 : 30,
+                    textAlign: "center",
+                    color: colors.text,
+                  }}
+                >
+                  {paso.titulo}
+                </Text>
+
+                <Text
+                  style={{
+                    marginTop: 13,
+                    maxWidth: 680,
+                    fontFamily: "Nunito-Medium",
+                    fontSize: esEscritorio ? 16 : 15,
+                    lineHeight: 23,
+                    textAlign: "center",
+                    color: colors.textSecondary,
+                  }}
+                >
+                  {paso.instruccion}
+                </Text>
+
+                {!!detalle && (
                   <View
                     style={{
-                      width: esEscritorio ? 64 : 56,
-                      height: esEscritorio ? 64 : 56,
-                      borderRadius: esEscritorio ? 32 : 28,
-                      alignItems: "center",
-                      justifyContent: "center",
+                      width: "100%",
+                      maxWidth: 680,
+                      marginTop: 15,
+                      padding: 15,
+                      borderRadius: 15,
                       backgroundColor: fondoTecnica,
                     }}
                   >
                     <Text
                       style={{
-                        fontFamily: "Nunito-Bold",
-                        fontSize: esEscritorio ? 25 : 22,
-                        color: colorTecnica,
+                        fontFamily: "Nunito-Medium",
+                        fontSize: 13,
+                        lineHeight: 20,
+                        textAlign: "center",
+                        color: colors.textSecondary,
                       }}
                     >
-                      {indice + 1}
+                      {detalle}
                     </Text>
                   </View>
+                )}
 
-                  <Text
+                {/* IMAGEN OPCIONAL */}
+
+                {paso.tipo_recurso === "imagen" && !!paso.url_recurso && (
+                  <Image
+                    source={{
+                      uri: paso.url_recurso,
+                    }}
+                    resizeMode="contain"
                     style={{
-                      marginTop: 18,
+                      width: "100%",
+                      maxWidth: 640,
+                      height: esEscritorio ? 300 : esTablet ? 260 : 220,
+                      marginTop: 20,
+                    }}
+                  />
+                )}
+
+                {/* GROUNDING */}
+
+                {tipo === "grounding" && (
+                  <View
+                    style={{
+                      width: "100%",
                       maxWidth: 680,
-                      fontFamily: "Nunito-Bold",
-                      fontSize: esEscritorio ? 28 : esTablet ? 25 : 22,
-                      lineHeight: esEscritorio ? 35 : 30,
-                      textAlign: "center",
-                      color: colors.text,
+                      marginTop: 24,
+                      gap: 12,
                     }}
                   >
-                    {paso.titulo}
-                  </Text>
-
-                  <Text
-                    style={{
-                      marginTop: 13,
-                      maxWidth: 680,
-                      fontFamily: "Nunito-Medium",
-                      fontSize: esEscritorio ? 16 : 15,
-                      lineHeight: esEscritorio ? 25 : 23,
-                      textAlign: "center",
-                      color: colors.textSecondary,
-                    }}
-                  >
-                    {paso.instruccion}
-                  </Text>
-
-                  {detalle && (
-                    <View
-                      style={{
-                        marginTop: 14,
-                        maxWidth: 680,
-                        paddingHorizontal: 16,
-                        paddingVertical: 12,
-                        borderRadius: 15,
-                        backgroundColor: fondoTecnica,
-                      }}
-                    >
-                      <Text
+                    {valores.map((valor, posicion) => (
+                      <View
+                        key={posicion}
                         style={{
-                          fontFamily: "Nunito-Medium",
-                          fontSize: 13,
-                          lineHeight: 20,
-                          textAlign: "center",
-                          color: colors.textSecondary,
+                          width: "100%",
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 9,
                         }}
                       >
-                        {detalle}
-                      </Text>
-                    </View>
-                  )}
-
-                  {paso.tipo_recurso === "imagen" && paso.url_recurso && (
-                    <Image
-                      source={{ uri: paso.url_recurso }}
-                      resizeMode="contain"
-                      style={{
-                        width: "100%",
-                        maxWidth: 640,
-                        height: esEscritorio ? 300 : esTablet ? 260 : 220,
-                        marginTop: 20,
-                      }}
-                    />
-                  )}
-
-                  {tipo === "grounding" && (
-                    <View
-                      style={{
-                        width: "100%",
-                        maxWidth: esEscritorio ? 680 : undefined,
-                        marginTop: 24,
-                        gap: 12,
-                      }}
-                    >
-                      {valores.map((valor, index) => (
                         <View
-                          key={index}
                           style={{
-                            width: "100%",
-                            flexDirection: "row",
+                            width: 32,
+                            height: 32,
+                            borderRadius: 16,
+                            flexShrink: 0,
                             alignItems: "center",
-                            gap: 9,
+                            justifyContent: "center",
+                            backgroundColor: fondoTecnica,
                           }}
                         >
-                          <View
+                          <Text
                             style={{
-                              width: 30,
-                              height: 30,
-                              flexShrink: 0,
-                              borderRadius: 15,
-                              alignItems: "center",
-                              justifyContent: "center",
-                              backgroundColor: fondoTecnica,
+                              fontFamily: "Nunito-Bold",
+                              fontSize: 13,
+                              color: colorTecnica,
                             }}
                           >
-                            <Text
-                              style={{
-                                fontFamily: "Nunito-Bold",
-                                fontSize: 13,
-                                color: colorTecnica,
-                              }}
-                            >
-                              {index + 1}
-                            </Text>
-                          </View>
-
-                          <TextInput
-                            value={valor}
-                            onChangeText={(texto) =>
-                              actualizarRespuesta(index, texto)
-                            }
-                            placeholder="Escribe aquí"
-                            placeholderTextColor={colors.placeholder}
-                            selectionColor={colorTecnica}
-                            style={{
-                              flex: 1,
-                              minHeight: 48,
-                              paddingHorizontal: 14,
-                              borderWidth: 1,
-                              borderRadius: 13,
-                              borderColor: colors.inputBorder,
-                              fontFamily: "Nunito-Medium",
-                              fontSize: 14,
-                              color: colors.text,
-                              backgroundColor: colors.inputBackground,
-                            }}
-                          />
+                            {posicion + 1}
+                          </Text>
                         </View>
-                      ))}
-                    </View>
-                  )}
 
-                  {tipo === "jacobson" && (
-                    <View
+                        <TextInput
+                          value={valor}
+                          onChangeText={(texto) =>
+                            actualizarRespuesta(posicion, texto)
+                          }
+                          placeholder="Escribe aquí"
+                          placeholderTextColor={colors.placeholder}
+                          selectionColor={colorTecnica}
+                          style={{
+                            flex: 1,
+                            minWidth: 0,
+                            minHeight: 48,
+                            paddingHorizontal: 14,
+                            borderWidth: 1,
+                            borderRadius: 13,
+                            borderColor: colors.inputBorder,
+                            fontFamily: "Nunito-Medium",
+                            fontSize: 14,
+                            color: colors.text,
+                            backgroundColor: colors.inputBackground,
+                          }}
+                        />
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {/* JACOBSON */}
+
+                {tipo === "jacobson" && (
+                  <View
+                    style={{
+                      alignSelf: "center",
+                      marginTop: 24,
+                      paddingHorizontal: 16,
+                      paddingVertical: 10,
+                      borderRadius: 999,
+                      backgroundColor: colors.accentSoft,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 7,
+                    }}
+                  >
+                    <Ionicons
+                      name="repeat-outline"
+                      size={20}
+                      color={colors.accent}
+                    />
+
+                    <Text
                       style={{
-                        marginTop: 24,
-                        paddingHorizontal: 16,
-                        paddingVertical: 10,
-                        borderRadius: 999,
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 7,
-                        backgroundColor: colors.accentSoft,
+                        fontFamily: "Nunito-Bold",
+                        fontSize: 13,
+                        color: colors.accent,
                       }}
                     >
-                      <Ionicons
-                        name="repeat-outline"
-                        size={20}
-                        color={colors.accent}
-                      />
-
-                      <Text
-                        style={{
-                          fontFamily: "Nunito-Bold",
-                          fontSize: 13,
-                          color: colors.accent,
-                        }}
-                      >
-                        Repetición {repeticion} de {REPETICIONES_JACOBSON}
-                      </Text>
-                    </View>
-                  )}
-                </View>
+                      Repetición {repeticion} de {REPETICIONES_JACOBSON}
+                    </Text>
+                  </View>
+                )}
               </View>
             </View>
           </ScrollView>
 
+          {/* BOTÓN INFERIOR */}
+
           <View
             style={{
               width: "100%",
-              maxWidth: maxWidthContenido,
+              maxWidth,
               alignSelf: "center",
               paddingHorizontal,
-              paddingBottom,
+              paddingTop: 12,
+              paddingBottom: esEscritorio ? 30 : 24,
             }}
           >
             <View
@@ -1820,43 +1864,21 @@ export function EjercicioTecnicaInterface({
                 alignSelf: "center",
               }}
             >
-              <Pressable
-                disabled={finalizando}
-                onPress={avanzar}
-                style={({ pressed }) => ({
-                  width: "100%",
-                  minHeight: 56,
-                  borderRadius: 16,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 10,
-                  backgroundColor: colors.primary,
-                  opacity: finalizando ? 0.65 : pressed ? 0.82 : 1,
-                })}
-              >
-                {finalizando ? (
+              {finalizando ? (
+                <View
+                  style={{
+                    minHeight: 56,
+                    borderRadius: 16,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: colors.primary,
+                  }}
+                >
                   <ActivityIndicator color={colors.textOnPrimary} />
-                ) : (
-                  <>
-                    <Text
-                      style={{
-                        fontFamily: "Nunito-Bold",
-                        fontSize: 16,
-                        color: colors.textOnPrimary,
-                      }}
-                    >
-                      {textoBoton}
-                    </Text>
-
-                    <Ionicons
-                      name="arrow-forward"
-                      size={21}
-                      color={colors.textOnPrimary}
-                    />
-                  </>
-                )}
-              </Pressable>
+                </View>
+              ) : (
+                <BotonPrimario titulo={textoBoton} onPress={avanzar} />
+              )}
             </View>
           </View>
         </View>
@@ -1866,7 +1888,7 @@ export function EjercicioTecnicaInterface({
 }
 
 // ============================================================
-// HISTORIAL
+// 4. HISTORIAL DE TÉCNICAS
 // ============================================================
 
 export function HistorialTecnicasInterface({
@@ -1882,113 +1904,76 @@ export function HistorialTecnicasInterface({
   onVolver: () => void;
   onReintentar: () => void;
 }) {
-  const insets = useSafeAreaInsets();
   const colors = useTecnicasColors();
-  const { esTablet, esEscritorio } = useResponsiveLayout();
+  const insets = useSafeAreaInsets();
 
-  const paddingHorizontal = esEscritorio
-    ? PADDING_RESPONSIVE.escritorio
-    : esTablet
-      ? PADDING_RESPONSIVE.tablet
-      : PADDING_RESPONSIVE.telefono;
-
-  const maxWidthContenido = esEscritorio
-    ? MAX_WIDTHS.dashboard
-    : esTablet
-      ? MAX_WIDTHS.contenido
-      : undefined;
-
-  const paddingTop = esEscritorio ? 28 : esTablet ? 24 : 20;
-  const paddingBottom = esEscritorio ? 64 : Math.max(insets.bottom + 120, 150);
+  const { esEscritorio, paddingHorizontal, maxWidth } = useTecnicasLayout();
 
   return (
-    <View style={[styles.pantalla, { backgroundColor: colors.background }]}>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+      }}
+    >
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop, paddingBottom }}
+        contentContainerStyle={{
+          paddingTop: 22,
+          paddingBottom: esEscritorio ? 64 : Math.max(insets.bottom + 120, 150),
+        }}
       >
         <View
           style={{
             width: "100%",
-            maxWidth: maxWidthContenido,
+            maxWidth,
             alignSelf: "center",
             paddingHorizontal,
           }}
         >
-          <Pressable
-            onPress={onVolver}
-            hitSlop={8}
-            style={({ pressed }) => ({
-              alignSelf: "flex-start",
-              minHeight: 44,
-              paddingHorizontal: 12,
-              borderRadius: 13,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 6,
-              backgroundColor: pressed
-                ? colors.surfaceSecondary
-                : "transparent",
-            })}
-          >
-            <Ionicons name="arrow-back" size={22} color={colors.text} />
-            <Text
-              style={{
-                fontFamily: "Nunito-SemiBold",
-                fontSize: 14,
-                color: colors.text,
-              }}
-            >
-              Volver
-            </Text>
-          </Pressable>
+          <BotonVolver onPress={onVolver} texto="Volver" />
 
-          <View
+          <Text
             style={{
-              width: "100%",
-              maxWidth: esEscritorio ? 780 : undefined,
-              marginTop: esEscritorio ? 22 : 18,
-              marginBottom: esEscritorio ? 28 : 24,
+              marginTop: 22,
+              fontFamily: "Nunito-Bold",
+              fontSize: esEscritorio ? 30 : 25,
+              lineHeight: 34,
+              color: colors.text,
             }}
           >
-            <Text
-              style={{
-                fontFamily: "Nunito-Bold",
-                fontSize: esEscritorio ? 30 : esTablet ? 27 : 25,
-                lineHeight: esEscritorio ? 38 : 32,
-                color: colors.text,
-              }}
-            >
-              Historial de técnicas
-            </Text>
+            Historial de técnicas
+          </Text>
 
-            <Text
-              style={{
-                marginTop: 7,
-                fontFamily: "Nunito-Medium",
-                fontSize: esEscritorio ? 15 : 13,
-                lineHeight: esEscritorio ? 22 : 19,
-                color: colors.textSecondary,
-              }}
-            >
-              Aquí encontrarás las prácticas que has realizado.
-            </Text>
-          </View>
+          <Text
+            style={{
+              marginTop: 7,
+              marginBottom: 26,
+              fontFamily: "Nunito-Medium",
+              fontSize: 14,
+              lineHeight: 21,
+              color: colors.textSecondary,
+            }}
+          >
+            Aquí encontrarás las prácticas que has realizado.
+          </Text>
 
           <Estado cargando={cargando} error={error} reintentar={onReintentar} />
+
+          {/* ESTADO VACÍO */}
 
           {!cargando && !error && registros.length === 0 && (
             <View
               style={{
                 width: "100%",
-                minHeight: esEscritorio ? 280 : 230,
+                minHeight: 230,
                 padding: 24,
-                borderRadius: 22,
                 borderWidth: 1,
+                borderRadius: 22,
                 borderColor: colors.border,
+                backgroundColor: colors.surface,
                 alignItems: "center",
                 justifyContent: "center",
-                backgroundColor: colors.surface,
               }}
             >
               <View
@@ -2013,8 +1998,8 @@ export function HistorialTecnicasInterface({
                   marginTop: 16,
                   fontFamily: "Nunito-Bold",
                   fontSize: 18,
-                  textAlign: "center",
                   color: colors.text,
+                  textAlign: "center",
                 }}
               >
                 Aún no tienes prácticas
@@ -2026,9 +2011,9 @@ export function HistorialTecnicasInterface({
                   maxWidth: 420,
                   fontFamily: "Nunito-Medium",
                   fontSize: 14,
-                  lineHeight: 20,
-                  textAlign: "center",
+                  lineHeight: 21,
                   color: colors.textSecondary,
+                  textAlign: "center",
                 }}
               >
                 Cuando completes una técnica, podrás consultar aquí tu
@@ -2037,20 +2022,23 @@ export function HistorialTecnicasInterface({
             </View>
           )}
 
+          {/* REGISTROS */}
+
           {!cargando && !error && registros.length > 0 && (
             <>
               <View
                 style={{
-                  marginBottom: 16,
+                  marginBottom: 17,
                   flexDirection: "row",
                   alignItems: "center",
-                  justifyContent: "space-between",
+                  gap: 10,
                 }}
               >
                 <Text
                   style={{
+                    flex: 1,
                     fontFamily: "Nunito-Bold",
-                    fontSize: esEscritorio ? 20 : 18,
+                    fontSize: 19,
                     color: colors.text,
                   }}
                 >
@@ -2059,10 +2047,10 @@ export function HistorialTecnicasInterface({
 
                 <View
                   style={{
-                    minWidth: 34,
-                    height: 34,
+                    minWidth: 35,
+                    height: 35,
                     paddingHorizontal: 10,
-                    borderRadius: 17,
+                    borderRadius: 18,
                     alignItems: "center",
                     justifyContent: "center",
                     backgroundColor: colors.primarySoft,
@@ -2095,37 +2083,25 @@ export function HistorialTecnicasInterface({
                     <View
                       key={registro.id_registro}
                       style={{
-                        width: esEscritorio ? "49.3%" : "100%",
+                        width: esEscritorio ? "49%" : "100%",
+                        minWidth: 0,
                         minHeight: 96,
-                        padding: esEscritorio ? 18 : 16,
+                        padding: 15,
                         borderWidth: 1,
                         borderRadius: 19,
                         borderColor: colors.border,
+                        backgroundColor: colors.surface,
                         flexDirection: "row",
                         alignItems: "center",
-                        backgroundColor: colors.surface,
-                        ...Platform.select({
-                          web: {
-                            boxShadow: "0px 2px 8px rgba(0,0,0,0.035)",
-                          },
-                          ios: {
-                            shadowColor: "#000000",
-                            shadowOffset: { width: 0, height: 2 },
-                            shadowOpacity: 0.04,
-                            shadowRadius: 5,
-                          },
-                          android: {
-                            elevation: 1,
-                          },
-                        }),
+                        gap: 12,
                       }}
                     >
                       <View
                         style={{
                           width: 46,
                           height: 46,
-                          flexShrink: 0,
                           borderRadius: 15,
+                          flexShrink: 0,
                           alignItems: "center",
                           justifyContent: "center",
                           backgroundColor: completada
@@ -2144,14 +2120,13 @@ export function HistorialTecnicasInterface({
                         style={{
                           flex: 1,
                           minWidth: 0,
-                          marginLeft: 13,
                         }}
                       >
                         <Text
                           numberOfLines={2}
                           style={{
                             fontFamily: "Nunito-Bold",
-                            fontSize: esEscritorio ? 16 : 15,
+                            fontSize: 15,
                             lineHeight: 21,
                             color: colors.text,
                           }}
@@ -2162,7 +2137,7 @@ export function HistorialTecnicasInterface({
 
                         <View
                           style={{
-                            marginTop: 5,
+                            marginTop: 6,
                             flexDirection: "row",
                             alignItems: "center",
                             gap: 5,
@@ -2178,6 +2153,7 @@ export function HistorialTecnicasInterface({
                             numberOfLines={1}
                             style={{
                               flex: 1,
+                              minWidth: 0,
                               fontFamily: "Nunito-Medium",
                               fontSize: 12,
                               color: colors.textSecondary,
@@ -2193,23 +2169,12 @@ export function HistorialTecnicasInterface({
                             )}
                           </Text>
                         </View>
-                      </View>
 
-                      <View
-                        style={{
-                          marginLeft: 10,
-                          paddingHorizontal: 10,
-                          paddingVertical: 6,
-                          borderRadius: 999,
-                          backgroundColor: completada
-                            ? colors.secondarySoft
-                            : colors.primarySoft,
-                        }}
-                      >
                         <Text
                           style={{
+                            marginTop: 5,
                             fontFamily: "Nunito-SemiBold",
-                            fontSize: 11,
+                            fontSize: 12,
                             color: completada ? colors.success : colors.primary,
                           }}
                         >
@@ -2229,7 +2194,7 @@ export function HistorialTecnicasInterface({
 }
 
 // ============================================================
-// TÉCNICA COMPLETADA
+// 5. TÉCNICA COMPLETADA
 // ============================================================
 
 export function TecnicaCompletadaInterface({
@@ -2244,6 +2209,9 @@ export function TecnicaCompletadaInterface({
   onHistorial: () => void;
 }) {
   const colors = useTecnicasColors();
+  const insets = useSafeAreaInsets();
+
+  const { esEscritorio, paddingHorizontal } = useTecnicasLayout();
 
   const tipo = obtenerTipoTecnica(nombre);
 
@@ -2257,13 +2225,12 @@ export function TecnicaCompletadaInterface({
   if (cargando) {
     return (
       <View
-        style={[
-          styles.pantalla,
-          styles.centro,
-          {
-            backgroundColor: colors.background,
-          },
-        ]}
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: colors.background,
+        }}
       >
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
@@ -2272,649 +2239,142 @@ export function TecnicaCompletadaInterface({
 
   return (
     <View
-      style={[
-        styles.pantalla,
-        styles.completada,
-        {
-          backgroundColor: colors.background,
-        },
-      ]}
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+      }}
     >
-      <View
-        style={[
-          styles.check,
-          {
-            backgroundColor: colors.success,
-          },
-        ]}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingHorizontal,
+          paddingTop: esEscritorio ? 70 : 40,
+          paddingBottom: Math.max(insets.bottom + 28, 40),
+          alignItems: "center",
+        }}
       >
-        <Ionicons name="checkmark" size={55} color={colors.textOnPrimary} />
-      </View>
-
-      <Text style={[styles.tituloCompletada, { color: colors.text }]}>
-        ¡Técnica completada!
-      </Text>
-
-      <Text
-        style={[
-          styles.descripcionCompletada,
-          {
-            color: colors.textSecondary,
-          },
-        ]}
-      >
-        Has terminado{"\n"}
-        {nombre ?? "la técnica complementaria"}.
-      </Text>
-
-      <View
-        style={[
-          styles.mensaje,
-          {
-            backgroundColor: colors.surface,
-            borderColor: colors.border,
-          },
-        ]}
-      >
-        <Text
-          style={[
-            styles.mensajeTexto,
-            {
-              color: colors.textSecondary,
-            },
-          ]}
-        >
-          {mensaje}
-        </Text>
-      </View>
-
-      <View style={styles.flex} />
-
-      <Pressable
-        onPress={onVolver}
-        style={[
-          styles.boton,
-          {
+        <View
+          style={{
             width: "100%",
-            backgroundColor: colors.primary,
-          },
-        ]}
-      >
-        <Text style={styles.botonTexto}>Volver a técnicas</Text>
-      </Pressable>
+            maxWidth: 560,
+            flex: 1,
+            alignItems: "center",
+          }}
+        >
+          {/* CONFIRMACIÓN */}
 
-      <Pressable style={styles.enlace} onPress={onHistorial}>
-        <Text style={[styles.enlaceTexto, { color: colors.primary }]}>
-          Ver mi historial
-        </Text>
-      </Pressable>
+          <View
+            style={{
+              width: 105,
+              height: 105,
+              borderRadius: 53,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: colors.success,
+            }}
+          >
+            <Ionicons name="checkmark" size={55} color={colors.textOnPrimary} />
+          </View>
+
+          <Text
+            style={{
+              marginTop: 27,
+              fontFamily: "Nunito-Bold",
+              fontSize: esEscritorio ? 32 : 28,
+              lineHeight: 38,
+              textAlign: "center",
+              color: colors.text,
+            }}
+          >
+            ¡Técnica completada!
+          </Text>
+
+          <Text
+            style={{
+              marginTop: 12,
+              fontFamily: "Nunito-Medium",
+              fontSize: 16,
+              lineHeight: 24,
+              textAlign: "center",
+              color: colors.textSecondary,
+            }}
+          >
+            Has terminado{"\n"}
+            {nombre ?? "la técnica complementaria"}.
+          </Text>
+
+          {/* MENSAJE */}
+
+          <View
+            style={{
+              width: "100%",
+              marginTop: 28,
+              padding: 20,
+              borderWidth: 1,
+              borderRadius: 18,
+              borderColor: colors.border,
+              backgroundColor: colors.surface,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: "Nunito-Medium",
+                fontSize: 14,
+                lineHeight: 22,
+                textAlign: "center",
+                color: colors.textSecondary,
+              }}
+            >
+              {mensaje}
+            </Text>
+          </View>
+
+          <View
+            style={{
+              flexGrow: 1,
+              minHeight: 28,
+            }}
+          />
+
+          {/* ACCIONES */}
+
+          <View
+            style={{
+              width: "100%",
+              marginTop: 28,
+            }}
+          >
+            <BotonPrimario
+              titulo="Volver a técnicas"
+              icono="arrow-back"
+              onPress={onVolver}
+            />
+
+            <Pressable
+              onPress={onHistorial}
+              style={({ pressed }) => ({
+                alignSelf: "center",
+                marginTop: 12,
+                padding: 15,
+                borderRadius: 12,
+                opacity: pressed ? 0.7 : 1,
+              })}
+            >
+              <Text
+                style={{
+                  fontFamily: "Nunito-Bold",
+                  fontSize: 15,
+                  color: colors.primary,
+                  textAlign: "center",
+                }}
+              >
+                Ver mi historial
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </ScrollView>
     </View>
   );
 }
-
-// ============================================================
-// ESTILOS
-// ============================================================
-
-const styles = StyleSheet.create({
-  pantalla: {
-    flex: 1,
-  },
-
-  flex: {
-    flex: 1,
-  },
-
-  scroll: {
-    padding: 18,
-  },
-
-  tituloInicio: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 24,
-    marginTop: 8,
-  },
-
-  descripcion: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 13,
-    lineHeight: 18,
-    marginTop: 8,
-  },
-
-  // ==========================================================
-  // BUSCADOR
-  // ==========================================================
-
-  buscador: {
-    height: 54,
-    borderWidth: 1,
-    borderRadius: 17,
-    marginTop: 18,
-    paddingHorizontal: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 11,
-  },
-
-  inputBusqueda: {
-    flex: 1,
-    fontFamily: "Nunito-Medium",
-    fontSize: 15,
-  },
-
-  sinResultados: {
-    alignItems: "center",
-    paddingVertical: 35,
-    gap: 10,
-  },
-
-  sinResultadosTexto: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 14,
-    textAlign: "center",
-    lineHeight: 20,
-  },
-
-  // ==========================================================
-  // TÍTULOS
-  // ==========================================================
-
-  filaTitulo: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 25,
-    marginBottom: 14,
-  },
-
-  seccionTitulo: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 18,
-    maxWidth: "85%",
-  },
-
-  // ==========================================================
-  // NECESIDADES
-  // ==========================================================
-
-  necesidades: {
-    flexDirection: "row",
-    gap: 10,
-  },
-
-  necesidad: {
-    flex: 1,
-    minHeight: 125,
-    borderWidth: 1,
-    borderRadius: 20,
-    padding: 14,
-    justifyContent: "space-between",
-  },
-
-  iconoNecesidad: {
-    width: 58,
-    height: 58,
-    borderRadius: 19,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  necesidadTexto: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 14,
-    lineHeight: 18,
-  },
-
-  historialIcono: {
-    padding: 3,
-  },
-
-  // ==========================================================
-  // TARJETAS
-  // ==========================================================
-
-  tarjeta: {
-    borderWidth: 1,
-    borderRadius: 21,
-    padding: 16,
-    marginBottom: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-  },
-
-  icono: {
-    width: 68,
-    height: 68,
-    borderRadius: 21,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  nombre: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 16,
-    lineHeight: 21,
-  },
-
-  resumen: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 13,
-    lineHeight: 18,
-    marginTop: 4,
-  },
-
-  filaDuracion: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginTop: 7,
-  },
-
-  duracion: {
-    fontFamily: "Nunito-SemiBold",
-    fontSize: 12,
-  },
-
-  // ==========================================================
-  // ESTADOS
-  // ==========================================================
-
-  estado: {
-    paddingVertical: 40,
-    alignItems: "center",
-    gap: 12,
-  },
-
-  error: {
-    fontFamily: "Nunito-Medium",
-    textAlign: "center",
-  },
-
-  reintentar: {
-    fontFamily: "Nunito-Bold",
-  },
-
-  // ==========================================================
-  // DETALLE
-  // ==========================================================
-
-  detalleScroll: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-
-  volver: {
-    width: 42,
-    height: 42,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: -8,
-  },
-
-  iconoGrande: {
-    width: 96,
-    height: 96,
-    borderRadius: 30,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 20,
-  },
-
-  tituloDetalle: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 27,
-    lineHeight: 33,
-    marginTop: 22,
-  },
-
-  subtituloDetalle: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 18,
-    marginTop: 25,
-    marginBottom: 7,
-  },
-
-  descripcionDetalle: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 15,
-    lineHeight: 23,
-  },
-
-  info: {
-    borderWidth: 1,
-    borderRadius: 17,
-    padding: 16,
-    marginTop: 25,
-    flexDirection: "row",
-    gap: 12,
-    alignItems: "center",
-  },
-
-  objetivo: {
-    borderWidth: 1,
-    borderRadius: 17,
-    padding: 16,
-  },
-
-  infoTitulo: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 15,
-  },
-
-  infoTexto: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 14,
-    lineHeight: 21,
-    marginTop: 3,
-  },
-
-  itemLista: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 9,
-    marginTop: 9,
-  },
-
-  itemTexto: {
-    flex: 1,
-    fontFamily: "Nunito-Medium",
-    fontSize: 14,
-    lineHeight: 20,
-  },
-
-  advertencia: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-    padding: 15,
-    borderRadius: 16,
-    marginTop: 15,
-  },
-
-  advertenciaTexto: {
-    flex: 1,
-    fontFamily: "Nunito-Medium",
-    fontSize: 13,
-    lineHeight: 19,
-  },
-
-  botonDetalle: {
-    marginTop: 25,
-  },
-
-  // ==========================================================
-  // BOTONES
-  // ==========================================================
-
-  boton: {
-    minHeight: 56,
-    borderRadius: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-  },
-
-  botonTexto: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 16,
-    color: "#FFFFFF",
-  },
-
-  // ==========================================================
-  // EJERCICIO
-  // ==========================================================
-
-  ejercicio: {
-    flex: 1,
-    padding: 20,
-    paddingBottom: 30,
-  },
-
-  ejercicioScroll: {
-    paddingBottom: 20,
-  },
-
-  cabecera: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-
-  progreso: {
-    fontFamily: "Nunito-SemiBold",
-    fontSize: 13,
-  },
-
-  barras: {
-    flexDirection: "row",
-    gap: 4,
-    marginTop: 18,
-  },
-
-  barra: {
-    height: 5,
-    borderRadius: 4,
-    flex: 1,
-  },
-
-  nombreTecnica: {
-    fontFamily: "Nunito-SemiBold",
-    fontSize: 13,
-    textAlign: "center",
-    marginTop: 25,
-  },
-
-  pasoCard: {
-    borderWidth: 1,
-    borderRadius: 24,
-    padding: 22,
-    marginTop: 15,
-    alignItems: "center",
-  },
-
-  numero: {
-    width: 55,
-    height: 55,
-    borderRadius: 28,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  numeroTexto: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 23,
-  },
-
-  tituloPaso: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 23,
-    textAlign: "center",
-    marginTop: 18,
-  },
-
-  instruccion: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 15,
-    lineHeight: 23,
-    textAlign: "center",
-    marginTop: 13,
-  },
-
-  detallePaso: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 13,
-    lineHeight: 20,
-    textAlign: "center",
-    marginTop: 10,
-  },
-
-  imagenPaso: {
-    width: "100%",
-    height: 220,
-    marginTop: 18,
-  },
-
-  // ==========================================================
-  // GROUNDING
-  // ==========================================================
-
-  inputsGrounding: {
-    width: "100%",
-    marginTop: 18,
-    gap: 10,
-  },
-
-  inputFila: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-
-  numeroInput: {
-    width: 22,
-    fontFamily: "Nunito-Bold",
-    fontSize: 14,
-  },
-
-  inputGrounding: {
-    flex: 1,
-    minHeight: 46,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 13,
-    fontFamily: "Nunito-Medium",
-    fontSize: 14,
-  },
-
-  // ==========================================================
-  // JACOBSON
-  // ==========================================================
-
-  repeticion: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "center",
-    gap: 7,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 20,
-    marginTop: 20,
-  },
-
-  repeticionTexto: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 13,
-  },
-
-  // ==========================================================
-  // HISTORIAL
-  // ==========================================================
-
-  volverConTexto: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 7,
-    marginTop: 8,
-  },
-
-  volverTexto: {
-    fontFamily: "Nunito-SemiBold",
-    fontSize: 14,
-  },
-
-  tituloHistorial: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 25,
-    marginTop: 20,
-  },
-
-  vacio: {
-    fontFamily: "Nunito-Medium",
-    textAlign: "center",
-  },
-
-  iconoHistorial: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  fecha: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 12,
-    marginTop: 3,
-  },
-
-  estadoTexto: {
-    fontFamily: "Nunito-SemiBold",
-    fontSize: 11,
-    maxWidth: 73,
-    textAlign: "right",
-  },
-
-  // ==========================================================
-  // COMPLETADA
-  // ==========================================================
-
-  centro: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  completada: {
-    alignItems: "center",
-    padding: 25,
-    paddingTop: 100,
-  },
-
-  check: {
-    width: 105,
-    height: 105,
-    borderRadius: 53,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  tituloCompletada: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 30,
-    textAlign: "center",
-    marginTop: 27,
-  },
-
-  descripcionCompletada: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 16,
-    lineHeight: 24,
-    textAlign: "center",
-    marginTop: 10,
-  },
-
-  mensaje: {
-    borderWidth: 1,
-    borderRadius: 18,
-    padding: 18,
-    marginTop: 28,
-  },
-
-  mensajeTexto: {
-    fontFamily: "Nunito-Medium",
-    fontSize: 14,
-    lineHeight: 21,
-    textAlign: "center",
-  },
-
-  enlace: {
-    padding: 18,
-  },
-
-  enlaceTexto: {
-    fontFamily: "Nunito-Bold",
-    fontSize: 15,
-  },
-});

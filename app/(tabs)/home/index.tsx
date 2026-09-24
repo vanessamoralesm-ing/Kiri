@@ -424,7 +424,7 @@ export default function HomeScreen() {
 
               <View
                 style={{
-                  flex: 1,
+                  flex: esEscritorio ? 1 : undefined,
 
                   flexDirection: esTelefono ? "column" : "row",
 
@@ -733,9 +733,11 @@ export default function HomeScreen() {
 
                 flexWrap: "wrap",
 
-                gap: gapModulos,
+                columnGap: gapModulos,
 
-                alignItems: "stretch",
+                rowGap: esTelefono ? 12 : 16,
+
+                alignItems: "flex-start",
               }}
             >
               {MODULOS.map((modulo) => (
@@ -745,6 +747,8 @@ export default function HomeScreen() {
                     width: esTelefono ? "100%" : anchoTarjetaModulo,
 
                     minHeight: esEscritorio ? 175 : esTablet ? 180 : undefined,
+                    flexGrow: 0,
+                    flexShrink: 0,
                   }}
                 >
                   <TarjetaModulo

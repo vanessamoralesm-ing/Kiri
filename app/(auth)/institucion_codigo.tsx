@@ -1,242 +1,478 @@
 import React, { useState } from "react";
 
 import {
+  Alert,
+  KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
-  StyleSheet,
   Text,
-  TouchableOpacity,
+  TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
 import Logo from "@/components/ui/Logo_izq";
+
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useThemeColor } from "@/hooks/use-theme-color";
+
+// ==========================================================
+// PANTALLA
+// ==========================================================
 
 export default function InstitucionCodigoPantalla() {
   const router = useRouter();
 
+  const { width } = useWindowDimensions();
+
   const [codigo, setCodigo] = useState("");
 
-  const regresar = () => {
+  // ========================================================
+  // TEMA
+  // ========================================================
+
+  const colorScheme = useColorScheme();
+  const esOscuro = colorScheme === "dark";
+
+  const backgroundColor = useThemeColor({}, "background");
+  const surfaceColor = useThemeColor({}, "surface");
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+
+  const textColor = useThemeColor({}, "text");
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
+  const textMutedColor = useThemeColor({}, "textMuted");
+
+  const primaryColor = useThemeColor({}, "primary");
+  const primarySoftColor = useThemeColor({}, "primarySoft");
+
+  const secondaryColor = useThemeColor({}, "secondary");
+  const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
+
+  const inputBackgroundColor = useThemeColor({}, "inputBackground");
+  const inputBorderColor = useThemeColor({}, "inputBorder");
+  const placeholderColor = useThemeColor({}, "placeholder");
+
+  const borderColor = useThemeColor({}, "border");
+
+  // ========================================================
+  // RESPONSIVE
+  // ========================================================
+
+  const esTelefono = width < 768;
+  const esEscritorio = width >= 1100;
+
+  const anchoMaximo = esEscritorio ? 720 : 560;
+
+  const alturaCamara = esTelefono ? 210 : 260;
+
+  // ========================================================
+  // ACCIONES
+  // ========================================================
+
+  function regresar() {
     router.back();
-  };
+  }
 
-  const escanearQR = () => {
-    console.log("Activar camara para encaneo QR");
-  };
+  function escanearQR() {
+    // Pendiente: integrar el escáner de códigos QR.
+    console.log("Activar cámara para escaneo QR");
+  }
 
-  const verificarCodigo = () => {
-    if (!codigo.trim()) {
-      alert("Por favor, ingrese el codigo de tu institucion.");
+  function verificarCodigo() {
+    const codigoLimpio = codigo.trim();
+
+    if (!codigoLimpio) {
+      if (Platform.OS === "web") {
+        alert("Por favor, ingresa el código de tu institución.");
+      } else {
+        Alert.alert(
+          "Código requerido",
+          "Por favor, ingresa el código de tu institución.",
+        );
+      }
+
       return;
     }
 
-    console.log("Codigo a verificar:", codigo);
+    console.log("Código a verificar:", codigoLimpio);
 
-    // Aqui se hara la validacion la base de datos que conectaremos
-  };
+    // Pendiente: validar el código en la base de datos.
+  }
+
+  // ========================================================
+  // UI
+  // ========================================================
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContenedor}>
-      <View style={styles.contenedor}>
-        {/* CABECERA */}
+    <SafeAreaView
+      edges={["top", "bottom"]}
+      style={{
+        flex: 1,
+        backgroundColor,
+      }}
+    >
+      <StatusBar
+        style={esOscuro ? "light" : "dark"}
+        backgroundColor={backgroundColor}
+      />
 
-        <View style={styles.cabecera}>
-          <Logo />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <ScrollView
+          style={{ flex: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            flexGrow: 1,
+            alignItems: "center",
 
-          <TouchableOpacity onPress={regresar} activeOpacity={0.7}>
-            <Text style={styles.botonCerrar}>✕</Text>
-          </TouchableOpacity>
-        </View>
+            paddingHorizontal: esTelefono ? 18 : 32,
+            paddingTop: esTelefono ? 16 : 28,
+            paddingBottom: 36,
+          }}
+        >
+          <View
+            style={{
+              width: "100%",
+              maxWidth: anchoMaximo,
+              alignSelf: "center",
+            }}
+          >
+            {/* ==============================================
+                CABECERA
+            ============================================== */}
 
-        {/* TITULO */}
+            <View
+              style={{
+                width: "100%",
+                minHeight: 64,
 
-        <Text style={styles.titulo}>Acceso Institucional</Text>
+                marginBottom: 18,
 
-        <Text style={styles.subtitulo}>
-          Vincula tu cuenta con tu centro educativo para recibir ayuda
-          personalizada
-        </Text>
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  alignItems: "flex-start",
+                  justifyContent: "center",
+                }}
+              >
+                <Logo />
+              </View>
 
-        {/* TARJETA QR */}
+              <Pressable
+                onPress={regresar}
+                hitSlop={10}
+                accessibilityRole="button"
+                accessibilityLabel="Cerrar acceso institucional"
+                style={({ pressed }) => ({
+                  width: 42,
+                  height: 42,
 
-        <View style={styles.tarjetaQR}>
-          <View style={styles.cuadroCamara} />
+                  marginLeft: 12,
 
-          <Button
-            title="Escanear un Codigo QR"
-            variant="primary"
-            onPress={escanearQR}
-            style={styles.botonEscanear}
-          />
+                  flexShrink: 0,
 
-          <Text style={styles.textoIndicacion}>
-            Coloca el código QR frente a tu cámara
-          </Text>
-        </View>
+                  borderRadius: 14,
 
-        {/* SEPARADOR */}
+                  alignItems: "center",
+                  justifyContent: "center",
 
-        <View style={styles.divisorContenedor}>
-          <View style={styles.linea} />
+                  opacity: pressed ? 0.7 : 1,
 
-          <Text style={styles.textoDivisor}>O INGRESA EL CÓDIGO</Text>
+                  backgroundColor: pressed
+                    ? surfaceSecondaryColor
+                    : "transparent",
+                })}
+              >
+                <Ionicons name="close" size={26} color={textSecondaryColor} />
+              </Pressable>
+            </View>
 
-          <View style={styles.linea} />
-        </View>
+            {/* ==============================================
+                TÍTULO
+            ============================================== */}
 
-        {/* INPUT */}
+            <View
+              style={{
+                width: "100%",
+                alignItems: "center",
 
-        <Input
-          label="Código de Institución"
-          placeholder="EJ: KIRI-2026-EDU"
-          value={codigo}
-          onChangeText={setCodigo}
-          autoCapitalize="characters"
-          estiloContenedor={styles.bloqueInput}
-        />
+                marginBottom: 24,
 
-        {/* BOTON */}
+                gap: 8,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: "Nunito-Bold",
 
-        <Button
-          title="Verificar Institución"
-          variant="primary"
-          onPress={verificarCodigo}
-          style={styles.botonVerificar}
-        />
-      </View>
-    </ScrollView>
+                  fontSize: esTelefono ? 27 : 35,
+                  lineHeight: esTelefono ? 35 : 44,
+
+                  color: primaryColor,
+                  textAlign: "center",
+                }}
+              >
+                Acceso Institucional
+              </Text>
+
+              <Text
+                style={{
+                  maxWidth: 480,
+
+                  fontFamily: "Nunito-Medium",
+
+                  fontSize: esTelefono ? 15 : 18,
+                  lineHeight: esTelefono ? 22 : 26,
+
+                  color: textSecondaryColor,
+                  textAlign: "center",
+                }}
+              >
+                Vincula tu cuenta con tu centro educativo para recibir ayuda
+                personalizada.
+              </Text>
+            </View>
+
+            {/* ==============================================
+                TARJETA QR
+            ============================================== */}
+
+            <View
+              style={{
+                width: "100%",
+
+                padding: 16,
+
+                borderRadius: 24,
+
+                borderWidth: 1,
+                borderColor,
+
+                backgroundColor: surfaceColor,
+
+                alignItems: "center",
+
+                gap: 14,
+
+                ...(Platform.OS === "web"
+                  ? ({
+                    boxShadow: esOscuro
+                      ? "0px 4px 18px rgba(0,0,0,0.22)"
+                      : "0px 4px 16px rgba(0,0,0,0.06)",
+                  } as any)
+                  : {}),
+
+                ...(Platform.OS === "android"
+                  ? {
+                    elevation: 3,
+                  }
+                  : {}),
+
+                ...(Platform.OS === "ios"
+                  ? {
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: esOscuro ? 0.18 : 0.06,
+                    shadowRadius: 12,
+                  }
+                  : {}),
+              }}
+            >
+              {/* ÁREA QR */}
+
+              <View
+                style={{
+                  width: "100%",
+                  height: alturaCamara,
+
+                  borderRadius: 18,
+
+                  alignItems: "center",
+                  justifyContent: "center",
+
+                  gap: 10,
+
+                  backgroundColor: surfaceSecondaryColor,
+                }}
+              >
+                <Ionicons
+                  name="scan-outline"
+                  size={esTelefono ? 48 : 58}
+                  color={primaryColor}
+                />
+
+                <Text
+                  style={{
+                    fontFamily: "Nunito-Medium",
+                    fontSize: 13,
+                    color: textMutedColor,
+                  }}
+                >
+                  Área de escaneo QR
+                </Text>
+              </View>
+
+              {/* BOTÓN ESCANEAR */}
+
+              <Button
+                title="Escanear un código QR"
+                variant="primary"
+                onPress={escanearQR}
+                style={{
+                  width: "100%",
+                }}
+              />
+
+              {/* INDICACIÓN */}
+
+              <Text
+                style={{
+                  fontFamily: "Nunito-Medium",
+                  fontSize: 13,
+                  lineHeight: 19,
+
+                  color: textSecondaryColor,
+                  textAlign: "center",
+                }}
+              >
+                Coloca el código QR frente a tu cámara.
+              </Text>
+            </View>
+
+            {/* ==============================================
+                SEPARADOR
+            ============================================== */}
+
+            <View
+              style={{
+                width: "100%",
+
+                marginVertical: 24,
+
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  height: 1,
+                  backgroundColor: borderColor,
+                }}
+              />
+
+              <Text
+                style={{
+                  marginHorizontal: 12,
+
+                  fontFamily: "Nunito-SemiBold",
+                  fontSize: esTelefono ? 11 : 13,
+                  letterSpacing: 0.4,
+
+                  color: textSecondaryColor,
+                  textAlign: "center",
+                }}
+              >
+                O INGRESA EL CÓDIGO
+              </Text>
+
+              <View
+                style={{
+                  flex: 1,
+                  height: 1,
+                  backgroundColor: borderColor,
+                }}
+              />
+            </View>
+
+            {/* ==============================================
+                CÓDIGO DE INSTITUCIÓN
+            ============================================== */}
+
+            <View
+              style={{
+                width: "100%",
+                marginBottom: 16,
+              }}
+            >
+              <Text
+                style={{
+                  marginBottom: 10,
+
+                  fontFamily: "Nunito-Bold",
+                  fontSize: 15,
+
+                  color: textColor,
+                }}
+              >
+                Código de Institución
+              </Text>
+
+              <TextInput
+                value={codigo}
+                onChangeText={setCodigo}
+                placeholder="Ej.: KIRI-2026-EDU"
+                placeholderTextColor={placeholderColor}
+                autoCapitalize="characters"
+                autoCorrect={false}
+                returnKeyType="done"
+                onSubmitEditing={verificarCodigo}
+                accessibilityLabel="Código de Institución"
+                style={{
+                  width: "100%",
+                  minHeight: 56,
+
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+
+                  borderWidth: 1,
+                  borderColor: inputBorderColor,
+
+                  borderRadius: 14,
+
+                  backgroundColor: inputBackgroundColor,
+
+                  color: textColor,
+
+                  fontFamily: "Nunito-Medium",
+                  fontSize: 15,
+                }}
+              />
+            </View>
+
+            {/* ==============================================
+                VERIFICAR INSTITUCIÓN
+            ============================================== */}
+
+            <Button
+              title="Verificar Institución"
+              variant="primary"
+              onPress={verificarCodigo}
+              style={{
+                width: "100%",
+                marginTop: 4,
+                backgroundColor: secondaryColor,
+              }}
+            />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  scrollContenedor: {
-    flexGrow: 1,
-    backgroundColor: "#F8FAFC",
-  },
-
-  contenedor: {
-    flex: 1,
-    paddingHorizontal: 10,
-    paddingTop: 5,
-    paddingBottom: 30,
-  },
-
-  cabecera: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: -25,
-  },
-
-  botonCerrar: {
-    fontSize: 25,
-    color: "#64748B",
-    fontWeight: "bold",
-    padding: 5,
-    marginTop: 20,
-  },
-
-  titulo: {
-    fontSize: 35,
-    fontFamily: "Nunito-Bold",
-    fontWeight: "700",
-    color: "#4F8EF7",
-    textAlign: "center",
-    marginBottom: 5,
-  },
-
-  subtitulo: {
-    fontSize: 18,
-    fontFamily: "Nunito-Medium",
-    fontWeight: "400",
-    color: "#2D3748",
-    textAlign: "center",
-    lineHeight: 25,
-    marginBottom: 13,
-  },
-
-  tarjetaQR: {
-    backgroundColor: "#f5f8fd",
-    borderRadius: 40,
-    padding: 5,
-    alignItems: "center",
-    borderWidth: 10,
-    borderColor: "#f2f6fa",
-
-    ...Platform.select({
-      web: {
-        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
-      },
-
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: {
-          width: 0,
-          height: 4,
-        },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-      },
-
-      android: {
-        elevation: 6,
-      },
-    }),
-  },
-
-  cuadroCamara: {
-    width: "90%",
-    height: 300,
-    backgroundColor: "#dae0e7",
-    borderRadius: 20,
-    marginBottom: 15,
-  },
-
-  botonEscanear: {
-    width: "100%",
-    marginBottom: 15,
-  },
-
-  textoIndicacion: {
-    fontSize: 16,
-    fontWeight: "300",
-    fontFamily: "Nunito-Medium",
-    color: "#2D3748",
-    textAlign: "center",
-  },
-
-  divisorContenedor: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 24,
-    marginTop: 15,
-    width: "100%",
-  },
-
-  linea: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#2D3748",
-  },
-
-  textoDivisor: {
-    marginHorizontal: 15,
-    fontSize: 16,
-    fontFamily: "Nunito-Medium",
-    color: "#2D3748",
-    letterSpacing: 0.5,
-  },
-
-  botonVerificar: {
-    marginTop: -10,
-    backgroundColor: "#7BBF9A",
-  },
-
-  bloqueInput: {
-    marginTop: -15,
-  },
-});

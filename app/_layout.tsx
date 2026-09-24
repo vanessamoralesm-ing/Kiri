@@ -1,6 +1,6 @@
 import "../global.css";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { ThemeProvider } from "@react-navigation/native";
 
@@ -24,7 +24,9 @@ import { ThemeModeProvider, useThemeMode } from "@/contexts/ThemeModeContext";
 
 import { obtenerEstadoInicialEntrevista } from "@/services/entrevista/entrevistaService";
 
-SplashScreen.preventAutoHideAsync();
+// Mantener visible el splash nativo hasta que
+// las fuentes y la preferencia del tema estén listas.
+void SplashScreen.preventAutoHideAsync();
 
 // ==========================================================
 // NAVEGACIÓN PRINCIPAL
@@ -37,15 +39,15 @@ function RootNavigation() {
 
   const pathname = usePathname();
 
-  const [splashTerminado, setSplashTerminado] = React.useState(false);
+  const [splashTerminado, setSplashTerminado] = useState(false);
 
-  const [inicioListo, setInicioListo] = React.useState(false);
+  const [inicioListo, setInicioListo] = useState(false);
 
   const verificacionInicialRef = useRef(false);
 
-  // ======================================================
-  // SPLASH
-  // ======================================================
+  // ========================================================
+  // SPLASH PERSONALIZADO
+  // ========================================================
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -57,9 +59,9 @@ function RootNavigation() {
     };
   }, []);
 
-  // ======================================================
+  // ========================================================
   // FINALIZAR ARRANQUE
-  // ======================================================
+  // ========================================================
 
   useEffect(() => {
     if (inicioListo) {
@@ -73,34 +75,31 @@ function RootNavigation() {
     setInicioListo(true);
   }, [splashTerminado, loading, inicioListo]);
 
-  // ======================================================
+  // ========================================================
   // RESETEAR VERIFICACIÓN SI CAMBIA EL USUARIO
-  // ======================================================
+  // ========================================================
 
   useEffect(() => {
     verificacionInicialRef.current = false;
   }, [session?.user.id]);
 
-  // ======================================================
+  // ========================================================
   // AUTENTICACIÓN, ROL Y ENTREVISTA INICIAL
-  // ======================================================
+  // ========================================================
 
   useEffect(() => {
     if (!inicioListo) {
       return;
     }
 
-    // ==============================================
-    // EVITAR REPETIR LA REDIRECCIÓN INICIAL
-    // ==============================================
-
+    // Evitar repetir la redirección inicial.
     if (verificacionInicialRef.current) {
       return;
     }
 
-    // ==============================================
+    // ======================================================
     // 1. USUARIO NO AUTENTICADO
-    // ==============================================
+    // ======================================================
 
     if (!session) {
       verificacionInicialRef.current = true;
@@ -110,17 +109,17 @@ function RootNavigation() {
       return;
     }
 
-    // ==============================================
+    // ======================================================
     // 2. ESPERAR PERFIL
-    // ==============================================
+    // ======================================================
 
     if (!profile) {
       return;
     }
 
-    // ==============================================
+    // ======================================================
     // 3. PERFIL LISTO
-    // ==============================================
+    // ======================================================
 
     verificacionInicialRef.current = true;
 
@@ -137,9 +136,9 @@ function RootNavigation() {
         console.log("[AUTH] Rol:", rol);
       }
 
-      // ======================================
+      // ====================================================
       // 4. SUPERADMINISTRADOR
-      // ======================================
+      // ====================================================
 
       if (rol === "superadministrador") {
         const estaEnSuperAdmin =
@@ -152,9 +151,9 @@ function RootNavigation() {
         return;
       }
 
-      // ======================================
+      // ====================================================
       // 5. USUARIO NORMAL
-      // ======================================
+      // ====================================================
 
       try {
         const estado = await obtenerEstadoInicialEntrevista();
@@ -163,9 +162,9 @@ function RootNavigation() {
           return;
         }
 
-        // ==================================
+        // ==================================================
         // ENTREVISTA COMPLETADA
-        // ==================================
+        // ==================================================
 
         if (estado.situacion === "completada") {
           const estaEnTabs =
@@ -184,9 +183,9 @@ function RootNavigation() {
           return;
         }
 
-        // ==================================
+        // ==================================================
         // SIN ENTREVISTA / EN PROGRESO
-        // ==================================
+        // ==================================================
 
         if (
           estado.situacion === "sin_entrevista" ||
@@ -207,27 +206,23 @@ function RootNavigation() {
       }
     };
 
-    verificarRuta();
+    void verificarRuta();
 
     return () => {
       cancelado = true;
     };
   }, [inicioListo, session, profile, pathname, router]);
 
-  // ======================================================
+  // ========================================================
   // PROTEGER RUTAS DEL SUPERADMINISTRADOR
-  // ======================================================
+  // ========================================================
 
   useEffect(() => {
     if (!inicioListo) {
       return;
     }
 
-    if (!session) {
-      return;
-    }
-
-    if (!profile) {
+    if (!session || !profile) {
       return;
     }
 
@@ -240,32 +235,26 @@ function RootNavigation() {
 
     const rol = profile.rol?.nombre ?? null;
 
-    // ==============================================
-    // SUPERADMIN AUTORIZADO
-    // ==============================================
-
+    // Superadministrador autorizado.
     if (rol === "superadministrador") {
       return;
     }
 
-    // ==============================================
-    // OTRO ROL NO PUEDE ENTRAR
-    // ==============================================
-
+    // Otros roles no pueden acceder.
     router.replace("/(tabs)/home");
   }, [inicioListo, session, profile, pathname, router]);
 
-  // ======================================================
+  // ========================================================
   // SPLASH PERSONALIZADO
-  // ======================================================
+  // ========================================================
 
   if (!inicioListo) {
     return <AnimatedLogo />;
   }
 
-  // ======================================================
+  // ========================================================
   // STACK PRINCIPAL
-  // ======================================================
+  // ========================================================
 
   return (
     <Stack
@@ -307,6 +296,30 @@ function AppConTema() {
 }
 
 // ==========================================================
+// CONTENIDO RAÍZ
+// ==========================================================
+
+function RootAppContent() {
+  const { isThemeReady } = useThemeMode();
+
+  // Ocultar el splash nativo una vez recuperada
+  // la preferencia del tema.
+  useEffect(() => {
+    if (isThemeReady) {
+      void SplashScreen.hideAsync();
+    }
+  }, [isThemeReady]);
+
+  // Evitar mostrar un tema incorrecto mientras
+  // se recupera la preferencia guardada.
+  if (!isThemeReady) {
+    return null;
+  }
+
+  return <AppConTema />;
+}
+
+// ==========================================================
 // ROOT LAYOUT
 // ==========================================================
 
@@ -319,9 +332,9 @@ export default function RootLayout() {
     "Nunito-Bold": require("../assets/fonts/Nunito-Bold.ttf"),
   });
 
-  // ======================================================
+  // ========================================================
   // ERROR AL CARGAR FUENTES
-  // ======================================================
+  // ========================================================
 
   useEffect(() => {
     if (error) {
@@ -329,31 +342,21 @@ export default function RootLayout() {
     }
   }, [error]);
 
-  // ======================================================
-  // OCULTAR SPLASH NATIVO
-  // ======================================================
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  // ======================================================
+  // ========================================================
   // ESPERAR FUENTES
-  // ======================================================
+  // ========================================================
 
   if (!loaded) {
     return null;
   }
 
-  // ======================================================
-  // PROVIDERS
-  // ======================================================
+  // ========================================================
+  // PROVIDER DEL TEMA
+  // ========================================================
 
   return (
     <ThemeModeProvider>
-      <AppConTema />
+      <RootAppContent />
     </ThemeModeProvider>
   );
 }
