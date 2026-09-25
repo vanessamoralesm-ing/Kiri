@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 
 import {
     ActivityIndicator,
@@ -17,20 +17,73 @@ import CuestionarioAdminCard from "@/components/superadmin/cuestionarios/Cuestio
 import CuestionariosAdminKpi from "@/components/superadmin/cuestionarios/CuestionarioAdminKpi";
 
 import CuestionariosAdminToolbar, {
-    FiltroEstadoCuestionario,
+    type FiltroEstadoCuestionario,
 } from "@/components/superadmin/cuestionarios/CuestionarioAdminToolbar";
 
 import {
-    cambiarEstadoTestAdmin,
+    despublicarTestAdmin,
     obtenerTestsAdmin,
+    publicarTestAdmin,
     type TestAdmin,
 } from "@/services/superadmin/cuestionarioAdmin.service";
 
 import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
-
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+
+// ==========================================================
+// UTILIDADES
+// ==========================================================
+
+type ErrorSupabase = {
+    message?: string;
+    code?: string;
+    details?: string;
+    hint?: string;
+};
+
+function obtenerMensajeError(error: unknown): string {
+    if (typeof error === "string" && error.trim()) {
+        return error;
+    }
+
+    if (error && typeof error === "object") {
+        const err = error as ErrorSupabase;
+
+        const partes = [
+            err.message,
+            err.code ? `Código: ${err.code}` : null,
+            err.details,
+            err.hint ? `Sugerencia: ${err.hint}` : null,
+        ].filter(Boolean);
+
+        if (partes.length > 0) {
+            return partes.join("\n");
+        }
+    }
+
+    return "Ocurrió un error inesperado. Consulta la consola.";
+}
+
+function registrarError(contexto: string, error: unknown) {
+    console.error(contexto, error);
+
+    if (error && typeof error === "object") {
+        const err = error as ErrorSupabase;
+
+        console.error("Detalles del error:", {
+            message: err.message,
+            code: err.code,
+            details: err.details,
+            hint: err.hint,
+        });
+    }
+}
+
+// ==========================================================
+// PANTALLA
+// ==========================================================
 
 export default function CuestionariosSuperAdminScreen() {
     const router = useRouter();
@@ -45,6 +98,8 @@ export default function CuestionariosSuperAdminScreen() {
 
     const surfaceColor = useThemeColor({}, "surface");
 
+    const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+
     const borderColor = useThemeColor({}, "border");
 
     const textColor = useThemeColor({}, "text");
@@ -52,6 +107,8 @@ export default function CuestionariosSuperAdminScreen() {
     const textSecondaryColor = useThemeColor({}, "textSecondary");
 
     const primaryColor = useThemeColor({}, "primary");
+
+    const primarySoftColor = useThemeColor({}, "primarySoft");
 
     const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
 
@@ -69,6 +126,8 @@ export default function CuestionariosSuperAdminScreen() {
 
     const [error, setError] = useState<string | null>(null);
 
+    const [errorAccion, setErrorAccion] = useState<string | null>(null);
+
     const [busqueda, setBusqueda] = useState("");
 
     const [filtroEstado, setFiltroEstado] =
@@ -76,11 +135,21 @@ export default function CuestionariosSuperAdminScreen() {
 
     const [testProcesando, setTestProcesando] = useState<string | null>(null);
 
+    // Impide solicitudes simultáneas incluso antes
+    // de que React actualice el estado visual.
+    const operacionEnCurso = useRef(false);
+
+    // Evita que una respuesta antigua sobrescriba
+    // una carga más reciente.
+    const solicitudActual = useRef(0);
+
     // ======================================================
-    // CARGA
+    // CARGA DE CUESTIONARIOS
     // ======================================================
 
     const cargarTests = useCallback(async (mostrarCarga = true) => {
+        const solicitud = ++solicitudActual.current;
+
         try {
             if (mostrarCarga) {
                 setCargando(true);
@@ -90,40 +159,53 @@ export default function CuestionariosSuperAdminScreen() {
 
             const datos = await obtenerTestsAdmin();
 
+            if (solicitud !== solicitudActual.current) {
+                return;
+            }
+
             setTests(datos);
         } catch (err) {
-            console.error("Error cargando cuestionarios:", err);
+            if (solicitud !== solicitudActual.current) {
+                return;
+            }
 
-            setError("No fue posible cargar los cuestionarios.");
+            registrarError("Error cargando cuestionarios:", err);
+
+            setError(
+                "No fue posible cargar los cuestionarios.\n\n" +
+                obtenerMensajeError(err),
+            );
         } finally {
-            if (mostrarCarga) {
+            if (mostrarCarga && solicitud === solicitudActual.current) {
                 setCargando(false);
             }
         }
     }, []);
 
-    /*
-     * Esto permite actualizar automáticamente
-     * el listado al regresar desde:
-     *
-     * - nuevo.tsx
-     * - [id]/index.tsx
-     */
+    // Recarga el listado cuando la pantalla
+    // vuelve a recibir el foco.
     useFocusEffect(
         useCallback(() => {
-            cargarTests();
+            void cargarTests();
 
-            return undefined;
+            return () => {
+                solicitudActual.current += 1;
+            };
         }, [cargarTests]),
     );
 
     // ======================================================
-    // REFRESH
+    // ACTUALIZAR MANUALMENTE
     // ======================================================
 
     async function refrescar() {
+        if (actualizando || cargando || operacionEnCurso.current) {
+            return;
+        }
+
         try {
             setActualizando(true);
+            setErrorAccion(null);
 
             await cargarTests(false);
         } finally {
@@ -142,15 +224,13 @@ export default function CuestionariosSuperAdminScreen() {
 
         return {
             total,
-
             activos,
-
             inactivos: total - activos,
         };
     }, [tests]);
 
     // ======================================================
-    // FILTRO
+    // BÚSQUEDA Y FILTROS
     // ======================================================
 
     const testsFiltrados = useMemo(() => {
@@ -185,37 +265,72 @@ export default function CuestionariosSuperAdminScreen() {
     }
 
     // ======================================================
-    // ESTADO DEL TEST
+    // PUBLICAR / DESPUBLICAR
     // ======================================================
 
     async function cambiarEstado(test: TestAdmin) {
-        if (testProcesando) {
+        if (operacionEnCurso.current || actualizando) {
             return;
         }
 
+        operacionEnCurso.current = true;
+
         try {
             setTestProcesando(test.id_test);
+            setErrorAccion(null);
 
-            const actualizado = await cambiarEstadoTestAdmin(
-                test.id_test,
-                !test.estado,
-            );
+            console.log("Iniciando cambio de estado:", {
+                idTest: test.id_test,
+                nombre: test.nombre,
+                estadoActual: test.estado,
+                nuevoEstado: !test.estado,
+            });
+
+            // La publicación debe pasar por las
+            // validaciones del servicio existente.
+            const actualizado = test.estado
+                ? await despublicarTestAdmin(test.id_test)
+                : await publicarTestAdmin(test.id_test);
+
+            if (
+                actualizado.id_test !== test.id_test ||
+                actualizado.estado === test.estado
+            ) {
+                throw new Error(
+                    "El servicio no confirmó el cambio " + "de estado del cuestionario.",
+                );
+            }
+
+            // Invalida cargas anteriores que todavía
+            // pudieran estar pendientes.
+            solicitudActual.current += 1;
 
             setTests((actuales) =>
                 actuales.map((item) =>
                     item.id_test === test.id_test
                         ? {
                             ...item,
-                            estado: actualizado.estado,
+                            ...actualizado,
                         }
                         : item,
                 ),
             );
-        } catch (err) {
-            console.error("Error cambiando estado del cuestionario:", err);
 
-            setError("No fue posible cambiar el estado del cuestionario.");
+            console.log("Estado actualizado correctamente:", {
+                idTest: actualizado.id_test,
+                estado: actualizado.estado,
+            });
+        } catch (err) {
+            registrarError("Error cambiando el estado del cuestionario:", err);
+
+            const mensaje = obtenerMensajeError(err);
+
+            setErrorAccion(
+                `No se pudo ${test.estado ? "despublicar" : "publicar"
+                } "${test.nombre}".\n\n${mensaje}`,
+            );
         } finally {
+            operacionEnCurso.current = false;
             setTestProcesando(null);
         }
     }
@@ -234,8 +349,12 @@ export default function CuestionariosSuperAdminScreen() {
 
     const gapKpi = 14;
 
+    // flexBasis no es necesario: mantenemos
+    // los anchos responsive originales.
     const anchoKpi =
-        columnasKpi === 1 ? "100%" : columnasKpi === 2 ? "48.5%" : "32%";
+        columnasKpi === 1 ? "100%" : columnasKpi === 2 ? "48%" : "32%";
+
+    const hayFiltros = busqueda.trim().length > 0 || filtroEstado !== "todos";
 
     // ======================================================
     // UI
@@ -245,7 +364,6 @@ export default function CuestionariosSuperAdminScreen() {
         <View
             style={{
                 flex: 1,
-
                 backgroundColor,
             }}
         >
@@ -255,55 +373,49 @@ export default function CuestionariosSuperAdminScreen() {
                 }}
                 contentContainerStyle={{
                     paddingHorizontal,
-
                     paddingTop: esTelefono ? 22 : 30,
-
                     paddingBottom: 120,
                 }}
                 refreshControl={
-                    <RefreshControl refreshing={actualizando} onRefresh={refrescar} />
+                    <RefreshControl
+                        refreshing={actualizando}
+                        onRefresh={refrescar}
+                        tintColor={primaryColor}
+                        colors={[primaryColor]}
+                    />
                 }
                 showsVerticalScrollIndicator={false}
             >
                 <View
                     style={{
                         width: "100%",
-
                         maxWidth: MAX_WIDTHS.dashboard,
-
                         alignSelf: "center",
                     }}
                 >
                     {/* ======================================
-                        HEADER
+                        ENCABEZADO
                     ====================================== */}
 
                     <View
                         style={{
                             flexDirection: esTelefono ? "column" : "row",
-
                             alignItems: esTelefono ? "stretch" : "flex-start",
-
                             justifyContent: "space-between",
-
                             gap: 18,
                         }}
                     >
                         <View
                             style={{
                                 flex: 1,
-
                                 minWidth: 0,
                             }}
                         >
                             <Text
                                 style={{
                                     fontFamily: "Nunito-Bold",
-
                                     fontSize: esTelefono ? 25 : 30,
-
                                     lineHeight: esTelefono ? 32 : 38,
-
                                     color: textColor,
                                 }}
                             >
@@ -313,74 +425,54 @@ export default function CuestionariosSuperAdminScreen() {
                             <Text
                                 style={{
                                     maxWidth: 680,
-
                                     marginTop: 7,
-
                                     fontFamily: "Nunito-Medium",
-
                                     fontSize: 14,
-
                                     lineHeight: 21,
-
                                     color: textSecondaryColor,
                                 }}
                             >
                                 Administra los instrumentos de evaluación disponibles en Kiri,
-                                sus preguntas, opciones y configuración.
+                                sus preguntas, opciones, baremos y configuración.
                             </Text>
                         </View>
 
-                        {/* NUEVO */}
+                        {/* REGISTRAR NUEVO */}
 
                         <Pressable
                             onPress={crearNuevo}
+                            accessibilityRole="button"
+                            accessibilityLabel="Registrar nuevo cuestionario"
                             style={({ pressed }) => ({
-                                width: esTelefono ? "100%" : undefined,
-
-                                minHeight: 48,
-
-                                paddingHorizontal: 18,
-
+                                alignSelf: esTelefono ? "stretch" : "flex-start",
+                                minHeight: 50,
+                                paddingHorizontal: 20,
+                                paddingVertical: 12,
                                 borderRadius: 14,
-
-                                overflow: "hidden",
-
-                                opacity: pressed ? 0.82 : 1,
+                                backgroundColor: primaryColor,
+                                flexDirection: "row",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: 9,
+                                opacity: pressed ? 0.8 : 1,
                             })}
                         >
-                            <View
+                            <Ionicons
+                                name="add-circle-outline"
+                                size={21}
+                                color={textOnPrimaryColor}
+                            />
+
+                            <Text
                                 style={{
-                                    minHeight: 48,
-
-                                    paddingHorizontal: 4,
-
-                                    flexDirection: "row",
-
-                                    alignItems: "center",
-
-                                    justifyContent: "center",
-
-                                    borderRadius: 14,
-
-                                    backgroundColor: primaryColor,
+                                    fontFamily: "Nunito-Bold",
+                                    fontSize: 14,
+                                    color: textOnPrimaryColor,
+                                    textAlign: "center",
                                 }}
                             >
-                                <Ionicons name="add" size={20} color={textOnPrimaryColor} />
-
-                                <Text
-                                    style={{
-                                        marginLeft: 8,
-
-                                        fontFamily: "Nunito-Bold",
-
-                                        fontSize: 13,
-
-                                        color: textOnPrimaryColor,
-                                    }}
-                                >
-                                    Nuevo cuestionario
-                                </Text>
-                            </View>
+                                Registrar nuevo
+                            </Text>
                         </Pressable>
                     </View>
 
@@ -391,17 +483,14 @@ export default function CuestionariosSuperAdminScreen() {
                     <View
                         style={{
                             marginTop: 28,
-
                             flexDirection: "row",
-
                             flexWrap: "wrap",
-
                             gap: gapKpi,
                         }}
                     >
                         <View
                             style={{
-                                width: anchoKpi,
+                                width: anchoKpi as `${number}%`,
                             }}
                         >
                             <CuestionariosAdminKpi
@@ -414,7 +503,7 @@ export default function CuestionariosSuperAdminScreen() {
 
                         <View
                             style={{
-                                width: anchoKpi,
+                                width: anchoKpi as `${number}%`,
                             }}
                         >
                             <CuestionariosAdminKpi
@@ -428,7 +517,7 @@ export default function CuestionariosSuperAdminScreen() {
 
                         <View
                             style={{
-                                width: anchoKpi,
+                                width: anchoKpi as `${number}%`,
                             }}
                         >
                             <CuestionariosAdminKpi
@@ -442,23 +531,94 @@ export default function CuestionariosSuperAdminScreen() {
                     </View>
 
                     {/* ======================================
+                        ERROR DE PUBLICACIÓN
+                    ====================================== */}
+
+                    {errorAccion && (
+                        <View
+                            style={{
+                                marginTop: 22,
+                                padding: 16,
+                                borderWidth: 1,
+                                borderColor: dangerColor,
+                                borderRadius: 14,
+                                backgroundColor: surfaceColor,
+                                flexDirection: "row",
+                                alignItems: "flex-start",
+                                gap: 12,
+                            }}
+                        >
+                            <Ionicons
+                                name="alert-circle-outline"
+                                size={22}
+                                color={dangerColor}
+                            />
+
+                            <View
+                                style={{
+                                    flex: 1,
+                                    minWidth: 0,
+                                    gap: 10,
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        fontFamily: "Nunito-Medium",
+                                        fontSize: 13,
+                                        lineHeight: 20,
+                                        color: textColor,
+                                    }}
+                                >
+                                    {errorAccion}
+                                </Text>
+
+                                <Pressable
+                                    onPress={() => setErrorAccion(null)}
+                                    accessibilityRole="button"
+                                    style={{
+                                        alignSelf: "flex-start",
+                                        paddingVertical: 5,
+                                    }}
+                                >
+                                    <Text
+                                        style={{
+                                            fontFamily: "Nunito-Bold",
+                                            fontSize: 12,
+                                            color: primaryColor,
+                                        }}
+                                    >
+                                        Cerrar mensaje
+                                    </Text>
+                                </Pressable>
+                            </View>
+
+                            <Pressable
+                                onPress={() => setErrorAccion(null)}
+                                hitSlop={10}
+                                accessibilityRole="button"
+                                accessibilityLabel="Cerrar error"
+                            >
+                                <Ionicons name="close" size={19} color={textSecondaryColor} />
+                            </Pressable>
+                        </View>
+                    )}
+
+                    {/* ======================================
                         LISTADO
                     ====================================== */}
 
                     <View
                         style={{
                             marginTop: 28,
-
                             padding: esTelefono ? 16 : 20,
-
                             borderWidth: 1,
                             borderColor,
-
                             borderRadius: 20,
-
                             backgroundColor: surfaceColor,
                         }}
                     >
+                        {/* TÍTULO DEL LISTADO */}
+
                         <View
                             style={{
                                 marginBottom: 18,
@@ -467,9 +627,7 @@ export default function CuestionariosSuperAdminScreen() {
                             <Text
                                 style={{
                                     fontFamily: "Nunito-Bold",
-
                                     fontSize: 18,
-
                                     color: textColor,
                                 }}
                             >
@@ -479,11 +637,8 @@ export default function CuestionariosSuperAdminScreen() {
                             <Text
                                 style={{
                                     marginTop: 4,
-
                                     fontFamily: "Nunito-Medium",
-
                                     fontSize: 12,
-
                                     color: textSecondaryColor,
                                 }}
                             >
@@ -494,6 +649,8 @@ export default function CuestionariosSuperAdminScreen() {
                             </Text>
                         </View>
 
+                        {/* BÚSQUEDA Y FILTROS */}
+
                         <CuestionariosAdminToolbar
                             busqueda={busqueda}
                             filtroEstado={filtroEstado}
@@ -501,28 +658,25 @@ export default function CuestionariosSuperAdminScreen() {
                             onCambiarFiltro={setFiltroEstado}
                         />
 
-                        {/* CARGANDO */}
+                        {/* ==================================
+                            CARGANDO
+                        ================================== */}
 
                         {cargando ? (
                             <View
                                 style={{
                                     minHeight: 240,
-
                                     alignItems: "center",
-
                                     justifyContent: "center",
+                                    gap: 12,
                                 }}
                             >
                                 <ActivityIndicator size="large" color={primaryColor} />
 
                                 <Text
                                     style={{
-                                        marginTop: 12,
-
                                         fontFamily: "Nunito-Medium",
-
                                         fontSize: 13,
-
                                         color: textSecondaryColor,
                                     }}
                                 >
@@ -530,21 +684,19 @@ export default function CuestionariosSuperAdminScreen() {
                                 </Text>
                             </View>
                         ) : error ? (
-                            /* ERROR */
+                            /* ==============================
+                                              ERROR DE CARGA
+                                          ============================== */
 
                             <View
                                 style={{
                                     minHeight: 220,
-
                                     marginTop: 18,
-
                                     padding: 20,
-
                                     borderRadius: 16,
-
                                     alignItems: "center",
-
                                     justifyContent: "center",
+                                    gap: 12,
                                 }}
                             >
                                 <Ionicons
@@ -555,14 +707,10 @@ export default function CuestionariosSuperAdminScreen() {
 
                                 <Text
                                     style={{
-                                        marginTop: 12,
-
                                         fontFamily: "Nunito-SemiBold",
-
                                         fontSize: 14,
-
+                                        lineHeight: 21,
                                         textAlign: "center",
-
                                         color: textColor,
                                     }}
                                 >
@@ -570,31 +718,22 @@ export default function CuestionariosSuperAdminScreen() {
                                 </Text>
 
                                 <Pressable
-                                    onPress={() => cargarTests()}
+                                    onPress={() => void cargarTests()}
+                                    accessibilityRole="button"
                                     style={({ pressed }) => ({
-                                        marginTop: 14,
-
-                                        minHeight: 42,
-
-                                        paddingHorizontal: 16,
-
+                                        minHeight: 44,
+                                        paddingHorizontal: 18,
                                         borderRadius: 12,
-
-                                        alignItems: "center",
-
-                                        justifyContent: "center",
-
-                                        opacity: pressed ? 0.7 : 1,
-
                                         backgroundColor: primaryColor,
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        opacity: pressed ? 0.75 : 1,
                                     })}
                                 >
                                     <Text
                                         style={{
                                             fontFamily: "Nunito-Bold",
-
                                             fontSize: 12,
-
                                             color: textOnPrimaryColor,
                                         }}
                                     >
@@ -603,69 +742,133 @@ export default function CuestionariosSuperAdminScreen() {
                                 </Pressable>
                             </View>
                         ) : testsFiltrados.length === 0 ? (
-                            /* VACÍO */
+                            /* ==============================
+                                              ESTADO VACÍO
+                                          ============================== */
 
                             <View
                                 style={{
-                                    minHeight: 240,
-
+                                    minHeight: 260,
                                     marginTop: 18,
-
+                                    padding: 20,
                                     alignItems: "center",
-
                                     justifyContent: "center",
+                                    gap: 12,
                                 }}
                             >
-                                <Ionicons
-                                    name="search-outline"
-                                    size={38}
-                                    color={textSecondaryColor}
-                                />
+                                <View
+                                    style={{
+                                        width: 66,
+                                        height: 66,
+                                        borderRadius: 20,
+                                        backgroundColor: primarySoftColor,
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                    }}
+                                >
+                                    <Ionicons
+                                        name={hayFiltros ? "search-outline" : "clipboard-outline"}
+                                        size={31}
+                                        color={primaryColor}
+                                    />
+                                </View>
 
                                 <Text
                                     style={{
-                                        marginTop: 12,
-
                                         fontFamily: "Nunito-Bold",
-
-                                        fontSize: 15,
-
+                                        fontSize: 16,
+                                        textAlign: "center",
                                         color: textColor,
                                     }}
                                 >
-                                    No se encontraron cuestionarios
+                                    {hayFiltros
+                                        ? "No se encontraron cuestionarios"
+                                        : "Aún no hay cuestionarios registrados"}
                                 </Text>
 
                                 <Text
                                     style={{
-                                        maxWidth: 400,
-
-                                        marginTop: 5,
-
+                                        maxWidth: 420,
                                         fontFamily: "Nunito-Medium",
-
                                         fontSize: 13,
-
-                                        lineHeight: 19,
-
+                                        lineHeight: 20,
                                         textAlign: "center",
-
                                         color: textSecondaryColor,
                                     }}
                                 >
-                                    Prueba con otros términos de búsqueda o cambia el filtro
-                                    seleccionado.
+                                    {hayFiltros
+                                        ? "Prueba con otros términos de búsqueda o cambia el filtro seleccionado."
+                                        : "Comienza registrando tu primer instrumento de evaluación."}
                                 </Text>
+
+                                {hayFiltros ? (
+                                    <Pressable
+                                        onPress={() => {
+                                            setBusqueda("");
+                                            setFiltroEstado("todos");
+                                        }}
+                                        accessibilityRole="button"
+                                        style={({ pressed }) => ({
+                                            minHeight: 43,
+                                            paddingHorizontal: 17,
+                                            borderWidth: 1,
+                                            borderColor,
+                                            borderRadius: 12,
+                                            backgroundColor: surfaceSecondaryColor,
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            opacity: pressed ? 0.7 : 1,
+                                        })}
+                                    >
+                                        <Text
+                                            style={{
+                                                fontFamily: "Nunito-Bold",
+                                                fontSize: 12,
+                                                color: textColor,
+                                            }}
+                                        >
+                                            Limpiar filtros
+                                        </Text>
+                                    </Pressable>
+                                ) : (
+                                    <Pressable
+                                        onPress={crearNuevo}
+                                        accessibilityRole="button"
+                                        style={({ pressed }) => ({
+                                            minHeight: 45,
+                                            paddingHorizontal: 18,
+                                            borderRadius: 12,
+                                            backgroundColor: primaryColor,
+                                            flexDirection: "row",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            gap: 8,
+                                            opacity: pressed ? 0.8 : 1,
+                                        })}
+                                    >
+                                        <Ionicons name="add" size={19} color={textOnPrimaryColor} />
+
+                                        <Text
+                                            style={{
+                                                fontFamily: "Nunito-Bold",
+                                                fontSize: 12,
+                                                color: textOnPrimaryColor,
+                                            }}
+                                        >
+                                            Registrar cuestionario
+                                        </Text>
+                                    </Pressable>
+                                )}
                             </View>
                         ) : (
-                            /* LISTA */
+                            /* ==============================
+                                              TARJETAS
+                                          ============================== */
 
                             <View
                                 style={{
                                     width: "100%",
-
                                     marginTop: 18,
-
                                     gap: 12,
                                 }}
                             >
@@ -673,7 +876,7 @@ export default function CuestionariosSuperAdminScreen() {
                                     <CuestionarioAdminCard
                                         key={test.id_test}
                                         test={test}
-                                        procesando={testProcesando === test.id_test}
+                                        procesando={testProcesando !== null}
                                         onEditar={editarTest}
                                         onCambiarEstado={cambiarEstado}
                                     />

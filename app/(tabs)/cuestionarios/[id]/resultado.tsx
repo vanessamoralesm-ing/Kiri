@@ -220,6 +220,9 @@ export default function ResultadoCuestionario() {
             const resultadoPreparado = resultadoData as ResultadoTest;
 
             setResultado(resultadoPreparado);
+            setBaremo(null);
+            setRangosGlobales([]);
+            setRangoAplicado(null);
 
             // ==================================================
             // 2. EJECUCIÓN
@@ -452,6 +455,33 @@ export default function ResultadoCuestionario() {
     const puntajeTotal = Number(
         resultado?.puntaje_total ?? resultado?.puntaje_directo ?? 0,
     );
+
+    // Buscar el rango por puntuación si el resultado histórico no guardó id_rango_baremo.
+    // La interpretación persistida siempre tiene prioridad al presentar el resultado.
+    const rangoCorrespondiente = useMemo(() => {
+        if (rangoAplicado && rangoAplicado.id_baremo === resultado?.id_baremo)
+            return rangoAplicado;
+        if (!resultado?.id_baremo || !Number.isFinite(puntajeTotal)) return null;
+        return (
+            rangosGlobales.find((rango) => {
+                if (
+                    rango.id_baremo !== resultado.id_baremo ||
+                    rango.id_subescala !== null
+                )
+                    return false;
+                const minimo =
+                    rango.valor_minimo === null ? -Infinity : Number(rango.valor_minimo);
+                const maximo =
+                    rango.valor_maximo === null ? Infinity : Number(rango.valor_maximo);
+                return (
+                    !Number.isNaN(minimo) &&
+                    !Number.isNaN(maximo) &&
+                    puntajeTotal >= minimo &&
+                    puntajeTotal <= maximo
+                );
+            }) ?? null
+        );
+    }, [rangoAplicado, rangosGlobales, resultado?.id_baremo, puntajeTotal]);
 
     // ======================================================
     // RANGO TEÓRICO / VISUAL
@@ -1152,7 +1182,7 @@ export default function ResultadoCuestionario() {
                                             }}
                                         >
                                             {resultado.nivel_cualitativo ??
-                                                rangoAplicado?.nivel ??
+                                                rangoCorrespondiente?.nivel ??
                                                 "Resultado de la evaluación"}
                                         </Text>
 
@@ -1170,7 +1200,7 @@ export default function ResultadoCuestionario() {
                                             }}
                                         >
                                             {resultado.interpretacion_texto ??
-                                                rangoAplicado?.interpretacion ??
+                                                rangoCorrespondiente?.interpretacion ??
                                                 "El instrumento no tiene una interpretación cualitativa configurada para este resultado."}
                                         </Text>
                                     </View>
@@ -1605,7 +1635,7 @@ export default function ResultadoCuestionario() {
                                                 Valor interpretado: {baremo.tipo_valor}
                                             </Text>
 
-                                            {rangoAplicado && (
+                                            {rangoCorrespondiente && (
                                                 <Text
                                                     style={{
                                                         fontFamily: "Nunito-Medium",
@@ -1618,16 +1648,16 @@ export default function ResultadoCuestionario() {
                                                     }}
                                                 >
                                                     Rango aplicado:{" "}
-                                                    {rangoAplicado.valor_minimo === null
+                                                    {rangoCorrespondiente.valor_minimo === null
                                                         ? "Sin límite inferior"
                                                         : formatearPuntaje(
-                                                            Number(rangoAplicado.valor_minimo),
+                                                            Number(rangoCorrespondiente.valor_minimo),
                                                         )}
                                                     {" – "}
-                                                    {rangoAplicado.valor_maximo === null
+                                                    {rangoCorrespondiente.valor_maximo === null
                                                         ? "Sin límite superior"
                                                         : formatearPuntaje(
-                                                            Number(rangoAplicado.valor_maximo),
+                                                            Number(rangoCorrespondiente.valor_maximo),
                                                         )}
                                                 </Text>
                                             )}

@@ -1,9 +1,11 @@
 import OpcionRespuesta from "@/components/cuestionarios/OpcionRespuesta";
+
 import ProgresoCuestionario from "@/components/cuestionarios/ProgresoCuestionario";
 
 import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
+
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 import {
@@ -38,30 +40,36 @@ import {
     obtenerValorBaremo,
     seleccionarBaremo,
     transformarPuntajeTotal,
+    validarConfiguracionEAG,
+    validarRespuestasObligatorias,
 } from "@/utils/cuestionarios/cuestionarioUtils";
 
 import { Ionicons } from "@expo/vector-icons";
+
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import React, { useEffect, useRef, useState } from "react";
 
 import {
     ActivityIndicator,
-    Alert,
     Pressable,
     ScrollView,
     Text,
-    View,
+    View
 } from "react-native";
 
 // ==========================================================
+
 // CONFIGURACIÓN
+
 // ==========================================================
 
 const PREGUNTAS_POR_PAGINA = 4;
 
 // ==========================================================
+
 // COMPONENTE
+
 // ==========================================================
 
 export default function CuestionarioDetalle() {
@@ -74,7 +82,9 @@ export default function CuestionarioDetalle() {
     }>();
 
     // ======================================================
+
     // TEMA
+
     // ======================================================
 
     const backgroundColor = useThemeColor({}, "background");
@@ -100,13 +110,17 @@ export default function CuestionarioDetalle() {
     const disabledColor = useThemeColor({}, "disabled");
 
     // ======================================================
+
     // REFERENCIAS
+
     // ======================================================
 
     const scrollViewRef = useRef<ScrollView>(null);
 
     // ======================================================
+
     // ESTADOS
+
     // ======================================================
 
     const [cuestionario, setCuestionario] = useState<Test | null>(null);
@@ -128,11 +142,16 @@ export default function CuestionarioDetalle() {
     const [cargando, setCargando] = useState(true);
 
     const [finalizando, setFinalizando] = useState(false);
+    const [guardadosPendientes, setGuardadosPendientes] = useState(0);
+    const [accionError, setAccionError] = useState<string | null>(null);
+    const preguntasGuardandoRef = useRef<Set<string>>(new Set());
 
     const [error, setError] = useState<string | null>(null);
 
     // ======================================================
+
     // RESPONSIVE
+
     // ======================================================
 
     const paddingHorizontal = esEscritorio
@@ -150,7 +169,9 @@ export default function CuestionarioDetalle() {
     const tamanoTituloPregunta = esEscritorio ? 22 : esTablet ? 21 : 21;
 
     // ======================================================
+
     // CARGA INICIAL
+
     // ======================================================
 
     useEffect(() => {
@@ -162,20 +183,25 @@ export default function CuestionarioDetalle() {
     }, [id]);
 
     // ======================================================
+
     // SCROLL AL CAMBIAR DE PÁGINA
+
     // ======================================================
 
     useEffect(() => {
         requestAnimationFrame(() => {
             scrollViewRef.current?.scrollTo({
                 y: 0,
+
                 animated: true,
             });
         });
     }, [paginaActual]);
 
     // ======================================================
+
     // CARGAR CUESTIONARIO
+
     // ======================================================
 
     const cargarCuestionario = async () => {
@@ -185,10 +211,13 @@ export default function CuestionarioDetalle() {
 
         try {
             setCargando(true);
+
             setError(null);
 
             // ==========================================
+
             // TEST
+
             // ==========================================
 
             const test = await obtenerTestPorCodigo(id);
@@ -200,22 +229,29 @@ export default function CuestionarioDetalle() {
             }
 
             // ==========================================
+
             // USUARIO
+
             // ==========================================
 
             const usuarioActual = await obtenerUsuarioCuestionario();
 
             // ==========================================
+
             // EJECUCIÓN
+
             // ==========================================
 
             const ejecucion = await obtenerOCrearEjecucion(
                 usuarioActual.id_usuario,
+
                 test.id_test,
             );
 
             // ==========================================
+
             // DATOS DEL CUESTIONARIO
+
             // ==========================================
 
             const [subescalasObtenidas, preguntasObtenidas, respuestasExistentes] =
@@ -228,7 +264,9 @@ export default function CuestionarioDetalle() {
                 ]);
 
             // ==========================================
+
             // RECUPERAR RESPUESTAS
+
             // ==========================================
 
             const respuestasRecuperadas: Record<string, RespuestaSeleccionada> = {};
@@ -256,7 +294,9 @@ export default function CuestionarioDetalle() {
             }
 
             // ==========================================
+
             // ACTUALIZAR ESTADO
+
             // ==========================================
 
             setCuestionario(test);
@@ -286,118 +326,137 @@ export default function CuestionarioDetalle() {
     };
 
     // ======================================================
+
     // SELECCIONAR RESPUESTA
+
     // ======================================================
 
     const seleccionarRespuesta = async (
         pregunta: PreguntaTestConOpciones,
         opcion: OpcionRespuestaTest,
     ) => {
-        if (!idEjecucion) {
-            return;
-        }
-
-        const respuestaAnterior = respuestas[pregunta.id_pregunta];
-
-        // ==========================================
-        // ACTUALIZACIÓN OPTIMISTA
-        // ==========================================
-
+        if (!idEjecucion || finalizando) return;
+        const idPregunta = pregunta.id_pregunta;
+        if (preguntasGuardandoRef.current.has(idPregunta)) return;
+        const respuestaAnterior = respuestas[idPregunta];
+        preguntasGuardandoRef.current.add(idPregunta);
+        setGuardadosPendientes((actual) => actual + 1);
+        setAccionError(null);
         setRespuestas((anteriores) => ({
             ...anteriores,
-
-            [pregunta.id_pregunta]: {
-                idOpcion: opcion.id,
-
-                valor: opcion.valor,
-            },
+            [idPregunta]: { idOpcion: opcion.id, valor: opcion.valor },
         }));
-
         try {
             await guardarRespuestaTest({
                 idEjecucion,
-
-                idPregunta: pregunta.id_pregunta,
-
+                idPregunta,
                 idOpcion: opcion.id,
             });
-        } catch (error) {
-            console.error("Error guardando respuesta:", error);
-
-            // ======================================
-            // RESTAURAR RESPUESTA ANTERIOR
-            // ======================================
-
+        } catch (err) {
+            console.error("Error guardando respuesta:", err);
             setRespuestas((anteriores) => {
-                const copia = {
-                    ...anteriores,
-                };
-
-                if (respuestaAnterior) {
-                    copia[pregunta.id_pregunta] = respuestaAnterior;
-                } else {
-                    delete copia[pregunta.id_pregunta];
-                }
-
+                const copia = { ...anteriores };
+                if (respuestaAnterior) copia[idPregunta] = respuestaAnterior;
+                else delete copia[idPregunta];
                 return copia;
             });
-
-            Alert.alert(
-                "No se pudo guardar",
-                "La respuesta no pudo guardarse. Inténtalo nuevamente.",
+            setAccionError(
+                "No fue posible guardar la respuesta. Inténtalo nuevamente.",
             );
+        } finally {
+            preguntasGuardandoRef.current.delete(idPregunta);
+            setGuardadosPendientes((actual) => Math.max(0, actual - 1));
         }
     };
 
     // ======================================================
+
     // FINALIZAR CUESTIONARIO
+
     // ======================================================
 
     const finalizarCuestionario = async () => {
-        if (!cuestionario || !usuario || !idEjecucion || finalizando) {
+        if (
+            !cuestionario ||
+            !usuario ||
+            !idEjecucion ||
+            finalizando ||
+            guardadosPendientes > 0 ||
+            preguntasGuardandoRef.current.size > 0
+        ) {
             return;
         }
 
         try {
             setFinalizando(true);
+            setAccionError(null);
+            validarRespuestasObligatorias(preguntas, respuestas);
+            if (cuestionario.codigo === "EAG")
+                validarConfiguracionEAG(preguntas, respuestas);
 
             // ==========================================
+
             // 1. PUNTAJES
+
             // ==========================================
 
             const puntajeDirecto = calcularPuntajeDirecto(
                 preguntas,
+
                 respuestas,
+
                 subescalas,
             );
 
             const puntajeTotal = transformarPuntajeTotal(
                 cuestionario.codigo,
+
                 puntajeDirecto,
             );
+            if (
+                cuestionario.codigo === "EAG" &&
+                (!Number.isInteger(puntajeTotal) ||
+                    puntajeTotal < 11 ||
+                    puntajeTotal > 77)
+            ) {
+                throw new Error("La puntuación EAG debe estar entre 11 y 77.");
+            }
 
             // ==========================================
+
             // 2. VALIDEZ
+
             // ==========================================
 
             const { esValido, observaciones } = evaluarValidezInstrumento(
                 cuestionario,
+
                 subescalas,
+
                 preguntas,
+
                 respuestas,
             );
 
             // ==========================================
+
             // 3. BAREMO
+
             // ==========================================
 
             const baremos = await obtenerBaremosPorTest(cuestionario.id_test);
 
-            const baremo = seleccionarBaremo(
-                baremos,
-                usuario.fecha_nacimiento,
-                usuario.genero,
-            );
+            const baremo =
+                cuestionario.codigo === "EAG"
+                    ? (baremos.find(
+                        (b) =>
+                            b.codigo === "EAG-GENERAL" && b.tipo_valor === "puntaje_total",
+                    ) ?? null)
+                    : seleccionarBaremo(
+                        baremos,
+                        usuario.fecha_nacimiento,
+                        usuario.genero,
+                    );
 
             let rangos: RangoBaremo[] = [];
 
@@ -408,7 +467,9 @@ export default function CuestionarioDetalle() {
 
                 const valorBaremo = obtenerValorBaremo(
                     baremo,
+
                     puntajeDirecto,
+
                     puntajeTotal,
                 );
 
@@ -417,8 +478,25 @@ export default function CuestionarioDetalle() {
                 }
             }
 
+            if (cuestionario.codigo === "EAG") {
+                if (
+                    !baremo ||
+                    baremo.codigo !== "EAG-GENERAL" ||
+                    baremo.tipo_valor !== "puntaje_total"
+                )
+                    throw new Error(
+                        "No se encontró el baremo EAG-GENERAL activo con tipo puntaje_total.",
+                    );
+                if (!rangoGlobal)
+                    throw new Error(
+                        "No se encontró un rango activo para la puntuación EAG.",
+                    );
+            }
+
             // ==========================================
+
             // 4. RESULTADO PRINCIPAL
+
             // ==========================================
 
             const resultado = await guardarResultadoTest({
@@ -442,7 +520,9 @@ export default function CuestionarioDetalle() {
             });
 
             // ==========================================
+
             // 5. RESULTADOS DE SUBESCALAS
+
             // ==========================================
 
             if (cuestionario.tiene_subescalas) {
@@ -459,7 +539,9 @@ export default function CuestionarioDetalle() {
 
                     const puntajeSubescala = calcularPuntajeSubescala(
                         subescala.id_subescala,
+
                         preguntas,
+
                         respuestas,
                     );
 
@@ -482,13 +564,17 @@ export default function CuestionarioDetalle() {
             }
 
             // ==========================================
+
             // 6. COMPLETAR EJECUCIÓN
+
             // ==========================================
 
             await completarEjecucion(idEjecucion);
 
             // ==========================================
+
             // 7. RESULTADO
+
             // ==========================================
 
             router.replace({
@@ -503,9 +589,10 @@ export default function CuestionarioDetalle() {
         } catch (error) {
             console.error("Error finalizando cuestionario:", error);
 
-            Alert.alert(
-                "No se pudo finalizar",
-                "No fue posible guardar correctamente el resultado. Inténtalo nuevamente.",
+            setAccionError(
+                error instanceof Error
+                    ? error.message
+                    : "No fue posible finalizar el cuestionario.",
             );
         } finally {
             setFinalizando(false);
@@ -513,7 +600,9 @@ export default function CuestionarioDetalle() {
     };
 
     // ======================================================
+
     // PAGINACIÓN
+
     // ======================================================
 
     const totalPaginas = Math.ceil(preguntas.length / PREGUNTAS_POR_PAGINA);
@@ -537,11 +626,18 @@ export default function CuestionarioDetalle() {
     );
 
     // ======================================================
+
     // NAVEGACIÓN
+
     // ======================================================
 
     const avanzar = () => {
-        if (!todasRespondidasEnPagina) {
+        if (
+            finalizando ||
+            guardadosPendientes > 0 ||
+            preguntasGuardandoRef.current.size > 0 ||
+            !todasRespondidasEnPagina
+        ) {
             return;
         }
 
@@ -557,6 +653,13 @@ export default function CuestionarioDetalle() {
     };
 
     const retroceder = () => {
+        if (
+            finalizando ||
+            guardadosPendientes > 0 ||
+            preguntasGuardandoRef.current.size > 0
+        )
+            return;
+
         if (paginaActual > 0) {
             setPaginaActual((pagina) => pagina - 1);
 
@@ -567,7 +670,9 @@ export default function CuestionarioDetalle() {
     };
 
     // ======================================================
+
     // CARGANDO
+
     // ======================================================
 
     if (cargando) {
@@ -605,7 +710,9 @@ export default function CuestionarioDetalle() {
     }
 
     // ======================================================
+
     // ERROR
+
     // ======================================================
 
     if (error || !cuestionario) {
@@ -654,6 +761,7 @@ export default function CuestionarioDetalle() {
 
                     <Pressable
                         onPress={() => router.back()}
+
                         style={{
                             marginTop: 20,
 
@@ -684,7 +792,9 @@ export default function CuestionarioDetalle() {
     }
 
     // ======================================================
+
     // SIN PREGUNTAS
+
     // ======================================================
 
     if (preguntas.length === 0) {
@@ -713,7 +823,9 @@ export default function CuestionarioDetalle() {
                 >
                     <Ionicons
                         name="document-text-outline"
+
                         size={50}
+
                         color={accentColor}
                     />
 
@@ -737,6 +849,7 @@ export default function CuestionarioDetalle() {
 
                     <Pressable
                         onPress={() => router.back()}
+
                         style={{
                             marginTop: 20,
 
@@ -767,21 +880,26 @@ export default function CuestionarioDetalle() {
     }
 
     // ======================================================
+
     // INTERFAZ
+
     // ======================================================
 
     return (
         <View
             style={{
                 flex: 1,
+
                 backgroundColor,
             }}
         >
             <ScrollView
                 ref={scrollViewRef}
+
                 style={{
                     flex: 1,
                 }}
+
                 contentContainerStyle={{
                     paddingTop: esEscritorio ? 32 : 18,
 
@@ -789,13 +907,19 @@ export default function CuestionarioDetalle() {
 
                     alignItems: "center",
                 }}
+
                 showsVerticalScrollIndicator={false}
+
                 bounces={false}
+
                 overScrollMode="never"
+
                 keyboardShouldPersistTaps="handled"
             >
                 {/* ==================================================
+
                     CONTENEDOR PRINCIPAL RESPONSIVE
+
                 ================================================== */}
 
                 <View
@@ -822,7 +946,9 @@ export default function CuestionarioDetalle() {
                     }}
                 >
                     {/* ==================================================
+
                         ENCABEZADO
+
                     ================================================== */}
 
                     <View
@@ -836,7 +962,9 @@ export default function CuestionarioDetalle() {
                     >
                         <Pressable
                             onPress={retroceder}
-                            disabled={finalizando}
+
+                            disabled={finalizando || guardadosPendientes > 0}
+
                             style={{
                                 width: 40,
 
@@ -849,13 +977,16 @@ export default function CuestionarioDetalle() {
                         >
                             <Ionicons
                                 name="arrow-back-outline"
+
                                 size={24}
+
                                 color={textSecondaryColor}
                             />
                         </Pressable>
 
                         <Text
                             numberOfLines={2}
+
                             style={{
                                 flex: 1,
 
@@ -875,18 +1006,25 @@ export default function CuestionarioDetalle() {
                     </View>
 
                     {/* ==================================================
+
                         PROGRESO
+
                     ================================================== */}
 
                     <ProgresoCuestionario
                         paginaActual={paginaActual + 1}
+
                         totalPaginas={totalPaginas}
+
                         respondidas={Object.keys(respuestas).length}
+
                         totalPreguntas={preguntas.length}
                     />
 
                     {/* ==================================================
+
                         INSTRUCCIONES
+
                     ================================================== */}
 
                     {paginaActual === 0 && cuestionario.instrucciones && (
@@ -914,7 +1052,9 @@ export default function CuestionarioDetalle() {
                             >
                                 <Ionicons
                                     name="information-circle-outline"
+
                                     size={22}
+
                                     color={primaryColor}
                                 />
 
@@ -940,7 +1080,9 @@ export default function CuestionarioDetalle() {
                     )}
 
                     {/* ==================================================
+
                         PREGUNTAS
+
                     ================================================== */}
 
                     {preguntasPagina.map((pregunta, index) => {
@@ -949,6 +1091,7 @@ export default function CuestionarioDetalle() {
                         return (
                             <View
                                 key={pregunta.id_pregunta}
+
                                 style={{
                                     marginBottom: 36,
 
@@ -960,7 +1103,9 @@ export default function CuestionarioDetalle() {
                                 }}
                             >
                                 {/* ==================================
+
                                             ENUNCIADO
+
                                         ================================== */}
 
                                 <Text
@@ -978,7 +1123,9 @@ export default function CuestionarioDetalle() {
                                 </Text>
 
                                 {/* ==================================
+
                                             DESCRIPCIÓN DE APOYO
+
                                         ================================== */}
 
                                 {pregunta.descripcion_apoyo && (
@@ -1006,7 +1153,9 @@ export default function CuestionarioDetalle() {
                                 )}
 
                                 {/* ==================================
+
                                             OPCIONES
+
                                         ================================== */}
 
                                 <View
@@ -1018,11 +1167,14 @@ export default function CuestionarioDetalle() {
                                         pregunta.opciones.map((opcion) => (
                                             <OpcionRespuesta
                                                 key={opcion.id}
+
                                                 texto={opcion.texto}
+
                                                 seleccionada={
                                                     respuestas[pregunta.id_pregunta]?.idOpcion ===
                                                     opcion.id
                                                 }
+
                                                 onPress={() => seleccionarRespuesta(pregunta, opcion)}
                                             />
                                         ))
@@ -1049,7 +1201,9 @@ export default function CuestionarioDetalle() {
                                             >
                                                 <Ionicons
                                                     name="information-circle-outline"
+
                                                     size={20}
+
                                                     color={warningColor}
                                                 />
 
@@ -1079,8 +1233,23 @@ export default function CuestionarioDetalle() {
                         );
                     })}
 
+                    {accionError && (
+                        <Text
+                            style={{
+                                color: warningColor,
+                                fontFamily: "Nunito-Medium",
+                                textAlign: "center",
+                                marginTop: 12,
+                            }}
+                        >
+                            {accionError}
+                        </Text>
+                    )}
+
                     {/* ==================================================
+
                         NAVEGACIÓN
+
                     ================================================== */}
 
                     <View
@@ -1099,12 +1268,16 @@ export default function CuestionarioDetalle() {
                         }}
                     >
                         {/* ==============================================
+
                             ANTERIOR
+
                         ============================================== */}
 
                         <Pressable
                             onPress={retroceder}
+
                             disabled={finalizando}
+
                             style={{
                                 flex: 1,
 
@@ -1127,7 +1300,9 @@ export default function CuestionarioDetalle() {
                         >
                             <Ionicons
                                 name="arrow-back-outline"
+
                                 size={16}
+
                                 color={textSecondaryColor}
                             />
 
@@ -1147,12 +1322,20 @@ export default function CuestionarioDetalle() {
                         </Pressable>
 
                         {/* ==============================================
+
                             SIGUIENTE / FINALIZAR
+
                         ============================================== */}
 
                         <Pressable
-                            disabled={!todasRespondidasEnPagina || finalizando}
+                            disabled={
+                                !todasRespondidasEnPagina ||
+                                finalizando ||
+                                guardadosPendientes > 0
+                            }
+
                             onPress={avanzar}
+
                             style={{
                                 flex: 1.5,
 
@@ -1167,7 +1350,9 @@ export default function CuestionarioDetalle() {
                                 justifyContent: "center",
 
                                 backgroundColor:
-                                    todasRespondidasEnPagina && !finalizando
+                                    todasRespondidasEnPagina &&
+                                        !finalizando &&
+                                        guardadosPendientes === 0
                                         ? primaryColor
                                         : disabledColor,
                             }}
@@ -1196,8 +1381,11 @@ export default function CuestionarioDetalle() {
                                                 ? "checkmark-outline"
                                                 : "arrow-forward-outline"
                                         }
+
                                         size={16}
+
                                         color="#FFFFFF"
+
                                         style={{
                                             marginLeft: 5,
                                         }}
