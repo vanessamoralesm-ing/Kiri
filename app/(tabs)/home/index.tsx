@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import React from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -7,31 +6,22 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { EncabezadoHome } from "@/components/ui/EncabezadoHome";
 import { TarjetaModulo } from "@/components/ui/TarjetaModulo";
-import { TarjetaRecomendacion } from "@/components/ui/TarjetaRecomendacion";
+import { TarjetaAcceso } from "@/components/ui/TarjetaAccesso";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useResumenBienestar } from "@/hooks/useResumenBienestar";
 
-// COLORES VISUALES DE RECOMENDACIONES
-const COLORES_RECOMENDACION = [
-  {
-    fondoClaro: "bg-purple-100",
-    fondoOscuro: "bg-purple-950",
-    icono: "#8B5CF6",
-  },
-  {
-    fondoClaro: "bg-emerald-100",
-    fondoOscuro: "bg-emerald-950",
-    icono: "#10B981",
-  },
-  { fondoClaro: "bg-blue-100", fondoOscuro: "bg-blue-950", icono: "#4F8EF7" },
-  { fondoClaro: "bg-amber-100", fondoOscuro: "bg-amber-950", icono: "#F59E0B" },
-];
+const COLORES_RECOMENDADOS = [
+  "accent",
+  "secondary",
+  "primary",
+  "accent",
+]as const;
 
 // HOME
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { dark: isDarkMode } = useTheme();
+  //const { dark: isDarkMode } = useTheme();
   const { resumen } = useResumenBienestar();
 
   // COLORES DEL TEMA
@@ -283,47 +273,50 @@ export default function HomeScreen() {
 
           {/* RECOMENDACIONES */}
           {resumen?.actividades?.length ? (
-            resumen.actividades.slice(0, 4).map((actividad, index) => {
-              const color =
-                COLORES_RECOMENDACION[index % COLORES_RECOMENDACION.length];
-              const fondoRecomendacion = isDarkMode
-                ? color.fondoOscuro
-                : color.fondoClaro;
+            resumen.actividades
+              .slice(0, 4)
+              .map((actividad, index) => {
+                const color =
+                  COLORES_RECOMENDADOS[
+                    index % COLORES_RECOMENDADOS.length
+                  ];
 
-              return (
-                <TarjetaRecomendacion
-                  key={actividad.codigo}
-                  titulo={actividad.titulo}
-                  descripcion={actividad.descripcion}
-                  nombreIcono={
-                    actividad.icono as keyof typeof Ionicons.glyphMap
-                  }
-                  colorFondo={fondoRecomendacion}
-                  colorIcono={color.icono}
-                  colorTextoFlecha={color.icono}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(tabs)/entrevistas/[id]/plan",
-                      params: { id: resumen.id_entrevista },
-                    })
-                  }
-                />
-              );
-            })
+                return (
+                  <View
+                    key={actividad.codigo}
+                    className="mb-3.5"
+                  >
+                    <TarjetaAcceso
+                      titulo={actividad.titulo}
+                      descripcion={actividad.descripcion}
+                      icono={
+                        actividad.icono as keyof typeof Ionicons.glyphMap
+                      }
+                      color={color}
+                      onPress={() =>
+                        router.push({
+                          pathname:
+                            "/(tabs)/entrevistas/[id]/plan",
+
+                          params: {
+                            id: resumen.id_entrevista,
+                          },
+                        })
+                      }
+                    />
+                  </View>
+                );
+              })
           ) : (
-            <TarjetaRecomendacion
+            <TarjetaAcceso
               titulo="Realiza tu entrevista de bienestar"
               descripcion="Completa tu evaluación para recibir un plan personalizado."
-              nombreIcono="heart-outline"
-              colorFondo={
-                isDarkMode
-                  ? "bg-blue-950"
-                  : "bg-blue-100"
-              }
-              colorIcono="#4F8EF7"
-              colorTextoFlecha="#4F8EF7"
+              icono="heart-outline"
+              color="primary"
               onPress={() =>
-                router.push("/(tabs)/entrevistas")
+                router.push(
+                  "/(tabs)/entrevistas"
+                )
               }
             />
           )}
