@@ -17,14 +17,17 @@ import React, { useCallback, useState } from "react";
 
 import {
   ActivityIndicator,
+  Platform,
+  Pressable,
   ScrollView,
   Text,
-  TouchableOpacity,
-  useWindowDimensions,
   View,
 } from "react-native";
 
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 // ==========================================================
 // FECHA
@@ -57,9 +60,9 @@ function formatearFecha(fecha: string | null) {
 export default function MisEntrevistasScreen() {
   const router = useRouter();
 
-  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
 
-  const movil = width < 600;
+  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
   // ========================================================
   // TEMA
@@ -83,6 +86,8 @@ export default function MisEntrevistasScreen() {
   const secondaryColor = useThemeColor({}, "secondary");
   const secondarySoftColor = useThemeColor({}, "secondarySoft");
 
+  const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
+
   // ========================================================
   // ESTADOS
   // ========================================================
@@ -93,6 +98,28 @@ export default function MisEntrevistasScreen() {
   const [creando, setCreando] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
+
+  // ========================================================
+  // RESPONSIVE
+  // ========================================================
+
+  const paddingHorizontal = esEscritorio
+    ? PADDING_RESPONSIVE.escritorio
+    : esTablet
+      ? PADDING_RESPONSIVE.tablet
+      : PADDING_RESPONSIVE.telefono;
+
+  const maxWidthContenido = esEscritorio
+    ? MAX_WIDTHS.dashboard
+    : esTablet
+      ? MAX_WIDTHS.contenido
+      : undefined;
+
+  const maxWidthCabecera = esEscritorio ? 860 : undefined;
+
+  const paddingTop = esEscritorio ? 28 : esTablet ? 24 : 20;
+
+  const paddingBottom = esEscritorio ? 64 : Math.max(insets.bottom + 130, 150);
 
   // ========================================================
   // CARGAR HISTORIAL
@@ -284,7 +311,6 @@ export default function MisEntrevistasScreen() {
 
                   lineHeight: esEscritorio ? 38 : 31,
 
-                {
                   color: textColor,
                 }}
               >
@@ -302,15 +328,13 @@ export default function MisEntrevistasScreen() {
                   fontSize: esEscritorio ? 15 : 14,
                   lineHeight: esTelefono ? 21 : 23,
 
-                {
                   color: textSecondaryColor,
-                },
-              ]}
-            >
-              Consulta tus evaluaciones anteriores o realiza una nueva.
-            </Text>
+                }}
+              >
+                Consulta tus evaluaciones anteriores o realiza una nueva.
+              </Text>
+            </View>
           </View>
-        </View>
 
           {/* ==================================================
               NUEVA ENTREVISTA
@@ -479,25 +503,15 @@ export default function MisEntrevistasScreen() {
                 justifyContent: "center",
               }}
             >
-              {creando
-                ? "Estamos preparando una nueva entrevista."
-                : "Cuéntanos cómo te sientes actualmente."}
-            </Text>
-          </View>
+              <ActivityIndicator size="small" color={primaryColor} />
 
-          {!creando && (
-            <Ionicons name="chevron-forward" size={22} color="#FFFFFF" />
-          )}
-        </TouchableOpacity>
-
-        {/* =================================================
-            ESTADOS
-        ================================================= */}
+              <Text
+                style={{
+                  marginTop: 12,
 
                   fontFamily: "Nunito-Medium",
                   fontSize: 14,
 
-                {
                   color: textSecondaryColor,
                 }}
               >
@@ -525,7 +539,7 @@ export default function MisEntrevistasScreen() {
 
                   marginTop: 22,
 
-            icono="alert-circle-outline"
+                  borderRadius: 14,
 
                   overflow: "hidden",
 
@@ -591,27 +605,8 @@ export default function MisEntrevistasScreen() {
                   color: textColor,
                 }}
               >
-                {creando ? "Preparando..." : "Realizar mi primera entrevista"}
+                Última evaluación
               </Text>
-            </TouchableOpacity>
-          </EstadoVacio>
-        ) : (
-          <>
-            {/* =====================================
-                        ÚLTIMA EVALUACIÓN
-                    ===================================== */}
-
-            <Text
-              style={[
-                styles.seccionTitulo,
-
-                {
-                  color: textColor,
-                },
-              ]}
-            >
-              Última evaluación
-            </Text>
 
               <View
                 style={{
@@ -624,7 +619,6 @@ export default function MisEntrevistasScreen() {
                   borderWidth: 1,
                   borderColor,
 
-                {
                   backgroundColor: surfaceColor,
 
                   ...(Platform.OS === "web"
@@ -652,7 +646,6 @@ export default function MisEntrevistasScreen() {
                     FECHA Y ESTADO
                 ============================================== */}
 
-              <View style={styles.fechaFila}>
                 <View
                   style={{
                     width: "100%",
@@ -745,28 +738,24 @@ export default function MisEntrevistasScreen() {
                       paddingHorizontal: 13,
                       paddingVertical: 7,
 
-                <View
-                  style={[
-                    styles.completada,
+                      borderRadius: 999,
 
-                    {
                       backgroundColor: secondarySoftColor,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.completadaTexto,
-
-                      {
-                        color: secondaryColor,
-                      },
-                    ]}
+                    }}
                   >
-                    Completada
-                  </Text>
+                    <Text
+                      style={{
+                        fontFamily: "Nunito-SemiBold",
+
+                        fontSize: 12,
+
+                        color: secondaryColor,
+                      }}
+                    >
+                      Completada
+                    </Text>
+                  </View>
                 </View>
-              </View>
 
                 {/* ==============================================
                     ENFOQUE PRINCIPAL
@@ -781,39 +770,24 @@ export default function MisEntrevistasScreen() {
 
                       padding: esTelefono ? 16 : 18,
 
-              {!!ultima.areas_prioritarias.length && (
-                <View
-                  style={[
-                    styles.area,
+                      borderRadius: 18,
 
                       borderWidth: 1,
                       borderColor,
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.areaLabel,
 
-                      {
-                        color: textMutedColor,
-                      },
-                    ]}
+                      backgroundColor: surfaceSecondaryColor,
+                    }}
                   >
-                    Enfoque principal
-                  </Text>
-
-                  <View style={styles.areaFila}>
                     <Text
-                      style={[
-                        styles.areaNombre,
+                      style={{
+                        fontFamily: "Nunito-Medium",
 
-                        {
-                          color: textColor,
-                        },
-                      ]}
+                        fontSize: 12,
+
+                        color: textMutedColor,
+                      }}
                     >
-                      {ultima.areas_prioritarias.join(" y ")}
+                      Enfoque principal
                     </Text>
 
                     <View
@@ -841,7 +815,7 @@ export default function MisEntrevistasScreen() {
                           color: textColor,
                         }}
                       >
-                        {Math.round(ultima.porcentaje)}%
+                        {ultima.areas_prioritarias.join(" y ")}
                       </Text>
 
                       {ultima.porcentaje !== null && (
@@ -861,8 +835,7 @@ export default function MisEntrevistasScreen() {
                       )}
                     </View>
                   </View>
-                </View>
-              )}
+                )}
 
                 {/* ==============================================
                     ACCIONES RESPONSIVE
@@ -877,7 +850,9 @@ export default function MisEntrevistasScreen() {
                     flexDirection: esTelefono ? "column" : "row",
                     alignItems: "stretch",
 
-                {ultima.tiene_plan && (
+                    gap: 12,
+                  }}
+                >
                   <BotonAccion
                     icono="analytics-outline"
                     texto="Ver resultados"
@@ -899,7 +874,6 @@ export default function MisEntrevistasScreen() {
                   )}
                 </View>
               </View>
-            </View>
 
               {/* ==================================================
                   HISTORIAL
@@ -961,7 +935,7 @@ export default function MisEntrevistasScreen() {
                         style={({ pressed }) => ({
                           width: esEscritorio ? "49%" : "100%",
 
-                      activeOpacity={0.75}
+                          borderRadius: 18,
 
                           overflow: "hidden",
 
@@ -1107,7 +1081,6 @@ export default function MisEntrevistasScreen() {
 // ==========================================================
 
 function EstadoVacio({
-  movil,
   icono,
   titulo,
   texto,
@@ -1118,6 +1091,8 @@ function EstadoVacio({
   texto: string;
   children?: React.ReactNode;
 }) {
+  const { esTelefono } = useResponsiveLayout();
+
   const surfaceColor = useThemeColor({}, "surface");
   const borderColor = useThemeColor({}, "border");
 
@@ -1160,13 +1135,11 @@ function EstadoVacio({
           alignItems: "center",
           justifyContent: "center",
 
-          {
-            backgroundColor: primarySoftColor,
-          },
-        ]}
+          backgroundColor: primarySoftColor,
+        }}
       >
-        <Ionicons
-          name={icono}
+        <Ionicons name={icono} size={29} color={primaryColor} />
+      </View>
 
       {/* TÍTULO */}
 
@@ -1174,21 +1147,15 @@ function EstadoVacio({
         style={{
           marginTop: 16,
 
-          color={primaryColor}
-        />
-      </View>
+          fontFamily: "Nunito-Bold",
 
           fontSize: 18,
           lineHeight: 24,
 
-      <Text
-        style={[
-          styles.vacioTitulo,
+          textAlign: "center",
 
-          {
-            color: textColor,
-          },
-        ]}
+          color: textColor,
+        }}
       >
         {titulo}
       </Text>
@@ -1208,10 +1175,8 @@ function EstadoVacio({
 
           textAlign: "center",
 
-          {
-            color: textSecondaryColor,
-          },
-        ]}
+          color: textSecondaryColor,
+        }}
       >
         {texto}
       </Text>

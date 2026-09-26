@@ -1,15 +1,19 @@
-import React from "react";
-
-import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
-
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-
-import { SafeAreaView } from "react-native-safe-area-context";
+import React from "react";
+import { Image, Platform, ScrollView, Text, View } from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import Button from "@/components/ui/Button";
 import Logo from "@/components/ui/Logo_izq";
 
+import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
+
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 // ==========================================================
 // PANTALLA
@@ -18,29 +22,51 @@ import { useThemeColor } from "@/hooks/use-theme-color";
 export default function BienvenidaEntrevista() {
   const router = useRouter();
 
+  const insets = useSafeAreaInsets();
+
+  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
+
   // ========================================================
   // COLORES DEL TEMA
   // ========================================================
 
   const backgroundColor = useThemeColor({}, "background");
-
   const surfaceColor = useThemeColor({}, "surface");
-
   const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
-
   const borderColor = useThemeColor({}, "border");
-
   const dividerColor = useThemeColor({}, "divider");
-
   const textColor = useThemeColor({}, "text");
-
   const textSecondaryColor = useThemeColor({}, "textSecondary");
-
   const textMutedColor = useThemeColor({}, "textMuted");
-
   const primaryColor = useThemeColor({}, "primary");
-
   const primarySoftColor = useThemeColor({}, "primarySoft");
+  const secondaryColor = useThemeColor({}, "secondary");
+  const secondarySoftColor = useThemeColor({}, "secondarySoft");
+  const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
+
+  // ========================================================
+  // RESPONSIVE
+  // ========================================================
+
+  const paddingHorizontal = esEscritorio
+    ? PADDING_RESPONSIVE.escritorio
+    : esTablet
+      ? PADDING_RESPONSIVE.tablet
+      : PADDING_RESPONSIVE.telefono;
+
+  const maxWidthPantalla = esEscritorio
+    ? MAX_WIDTHS.dashboard
+    : esTablet
+      ? MAX_WIDTHS.contenido
+      : undefined;
+
+  const maxWidthContenido = esEscritorio ? 1050 : esTablet ? 760 : undefined;
+
+  const paddingTop = esEscritorio ? 28 : Math.max(insets.top + 8, 16);
+
+  const paddingBottom = esEscritorio ? 48 : Math.max(insets.bottom + 32, 42);
+
+  const paddingTarjeta = esEscritorio ? 36 : esTablet ? 30 : 22;
 
   // ========================================================
   // NAVEGACIÓN
@@ -56,377 +82,463 @@ export default function BienvenidaEntrevista() {
 
   return (
     <SafeAreaView
-      style={[
-        styles.pantalla,
-
-        {
-          backgroundColor,
-        },
-      ]}
+      edges={[]}
+      style={{
+        flex: 1,
+        backgroundColor,
+      }}
     >
       <ScrollView
-        contentContainerStyle={styles.scroll}
-
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingTop,
+          paddingBottom,
+        }}
       >
-        <View style={styles.contenedor}>
-          {/* =================================================
+        <View
+          style={{
+            flex: 1,
+            width: "100%",
+            maxWidth: maxWidthPantalla,
+            alignSelf: "center",
+            paddingHorizontal,
+          }}
+        >
+          {/* ==================================================
               CABECERA
-          ================================================= */}
+          ================================================== */}
 
-          <View style={styles.cabecera}>
+          <View
+            style={{
+              minHeight: 58,
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
             <Logo />
           </View>
 
-          {/* =================================================
+          {/* ==================================================
               CONTENIDO
-          ================================================= */}
+          ================================================== */}
 
-          <View style={styles.contenido}>
+          <View
+            style={{
+              flex: 1,
+              width: "100%",
+              maxWidth: maxWidthContenido,
+              alignSelf: "center",
+
+              justifyContent: esEscritorio ? "center" : "flex-start",
+
+              marginTop: esEscritorio ? 20 : 14,
+            }}
+          >
             <View
-              style={[
-                styles.tarjeta,
+              style={{
+                width: "100%",
 
-                {
-                  backgroundColor: surfaceColor,
+                borderWidth: 1,
+                borderRadius: esEscritorio ? 30 : 24,
 
-                  borderColor,
-                },
-              ]}
+                borderColor,
+
+                padding: paddingTarjeta,
+
+                backgroundColor: surfaceColor,
+
+                ...(Platform.OS === "web"
+                  ? ({
+                    boxShadow: "0px 6px 22px rgba(0,0,0,0.05)",
+                  } as any)
+                  : {}),
+
+                ...(Platform.OS === "ios"
+                  ? {
+                    shadowColor: "#000000",
+
+                    shadowOffset: {
+                      width: 0,
+                      height: 4,
+                    },
+
+                    shadowOpacity: 0.06,
+                    shadowRadius: 12,
+                  }
+                  : {}),
+
+                ...(Platform.OS === "android"
+                  ? {
+                    elevation: 3,
+                  }
+                  : {}),
+              }}
             >
-              {/* Mascota */}
-
-              <Image
-                source={require("@/assets/images/mascota.png")}
-
-                style={styles.mascota}
-
-                resizeMode="contain"
-              />
-
-              {/* Etiqueta */}
+              {/* ==================================================
+                  HERO
+              ================================================== */}
 
               <View
-                style={[
-                  styles.etiqueta,
+                style={{
+                  flexDirection: esEscritorio ? "row" : "column",
 
-                  {
-                    backgroundColor: primarySoftColor,
-                  },
-                ]}
+                  alignItems: esEscritorio ? "center" : "flex-start",
+
+                  gap: esEscritorio ? 34 : 0,
+                }}
               >
-                <Text
-                  style={[
-                    styles.textoEtiqueta,
+                {/* ==================================================
+                    TEXTO
+                ================================================== */}
 
-                    {
-                      color: primaryColor,
-                    },
-                  ]}
+                <View
+                  style={{
+                    flex: esEscritorio ? 1 : undefined,
+
+                    width: esEscritorio ? undefined : "100%",
+
+                    minWidth: 0,
+                  }}
                 >
-                  Tu espacio de bienestar
-                </Text>
+                  {/* ETIQUETA */}
+
+                  <View
+                    style={{
+                      alignSelf: "flex-start",
+
+                      paddingHorizontal: 13,
+                      paddingVertical: 7,
+
+                      borderRadius: 999,
+
+                      backgroundColor: primarySoftColor,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: "Nunito-Bold",
+                        fontSize: 13,
+                        color: primaryColor,
+                      }}
+                    >
+                      Tu espacio de bienestar
+                    </Text>
+                  </View>
+
+                  {/* TÍTULO */}
+
+                  <Text
+                    style={{
+                      marginTop: 18,
+
+                      maxWidth: esEscritorio ? 650 : undefined,
+
+                      fontFamily: "Nunito-Bold",
+
+                      fontSize: esEscritorio ? 32 : esTablet ? 29 : 26,
+
+                      lineHeight: esEscritorio ? 40 : esTablet ? 36 : 33,
+
+                      color: textColor,
+                    }}
+                  >
+                    Tu bienestar emocional comienza con un pequeño paso.
+                  </Text>
+
+                  {/* DESCRIPCIÓN */}
+
+                  <Text
+                    style={{
+                      marginTop: 18,
+
+                      fontFamily: "Nunito-Medium",
+
+                      fontSize: esEscritorio ? 16 : 15,
+
+                      lineHeight: esEscritorio ? 25 : 23,
+
+                      color: textSecondaryColor,
+                    }}
+                  >
+                    Nos alegra que hayas decidido dedicar un momento para cuidar
+                    de ti. En Kiri encontrarás un espacio seguro donde podrás
+                    comprender mejor tus emociones, fortalecer hábitos
+                    saludables y descubrir herramientas que te acompañen en tu
+                    bienestar.
+                  </Text>
+
+                  <Text
+                    style={{
+                      marginTop: 14,
+
+                      fontFamily: "Nunito-Medium",
+
+                      fontSize: esEscritorio ? 16 : 15,
+
+                      lineHeight: esEscritorio ? 25 : 23,
+
+                      color: textSecondaryColor,
+                    }}
+                  >
+                    Antes de comenzar, queremos conocerte un poco más para
+                    ofrecerte una experiencia adaptada a tu etapa de vida.
+                  </Text>
+                </View>
+
+                {/* ==================================================
+                    MASCOTA
+                ================================================== */}
+
+                <View
+                  style={{
+                    width: esEscritorio ? 270 : "100%",
+
+                    flexShrink: 0,
+
+                    alignItems: "center",
+                    justifyContent: "center",
+
+                    marginTop: esEscritorio ? 0 : 22,
+
+                    paddingVertical: esEscritorio ? 10 : 4,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: esEscritorio ? 230 : esTablet ? 190 : 160,
+
+                      height: esEscritorio ? 230 : esTablet ? 190 : 160,
+
+                      borderRadius: esEscritorio ? 60 : 48,
+
+                      alignItems: "center",
+                      justifyContent: "center",
+
+                      backgroundColor: primarySoftColor,
+                    }}
+                  >
+                    <Image
+                      source={require("@/assets/images/mascota.png")}
+                      resizeMode="contain"
+                      style={{
+                        width: esEscritorio ? 210 : esTablet ? 175 : 150,
+
+                        height: esEscritorio ? 210 : esTablet ? 175 : 150,
+                      }}
+                    />
+                  </View>
+                </View>
               </View>
 
-              {/* Título */}
-
-              <Text
-                style={[
-                  styles.titulo,
-
-                  {
-                    color: textColor,
-                  },
-                ]}
-              >
-                Tu bienestar emocional comienza con un pequeño paso.
-              </Text>
-
-              {/* Descripción */}
-
-              <Text
-                style={[
-                  styles.descripcion,
-
-                  {
-                    color: textSecondaryColor,
-                  },
-                ]}
-              >
-                Nos alegra que hayas decidido dedicar un momento para cuidar de
-                ti. En Kiri encontrarás un espacio seguro donde podrás
-                comprender mejor tus emociones, fortalecer hábitos saludables y
-                descubrir herramientas que te acompañen en tu bienestar.
-              </Text>
-
-              <Text
-                style={[
-                  styles.descripcion,
-
-                  {
-                    color: textSecondaryColor,
-                  },
-                ]}
-              >
-                Antes de comenzar, queremos conocerte un poco más para ofrecerte
-                una experiencia adaptada a tu etapa de vida.
-              </Text>
-
-              {/* Información */}
+              {/* ==================================================
+                  BLOQUES INFERIORES
+              ================================================== */}
 
               <View
-                style={[
-                  styles.informacion,
+                style={{
+                  marginTop: esEscritorio ? 30 : 24,
 
-                  {
-                    backgroundColor: surfaceSecondaryColor,
+                  flexDirection: esEscritorio ? "row" : "column",
+
+                  gap: esEscritorio ? 16 : 14,
+                }}
+              >
+                {/* INFORMACIÓN */}
+
+                <View
+                  style={{
+                    flex: esEscritorio ? 1 : undefined,
+
+                    minHeight: esEscritorio ? 120 : undefined,
+
+                    padding: 16,
+
+                    borderWidth: 1,
+                    borderRadius: 18,
 
                     borderColor,
-                  },
-                ]}
-              >
-                <Text style={styles.iconoInformacion}>💙</Text>
 
-                <Text
-                  style={[
-                    styles.textoInformacion,
+                    flexDirection: "row",
+                    alignItems: "flex-start",
 
-                    {
-                      color: textSecondaryColor,
-                    },
-                  ]}
+                    backgroundColor: surfaceSecondaryColor,
+                  }}
                 >
-                  <Text
-                    style={[
-                      styles.negrita,
+                  <View
+                    style={{
+                      width: 42,
+                      height: 42,
 
-                      {
-                        color: textColor,
-                      },
-                    ]}
+                      flexShrink: 0,
+
+                      borderRadius: 14,
+
+                      alignItems: "center",
+                      justifyContent: "center",
+
+                      backgroundColor: primarySoftColor,
+                    }}
                   >
-                    Recuerda:{" "}
+                    <Ionicons
+                      name="heart-outline"
+                      size={22}
+                      color={primaryColor}
+                    />
+                  </View>
+
+                  <Text
+                    style={{
+                      flex: 1,
+
+                      marginLeft: 12,
+
+                      fontFamily: "Nunito-Medium",
+
+                      fontSize: 14,
+                      lineHeight: 21,
+
+                      color: textSecondaryColor,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: "Nunito-Bold",
+                        color: textColor,
+                      }}
+                    >
+                      Recuerda:{" "}
+                    </Text>
+                    no buscamos juzgarte ni diagnosticarte; queremos acompañarte
+                    en el camino hacia un mayor bienestar.
                   </Text>
-                  no buscamos juzgarte ni diagnosticarte; queremos acompañarte
-                  en el camino hacia un mayor bienestar.
-                </Text>
+                </View>
+
+                {/* PRIVACIDAD */}
+
+                <View
+                  style={{
+                    flex: esEscritorio ? 1 : undefined,
+
+                    minHeight: esEscritorio ? 120 : undefined,
+
+                    padding: 16,
+
+                    borderWidth: 1,
+                    borderRadius: 18,
+
+                    borderColor,
+
+                    flexDirection: "row",
+                    alignItems: "flex-start",
+
+                    backgroundColor: surfaceColor,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 42,
+                      height: 42,
+
+                      flexShrink: 0,
+
+                      borderRadius: 14,
+
+                      alignItems: "center",
+                      justifyContent: "center",
+
+                      backgroundColor: secondarySoftColor,
+                    }}
+                  >
+                    <Ionicons
+                      name="shield-checkmark-outline"
+                      size={22}
+                      color={secondaryColor}
+                    />
+                  </View>
+
+                  <View
+                    style={{
+                      flex: 1,
+                      marginLeft: 12,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: "Nunito-Bold",
+                        fontSize: 14,
+                        color: textColor,
+                      }}
+                    >
+                      Tu información es importante
+                    </Text>
+
+                    <Text
+                      style={{
+                        marginTop: 5,
+
+                        fontFamily: "Nunito-Medium",
+
+                        fontSize: 13,
+                        lineHeight: 19,
+
+                        color: textMutedColor,
+                      }}
+                    >
+                      Responde con tranquilidad y de la manera más sincera
+                      posible.
+                    </Text>
+                  </View>
+                </View>
               </View>
 
-              {/* Privacidad */}
+              {/* ==================================================
+                  SEPARADOR
+              ================================================== */}
 
               <View
-                style={[
-                  styles.privacidad,
+                style={{
+                  height: 1,
 
-                  {
-                    borderTopColor: dividerColor,
-                  },
-                ]}
+                  marginTop: 24,
+
+                  backgroundColor: dividerColor,
+                }}
+              />
+
+              {/* ==================================================
+                  BOTÓN
+              ================================================== */}
+
+              <View
+                style={{
+                  width: "100%",
+
+                  marginTop: 22,
+
+                  alignItems: esEscritorio ? "flex-end" : "stretch",
+                }}
               >
-                <Text
-                  style={[
-                    styles.privacidadTitulo,
-
-                    {
-                      color: textColor,
-                    },
-                  ]}
+                <View
+                  style={{
+                    width: esEscritorio ? 280 : "100%",
+                  }}
                 >
-                  Tu información es importante
-                </Text>
-
-                <Text
-                  style={[
-                    styles.privacidadTexto,
-
-                    {
-                      color: textMutedColor,
-                    },
-                  ]}
-                >
-                  Responde con tranquilidad y de la manera más sincera posible.
-                </Text>
+                  <Button
+                    title="Continuar"
+                    variant="primary"
+                    onPress={continuar}
+                    style={{
+                      minHeight: 56,
+                      borderRadius: 16,
+                    }}
+                  />
+                </View>
               </View>
             </View>
-          </View>
-
-          {/* =================================================
-              BOTÓN
-          ================================================= */}
-
-          <View style={styles.zonaBoton}>
-            <Button
-              title="Continuar  ➔"
-              variant="primary"
-              onPress={continuar}
-              style={styles.boton}
-            />
           </View>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-// ==========================================================
-// ESTILOS
-// ==========================================================
-
-const styles = StyleSheet.create({
-  pantalla: {
-    flex: 1,
-  },
-
-  scroll: {
-    flexGrow: 1,
-  },
-
-  contenedor: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 30,
-  },
-
-  cabecera: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-
-  contenido: {
-    flex: 1,
-    justifyContent: "center",
-  },
-
-  tarjeta: {
-    borderRadius: 26,
-    paddingHorizontal: 25,
-    paddingTop: 34,
-    paddingBottom: 26,
-
-    borderWidth: 1,
-
-    position: "relative",
-
-    shadowColor: "#000000",
-
-    shadowOffset: {
-      width: 0,
-      height: 5,
-    },
-
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-
-    elevation: 4,
-  },
-
-  mascota: {
-    position: "absolute",
-
-    width: 100,
-    height: 130,
-
-    right: 4,
-    top: -50,
-  },
-
-  etiqueta: {
-    alignSelf: "flex-start",
-
-    paddingHorizontal: 13,
-    paddingVertical: 7,
-
-    borderRadius: 20,
-
-    marginBottom: 17,
-  },
-
-  textoEtiqueta: {
-    fontSize: 13,
-    fontFamily: "Nunito-Bold",
-  },
-
-  titulo: {
-    maxWidth: "85%",
-
-    fontSize: 27,
-    lineHeight: 34,
-
-    fontFamily: "Nunito-Bold",
-
-    marginBottom: 20,
-  },
-
-  descripcion: {
-    fontSize: 16,
-    lineHeight: 24,
-
-    fontFamily: "Nunito-Medium",
-
-    marginBottom: 14,
-  },
-
-  informacion: {
-    flexDirection: "row",
-
-    borderRadius: 18,
-
-    borderWidth: 1,
-
-    paddingHorizontal: 15,
-    paddingVertical: 15,
-
-    marginTop: 8,
-  },
-
-  iconoInformacion: {
-    fontSize: 18,
-    marginRight: 10,
-  },
-
-  textoInformacion: {
-    flex: 1,
-
-    fontSize: 14,
-    lineHeight: 21,
-
-    fontFamily: "Nunito-Medium",
-  },
-
-  negrita: {
-    fontFamily: "Nunito-Bold",
-  },
-
-  privacidad: {
-    borderTopWidth: 1,
-
-    marginTop: 20,
-    paddingTop: 17,
-  },
-
-  privacidadTitulo: {
-    fontSize: 14,
-
-    fontFamily: "Nunito-Bold",
-
-    marginBottom: 4,
-  },
-
-  privacidadTexto: {
-    fontSize: 13,
-    lineHeight: 19,
-
-    fontFamily: "Nunito-Medium",
-  },
-
-  zonaBoton: {
-    marginTop: 25,
-  },
-
-  boton: {
-    height: 56,
-    borderRadius: 16,
-  },
-});

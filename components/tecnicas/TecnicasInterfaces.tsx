@@ -3,6 +3,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
+  LayoutChangeEvent,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -23,6 +25,7 @@ import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
 
 import { Colors } from "@/constants/theme";
 import { useThemeMode } from "@/contexts/ThemeModeContext";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 import type {
   PasoTecnica,
@@ -324,12 +327,10 @@ export function TecnicasInicioInterface({
 
   return (
     <View
-      style={[
-        styles.pantalla,
-        {
-          backgroundColor: colors.background,
-        },
-      ]}
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+      }}
     >
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -339,19 +340,6 @@ export function TecnicasInicioInterface({
           paddingBottom: esEscritorio ? 64 : Math.max(insets.bottom + 118, 145),
         }}
       >
-        <Text style={[styles.tituloInicio, { color: colors.primary }]}>
-          Técnicas Complementarias
-        </Text>
-
-        <Text style={[styles.descripcion, { color: colors.textSecondary }]}>
-          Explora técnicas basadas en evidencia para ayudarte a comprender,
-          regular y afrontar tus emociones de manera saludable.
-        </Text>
-
-        {/* ====================================================
-            BUSCADOR
-        ==================================================== */}
-
         <View
           style={{
             width: "100%",
@@ -430,9 +418,8 @@ export function TecnicasInicioInterface({
               <Pressable onPress={() => setBusqueda("")} hitSlop={8}>
                 <Ionicons name="close-circle" size={22} color={colors.icon} />
               </Pressable>
-            );
-          })}
-        </View>
+            )}
+          </View>
 
           {/* NECESIDADES */}
 
@@ -462,13 +449,10 @@ export function TecnicasInicioInterface({
                   color: colors.textMuted,
                 }}
               >
-                <View style={[styles.icono, { backgroundColor: fondo }]}>
-                  <Ionicons
-                    name={esJacobson ? "body-outline" : "eye-outline"}
-                    size={38}
-                    color={color}
-                  />
-                </View>
+                Elige una opción para encontrar una práctica que pueda ayudarte.
+              </Text>
+            )}
+          </View>
 
           <View
             style={{
@@ -619,7 +603,7 @@ export function TecnicasInicioInterface({
                   color: colors.text,
                 }}
               >
-                No encontramos técnicas relacionadas con &quot;{busqueda}&quot;.
+                Técnicas recomendadas para ti
               </Text>
 
               {!esTelefono && (
@@ -635,11 +619,6 @@ export function TecnicasInicioInterface({
                 </Text>
               )}
             </View>
-          )}
-      </ScrollView>
-    </View>
-  );
-}
 
             <Pressable
               onPress={onHistorial}
@@ -952,8 +931,7 @@ export function DetalleTecnicaInterface({
 
   const info = tipo ? INFO_TECNICAS[tipo] : null;
 
-  const colorTecnica =
-    tipo === "jacobson" ? colors.accent : colors.primary;
+  const colorTecnica = tipo === "jacobson" ? colors.accent : colors.primary;
 
   const fondoTecnica =
     tipo === "jacobson" ? colors.accentSoft : colors.primarySoft;
@@ -1153,16 +1131,30 @@ export function DetalleTecnicaInterface({
                         />
                       </View>
 
-            <TituloSeccion>¿Para qué puede ayudarte?</TituloSeccion>
+                      <Text
+                        style={{
+                          flex: 1,
+                          fontFamily: "Nunito-Bold",
+                          fontSize: 17,
+                          color: colors.text,
+                        }}
+                      >
+                        ¿Para qué puede ayudarte?
+                      </Text>
+                    </View>
 
-            <Text
-              style={[
-                styles.infoTexto,
-                { color: colors.textSecondary },
-              ]}
-            >
-              {tecnica.objetivo}
-            </Text>
+                    <Text
+                      style={{
+                        marginTop: 14,
+                        fontFamily: "Nunito-Medium",
+                        fontSize: 14,
+                        lineHeight: 22,
+                        color: colors.textSecondary,
+                      }}
+                    >
+                      {tecnica.objetivo}
+                    </Text>
+                  </View>
 
                   {!!info?.beneficios?.length && (
                     <View
@@ -1260,30 +1252,33 @@ export function DetalleTecnicaInterface({
                     gap: 12,
                   }}
                 >
-                  {item}
-                </Text>
-              </View>
-            ))}
+                  <View
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 14,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: fondoTecnica,
+                    }}
+                  >
+                    <Ionicons
+                      name="time-outline"
+                      size={23}
+                      color={colorTecnica}
+                    />
+                  </View>
 
-            <View
-              style={[
-                styles.info,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                },
-              ]}
-            >
-              <Ionicons
-                name="time-outline"
-                size={24}
-                color={colorTecnica}
-              />
-
-              <View style={styles.flex}>
-                <Text style={[styles.infoTitulo, { color: colors.text }]}>
-                  Duración aproximada
-                </Text>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        fontFamily: "Nunito-Bold",
+                        fontSize: 15,
+                        color: colors.text,
+                      }}
+                    >
+                      Duración aproximada
+                    </Text>
 
                     <Text
                       style={{
@@ -1412,35 +1407,8 @@ export function DetalleTecnicaInterface({
                 </View>
               </>
             )}
-
-            <Pressable
-              onPress={onComenzar}
-              disabled={iniciando}
-              style={[
-                styles.boton,
-                styles.botonDetalle,
-                {
-                  backgroundColor: colors.primary,
-                  opacity: iniciando ? 0.7 : 1,
-                },
-              ]}
-            >
-              {iniciando ? (
-                <ActivityIndicator color={colors.textOnPrimary} />
-              ) : (
-                <>
-                  <Text style={styles.botonTexto}>Comenzar práctica</Text>
-
-                  <Ionicons
-                    name="arrow-forward"
-                    size={21}
-                    color={colors.textOnPrimary}
-                  />
-                </>
-              )}
-            </Pressable>
-          </>
-        )}
+          </View>
+        </View>
       </ScrollView>
     </View>
   );
@@ -1480,9 +1448,7 @@ export function EjercicioTecnicaInterface({
   const tipo = obtenerTipoTecnica(tecnica?.nombre);
 
   const cantidad =
-    tipo === "grounding" && paso
-      ? CANTIDAD_GROUNDING[paso.orden] ?? 0
-      : 0;
+    tipo === "grounding" && paso ? (CANTIDAD_GROUNDING[paso.orden] ?? 0) : 0;
 
   const detalle = obtenerDetallePaso(tipo, paso?.orden);
 
@@ -1495,7 +1461,7 @@ export function EjercicioTecnicaInterface({
   }, [indice]);
 
   const valores = paso
-    ? respuestas[paso.id_paso] ?? Array(cantidad).fill("")
+    ? (respuestas[paso.id_paso] ?? Array(cantidad).fill(""))
     : [];
 
   const colorTecnica = tipo === "jacobson" ? colors.accent : colors.primary;
@@ -1542,22 +1508,7 @@ export function EjercicioTecnicaInterface({
         backgroundColor: colors.background,
       }}
     >
-      <Estado
-        cargando={cargando}
-        error={error}
-        reintentar={onReintentar}
-      />
-
-      {paso && (
-        <View style={styles.ejercicio}>
-          <View style={styles.cabecera}>
-            <Pressable onPress={onCerrar} style={styles.volver}>
-              <Ionicons
-                name="close"
-                size={27}
-                color={colors.text}
-              />
-            </Pressable>
+      <Estado cargando={cargando} error={error} reintentar={onReintentar} />
 
       {!cargando && !error && !!paso && (
         <View style={{ flex: 1 }}>
@@ -1579,12 +1530,6 @@ export function EjercicioTecnicaInterface({
                 alignSelf: "center",
               }}
             >
-              Paso {indice + 1} de {pasos.length}
-            </Text>
-          </View>
-
-          <View style={styles.barras}>
-            {pasos.map((_, i) => (
               <View
                 style={{
                   flexDirection: "row",
@@ -1677,15 +1622,6 @@ export function EjercicioTecnicaInterface({
               paddingBottom: 24,
             }}
           >
-            <Text
-              style={[
-                styles.nombreTecnica,
-                { color: colors.textSecondary },
-              ]}
-            >
-              {tecnica?.nombre}
-            </Text>
-
             <View
               style={{
                 width: "100%",
@@ -2120,35 +2056,17 @@ export function HistorialTecnicasInterface({
                     backgroundColor: colors.primarySoft,
                   }}
                 >
-                  <Ionicons
-                    name={registro.completada ? "checkmark" : "play"}
-                    size={20}
-                    color={colors.textOnPrimary}
-                  />
-                </View>
-
-                <View style={styles.flex}>
-                  <Text style={[styles.nombre, { color: colors.text }]}>
-                    {registro.tecnica_complementaria?.nombre ??
-                      "Técnica complementaria"}
-                  </Text>
-
                   <Text
-                    style={[
-                      styles.fecha,
-                      { color: colors.textSecondary },
-                    ]}
+                    style={{
+                      fontFamily: "Nunito-Bold",
+                      fontSize: 13,
+                      color: colors.primary,
+                    }}
                   >
-                    {new Date(registro.fecha_inicio).toLocaleDateString(
-                      "es-GT",
-                      {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      }
-                    )}
+                    {registros.length}
                   </Text>
                 </View>
+              </View>
 
               <View
                 style={{
@@ -2267,8 +2185,9 @@ export function HistorialTecnicasInterface({
                   );
                 })}
               </View>
-            ))
-          ))}
+            </>
+          )}
+        </View>
       </ScrollView>
     </View>
   );
@@ -2300,8 +2219,8 @@ export function TecnicaCompletadaInterface({
     tipo === "grounding"
       ? "Tómate unos segundos para observar nuevamente tu entorno antes de continuar con tus actividades."
       : tipo === "jacobson"
-      ? "Permanece unos momentos en una posición cómoda y observa cómo se siente tu cuerpo después del ejercicio."
-      : "Regálate unos instantes para notar cómo te sientes ahora.";
+        ? "Permanece unos momentos en una posición cómoda y observa cómo se siente tu cuerpo después del ejercicio."
+        : "Regálate unos instantes para notar cómo te sientes ahora.";
 
   if (cargando) {
     return (

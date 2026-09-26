@@ -1,236 +1,846 @@
-import React from 'react';
-//importaremos componentes basicos de React Native que usaremos
+import { useRouter } from "expo-router";
+import React from "react";
+
 import {
-  View, //Este funciona como un div para agrupar elementos
-  Image, //Permite renderizar imagenes
-  Text, //Agregamos texto
-  StyleSheet, //Crear estilos visuales CSS
-  ScrollView, //Permite que la pantalla tenga desplazamiento hacia abajo
-  ImageBackground, //Para agregar una imagen de fondo
-} from 'react-native';
-import { useRouter } from 'expo-router'; //Hook para navegar entre pantallas
-import Button from '../../components/ui/Button'; //Importamos nuestro componente reusable
+  Image,
+  ImageBackground,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+
+// ==========================================================
+// COMPONENTE
+// ==========================================================
 
 export default function WelcomeScreen() {
+  const router = useRouter();
 
-  const router = useRouter(); //Inicializamos el hook de navegacion
+  const insets = useSafeAreaInsets();
 
-  //Funcion para redirigir al registro de como va acceder
-  const irModoAcceso = () => {
-    router.push('/(auth)/modo_acceso'); //Ajusta la ruta segun su estructura
-  };
+  const { width, height, esTelefono, esTablet, esEscritorio } =
+    useResponsiveLayout();
 
-  //Funcion para redirigir al inicio de sesion
-  const irLogin = () => {
-    router.push('/(auth)/login'); //Ajusta la ruta al login
-  };
+  // ========================================================
+  // NAVEGACIÓN
+  // ========================================================
+
+  function irModoAcceso() {
+    router.push("/(auth)/modo_acceso");
+  }
+
+  function irLogin() {
+    router.push("/(auth)/login");
+  }
+
+  // ========================================================
+  // RESPONSIVE GENERAL
+  // ========================================================
+
+  const telefonoPequeno = esTelefono && height < 760;
+
+  const telefonoMuyPequeno = esTelefono && height < 680;
+
+  const paddingHorizontal = esEscritorio ? 60 : esTablet ? 36 : 20;
+
+  const paddingTop = esEscritorio
+    ? 40
+    : esTablet
+      ? 28
+      : Math.max(insets.top + 8, 16);
+
+  const paddingBottom = esEscritorio
+    ? 40
+    : esTablet
+      ? 28
+      : Math.max(insets.bottom + 28, 36);
+
+  const maxWidthContenido = esEscritorio ? 1240 : esTablet ? 980 : 560;
+
+  // ========================================================
+  // LOGO
+  // ========================================================
+
+  const tamanoLogo = esEscritorio
+    ? 180
+    : esTablet
+      ? 150
+      : telefonoMuyPequeno
+        ? 74
+        : telefonoPequeno
+          ? 82
+          : 90;
+
+  const altoLogo = esEscritorio
+    ? 90
+    : esTablet
+      ? 78
+      : telefonoMuyPequeno
+        ? 36
+        : telefonoPequeno
+          ? 40
+          : 44;
+
+  // ========================================================
+  // MASCOTA
+  // ========================================================
+
+  const tamanoCirculo = esEscritorio
+    ? 380
+    : esTablet
+      ? 310
+      : telefonoMuyPequeno
+        ? Math.min(width * 0.42, 160)
+        : telefonoPequeno
+          ? Math.min(width * 0.46, 178)
+          : Math.min(width * 0.5, 205);
+
+  const tamanoMascota = esEscritorio
+    ? 360
+    : esTablet
+      ? 290
+      : telefonoMuyPequeno
+        ? Math.min(width * 0.4, 152)
+        : telefonoPequeno
+          ? Math.min(width * 0.44, 170)
+          : Math.min(width * 0.48, 195);
+
+  // ========================================================
+  // TIPOGRAFÍA
+  // ========================================================
+
+  const tamanoTitulo = esEscritorio
+    ? 40
+    : esTablet
+      ? 36
+      : telefonoMuyPequeno
+        ? 23
+        : telefonoPequeno
+          ? 25
+          : 28;
+
+  const tamanoSubtitulo = esEscritorio
+    ? 22
+    : esTablet
+      ? 20
+      : telefonoMuyPequeno
+        ? 15
+        : telefonoPequeno
+          ? 16
+          : 17;
+
+  const tamanoDescripcion = esEscritorio
+    ? 17
+    : esTablet
+      ? 16
+      : telefonoMuyPequeno
+        ? 12
+        : telefonoPequeno
+          ? 13
+          : 14;
+
+  // ========================================================
+  // DISTRIBUCIÓN
+  // ========================================================
+
+  const anchoPanelVisual = esTelefono ? "100%" : esEscritorio ? "46%" : "48%";
+
+  const anchoPanelContenido = esTelefono
+    ? "100%"
+    : esEscritorio
+      ? "46%"
+      : "48%";
+
+  const paddingCardHorizontal = esEscritorio ? 52 : esTablet ? 36 : 0;
+
+  const paddingCardVertical = esEscritorio ? 42 : esTablet ? 30 : 0;
+
+  const gapCard = esEscritorio
+    ? 34
+    : esTablet
+      ? 24
+      : telefonoMuyPequeno
+        ? 5
+        : telefonoPequeno
+          ? 7
+          : 10;
+
+  // ========================================================
+  // UI
+  // ========================================================
 
   return (
-
     <ImageBackground
-      source={require('../../assets/images/fondo_kiri.png.jpeg')} // Ruta de tu imagen de fondo
+      source={require("../../assets/images/fondo_kiri.png.jpeg")}
       style={styles.imagenFondo}
       resizeMode="cover"
     >
-      {/*ScrollView nos ayuda a que el contenido no se corte en pantallas pequeñas*/}
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      {/* ==================================================
+          CAPA SUAVE
+      ================================================== */}
 
-        {/*View principal que centramos y le daremos padding a todo el contenido*/}
-        <View style={styles.container}>
-          
-          {/*Codigo para el logo de la parte de superior de la pantalla */}
-          <Image
-            //Cargamos la imagen desde la carpeta de assets
-            source={require('../../assets/images/logo_secundario.png')}
-            //aplicamos el tamaño definido en los estilos
-            style={styles.logoTop}
-            //Ajustamos la imagen para que encaje sin deformarse
-            resizeMode="contain"
-          />
+      <View style={styles.overlay} />
 
-          {/*Ilustracion del avatar de kiri, Ese contenedor estaran las dimensiones fijas del avatar*/}
-          <View style={styles.imageContainer}>
-            <Image
-            //cargamos la imagen de la mascota de la app
-              source={require('../../assets/images/mascota.png')} // Cambia al nombre de tu imagen
-              //Ocupa el 100% de su contenedor padre
-              style={styles.mascotImage}
-              //mantiene la proporcion de la imagen
-              resizeMode="contain"
-            />
-          </View>
+      {/* ==================================================
+          SCROLL
+      ================================================== */}
 
-          {/*TITULO PRINCIPAL DE BIENVENIDA --- */}
-          {/* Texto principal que contiene todo el titulo */}
-          <Text style={styles.title}>
-            Bienvenido a <Text style={styles.titleBlue}>Kiri</Text>
-          </Text>
+      <ScrollView
+        style={{
+          flex: 1,
+        }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[
+          styles.scrollContainer,
+          {
+            paddingHorizontal,
+            paddingTop,
+            paddingBottom,
 
-          {/*Agregando una linea decorativa debajo del titulo*/}
-          <View style={styles.divider}></View>
+            justifyContent: esTelefono ? "flex-start" : "center",
+          },
+        ]}
+      >
+        {/* ==================================================
+            CONTENEDOR GENERAL
+        ================================================== */}
 
-          {/*SUBTITULO--- */}
-          <Text style={styles.subtitle}>Cuidar de tu salud mental es un acto de fortaleza</Text>
-          {/*Parrafo descriptivo de la app--- */}
-          <Text style={styles.description}>
-            En Kiri encontrarás herramientas para conocerte mejor, comprender tus emociones y desarrollar hábitos
-            que favorezcan tu bienestar.
-          </Text>
+        <View
+          style={[
+            styles.wrapper,
+            {
+              maxWidth: maxWidthContenido,
 
-          {/*Texto de acompañamiento*/}
-          <Text style={styles.footerText}>
-            Nunca estarás <Text style={styles.greenText}>solo</Text> en este proceso.
-          </Text>
+              width: esTelefono ? "100%" : esTablet ? "94%" : "92%",
+            },
+          ]}
+        >
+          {/* ==================================================
+              TARJETA
+          ================================================== */}
 
-          {/*SECCION DE BOTONES*/}
-          <View style={styles.buttonContainer}>
-            {/*Boton principal Azul*/}
-            <Button
-            title='Comenzar'
-            variant='primary'
-            onPress={irModoAcceso}>
-            </Button>
-          </View>
+          <View
+            style={[
+              styles.mainCard,
+              {
+                flexDirection: esTelefono ? "column" : "row",
 
-          {/*SEPARADOR "O"*/}
-            <View style={styles.dividerContainer}>
-              <View style={styles.line} />
-              <Text style={styles.dividerText}>o</Text>
-              <View style={styles.line} />
+                paddingHorizontal: paddingCardHorizontal,
+
+                paddingVertical: paddingCardVertical,
+
+                gap: gapCard,
+
+                borderRadius: esTelefono ? 0 : 34,
+
+                backgroundColor: esTelefono
+                  ? "transparent"
+                  : "rgba(255,255,255,0.78)",
+
+                borderWidth: esTelefono ? 0 : 1,
+
+                borderColor: esTelefono
+                  ? "transparent"
+                  : "rgba(184,168,248,0.18)",
+
+                ...(Platform.OS === "web" && !esTelefono
+                  ? ({
+                    boxShadow: "0px 10px 30px rgba(0,0,0,0.08)",
+                  } as any)
+                  : {}),
+
+                ...(Platform.OS === "ios" && !esTelefono
+                  ? {
+                    shadowColor: "#000000",
+
+                    shadowOffset: {
+                      width: 0,
+                      height: 10,
+                    },
+
+                    shadowOpacity: 0.08,
+
+                    shadowRadius: 20,
+                  }
+                  : {}),
+
+                ...(Platform.OS === "android" && !esTelefono
+                  ? {
+                    elevation: 6,
+                  }
+                  : {}),
+              },
+            ]}
+          >
+            {/* ==================================================
+                PANEL VISUAL
+            ================================================== */}
+
+            <View
+              style={[
+                styles.visualPanel,
+                {
+                  width: anchoPanelVisual,
+
+                  minHeight: esTelefono ? undefined : 420,
+
+                  alignItems: "center",
+
+                  justifyContent: "center",
+                },
+              ]}
+            >
+              {/* LOGO */}
+
+              <Image
+                source={require("../../assets/images/logo_secundario.png")}
+                resizeMode="contain"
+                style={{
+                  width: tamanoLogo,
+
+                  height: altoLogo,
+
+                  marginBottom: esTelefono ? (telefonoMuyPequeno ? 2 : 5) : 16,
+                }}
+              />
+
+              {/* MASCOTA */}
+
+              <View
+                style={[
+                  styles.mascotCircle,
+                  {
+                    width: tamanoCirculo,
+
+                    height: tamanoCirculo,
+
+                    borderRadius: tamanoCirculo / 2,
+                  },
+                ]}
+              >
+                <Image
+                  source={require("../../assets/images/mascota.png")}
+                  resizeMode="contain"
+                  style={{
+                    width: tamanoMascota,
+
+                    height: tamanoMascota,
+                  }}
+                />
+              </View>
             </View>
 
-          {/* Boton Secundario */}
-          <Button
-          title='¿Ya tienes una cuenta? Iniciar Sesión'
-          variant='secondary'
-          onPress={irLogin}>
-          </Button>
+            {/* ==================================================
+                PANEL DE CONTENIDO
+            ================================================== */}
 
+            <View
+              style={[
+                styles.contentPanel,
+                {
+                  width: anchoPanelContenido,
+
+                  minHeight: esTelefono ? undefined : 420,
+
+                  alignItems: "center",
+
+                  justifyContent: esTelefono ? "flex-start" : "center",
+
+                  paddingTop: esTelefono
+                    ? telefonoMuyPequeno
+                      ? 4
+                      : telefonoPequeno
+                        ? 6
+                        : 10
+                    : 0,
+                },
+              ]}
+            >
+              {/* =================================================
+                  TÍTULO
+              ================================================= */}
+
+              <Text
+                style={[
+                  styles.title,
+                  {
+                    fontSize: tamanoTitulo,
+
+                    lineHeight: tamanoTitulo + 5,
+                  },
+                ]}
+              >
+                Bienvenido a <Text style={styles.titleBlue}>Kiri</Text>
+              </Text>
+
+              {/* =================================================
+                  DIVISOR
+              ================================================= */}
+
+              <View
+                style={[
+                  styles.divider,
+                  {
+                    marginTop: telefonoMuyPequeno
+                      ? 6
+                      : telefonoPequeno
+                        ? 8
+                        : 10,
+
+                    marginBottom: telefonoMuyPequeno
+                      ? 8
+                      : telefonoPequeno
+                        ? 10
+                        : 14,
+                  },
+                ]}
+              />
+
+              {/* =================================================
+                  SUBTÍTULO
+              ================================================= */}
+
+              <Text
+                style={[
+                  styles.subtitle,
+                  {
+                    fontSize: tamanoSubtitulo,
+
+                    lineHeight: tamanoSubtitulo + 6,
+
+                    maxWidth: 460,
+
+                    marginBottom: telefonoMuyPequeno
+                      ? 7
+                      : telefonoPequeno
+                        ? 9
+                        : 12,
+                  },
+                ]}
+              >
+                Cuidar de tu salud mental es un acto de fortaleza
+              </Text>
+
+              {/* =================================================
+                  DESCRIPCIÓN
+              ================================================= */}
+
+              <Text
+                style={[
+                  styles.description,
+                  {
+                    fontSize: tamanoDescripcion,
+
+                    lineHeight: tamanoDescripcion + 7,
+
+                    maxWidth: esEscritorio ? 500 : 460,
+
+                    marginBottom: telefonoMuyPequeno
+                      ? 5
+                      : telefonoPequeno
+                        ? 7
+                        : 10,
+                  },
+                ]}
+              >
+                En Kiri encontrarás herramientas para conocerte mejor,
+                comprender tus emociones y desarrollar hábitos que favorezcan tu
+                bienestar.
+              </Text>
+
+              {/* =================================================
+                  MENSAJE FINAL
+              ================================================= */}
+
+              <Text
+                style={[
+                  styles.footerText,
+                  {
+                    fontSize: esEscritorio
+                      ? 16
+                      : telefonoMuyPequeno
+                        ? 12
+                        : telefonoPequeno
+                          ? 13
+                          : 14,
+
+                    lineHeight: esTelefono ? 20 : 22,
+
+                    marginBottom: telefonoMuyPequeno
+                      ? 8
+                      : telefonoPequeno
+                        ? 10
+                        : 14,
+                  },
+                ]}
+              >
+                Nunca estarás <Text style={styles.greenText}>solo</Text> en este
+                proceso.
+              </Text>
+
+              {/* =================================================
+                  ACCIONES
+              ================================================= */}
+
+              <View
+                style={{
+                  width: "100%",
+
+                  maxWidth: 460,
+
+                  alignSelf: "center",
+
+                  marginTop: telefonoMuyPequeno ? 2 : telefonoPequeno ? 4 : 8,
+                }}
+              >
+                {/* ===============================================
+                    BOTÓN COMENZAR
+                =============================================== */}
+
+                <TouchableOpacity
+                  activeOpacity={0.82}
+                  onPress={irModoAcceso}
+                  style={{
+                    width: "100%",
+
+                    minHeight: telefonoMuyPequeno
+                      ? 48
+                      : telefonoPequeno
+                        ? 52
+                        : 56,
+
+                    paddingHorizontal: 20,
+
+                    paddingVertical: telefonoMuyPequeno ? 10 : 12,
+
+                    borderRadius: 18,
+
+                    alignItems: "center",
+
+                    justifyContent: "center",
+
+                    backgroundColor: "#4F8EF7",
+
+                    ...(Platform.OS === "ios"
+                      ? {
+                        shadowColor: "#4F8EF7",
+
+                        shadowOffset: {
+                          width: 0,
+                          height: 3,
+                        },
+
+                        shadowOpacity: 0.18,
+
+                        shadowRadius: 6,
+                      }
+                      : {}),
+
+                    ...(Platform.OS === "android"
+                      ? {
+                        elevation: 3,
+                      }
+                      : {}),
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.textoBotonPrincipal,
+                      {
+                        fontSize: telefonoMuyPequeno ? 15 : 17,
+                      },
+                    ]}
+                  >
+                    Comenzar
+                  </Text>
+                </TouchableOpacity>
+
+                {/* ===============================================
+                    SEPARADOR
+                =============================================== */}
+
+                <View
+                  style={[
+                    styles.dividerContainer,
+                    {
+                      marginVertical: telefonoMuyPequeno
+                        ? 10
+                        : telefonoPequeno
+                          ? 12
+                          : 16,
+                    },
+                  ]}
+                >
+                  <View style={styles.line} />
+
+                  <Text style={styles.dividerText}>o</Text>
+
+                  <View style={styles.line} />
+                </View>
+
+                {/* ===============================================
+                    LOGIN
+                =============================================== */}
+
+                <TouchableOpacity
+                  activeOpacity={0.78}
+                  onPress={irLogin}
+                  style={{
+                    width: "100%",
+
+                    minHeight: telefonoMuyPequeno
+                      ? 46
+                      : telefonoPequeno
+                        ? 50
+                        : 54,
+
+                    paddingHorizontal: 12,
+
+                    paddingVertical: telefonoMuyPequeno ? 8 : 10,
+
+                    borderRadius: 18,
+
+                    borderWidth: 2,
+
+                    borderColor: "#4F8EF7",
+
+                    alignItems: "center",
+
+                    justifyContent: "center",
+
+                    backgroundColor: "rgba(255,255,255,0.92)",
+                  }}
+                >
+                  <Text
+                    numberOfLines={2}
+                    style={[
+                      styles.textoBotonSecundario,
+                      {
+                        fontSize: telefonoMuyPequeno
+                          ? 12
+                          : telefonoPequeno
+                            ? 13
+                            : 14,
+
+                        lineHeight: 20,
+                      },
+                    ]}
+                  >
+                    ¿Ya tienes una cuenta?{" "}
+                    <Text style={styles.textoLoginDestacado}>
+                      Iniciar sesión
+                    </Text>
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
         </View>
       </ScrollView>
     </ImageBackground>
   );
 }
 
-//Apartado de estilos para el logo y la mascota
+// ==========================================================
+// ESTILOS
+// ==========================================================
+
 const styles = StyleSheet.create({
+  // ======================================================
+  // FONDO
+  // ======================================================
 
   imagenFondo: {
     flex: 1,
-    width: '100%',
-    height: '100%',
-  },
-  // Estilo para el ScrollView: hace que ocupe todo el alto disponible
-  scrollContainer: {
-    flexGrow: 1,                      // Permite que se estire al maximo
-  },
-  // Contenedor interno que alinea las cosas
-  container: {
-    flex: 1,
-    width: '100%',                      // Toma todo el espacio dentro del scroll
-    alignItems: 'center',             // Centra los elementos horizontalmente
-    paddingHorizontal: 28,           // Margen interno a los lados (izq y der)
-    paddingTop: 35,                   // Margen superior para despegarlo de arriba
-    paddingBottom: 30,                // Margen inferior
-  },
-  // Estilo especifico para el logo pequeñito de arriba
-  logoTop: {
-    width: 160,                       // Ancho en pixeles del logo
-    height: 100,                       // Alto en pixeles del logo
-    marginBottom: -11,                 // Separacion con el siguiente elemento
-  },
-  // Caza o caja contenedora para la imagen de la mascota
-  imageContainer: {
-    width: 220,                       // Ancho del contenedor
-    height: 260,                      // Alto del contenedor
-    justifyContent: 'center',         // Centra la imagen verticalmente adentro
-    alignItems: 'center',             // Centra la imagen horizontalmente adentro
-    marginBottom: 11,                 // Separacion con el texto que le agregaremos abajo
-  },
-  // Estilo de la imagen del avatar
-  mascotImage: {
-    width: '100%',                    // Toma todo el ancho de su caja (220px)
-    height: '100%',                   // Toma todo el alto de su caja (220px)
+
+    width: "100%",
+
+    height: "100%",
   },
 
-  /*Estilos del Titulo y Linea Decorativa */
-  title:{
-    fontSize:40,
-    fontWeight: '700',
-    fontFamily: 'Nunito-Bold', //Fuente principal que llevara kiri
-    color: '#2D3748', //Color para el texto de Bienvenida de Kiri
-    textAlign: 'center',
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+
+    backgroundColor: "rgba(255,255,255,0.58)",
+  },
+
+  // ======================================================
+  // SCROLL
+  // ======================================================
+
+  scrollContainer: {
+    flexGrow: 1,
+
+    alignItems: "center",
+  },
+
+  wrapper: {
+    alignSelf: "center",
+
+    width: "100%",
+  },
+
+  // ======================================================
+  // CONTENEDOR PRINCIPAL
+  // ======================================================
+
+  mainCard: {
+    width: "100%",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+  },
+
+  // ======================================================
+  // VISUAL
+  // ======================================================
+
+  visualPanel: {
+    alignItems: "center",
+
+    justifyContent: "center",
+  },
+
+  mascotCircle: {
+    backgroundColor: "rgba(184,168,248,0.15)",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+  },
+
+  // ======================================================
+  // CONTENIDO
+  // ======================================================
+
+  contentPanel: {
+    alignItems: "center",
+  },
+
+  title: {
+    fontFamily: "Nunito-Bold",
+
+    color: "#2D3748",
+
+    textAlign: "center",
   },
 
   titleBlue: {
-    color: '#4F8EF7'//Color propio de la app kiri
-  },
-  divider: {
-    width: 40,                      // Ancho de la linea decorativa
-    height: 4,                      // Grosor de la linea
-    backgroundColor: '#B8A8F8',     // Color morado pastel
-    borderRadius: 5,                // Redondea las puntas de la linea
-    marginVertical: 11,             // Margen arriba y abajo para dar aire
-  },
-  
-  /* Estilo del Subtitulo*/
-  subtitle:{
-    fontSize:25, //Tamaño de fuente
-    color:'#4F8EF7', //Color azul de kiri
-    fontWeight: '600', //negrita
-    fontFamily: 'Nunito-SemiBold', //Tipografia Nunito Semibold
-    textAlign: 'center', //centrad horizontal
-    lineHeight: 30, //Interlineado para que el texto no se vea muy pegado
-    marginBottom:10, //Margen inferior para el bloque proximo
-  },
-  /* Estilo de la Descripcion de la app*/
-  description:{
-    fontSize:18,
-    fontWeight:'400',
-    fontFamily: 'Nunito-Medium',
-    color: '#2D3748',
-    textAlign: 'center',
-    lineHeight: 25,
-    marginBottom: 8,
+    color: "#4F8EF7",
   },
 
-  /* Estilo texto de acompañamiento*/
+  divider: {
+    width: 52,
+
+    height: 4,
+
+    backgroundColor: "#B8A8F8",
+
+    borderRadius: 999,
+  },
+
+  subtitle: {
+    fontFamily: "Nunito-SemiBold",
+
+    color: "#4F8EF7",
+
+    textAlign: "center",
+  },
+
+  description: {
+    fontFamily: "Nunito-Medium",
+
+    color: "#2D3748",
+
+    textAlign: "center",
+  },
+
   footerText: {
-    fontSize:18, // Tamaño de lectura comodo
-    fontFamily: 'Nunito-Medium', // Tipografia suave
-    color: '#2D3748', //color base de kiri en parrafos
-    textAlign: 'center',
-    marginBottom: 18, // Espacio amplio antes de los botones
+    fontFamily: "Nunito-Medium",
+
+    color: "#2D3748",
+
+    textAlign: "center",
   },
 
   greenText: {
-    color: '#7BBF9A', //color verde relajante para hacer distintivo a la palabra
-    fontWeight: '700', //negrita para dar enfasis
-    fontFamily: 'Ninito-Medium',
+    color: "#7BBF9A",
+
+    fontFamily: "Nunito-Bold",
   },
 
-  /* Estilo para el contenedor de botones*/
-  buttonContainer:{
-    width: '100%', //Toma todo el ancho de la pantalla
-    marginTop: -10, //Margen superior para separlo del texto
+  // ======================================================
+  // BOTÓN PRINCIPAL
+  // ======================================================
+
+  textoBotonPrincipal: {
+    fontFamily: "Nunito-Bold",
+
+    color: "#FFFFFF",
+
+    textAlign: "center",
+
+    includeFontPadding: false,
   },
 
-  /*ESTILOS DEL SEPARADOR "O"*/
+  // ======================================================
+  // SEPARADOR
+  // ======================================================
+
   dividerContainer: {
-    flexDirection: 'row',          // Alinea las lineas y el texto en fila horizontal
-    alignItems: 'center',          // Centra verticalmente los elementos
-    marginVertical: 5,            // Espaciado arriba y abajo de la "o"
-    width: '100%',                 // Ocupa todo el ancho
+    width: "100%",
+
+    flexDirection: "row",
+
+    alignItems: "center",
   },
+
   line: {
-    flex: 1,                       // Hace que la linea se expanda para llenar el espacio disponible
-    height: 1,                     // Grosor delgado de 1px
-    backgroundColor: '#2D3748',    // Gris claro elegante
+    flex: 1,
+
+    height: 1,
+
+    backgroundColor: "rgba(45,55,72,0.22)",
   },
+
   dividerText: {
-    marginHorizontal: 15,          // Espacio a los lados de la letra "o"
-    fontSize: 16,                  // Tamaño legible
-    fontFamily: 'Nunito-Medium',    // Tipografia
-    color: '#2D3748',              // Color gris suave para el texto
+    marginHorizontal: 15,
+
+    fontSize: 14,
+
+    fontFamily: "Nunito-Medium",
+
+    color: "#64748B",
+  },
+
+  // ======================================================
+  // LOGIN
+  // ======================================================
+
+  textoBotonSecundario: {
+    width: "100%",
+
+    fontFamily: "Nunito-SemiBold",
+
+    color: "#475569",
+
+    textAlign: "center",
+
+    includeFontPadding: false,
+  },
+
+  textoLoginDestacado: {
+    fontFamily: "Nunito-Bold",
+
+    color: "#4F8EF7",
   },
 });

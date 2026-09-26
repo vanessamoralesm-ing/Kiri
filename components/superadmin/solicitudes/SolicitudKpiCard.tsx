@@ -1,24 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
-
 import React from "react";
-
 import { Text, View } from "react-native";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 interface SolicitudKpiCardProps {
     titulo: string;
-
     valor: string | number;
-
     sufijo?: string;
-
     descripcion: string;
-
     icono: keyof typeof Ionicons.glyphMap;
-
     variante: "primary" | "secondary" | "accent";
-
     descripcionDestacada?: boolean;
 }
 
@@ -31,6 +24,8 @@ export default function SolicitudKpiCard({
     variante,
     descripcionDestacada = false,
 }: SolicitudKpiCardProps) {
+    const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
+
     const surfaceColor = useThemeColor({}, "surface");
 
     const borderColor = useThemeColor({}, "border");
@@ -56,16 +51,19 @@ export default function SolicitudKpiCard({
     const colores = {
         primary: {
             color: primaryColor,
+
             fondo: primarySoftColor,
         },
 
         secondary: {
             color: secondaryColor,
+
             fondo: secondarySoftColor,
         },
 
         accent: {
             color: accentColor,
+
             fondo: accentSoftColor,
         },
     }[variante];
@@ -73,25 +71,44 @@ export default function SolicitudKpiCard({
     return (
         <View
             style={{
-                flex: 1,
-                minHeight: 170,
-                padding: 20,
+                width: "100%",
+
+                minHeight: esTelefono ? 155 : 170,
+
+                padding: esTelefono ? 16 : 20,
+
                 borderWidth: 1,
+
                 borderColor,
+
                 borderRadius: 18,
+
                 backgroundColor: surfaceColor,
             }}
         >
+            {/* SUPERIOR */}
+
             <View
                 style={{
                     flexDirection: "row",
+
+                    alignItems: "flex-start",
+
                     justifyContent: "space-between",
                 }}
             >
                 <Text
                     style={{
+                        flex: 1,
+
+                        marginRight: 12,
+
                         fontFamily: "Nunito-SemiBold",
-                        fontSize: 11,
+
+                        fontSize: esTelefono ? 11 : 11,
+
+                        lineHeight: 16,
+
                         color: textSecondaryColor,
                     }}
                 >
@@ -100,29 +117,48 @@ export default function SolicitudKpiCard({
 
                 <View
                     style={{
-                        width: 40,
-                        height: 40,
+                        width: esTelefono ? 42 : 40,
+
+                        height: esTelefono ? 42 : 40,
+
                         borderRadius: 12,
+
+                        flexShrink: 0,
+
                         alignItems: "center",
+
                         justifyContent: "center",
+
                         backgroundColor: colores.fondo,
                     }}
                 >
-                    <Ionicons name={icono} size={19} color={colores.color} />
+                    <Ionicons
+                        name={icono}
+                        size={esTelefono ? 20 : 19}
+                        color={colores.color}
+                    />
                 </View>
             </View>
 
+            {/* VALOR */}
+
             <View
                 style={{
-                    marginTop: 18,
+                    marginTop: esTelefono ? 14 : 18,
+
                     flexDirection: "row",
+
+                    flexWrap: "wrap",
+
                     alignItems: "baseline",
                 }}
             >
                 <Text
                     style={{
                         fontFamily: "Nunito-Bold",
-                        fontSize: 34,
+
+                        fontSize: esTelefono ? 31 : 34,
+
                         color: textColor,
                     }}
                 >
@@ -133,8 +169,11 @@ export default function SolicitudKpiCard({
                     <Text
                         style={{
                             marginLeft: 6,
+
                             fontFamily: "Nunito-SemiBold",
-                            fontSize: 15,
+
+                            fontSize: esTelefono ? 13 : 15,
+
                             color: textColor,
                         }}
                     >
@@ -143,13 +182,20 @@ export default function SolicitudKpiCard({
                 )}
             </View>
 
+            {/* DESCRIPCIÓN */}
+
             <View
                 style={{
                     marginTop: "auto",
-                    paddingTop: 15,
+
+                    paddingTop: 14,
+
                     borderTopWidth: 1,
+
                     borderTopColor: borderColor,
+
                     flexDirection: "row",
+
                     alignItems: "center",
                 }}
             >
@@ -168,9 +214,15 @@ export default function SolicitudKpiCard({
                 <Text
                     style={{
                         flex: 1,
+
                         marginLeft: 7,
+
                         fontFamily: "Nunito-Medium",
-                        fontSize: 11,
+
+                        fontSize: esTelefono ? 11 : 11,
+
+                        lineHeight: 16,
+
                         color: descripcionDestacada ? colores.color : textMutedColor,
                     }}
                 >
