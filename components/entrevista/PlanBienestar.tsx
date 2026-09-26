@@ -16,27 +16,16 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
-import {
-  useLocalSearchParams,
-  useRouter,
-} from "expo-router";
+import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 
-import {
-  SafeAreaView,
-} from "react-native-safe-area-context";
+import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
 
-import {
-  Ionicons,
-} from "@expo/vector-icons";
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
-import Animated, {
-  FadeIn,
-  FadeInUp,
-} from "react-native-reanimated";
+import { supabase } from "@/lib/supabase";
 
-import {
-  supabase,
-} from "@/lib/supabase";
+import { finalizarEntrevista } from "@/services/entrevista/finalizarEntrevistaService";
 
 import {
   generarPlanBienestar,
@@ -49,9 +38,7 @@ import {
 // ==========================================================
 
 type Props = {
-  modo:
-    | "entrevista"
-    | "historial";
+  modo: "entrevista" | "historial";
 };
 
 function esUUID(valor: string | undefined): valor is string {
@@ -61,87 +48,44 @@ function esUUID(valor: string | undefined): valor is string {
       valor,
     )
   );
-
 }
-
 
 // ==========================================================
 // COMPONENTE
 // ==========================================================
 
-export default function PlanBienestar({
-  modo,
-}: Props) {
+export default function PlanBienestar({ modo }: Props) {
+  const router = useRouter();
 
   const insets = useSafeAreaInsets();
 
   const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
+  const params = useLocalSearchParams<{
+    id?: string | string[];
+  }>();
 
-  const {
-    width,
-  } =
-    useWindowDimensions();
-
-
-  const movil =
-    width < 600;
-
-
-  const params =
-    useLocalSearchParams<{
-      id: string;
-    }>();
-
-
-  const idEntrevista =
-    Array.isArray(
-      params.id
-    )
-      ? params.id[0]
-      : params.id;
-
+  const idEntrevista = Array.isArray(params.id) ? params.id[0] : params.id;
 
   // ========================================================
   // TEMA
   // ========================================================
 
-  const backgroundColor =
-    useThemeColor(
-      {},
-      "background"
-    );
+  const backgroundColor = useThemeColor({}, "background");
 
+  const surfaceColor = useThemeColor({}, "surface");
 
-  const surfaceColor =
-    useThemeColor(
-      {},
-      "surface"
-    );
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
-
-  const surfaceSecondaryColor =
-    useThemeColor(
-      {},
-      "surfaceSecondary"
-    );
-
-
-  const borderColor =
-    useThemeColor(
-      {},
-      "border"
-    );
+  const borderColor = useThemeColor({}, "border");
 
   const textColor = useThemeColor({}, "text");
 
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
 
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
+  const textMutedColor = useThemeColor({}, "textMuted");
 
+  const primaryColor = useThemeColor({}, "primary");
 
   const primarySoftColor = useThemeColor({}, "primarySoft");
 
@@ -153,6 +97,7 @@ export default function PlanBienestar({
 
   const accentSoftColor = useThemeColor({}, "accentSoft");
 
+  const disabledColor = useThemeColor({}, "disabled");
 
   const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
 
@@ -172,20 +117,19 @@ export default function PlanBienestar({
   // RESPONSIVE
   // ========================================================
 
+  const paddingHorizontal = esEscritorio
+    ? PADDING_RESPONSIVE.escritorio
+    : esTablet
+      ? PADDING_RESPONSIVE.tablet
+      : PADDING_RESPONSIVE.telefono;
 
-  const secondarySoftColor =
-    useThemeColor(
-      {},
-      "secondarySoft"
-    );
+  const maxWidthPantalla = esEscritorio
+    ? MAX_WIDTHS.dashboard
+    : esTablet
+      ? MAX_WIDTHS.contenido
+      : undefined;
 
-
-  const accentSoftColor =
-    useThemeColor(
-      {},
-      "accentSoft"
-    );
-
+  const maxWidthContenido = esEscritorio ? 1080 : esTablet ? 760 : undefined;
 
   const paddingBottom = esEscritorio ? 64 : Math.max(130, insets.bottom + 110);
 
@@ -197,15 +141,14 @@ export default function PlanBienestar({
     if (!esUUID(idEntrevista)) {
       setError("No se encontró una entrevista válida.");
 
+      setCargando(false);
 
-      if (
-        !esUUID(
-          idEntrevista
-        )
-      ) {
+      return;
+    }
 
     const idValido = idEntrevista;
 
+    let activo = true;
 
     async function cargarPlan() {
       try {
@@ -216,6 +159,9 @@ export default function PlanBienestar({
 
         const existente = await obtenerPlanBienestar(idValido);
 
+        if (!activo) {
+          return;
+        }
 
         if (existente) {
           setPlan(existente);
@@ -224,10 +170,11 @@ export default function PlanBienestar({
 
         // En historial no se genera un plan nuevo
 
-          setCargando(
-            true
-          );
+        if (modo === "historial") {
+          setError("No encontramos un plan asociado a esta entrevista.");
 
+          return;
+        }
 
         // Consultar resultados
 
@@ -252,25 +199,24 @@ export default function PlanBienestar({
           throw consultaError;
         }
 
-          // ==================================================
-          // 4. GENERAR PLAN
-          // ==================================================
+        if (!activo) {
+          return;
+        }
 
-          const nuevoPlan =
-            await generarPlanBienestar(
-              idEntrevista,
-              resultados
-            );
+        const resultados = (data ?? []).map((item: any) => {
+          const modulo = Array.isArray(item.modulo_entrevista)
+            ? item.modulo_entrevista[0]
+            : item.modulo_entrevista;
 
           return {
             codigo: modulo?.codigo ?? "",
             nombre: modulo?.nombre ?? "",
 
+            porcentaje: Number(item.porcentaje ?? 0),
 
-          console.log(
-            "PLAN LISTO:",
-            nuevoPlan
-          );
+            nivel: item.nivel ?? "BAJO",
+          };
+        });
 
         // Generar plan
 
@@ -282,99 +228,53 @@ export default function PlanBienestar({
       } catch (e) {
         console.error("Error cargando plan:", e);
 
-          if (
-            activo
-          ) {
-
-            setError(
-              e instanceof Error
-                ? e.message
-                : "No se pudo cargar tu plan de bienestar."
-            );
-
-          }
-
-
-        } finally {
-
-          if (
-            activo
-          ) {
-
-            setCargando(
-              false
-            );
-
-          }
-
+        if (activo) {
+          setError(
+            e instanceof Error
+              ? e.message
+              : "No se pudo cargar tu plan de bienestar.",
+          );
         }
-
+      } finally {
+        if (activo) {
+          setCargando(false);
+        }
       }
+    }
 
     void cargarPlan();
 
-      cargarPlan();
-
-
-      return () => {
-
-        activo =
-          false;
-
-      };
-
-    },
-    [
-      idEntrevista,
-      modo,
-    ]
-  );
-
+    return () => {
+      activo = false;
+    };
+  }, [idEntrevista, modo]);
 
   // ========================================================
   // FINALIZAR ENTREVISTA
   // ========================================================
 
   async function finalizar() {
-
-    if (
-      modo !==
-        "entrevista" ||
-      !esUUID(
-        idEntrevista
-      ) ||
-      finalizando
-    ) {
+    if (modo !== "entrevista" || !esUUID(idEntrevista) || finalizando) {
       return;
     }
-
 
     try {
       setFinalizando(true);
       setError(null);
 
+      await finalizarEntrevista(idEntrevista);
 
       router.replace("/(tabs)/home");
     } catch (e) {
       console.error("Error al finalizar entrevista:", e);
 
       setError(
-        e instanceof Error
-          ? e.message
-          : "No se pudo finalizar la entrevista."
+        e instanceof Error ? e.message : "No se pudo finalizar la entrevista.",
       );
-
-
     } finally {
-
-      setFinalizando(
-        false
-      );
-
+      setFinalizando(false);
     }
-
   }
-
 
   // ========================================================
   // VOLVER
@@ -385,7 +285,6 @@ export default function PlanBienestar({
       modo === "historial" ? "/(tabs)/entrevistas" : "/(tabs)/home",
     );
   }
-
 
   // ========================================================
   // BOTÓN
@@ -454,7 +353,6 @@ export default function PlanBienestar({
     </Pressable>
   );
 
-
   // ========================================================
   // CARGANDO / SIN PLAN
   // ========================================================
@@ -480,7 +378,6 @@ export default function PlanBienestar({
             gap: 14,
           }}
         >
-
           <View
             style={{
               width: 76,
@@ -504,7 +401,6 @@ export default function PlanBienestar({
             )}
           </View>
 
-
           <Text
             style={{
               fontFamily: "Nunito-Bold",
@@ -522,7 +418,6 @@ export default function PlanBienestar({
                 ? "No pudimos cargar este plan"
                 : "No pudimos preparar tu plan"}
           </Text>
-
 
           <Text
             style={{
@@ -562,13 +457,9 @@ export default function PlanBienestar({
             </View>
           )}
         </View>
-
       </SafeAreaView>
-
     );
-
   }
-
 
   // ========================================================
   // PANTALLA PRINCIPAL
@@ -582,7 +473,6 @@ export default function PlanBienestar({
         backgroundColor,
       }}
     >
-
       <ScrollView
         style={{
           flex: 1,
@@ -602,10 +492,9 @@ export default function PlanBienestar({
             alignSelf: "center",
           }}
         >
-
           <View
-            style={[
-              styles.headerIcono,
+            style={{
+              width: "100%",
 
               maxWidth: maxWidthContenido,
               alignSelf: "center",
@@ -763,7 +652,7 @@ export default function PlanBienestar({
                   color: textOnPrimaryColor,
                 }}
               >
-                TU ENFOQUE
+                {plan.objetivo_principal}
               </Text>
             </Animated.View>
 
@@ -785,7 +674,7 @@ export default function PlanBienestar({
                   color: textColor,
                 }}
               >
-                Objetivo principal
+                Para comenzar
               </Text>
 
               <Text
@@ -873,7 +762,6 @@ export default function PlanBienestar({
                         >
                           {index + 1}
                         </Text>
-
                       </View>
 
                       {/* ICONO */}
@@ -956,7 +844,6 @@ export default function PlanBienestar({
                     gap: 10,
                   }}
                 >
-
                   <View
                     style={{
                       width: 50,
@@ -970,15 +857,12 @@ export default function PlanBienestar({
                       justifyContent: "center",
                     }}
                   >
-
                     <Ionicons
                       name="leaf-outline"
                       size={24}
                       color={secondaryColor}
                     />
-
                   </View>
-
 
                   <Text
                     style={{
@@ -992,10 +876,12 @@ export default function PlanBienestar({
                       color: textSecondaryColor,
                     }}
                   >
-                    Continúa fortaleciendo los hábitos que actualmente favorecen tu bienestar.
+                    Continúa fortaleciendo los hábitos que actualmente favorecen
+                    tu bienestar.
                   </Text>
-
                 </View>
+              )}
+            </View>
 
             {/* RECORDATORIO */}
 
@@ -1100,13 +986,11 @@ export default function PlanBienestar({
                 gap: 10,
               }}
             >
-
               <Ionicons
                 name="information-circle-outline"
                 size={21}
                 color={textMutedColor}
               />
-
 
               <Text
                 style={{
@@ -1121,8 +1005,10 @@ export default function PlanBienestar({
                   color: textSecondaryColor,
                 }}
               >
-                {error}
+                Estas recomendaciones son de autocuidado y orientación. No
+                sustituyen la valoración o atención de un profesional de salud.
               </Text>
+            </View>
 
             {/* ERROR AL FINALIZAR */}
 
@@ -1167,6 +1053,10 @@ export default function PlanBienestar({
                     fontSize: 13,
                   }}
                 >
+                  {error}
+                </Text>
+              </Animated.View>
+            )}
 
             {/* FINALIZAR / REGRESAR */}
 
@@ -1210,9 +1100,6 @@ export default function PlanBienestar({
           </View>
         </View>
       </ScrollView>
-
     </SafeAreaView>
-
   );
-
 }

@@ -24,7 +24,11 @@ type TarjetaModuloProps = {
 
 export function TarjetaModulo({
   titulo,
+  descripcion,
   nombreIcono,
+  colorAcento,
+  fondoIconoClaro,
+  fondoIconoOscuro,
   onPress,
 }: TarjetaModuloProps) {
   const { dark: isDarkMode } = useTheme();
@@ -46,7 +50,7 @@ export function TarjetaModulo({
 
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
+      activeOpacity={0.82}
       onPress={onPress}
       style={{
         width: "100%",
@@ -62,10 +66,7 @@ export function TarjetaModulo({
         paddingHorizontal: esTelefono ? 14 : 18,
         paddingVertical: esTelefono ? 14 : 18,
 
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
+        backgroundColor: surfaceColor,
 
         flexDirection: esTelefono ? "row" : "column",
         alignItems: esTelefono ? "center" : "stretch",
@@ -87,6 +88,7 @@ export function TarjetaModulo({
               : {}),
       }}
     >
+      {/* ICONO */}
 
       <View
         style={{
@@ -153,6 +155,7 @@ export function TarjetaModulo({
         )}
       </View>
 
+      {/* FLECHA */}
 
       <View
         style={{
@@ -170,8 +173,7 @@ export function TarjetaModulo({
           alignItems: "center",
           justifyContent: "center",
 
-          color:
-            textColor,
+          backgroundColor: surfaceSecondaryColor,
         }}
       >
         <Ionicons

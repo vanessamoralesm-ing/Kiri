@@ -272,7 +272,7 @@ function RootNavigation() {
 
       <Stack.Screen name="(tecnica)" />
 
-      <Stack.Screen name="(superadmin)" />
+      <Stack.Screen name="(superadmin)/superadmin" />
     </Stack>
   );
 }

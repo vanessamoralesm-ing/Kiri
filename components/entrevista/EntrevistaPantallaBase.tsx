@@ -1,22 +1,15 @@
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-
-import {
-  SafeAreaView,
-} from "react-native-safe-area-context";
-
-import {
-  Ionicons,
-} from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import CampoRespuesta from "./CampoRespuesta";
 import EntrevistaHeader from "./EntrevistaHeader";
@@ -24,18 +17,14 @@ import OpcionRespuesta from "./OpcionRespuesta";
 import PreguntaCard from "./PreguntaCard";
 import ProgresoEntrevista from "./ProgresoEntrevista";
 
-import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
+import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
 
-import type {
-  PreguntaEntrevista,
-} from "@/types/entrevista";
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
-import {
-  obtenerDescripcionPregunta,
-} from "@/utils/entrevistaHelpers";
+import type { PreguntaEntrevista } from "@/types/entrevista";
 
+import { obtenerDescripcionPregunta } from "@/utils/entrevistaHelpers";
 
 // ==========================================================
 // PROPS
@@ -64,24 +53,20 @@ interface Props {
 
   opcionesSeleccionadas: string[];
 
-  onSeleccionarOpcion:
-    (idOpcion: string) => void;
+  onSeleccionarOpcion: (idOpcion: string) => void;
 
   textoRespuesta: string;
 
-  onChangeTextoRespuesta:
-    (text: string) => void;
+  onChangeTextoRespuesta: (text: string) => void;
 
   numeroRespuesta: string;
 
-  onChangeNumeroRespuesta:
-    (text: string) => void;
+  onChangeNumeroRespuesta: (text: string) => void;
 
   esValida: boolean;
 
   headerBanner?: React.ReactNode;
 }
-
 
 // ==========================================================
 // COMPONENTE
@@ -107,843 +92,505 @@ export default function EntrevistaPantallaBase({
   esValida,
   headerBanner,
 }: Props) {
+  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
   // ========================================================
   // COLORES DEL TEMA
   // ========================================================
 
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
+  const backgroundColor = useThemeColor({}, "background");
 
+  const surfaceColor = useThemeColor({}, "surface");
 
-  const textSecondaryColor =
-    useThemeColor(
-      {},
-      "textSecondary"
-    );
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
+  const textColor = useThemeColor({}, "text");
 
-  const textMutedColor =
-    useThemeColor(
-      {},
-      "textMuted"
-    );
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
 
+  const textMutedColor = useThemeColor({}, "textMuted");
 
-  const primaryColor =
-    useThemeColor(
-      {},
-      "primary"
-    );
+  const primaryColor = useThemeColor({}, "primary");
 
+  const primarySoftColor = useThemeColor({}, "primarySoft");
 
-  const primarySoftColor =
-    useThemeColor(
-      {},
-      "primarySoft"
-    );
+  const borderColor = useThemeColor({}, "border");
 
+  const dangerColor = useThemeColor({}, "danger");
 
-  const surfaceSecondaryColor =
-    useThemeColor(
-      {},
-      "surfaceSecondary"
-    );
+  const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
 
+  // ========================================================
+  // RESPONSIVE
+  // ========================================================
 
-  const borderColor =
-    useThemeColor(
-      {},
-      "border"
-    );
+  const paddingHorizontal = esEscritorio
+    ? PADDING_RESPONSIVE.escritorio
+    : esTablet
+      ? PADDING_RESPONSIVE.tablet
+      : PADDING_RESPONSIVE.telefono;
 
+  const maxWidthPantalla = esEscritorio
+    ? MAX_WIDTHS.dashboard
+    : esTablet
+      ? MAX_WIDTHS.contenido
+      : undefined;
 
-  const dangerColor =
-    useThemeColor(
-      {},
-      "danger"
-    );
+  const maxWidthEntrevista = esEscritorio ? 980 : esTablet ? 760 : undefined;
 
+  const paddingBottom = esEscritorio ? 28 : 16;
 
   // ========================================================
   // ESTADOS DERIVADOS
   // ========================================================
 
-  const botonDeshabilitado =
-    guardando ||
-    !esValida;
-
+  const botonDeshabilitado = guardando || !esValida;
 
   // ========================================================
   // CARGANDO
   // ========================================================
 
   if (cargando) {
-
     return (
-
       <SafeAreaView
-        style={styles.pantalla}
+        style={{
+          flex: 1,
+          backgroundColor,
+        }}
       >
-
         <View
-          style={styles.centroPantalla}
+          style={{
+            flex: 1,
+
+            width: "100%",
+            maxWidth: maxWidthPantalla,
+
+            alignSelf: "center",
+
+            alignItems: "center",
+            justifyContent: "center",
+
+            paddingHorizontal,
+          }}
         >
-
           <View
-            style={[
-              styles.iconoEstado,
+            style={{
+              width: 78,
+              height: 78,
 
-              {
-                backgroundColor:
-                  primarySoftColor,
+              borderRadius: 39,
 
-                borderColor,
-              },
-            ]}
+              borderWidth: 1,
+              borderColor,
+
+              alignItems: "center",
+              justifyContent: "center",
+
+              backgroundColor: primarySoftColor,
+            }}
           >
-
-            <ActivityIndicator
-              size="large"
-              color={
-                primaryColor
-              }
-            />
-
+            <ActivityIndicator size="large" color={primaryColor} />
           </View>
 
-
           <Text
-            style={[
-              styles.textoCargando,
+            style={{
+              marginTop: 14,
 
-              {
-                color:
-                  textSecondaryColor,
-              },
-            ]}
+              fontSize: 15,
+
+              fontFamily: "Nunito-SemiBold",
+
+              textAlign: "center",
+
+              color: textSecondaryColor,
+            }}
           >
             Preparando esta sección...
           </Text>
-
         </View>
-
       </SafeAreaView>
-
     );
-
   }
-
 
   // ========================================================
   // ERROR
   // ========================================================
 
-  if (
-    errorPantalla ||
-    !preguntaActual
-  ) {
-
+  if (errorPantalla || !preguntaActual) {
     return (
-
       <SafeAreaView
-        style={styles.pantalla}
+        style={{
+          flex: 1,
+          backgroundColor,
+        }}
       >
-
         <View
-          style={styles.centroPantalla}
+          style={{
+            flex: 1,
+
+            width: "100%",
+            maxWidth: maxWidthPantalla,
+
+            alignSelf: "center",
+
+            alignItems: "center",
+            justifyContent: "center",
+
+            paddingHorizontal,
+          }}
         >
-
           <View
-            style={[
-              styles.iconoEstado,
+            style={{
+              width: 78,
+              height: 78,
 
-              {
-                backgroundColor:
-                  primarySoftColor,
+              borderRadius: 39,
 
-                borderColor,
-              },
-            ]}
+              borderWidth: 1,
+              borderColor,
+
+              alignItems: "center",
+              justifyContent: "center",
+
+              backgroundColor: primarySoftColor,
+            }}
           >
-
             <Ionicons
               name="alert-circle-outline"
               size={45}
-              color={
-                dangerColor
-              }
+              color={dangerColor}
             />
-
           </View>
 
-
           <Text
-            style={[
-              styles.tituloError,
+            style={{
+              marginTop: 15,
 
-              {
-                color:
-                  textColor,
-              },
-            ]}
+              fontSize: 20,
+
+              fontFamily: "Nunito-Bold",
+
+              textAlign: "center",
+
+              color: textColor,
+            }}
           >
             No pudimos cargar esta sección
           </Text>
 
-
           <Text
-            style={[
-              styles.descripcionError,
+            style={{
+              marginTop: 9,
 
-              {
-                color:
-                  textSecondaryColor,
-              },
-            ]}
+              maxWidth: 500,
+
+              fontSize: 14,
+              lineHeight: 21,
+
+              fontFamily: "Nunito-Medium",
+
+              textAlign: "center",
+
+              color: textSecondaryColor,
+            }}
           >
-            {
-              errorPantalla ??
-              "No encontramos preguntas disponibles."
-            }
+            {errorPantalla ?? "No encontramos preguntas disponibles."}
           </Text>
 
-
           <Pressable
-            onPress={
-              onReintentar
-            }
+            onPress={onReintentar}
+            style={({ pressed }) => ({
+              marginTop: 22,
 
-            style={({
-              pressed,
-            }) => [
-              styles.botonReintentar,
+              minHeight: 48,
 
-              {
-                backgroundColor:
-                  primaryColor,
-              },
+              paddingHorizontal: 25,
+              paddingVertical: 13,
 
-              pressed &&
-                styles.botonPresionado,
-            ]}
+              borderRadius: 15,
+
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+
+              gap: 8,
+
+              backgroundColor: primaryColor,
+
+              opacity: pressed ? 0.88 : 1,
+            })}
           >
-
             <Ionicons
               name="refresh-outline"
               size={19}
-              color="#FFFFFF"
+              color={textOnPrimaryColor}
             />
 
-
             <Text
-              style={
-                styles.textoReintentar
-              }
+              style={{
+                fontFamily: "Nunito-Bold",
+
+                fontSize: 14,
+
+                color: textOnPrimaryColor,
+              }}
             >
               Intentar nuevamente
             </Text>
-
           </Pressable>
-
         </View>
-
       </SafeAreaView>
-
     );
-
   }
-
 
   // ========================================================
   // PANTALLA PRINCIPAL
   // ========================================================
 
   return (
-
     <SafeAreaView
-      style={
-        styles.pantalla
-      }
+      style={{
+        flex: 1,
+        backgroundColor,
+      }}
     >
-
       <View
-        style={
-          styles.contenedor
-        }
+        style={{
+          flex: 1,
+
+          width: "100%",
+          maxWidth: maxWidthPantalla,
+
+          alignSelf: "center",
+
+          paddingHorizontal,
+          paddingBottom,
+        }}
       >
-
         {/* =================================================
-            HEADER
+            CABECERA + PROGRESO
         ================================================= */}
 
-        <EntrevistaHeader
-          onBack={
-            onBack
-          }
-        />
+        <View
+          style={{
+            width: "100%",
+            maxWidth: maxWidthEntrevista,
 
+            alignSelf: "center",
+          }}
+        >
+          <EntrevistaHeader onBack={onBack} />
 
-        {/* =================================================
-            PROGRESO
-        ================================================= */}
+          <ProgresoEntrevista
+            actual={indiceActual + 1}
 
-        <ProgresoEntrevista
-          actual={
-            indiceActual + 1
-          }
+            total={totalPreguntas}
 
-          total={
-            totalPreguntas
-          }
+            tituloModulo={tituloModulo}
+          />
 
-          tituloModulo={
-            tituloModulo
-          }
-        />
-
-
-        {/* =================================================
-            BANNER OPCIONAL
-        ================================================= */}
-
-        {headerBanner}
-
+          {headerBanner}
+        </View>
 
         {/* =================================================
             CONTENIDO
         ================================================= */}
 
         <ScrollView
-          style={
-            styles.scroll
-          }
+          style={{
+            flex: 1,
+            width: "100%",
+          }}
+          contentContainerStyle={{
+            flexGrow: 1,
 
-          contentContainerStyle={
-            styles.scrollContenido
-          }
+            width: "100%",
 
-          showsVerticalScrollIndicator={
-            false
-          }
+            paddingTop: esEscritorio ? 18 : 10,
 
+            paddingBottom: esEscritorio ? 24 : 14,
+          }}
+          showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
+          <View
+            style={{
+              width: "100%",
+              maxWidth: maxWidthEntrevista,
 
-          <PreguntaCard
-            codigo={
-              preguntaActual.codigo
-            }
-
-            pregunta={
-              preguntaActual.enunciado
-            }
-
-            descripcion={
-              obtenerDescripcionPregunta(
-                preguntaActual
-              )
-            }
-
-            opcional={
-              !preguntaActual.obligatoria
-            }
+              alignSelf: "center",
+            }}
           >
+            <PreguntaCard
+              codigo={preguntaActual.codigo}
 
-            {/* ===============================================
-                OPCIONES
-            =============================================== */}
+              pregunta={preguntaActual.enunciado}
 
-            {
-              (
-                preguntaActual.tipo_pregunta ===
-                  "opcion_unica" ||
+              descripcion={obtenerDescripcionPregunta(preguntaActual)}
 
-                preguntaActual.tipo_pregunta ===
-                  "opcion_multiple" ||
+              opcional={!preguntaActual.obligatoria}
+            >
+              {/* ===============================================
+                  OPCIONES
+              =============================================== */}
 
-                preguntaActual.tipo_pregunta ===
-                  "escala"
-              ) &&
-
-              preguntaActual.opciones.map(
-                opcion => (
-
+              {(preguntaActual.tipo_pregunta === "opcion_unica" ||
+                preguntaActual.tipo_pregunta === "opcion_multiple" ||
+                preguntaActual.tipo_pregunta === "escala") &&
+                preguntaActual.opciones.map((opcion) => (
                   <OpcionRespuesta
-                    key={
-                      opcion.id_opcion
-                    }
+                    key={opcion.id_opcion}
 
-                    texto={
-                      opcion.descripcion
-                    }
+                    texto={opcion.descripcion}
 
-                    seleccionada={
-                      opcionesSeleccionadas.includes(
-                        opcion.id_opcion
-                      )
-                    }
+                    seleccionada={opcionesSeleccionadas.includes(
+                      opcion.id_opcion,
+                    )}
 
-                    onPress={() =>
-                      onSeleccionarOpcion(
-                        opcion.id_opcion
-                      )
-                    }
+                    onPress={() => onSeleccionarOpcion(opcion.id_opcion)}
                   />
+                ))}
 
-                )
-              )
-            }
+              {/* ===============================================
+                  RESPUESTA TEXTO
+              =============================================== */}
 
-
-            {/* ===============================================
-                RESPUESTA DE TEXTO
-            =============================================== */}
-
-            {
-              preguntaActual.tipo_pregunta ===
-                "texto" && (
-
+              {preguntaActual.tipo_pregunta === "texto" && (
                 <CampoRespuesta
-                  valor={
-                    textoRespuesta
-                  }
+                  valor={textoRespuesta}
 
-                  onChangeText={
-                    onChangeTextoRespuesta
-                  }
+                  onChangeText={onChangeTextoRespuesta}
 
                   tipo="texto"
 
                   placeholder="Escribe tu respuesta..."
                 />
+              )}
 
-              )
-            }
+              {/* ===============================================
+                  RESPUESTA NUMÉRICA
+              =============================================== */}
 
-
-            {/* ===============================================
-                RESPUESTA NUMÉRICA
-            =============================================== */}
-
-            {
-              preguntaActual.tipo_pregunta ===
-                "numero" && (
-
+              {preguntaActual.tipo_pregunta === "numero" && (
                 <CampoRespuesta
-                  valor={
-                    numeroRespuesta
-                  }
+                  valor={numeroRespuesta}
 
-                  onChangeText={
-                    onChangeNumeroRespuesta
-                  }
+                  onChangeText={onChangeNumeroRespuesta}
 
                   tipo="numero"
 
                   placeholder="Escribe una cantidad..."
                 />
-
-              )
-            }
-
-          </PreguntaCard>
-
+              )}
+            </PreguntaCard>
+          </View>
         </ScrollView>
-
 
         {/* =================================================
             BOTÓN INFERIOR
         ================================================= */}
 
         <View
-          style={
-            styles.zonaBoton
-          }
+          style={{
+            width: "100%",
+            maxWidth: maxWidthEntrevista,
+
+            alignSelf: "center",
+
+            paddingTop: 10,
+
+            alignItems: esEscritorio ? "flex-end" : "stretch",
+          }}
         >
-
           <TouchableOpacity
-            activeOpacity={
-              0.82
-            }
+            activeOpacity={0.82}
+            onPress={onContinuar}
+            disabled={botonDeshabilitado}
+            style={{
+              width: esEscritorio ? 280 : "100%",
 
-            onPress={
-              onContinuar
-            }
+              minHeight: 56,
 
-            disabled={
-              botonDeshabilitado
-            }
+              borderRadius: 16,
 
-            style={[
-              styles.botonContinuar,
+              borderWidth: 1,
 
-              {
-                backgroundColor:
-                  botonDeshabilitado
-                    ? surfaceSecondaryColor
-                    : primaryColor,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
 
-                borderColor:
-                  botonDeshabilitado
-                    ? borderColor
-                    : primaryColor,
-              },
-            ]}
+              gap: 9,
+
+              paddingHorizontal: 20,
+
+              backgroundColor: botonDeshabilitado
+                ? surfaceSecondaryColor
+                : primaryColor,
+
+              borderColor: botonDeshabilitado ? borderColor : primaryColor,
+
+              ...(Platform.OS === "web" && !botonDeshabilitado
+                ? ({
+                    boxShadow: "0px 3px 10px rgba(0,0,0,0.08)",
+                  } as any)
+                : {}),
+
+              ...(Platform.OS === "ios" && !botonDeshabilitado
+                ? {
+                    shadowColor: "#000000",
+
+                    shadowOffset: {
+                      width: 0,
+                      height: 3,
+                    },
+
+                    shadowOpacity: 0.08,
+
+                    shadowRadius: 6,
+                  }
+                : {}),
+
+              ...(Platform.OS === "android" && !botonDeshabilitado
+                ? {
+                    elevation: 2,
+                  }
+                : {}),
+            }}
           >
+            {guardando ? (
+              <ActivityIndicator size="small" color={primaryColor} />
+            ) : (
+              <>
+                <Text
+                  style={{
+                    fontSize: 16,
 
-            {
-              guardando
+                    fontFamily: "Nunito-Bold",
 
-                ? (
+                    includeFontPadding: false,
 
-                  <ActivityIndicator
-                    size="small"
-                    color={
-                      primaryColor
-                    }
-                  />
+                    color: botonDeshabilitado
+                      ? textMutedColor
+                      : textOnPrimaryColor,
+                  }}
+                >
+                  {indiceActual === totalPreguntas - 1
+                    ? "Finalizar sección"
+                    : "Siguiente"}
+                </Text>
 
-                )
-
-                : (
-
-                  <>
-
-                    <Text
-                      style={[
-                        styles.textoBoton,
-
-                        {
-                          color:
-                            botonDeshabilitado
-                              ? textMutedColor
-                              : "#FFFFFF",
-                        },
-                      ]}
-                    >
-                      {
-                        indiceActual ===
-                        totalPreguntas - 1
-                          ? "Finalizar sección"
-                          : "Siguiente"
-                      }
-                    </Text>
-
-
-                    <Ionicons
-                      name="arrow-forward"
-                      size={21}
-
-                      color={
-                        botonDeshabilitado
-                          ? textMutedColor
-                          : "#FFFFFF"
-                      }
-                    />
-
-                  </>
-
-                )
-            }
-
+                <Ionicons
+                  name="arrow-forward"
+                  size={21}
+                  color={
+                    botonDeshabilitado ? textMutedColor : textOnPrimaryColor
+                  }
+                />
+              </>
+            )}
           </TouchableOpacity>
-
         </View>
-
       </View>
-
     </SafeAreaView>
-
   );
-
 }
-
-
-// ==========================================================
-// ESTILOS
-// ==========================================================
-
-const styles =
-  StyleSheet.create({
-
-    // ======================================================
-    // PANTALLA
-    // ======================================================
-
-    pantalla: {
-      flex: 1,
-
-      /*
-       * IMPORTANTE:
-       * se mantiene transparente para permitir
-       * visualizar el fondo general de las entrevistas.
-       */
-      backgroundColor:
-        "transparent",
-    },
-
-
-    // ======================================================
-    // CONTENEDOR
-    // ======================================================
-
-    contenedor: {
-      flex: 1,
-
-      paddingHorizontal:
-        18,
-
-      paddingBottom:
-        15,
-    },
-
-
-    // ======================================================
-    // SCROLL
-    // ======================================================
-
-    scroll: {
-      flex: 1,
-    },
-
-
-    scrollContenido: {
-      flexGrow: 1,
-
-      paddingBottom:
-        15,
-    },
-
-
-    // ======================================================
-    // ESTADOS DE CARGA / ERROR
-    // ======================================================
-
-    centroPantalla: {
-      flex: 1,
-
-      justifyContent:
-        "center",
-
-      alignItems:
-        "center",
-
-      paddingHorizontal:
-        35,
-    },
-
-
-    iconoEstado: {
-      width:
-        78,
-
-      height:
-        78,
-
-      borderRadius:
-        39,
-
-      borderWidth:
-        1,
-
-      alignItems:
-        "center",
-
-      justifyContent:
-        "center",
-    },
-
-
-    textoCargando: {
-      marginTop:
-        14,
-
-      fontSize:
-        15,
-
-      fontFamily:
-        "Nunito-SemiBold",
-
-      textAlign:
-        "center",
-    },
-
-
-    tituloError: {
-      marginTop:
-        15,
-
-      fontSize:
-        20,
-
-      fontFamily:
-        "Nunito-Bold",
-
-      textAlign:
-        "center",
-    },
-
-
-    descripcionError: {
-      marginTop:
-        9,
-
-      fontSize:
-        14,
-
-      lineHeight:
-        21,
-
-      fontFamily:
-        "Nunito-Medium",
-
-      textAlign:
-        "center",
-    },
-
-
-    // ======================================================
-    // BOTÓN REINTENTAR
-    // ======================================================
-
-    botonReintentar: {
-      marginTop:
-        22,
-
-      minHeight:
-        48,
-
-      paddingHorizontal:
-        25,
-
-      paddingVertical:
-        13,
-
-      borderRadius:
-        15,
-
-      flexDirection:
-        "row",
-
-      alignItems:
-        "center",
-
-      justifyContent:
-        "center",
-
-      gap:
-        8,
-    },
-
-
-    textoReintentar: {
-      color:
-        "#FFFFFF",
-
-      fontFamily:
-        "Nunito-Bold",
-
-      fontSize:
-        14,
-    },
-
-
-    // ======================================================
-    // BOTÓN INFERIOR
-    // ======================================================
-
-    zonaBoton: {
-      width:
-        "100%",
-
-      paddingTop:
-        12,
-
-      paddingBottom:
-        4,
-
-      /*
-       * NO agregar backgroundColor aquí.
-       *
-       * El contenedor debe permanecer transparente
-       * para conservar el fondo original de entrevistas.
-       */
-    },
-
-
-    botonContinuar: {
-      width:
-        "100%",
-
-      minHeight:
-        56,
-
-      borderRadius:
-        16,
-
-      borderWidth:
-        1,
-
-      flexDirection:
-        "row",
-
-      alignItems:
-        "center",
-
-      justifyContent:
-        "center",
-
-      gap:
-        9,
-
-      paddingHorizontal:
-        20,
-
-      shadowColor:
-        "#000000",
-
-      shadowOffset: {
-        width:
-          0,
-
-        height:
-          3,
-      },
-
-      shadowOpacity:
-        0.12,
-
-      shadowRadius:
-        6,
-
-      elevation:
-        3,
-    },
-
-
-    textoBoton: {
-      fontSize:
-        16,
-
-      fontFamily:
-        "Nunito-Bold",
-
-      includeFontPadding:
-        false,
-    },
-
-
-    // ======================================================
-    // INTERACCIONES
-    // ======================================================
-
-    botonPresionado: {
-      opacity:
-        0.88,
-    },
-
-  });

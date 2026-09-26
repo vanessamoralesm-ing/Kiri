@@ -1,129 +1,295 @@
+import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
 
-import { useRouter } from 'expo-router'; //Hook para navegar entre pantallas
-import React from 'react';
-import {
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import Button from '../../components/ui/Button'; //Importamos nuestro componente reusable
-import OptionCard from '../../components/ui/OptionCard'; //Importamos nuestro componente reusable los card
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
+import { useRouter } from "expo-router";
+
+import React from "react";
+
+import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
+
+import Button from "../../components/ui/Button";
+import OptionCard from "../../components/ui/OptionCard";
 
 export default function AccessTypeScreen() {
   const router = useRouter();
 
-  //Acciones de las tarjetas
-  //Funcion para continuar como Usuario Independiente e ir al registro
+  const { width, esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
+
+  // ======================================================
+  // NAVEGACIÓN
+  // ======================================================
+
   const handleIndependetUser = () => {
-    router.push('/(auth)/registro'); //Redirige al registro
+    router.push("/(auth)/registro");
   };
 
-  //Funcion para continuar como usuario de una Institucion Educativa
   const handleEducationalInstitution = () => {
-    router.push('/(auth)/institucion_codigo');//Redirige al flujo de codigo de la institucion
+    router.push("/(auth)/institucion_codigo");
   };
 
-  //Funcion para crear un panel administrativo para una comunidad
   const handleAdminInstitucion = () => {
-    router.push('/(auth)/registro_institucion');
+    router.push("/(auth)/registro_institucion");
   };
 
-  //Accion para ir al login
-  //Funcion para redirigir al inicio de sesion
   const irLogin = () => {
-    router.push('/(auth)/login'); //Ajusta la ruta al login
+    router.push("/(auth)/login");
   };
+
+  // ======================================================
+  // VALORES RESPONSIVE
+  // ======================================================
+
+  const paddingHorizontal = esEscritorio
+    ? PADDING_RESPONSIVE.escritorio
+    : esTablet
+      ? PADDING_RESPONSIVE.tablet
+      : PADDING_RESPONSIVE.telefono;
+
+  const maxWidthContenido = esEscritorio
+    ? MAX_WIDTHS.contenido
+    : esTablet
+      ? 900
+      : 520;
+
+  const tamanoLogo = esEscritorio ? 190 : esTablet ? 175 : 160;
+
+  const tamanoTitulo = esEscritorio ? 40 : esTablet ? 37 : 35;
+
+  const tamanoSubtitulo = esEscritorio ? 24 : esTablet ? 23 : 22;
+
+  // ======================================================
+  // CÁLCULO DEL ANCHO REAL DISPONIBLE
+  // ======================================================
+
+  const anchoContenedor = Math.min(width, maxWidthContenido);
+
+  const anchoUtil = anchoContenedor - paddingHorizontal * 2;
+
+  const gapCards = 16;
+
+  const anchoCard = esEscritorio
+    ? (anchoUtil - gapCards * 2) / 3
+    : esTablet
+      ? (anchoUtil - gapCards) / 2
+      : anchoUtil;
+
+  // ======================================================
+  // UI
+  // ======================================================
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <View style={styles.container}>
-        
-        {/* Logo principal y secundario */}
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.scrollContainer}
+      showsVerticalScrollIndicator={false}
+    >
+      <View
+        style={[
+          styles.container,
+          {
+            maxWidth: maxWidthContenido,
+
+            paddingHorizontal,
+          },
+        ]}
+      >
+        {/* ==================================================
+            LOGO
+        ================================================== */}
+
         <Image
-          source={require('../../assets/images/logo_secundario.png')}
-          style={styles.logoTop}
+          source={require("../../assets/images/logo_secundario.png")}
+          style={[
+            styles.logoTop,
+            {
+              width: tamanoLogo,
+            },
+          ]}
           resizeMode="contain"
         />
 
-        {/*TITULO PRINCIPAL*/}
-        <Text style={styles.title}>¿Cómo accederás?</Text>
+        {/* ==================================================
+            ENCABEZADO
+        ================================================== */}
 
-        {/*SUBTITULO */}
-        <Text style={styles.subtitle}>
+        <Text
+          style={[
+            styles.title,
+            {
+              fontSize: tamanoTitulo,
+            },
+          ]}
+        >
+          ¿Cómo accederás?
+        </Text>
+
+        <Text
+          style={[
+            styles.subtitle,
+            {
+              fontSize: tamanoSubtitulo,
+            },
+          ]}
+        >
           Selecciona una opción para comenzar.
         </Text>
-        
-        {/*Agregamos un card para el modo de elegir entrar en la app*/}
-        {/*Card de Usuario Independiente*/}
-        <OptionCard
-        title='Usuario Independiente'
-        description='Cuida tu bienestar emocional con herramientas personalizadas.'
-        imageSource={require('../../assets/images/usuario.png')} onPress={handleIndependetUser}>
-        </OptionCard>
 
-        {/*Card de el usuario pertenece a una Institucion*/}
-        <OptionCard
-        title='Institucion Educativa'
-        description='Accede con el código de tu colegio o universidad.'
-        imageSource={require('../../assets/images/institucion_user.png')} onPress={handleEducationalInstitution}>
-        </OptionCard>
+        {/* ==================================================
+            OPCIONES
+        ================================================== */}
 
-        {/*Card Soy una institucion*/}
-        <OptionCard
-        title='Soy Institucion'
-        description='Quiero crear un panel para mi comunidad.'
-        imageSource={require('../../assets/images/institucion.png')} onPress={handleAdminInstitucion}>
-        </OptionCard>
+        <View
+          style={[
+            styles.cardsContainer,
+            {
+              gap: gapCards,
 
-        {/*Reutilizamos el componente Button*/}
-        <Button
-        title='¿Ya tienes una cuenta? Iniciar Sesión'
-        variant='secondary'
-        onPress={irLogin}>
-        </Button>
+              flexDirection: esTelefono ? "column" : "row",
+            },
+          ]}
+        >
+          {/* USUARIO INDEPENDIENTE */}
 
+          <View
+            style={{
+              width: esTelefono ? "100%" : anchoCard,
+            }}
+          >
+            <OptionCard
+              title="Usuario Independiente"
+              description="Cuida tu bienestar emocional con herramientas personalizadas."
+              imageSource={require("../../assets/images/usuario.png")}
+              onPress={handleIndependetUser}
+            />
+          </View>
+
+          {/* INSTITUCIÓN EDUCATIVA */}
+
+          <View
+            style={{
+              width: esTelefono ? "100%" : anchoCard,
+            }}
+          >
+            <OptionCard
+              title="Institución Educativa"
+              description="Accede con el código de tu colegio o universidad."
+              imageSource={require("../../assets/images/institucion_user.png")}
+              onPress={handleEducationalInstitution}
+            />
+          </View>
+
+          {/* SOY INSTITUCIÓN */}
+
+          <View
+            style={{
+              width: esTelefono ? "100%" : anchoCard,
+            }}
+          >
+            <OptionCard
+              title="Soy Institución"
+              description="Quiero crear un panel para mi comunidad."
+              imageSource={require("../../assets/images/institucion.png")}
+              onPress={handleAdminInstitucion}
+            />
+          </View>
+        </View>
+
+        {/* ==================================================
+            LOGIN
+        ================================================== */}
+
+        <View
+          style={[
+            styles.loginContainer,
+            {
+              maxWidth: esTelefono ? undefined : MAX_WIDTHS.formularioAuth,
+            },
+          ]}
+        >
+          <Button
+            title="¿Ya tienes una cuenta? Iniciar Sesión"
+            variant="secondary"
+            onPress={irLogin}
+          />
+        </View>
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  scroll: {
+    flex: 1,
+
+    backgroundColor: "#F8FAFC",
+  },
+
   scrollContainer: {
     flexGrow: 1,
-    backgroundColor: '#F8FAFC',
   },
+
   container: {
     flex: 1,
-    alignItems: 'center', //se centra los elementos horizontal
-    paddingHorizontal: 28, // Margen interno a los lados (izq y der)
-    paddingTop: 30, // Margen superior para despegarlo de arriba
-    paddingBottom: 25, // Margen inferior para el siguiente elemento
+
+    width: "100%",
+
+    alignSelf: "center",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    paddingTop: 30,
+
+    paddingBottom: 30,
   },
-  // Estilo especifico para el logo pequeñito de arriba
+
   logoTop: {
-    width: 160,                       // Ancho en pixeles del logo
-    height: 100,                       // Alto en pixeles del logo
-    marginBottom: -11,                 // Separacion con el siguiente elemento
+    height: 100,
+
+    marginBottom: -11,
   },
-  //Estilo para el titulo
+
   title: {
-    fontSize: 35,
-    fontFamily: 'Nunito-Bold',
-    fontWeight: '700',
-    color: '#2C3E50',
-    textAlign: 'center',
+    fontFamily: "Nunito-Bold",
+
+    fontWeight: "700",
+
+    color: "#2C3E50",
+
+    textAlign: "center",
+
     marginBottom: 8,
   },
-  //Estilo para subtitulo
+
   subtitle: {
-    fontSize: 22,
-    fontFamily: 'Nunito-Medium',
-    fontWeight: '400',
-    color: '#64748B',
-    textAlign: 'center',
+    fontFamily: "Nunito-Medium",
+
+    fontWeight: "400",
+
+    color: "#64748B",
+
+    textAlign: "center",
+
     marginBottom: 24,
+  },
+
+  cardsContainer: {
+    width: "100%",
+
+    flexWrap: "wrap",
+
+    justifyContent: "center",
+
+    alignItems: "stretch",
+  },
+
+  loginContainer: {
+    width: "100%",
+
+    alignSelf: "center",
+
+    marginTop: 24,
   },
 });
