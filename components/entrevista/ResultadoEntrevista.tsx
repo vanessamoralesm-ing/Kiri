@@ -35,9 +35,11 @@ type Resultado = {
   nivel: NivelResultado;
 };
 
+
 type Props = {
   modo: "entrevista" | "historial";
 };
+
 
 // ==========================================================
 // CONFIGURACIÓN
@@ -84,8 +86,11 @@ function descripcionNivel(nivel: NivelResultado) {
 function porcentajeSeguro(valor: number): `${number}%` {
   const seguro = Math.min(100, Math.max(0, Number.isFinite(valor) ? valor : 0));
 
+
   return `${seguro}%`;
+
 }
+
 
 // ==========================================================
 // COMPONENTE PRINCIPAL
@@ -102,6 +107,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
   }>();
 
   const idEntrevista = Array.isArray(params.id) ? params.id[0] : params.id;
+
 
   // ========================================================
   // TEMA
@@ -245,6 +251,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
         if (activo) {
           setCargando(false);
         }
+
       }
     }
 
@@ -254,6 +261,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
       activo = false;
     };
   }, [idEntrevista]);
+
 
   // ========================================================
   // CÁLCULOS
@@ -293,6 +301,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
   function continuar() {
     if (!esUUID(idEntrevista)) {
       return;
+
     }
 
     if (modo === "historial") {
@@ -303,6 +312,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
       );
     }
   }
+
 
   // ========================================================
   // BOTÓN PRINCIPAL
@@ -358,6 +368,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
     </Pressable>
   );
 
+
   // ========================================================
   // CARGANDO / ERROR
   // ========================================================
@@ -382,6 +393,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
             gap: 14,
           }}
         >
+
           <View
             style={{
               width: 76,
@@ -418,6 +430,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
               : "No pudimos mostrar tus resultados"}
           </Text>
 
+
           <Text
             style={{
               maxWidth: 380,
@@ -452,9 +465,13 @@ export default function ResultadoEntrevista({ modo }: Props) {
             </View>
           )}
         </View>
+
       </SafeAreaView>
+
     );
+
   }
+
 
   // ========================================================
   // PANTALLA PRINCIPAL
@@ -468,6 +485,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
         backgroundColor,
       }}
     >
+
       <ScrollView
         style={{
           flex: 1,
@@ -486,6 +504,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
             alignSelf: "center",
           }}
         >
+
           <View
             style={{
               width: "100%",
@@ -571,6 +590,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
                   gap: 12,
                 }}
               >
+
                 <View
                   style={{
                     width: 64,
@@ -583,12 +603,15 @@ export default function ResultadoEntrevista({ modo }: Props) {
                     justifyContent: "center",
                   }}
                 >
+
                   <Ionicons
                     name="leaf-outline"
                     size={28}
                     color={secondaryColor}
                   />
+
                 </View>
+
 
                 <Text
                   style={{
@@ -602,6 +625,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
                   Todo se ve estable por ahora
                 </Text>
 
+
                 <Text
                   style={{
                     fontFamily: "Nunito-Medium",
@@ -613,11 +637,15 @@ export default function ResultadoEntrevista({ modo }: Props) {
                     textAlign: "center",
                   }}
                 >
-                  Tus respuestas no activaron áreas adicionales que necesitaran
-                  una exploración más profunda.
+                  Tus respuestas no activaron áreas adicionales que necesitaran una exploración más profunda.
                 </Text>
+
               </Animated.View>
-            ) : (
+
+            )
+
+            : (
+
               <>
                 {/* RESUMEN */}
 
@@ -636,6 +664,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
                     overflow: "hidden",
                   }}
                 >
+
                   <View
                     style={{
                       padding: esTelefono ? 18 : 24,
@@ -646,6 +675,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
                       gap: 12,
                     }}
                   >
+
                     <View
                       style={{
                         flex: 1,
@@ -653,6 +683,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
                         gap: 5,
                       }}
                     >
+
                       <Text
                         style={{
                           fontFamily: "Nunito-Bold",
@@ -666,6 +697,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
                         RESUMEN DE TU ENTREVISTA
                       </Text>
 
+
                       <Text
                         style={{
                           fontFamily: "Nunito-Bold",
@@ -677,7 +709,9 @@ export default function ResultadoEntrevista({ modo }: Props) {
                         Exploramos {resultados.length}{" "}
                         {resultados.length === 1 ? "área" : "áreas"}
                       </Text>
+
                     </View>
+
 
                     <View
                       style={{
@@ -691,13 +725,17 @@ export default function ResultadoEntrevista({ modo }: Props) {
                         justifyContent: "center",
                       }}
                     >
+
                       <Ionicons
                         name="analytics-outline"
                         size={25}
                         color={primaryColor}
                       />
+
                     </View>
+
                   </View>
+
 
                   <View
                     style={{
@@ -705,6 +743,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
                       backgroundColor: borderColor,
                     }}
                   />
+
 
                   <View
                     style={{
@@ -716,6 +755,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
                       alignItems: "stretch",
                     }}
                   >
+
                     <View
                       style={{
                         flex: 1,
@@ -723,6 +763,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
                         paddingHorizontal: 4,
                       }}
                     >
+
                       <Text
                         style={{
                           fontFamily: "Nunito-Bold",
@@ -733,6 +774,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
                       >
                         {Math.round(promedio)}%
                       </Text>
+
 
                       <Text
                         style={{
@@ -748,7 +790,9 @@ export default function ResultadoEntrevista({ modo }: Props) {
                       >
                         promedio general
                       </Text>
+
                     </View>
+
 
                     <View
                       style={{
@@ -759,6 +803,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
                       }}
                     />
 
+
                     <View
                       style={{
                         flex: 1,
@@ -766,6 +811,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
                         paddingHorizontal: 4,
                       }}
                     >
+
                       <Text
                         style={{
                           fontFamily: "Nunito-Bold",
@@ -776,6 +822,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
                       >
                         {Math.round(resultados[0].porcentaje)}%
                       </Text>
+
 
                       <Text
                         style={{
@@ -791,8 +838,11 @@ export default function ResultadoEntrevista({ modo }: Props) {
                       >
                         mayor indicador
                       </Text>
+
                     </View>
+
                   </View>
+
                 </Animated.View>
 
                 {/* ÁREAS EXPLORADAS */}
@@ -809,6 +859,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
                     gap: 12,
                   }}
                 >
+
                   <View
                     style={{
                       flex: 1,
@@ -816,6 +867,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
                       gap: 4,
                     }}
                   >
+
                     <Text
                       style={{
                         fontFamily: "Nunito-Bold",
@@ -826,6 +878,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
                     >
                       Áreas exploradas
                     </Text>
+
 
                     <Text
                       style={{
@@ -839,7 +892,9 @@ export default function ResultadoEntrevista({ modo }: Props) {
                     >
                       De mayor a menor necesidad de atención.
                     </Text>
+
                   </View>
+
 
                   <View
                     style={{
@@ -853,6 +908,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
                       justifyContent: "center",
                     }}
                   >
+
                     <Text
                       style={{
                         fontFamily: "Nunito-Bold",
@@ -862,7 +918,9 @@ export default function ResultadoEntrevista({ modo }: Props) {
                     >
                       {resultados.length}
                     </Text>
+
                   </View>
+
                 </Animated.View>
 
                 {/* TARJETAS */}
@@ -987,6 +1045,7 @@ export default function ResultadoEntrevista({ modo }: Props) {
                                 flexWrap: "wrap",
                               }}
                             >
+
                               <View
                                 style={{
                                   width: 7,
@@ -1267,6 +1326,8 @@ export default function ResultadoEntrevista({ modo }: Props) {
           </View>
         </View>
       </ScrollView>
+
     </SafeAreaView>
+
   );
 }

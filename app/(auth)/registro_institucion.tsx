@@ -5,10 +5,11 @@ import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Platform,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 
@@ -18,17 +19,9 @@ import {
 } from "react-native-safe-area-context";
 
 // COMPONENTES
-import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
 import Logo from "@/components/ui/Logo_izq";
-
-// RESPONSIVE
-import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
-
-import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
-
-// TEMA
-import { useThemeColor } from "@/hooks/use-theme-color";
+import Input from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
 
 // SERVICE
 import { crearSolicitudInstitucional } from "@/services/instituciones/solicitudInstitucionService";
@@ -66,8 +59,6 @@ const TIPOS_INSTITUCION: OpcionInstitucion[] = [
 
 // ==========================================================
 // COMPONENTE
-// ==========================================================
-
 export default function RegistroInstitucionPantalla() {
   const router = useRouter();
 
@@ -109,8 +100,6 @@ export default function RegistroInstitucionPantalla() {
 
   // ========================================================
   // ESTADOS GENERALES
-  // ========================================================
-
   const [pasoActual, setPasoActual] = useState(1);
 
   const [enviando, setEnviando] = useState(false);
@@ -126,6 +115,8 @@ export default function RegistroInstitucionPantalla() {
   const [tipoInstitucion, setTipoInstitucion] =
     useState<TipoInstitucion | null>(null);
 
+  const [codigoInstitucional, setCodigoInstitucional] = useState("");
+  const [tipoInstitucion, setTipoInstitucion] = useState<TipoInstitucion | null>(null);
   const [departamento, setDepartamento] = useState("");
 
   const [municipio, setMunicipio] = useState("");
@@ -150,31 +141,13 @@ export default function RegistroInstitucionPantalla() {
 
   const [motivo, setMotivo] = useState("");
 
-  // ========================================================
-  // RESPONSIVE
-  // ========================================================
+  const [apellidoSolicitante, setApellidoSolicitante] = useState("");
 
-  const paddingHorizontal = esEscritorio
-    ? PADDING_RESPONSIVE.escritorio
-    : esTablet
-      ? PADDING_RESPONSIVE.tablet
-      : PADDING_RESPONSIVE.telefono;
-
-  const maxWidthPantalla = esEscritorio
-    ? MAX_WIDTHS.dashboard
-    : esTablet
-      ? MAX_WIDTHS.contenido
-      : undefined;
-
-  const maxWidthFormulario = esEscritorio
-    ? 900
-    : esTablet
-      ? MAX_WIDTHS.formulario
-      : undefined;
+  const [cedula, setCedula] = useState("");
 
   const paddingTarjeta = esEscritorio ? 30 : esTablet ? 26 : 20;
 
-  const paddingBottom = esEscritorio ? 54 : Math.max(insets.bottom + 32, 44);
+  const [correo, setCorreo] = useState("");
 
   const formularioEnColumnas = !esTelefono;
 
@@ -204,17 +177,11 @@ export default function RegistroInstitucionPantalla() {
       cambiarPaso(1);
       return;
     }
-
     router.back();
   }
 
-  // ========================================================
-  // VALIDACIONES
-  // ========================================================
-
   function correoValido(valor: string) {
     const correoLimpio = valor.trim();
-
     return correoLimpio.includes("@") && correoLimpio.includes(".");
   }
 
@@ -229,18 +196,13 @@ export default function RegistroInstitucionPantalla() {
     ) {
       Alert.alert(
         "Campos incompletos",
-        "Por favor completa todos los datos obligatorios de la institución.",
+        "Por favor completa todos los datos obligatorios de la institución."
       );
-
       return;
     }
 
     cambiarPaso(2);
   }
-
-  // ========================================================
-  // ENVIAR SOLICITUD
-  // ========================================================
 
   async function enviarSolicitud() {
     if (enviando) {
@@ -258,21 +220,18 @@ export default function RegistroInstitucionPantalla() {
     ) {
       Alert.alert(
         "Campos incompletos",
-        "Por favor completa todos los datos obligatorios del solicitante.",
+        "Por favor completa todos los datos obligatorios del solicitante."
       );
-
       return;
     }
 
     if (!correoValido(correo)) {
       Alert.alert("Correo inválido", "Ingresa un correo institucional válido.");
-
       return;
     }
 
     if (!tipoInstitucion) {
       Alert.alert("Tipo de institución", "Selecciona un tipo de institución.");
-
       return;
     }
 
@@ -310,21 +269,15 @@ export default function RegistroInstitucionPantalla() {
       Alert.alert(
         "Solicitud registrada",
         "Tu solicitud ha sido enviada correctamente. El equipo de Kiri revisará la información y te notificará por correo cuando exista una resolución.",
-        [
-          {
-            text: "Entendido",
-            onPress: () => router.back(),
-          },
-        ],
+        [{ text: "Entendido", onPress: () => router.back() }]
       );
     } catch (error) {
       console.error("Error enviando solicitud institucional:", error);
-
       Alert.alert(
         "No se pudo enviar la solicitud",
         error instanceof Error
           ? error.message
-          : "Ocurrió un error inesperado. Inténtalo nuevamente.",
+          : "Ocurrió un error inesperado. Inténtalo nuevamente."
       );
     } finally {
       setEnviando(false);
@@ -1441,3 +1394,126 @@ export default function RegistroInstitucionPantalla() {
     </SafeAreaView>
   );
 }
+
+// ESTILOS
+const styles = StyleSheet.create({
+  scrollContenedor: {
+    flexGrow: 1,
+    backgroundColor: "#F8FAFC",
+  },
+  contenedor: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 15,
+    paddingBottom: 30,
+  },
+  cabecera: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 15,
+    marginBottom: -10,
+  },
+  flechaRegreso: {
+    fontSize: 40,
+    color: "#64748B",
+    fontWeight: "bold",
+  },
+  titulo: {
+    fontSize: 35,
+    fontFamily: "Nunito-Bold",
+    color: "#4F8EF7",
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  subtitulo: {
+    fontSize: 18,
+    fontFamily: "Nunito-Medium",
+    color: "#2D3748",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  descripcionPaso: {
+    fontSize: 15,
+    fontFamily: "Nunito-SemiBold",
+    color: "#64748B",
+    textAlign: "center",
+    marginBottom: 15,
+  },
+  contenedorBarra: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  barraPaso: {
+    flex: 1,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#E2E8F0",
+  },
+  barraActiva: {
+    backgroundColor: "#4F8EF7",
+  },
+  tarjetaFormulario: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
+    elevation: 4,
+  },
+  filaCampos: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  columnaMedia: {
+    flex: 1,
+  },
+  label: {
+    marginBottom: 8,
+    fontFamily: "Nunito-SemiBold",
+    fontSize: 14,
+    color: "#2D3748",
+  },
+  contenedorTipos: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 18,
+  },
+  tipoBoton: {
+    flex: 1,
+    minHeight: 46,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+  },
+  tipoBotonActivo: {
+    borderColor: "#4F8EF7",
+    backgroundColor: "#EFF6FF",
+  },
+  tipoTexto: {
+    fontFamily: "Nunito-SemiBold",
+    fontSize: 12,
+    color: "#64748B",
+    textAlign: "center",
+  },
+  tipoTextoActivo: {
+    color: "#4F8EF7",
+  },
+  inputMultilinea: {
+    height: 90,
+    textAlignVertical: "top",
+    paddingTop: 10,
+  },
+  botonAccion: {
+    marginTop: 10,
+  },
+  botonEnviar: {
+    marginTop: 10,
+    backgroundColor: "#7BBF9A",
+  },
+});

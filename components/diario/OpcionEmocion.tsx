@@ -17,7 +17,7 @@ interface OpcionEmocionProps {
 
   seleccionada: boolean;
 
-  ancho?: number;
+  ancho: number;
 
   onPress: () => void;
 }
@@ -86,19 +86,16 @@ export function OpcionEmocion({
       onPress={presionar}
       style={[
         estiloAnimado,
-
         {
           width: ancho,
 
-          minWidth: 110,
+          minHeight: 125,
 
-          minHeight: 118,
+          paddingHorizontal: 8,
 
-          paddingHorizontal: 10,
+          paddingVertical: 16,
 
-          paddingVertical: 14,
-
-          borderRadius: 18,
+          borderRadius: 20,
 
           borderWidth: seleccionada ? 2 : 1.5,
 
@@ -109,8 +106,6 @@ export function OpcionEmocion({
           alignItems: "center",
 
           justifyContent: "center",
-
-          overflow: "hidden",
 
           shadowColor: "#000000",
 
@@ -130,19 +125,16 @@ export function OpcionEmocion({
     >
       <Text
         style={{
-          fontSize: 32,
+          fontSize: 34,
 
-          lineHeight: 38,
-
-          textAlign: "center",
+          lineHeight: 42,
         }}
       >
         {emoji}
       </Text>
 
       <Text
-        numberOfLines={2}
-        ellipsizeMode="tail"
+        numberOfLines={1}
         style={{
           marginTop: 8,
 
@@ -152,9 +144,7 @@ export function OpcionEmocion({
 
           fontFamily: seleccionada ? "Nunito-Bold" : "Nunito-Medium",
 
-          fontSize: 13,
-
-          lineHeight: 17,
+          fontSize: 14,
 
           color: seleccionada ? primaryColor : textSecondaryColor,
         }}

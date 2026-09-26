@@ -725,6 +725,7 @@ export default function PerfilScreen() {
           width: "100%",
         }}
         showsVerticalScrollIndicator={false}
+
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
           flexGrow: 1,
@@ -792,9 +793,7 @@ export default function PerfilScreen() {
               LAYOUT PRINCIPAL
           ================================================== */}
 
-          <View
-            style={{
-              width: "100%",
+            disabled={subiendoFoto}
 
               flexDirection:
                 esEscritorio
@@ -1385,12 +1384,29 @@ export default function PerfilScreen() {
                       surfaceColor,
                   }}
                 >
+                  {opcion.label}
+                </Text>
+
+                {genero === opcion.value && (
                   <Ionicons
                     name="shield-checkmark-outline"
                     size={23}
                     color={primaryColor}
                   />
-                </View>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        <Campo
+          titulo="Teléfono"
+          valor={telefono}
+          onChange={setTelefono}
+          placeholder="Número de teléfono"
+          icono="call-outline"
+          keyboardType="phone-pad"
+        />
 
                 <View
                   style={{
@@ -1890,6 +1906,7 @@ export default function PerfilScreen() {
                   CUENTA
                 </TituloSeccion>
 
+              <View style={styles.flex}>
                 <Text
                   style={{
                     marginBottom: 7,
@@ -1902,7 +1919,7 @@ export default function PerfilScreen() {
                     color: textColor,
                   }}
                 >
-                  Correo electrónico
+                  Cambiar contraseña
                 </Text>
 
                 <View
@@ -2055,7 +2072,6 @@ export default function PerfilScreen() {
                           primaryColor
                         }
                       />
-                    </View>
 
                     <View
                       style={{
@@ -2077,8 +2093,15 @@ export default function PerfilScreen() {
                             textColor,
                         }}
                       >
-                        Cambiar contraseña
+                        Actualizar contraseña
                       </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+          </>
+        )}
 
                       <Text
                         style={{
@@ -2511,12 +2534,15 @@ function Campo({
 
         <TextInput
           value={valor}
+
           onChangeText={onChange}
+
           placeholder={placeholder}
           placeholderTextColor={
             placeholderColor
           }
           selectionColor={primaryColor}
+
           keyboardType={keyboardType}
           style={{
             flex: 1,
@@ -2644,13 +2670,17 @@ function PasswordInput({
 
         <TextInput
           value={valor}
+
           onChangeText={onChange}
+
           secureTextEntry={!visible}
+
           placeholder="••••••••"
           placeholderTextColor={
             placeholderColor
           }
           selectionColor={primaryColor}
+
           autoCapitalize="none"
           style={{
             flex: 1,
@@ -2697,6 +2727,7 @@ function PasswordInput({
                 : "eye-outline"
             }
             size={19}
+
             color={iconColor}
           />
         </TouchableOpacity>

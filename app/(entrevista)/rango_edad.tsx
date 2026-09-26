@@ -1,15 +1,13 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import React, { useState } from "react";
 
 import {
   ActivityIndicator,
   Alert,
   Image,
-  Platform,
-  Pressable,
   ScrollView,
+  StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 
@@ -20,12 +18,6 @@ import {
 
 import Button from "@/components/ui/Button";
 import Logo from "@/components/ui/Logo_izq";
-
-import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
-
-import { useThemeColor } from "@/hooks/use-theme-color";
-import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
-
 import { crearEntrevista } from "@/services/entrevista/entrevistaService";
 
 // ==========================================================
@@ -100,7 +92,6 @@ export default function RangoEdadPantalla() {
 
   const [opcionSeleccionada, setOpcionSeleccionada] =
     useState<RangoEdad | null>(null);
-
   const [cargando, setCargando] = useState(false);
 
   // ========================================================
@@ -136,14 +127,11 @@ export default function RangoEdadPantalla() {
   // ========================================================
 
   const manejarContinuar = async () => {
-    if (!opcionSeleccionada || cargando) {
-      return;
-    }
+    if (!opcionSeleccionada || cargando) return;
 
     // Entrevista para niños
     if (opcionSeleccionada === "nino") {
       router.replace("/(entrevista)/ninos/kids_entrv");
-
       return;
     }
 
@@ -170,29 +158,14 @@ export default function RangoEdadPantalla() {
     }
   };
 
-  // ========================================================
-  // UI
-  // ========================================================
-
   return (
-    <SafeAreaView
-      edges={[]}
-      style={{
-        flex: 1,
-        backgroundColor,
-      }}
-    >
+    <SafeAreaView style={styles.pantalla}>
       <ScrollView
         style={{
           flex: 1,
           width: "100%",
         }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingTop,
-          paddingBottom,
-        }}
       >
         <View
           style={{
@@ -341,8 +314,9 @@ export default function RangoEdadPantalla() {
               const seleccionada = opcionSeleccionada === opcion.id;
 
               return (
-                <Pressable
+                <TouchableOpacity
                   key={opcion.id}
+                  activeOpacity={0.8}
                   disabled={cargando}
                   onPress={() => setOpcionSeleccionada(opcion.id)}
                   accessibilityRole="radio"
@@ -739,3 +713,78 @@ export default function RangoEdadPantalla() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  pantalla: { flex: 1, backgroundColor: "transparent" },
+  scroll: { flexGrow: 1 },
+  contenedor: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 15,
+    paddingBottom: 30,
+  },
+
+  cabecera: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
+
+  seccionTitulo: { alignItems: "center", marginTop: 15, marginBottom: 25 },
+  titulo: {
+    fontSize: 34,
+    lineHeight: 42,
+    fontFamily: "Nunito-Bold",
+    color: "#4F8EF7",
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  subtitulo: {
+    fontSize: 17,
+    lineHeight: 24,
+    fontFamily: "Nunito-Medium",
+    color: "#5B7083",
+    textAlign: "center",
+    paddingHorizontal: 15,
+  },
+
+  contenedorTarjetas: { gap: 18, marginBottom: 35 },
+
+  tarjeta: {
+    minHeight: 105,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderWidth: 2,
+    borderColor: "#E8EDF4",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+
+  tarjetaSeleccionada: { borderColor: "#4F8EF7", backgroundColor: "#F0F5FF" },
+  imagenOpcion: { width: 65, height: 70, marginRight: 16 },
+  infoTexto: { flex: 1 },
+  tituloOpcion: {
+    fontSize: 20,
+    fontFamily: "Nunito-Bold",
+    color: "#2D3748",
+    marginBottom: 4,
+  },
+  subtituloOpcion: {
+    fontSize: 16,
+    fontFamily: "Nunito-Medium",
+    color: "#64748B",
+  },
+
+  zonaBoton: { marginTop: "auto" },
+  cargando: { marginBottom: 10 },
+  botonContinuar: {
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: "#4F8EF7",
+    marginBottom: 20,
+  },
+  botonDeshabilitado: { opacity: 0.6 },
+});

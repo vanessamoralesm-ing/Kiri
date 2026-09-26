@@ -1,34 +1,16 @@
 import OpcionRespuesta from "@/components/cuestionarios/OpcionRespuesta";
 
 import ProgresoCuestionario from "@/components/cuestionarios/ProgresoCuestionario";
-
-import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
-
 import { useThemeColor } from "@/hooks/use-theme-color";
 
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 import {
-    completarEjecucion,
-    guardarRespuestaTest,
-    guardarResultadoSubescala,
-    guardarResultadoTest,
-    obtenerBaremosPorTest,
-    obtenerOCrearEjecucion,
-    obtenerPreguntasConOpciones,
-    obtenerRangosPorBaremo,
-    obtenerRespuestasEjecucion,
-    obtenerSubescalasPorTest,
-    obtenerTestPorCodigo,
-    obtenerUsuarioCuestionario,
+    completarEjecucion, guardarRespuestaTest, guardarResultadoSubescala, guardarResultadoTest, obtenerBaremosPorTest, obtenerOCrearEjecucion,
+    obtenerPreguntasConOpciones, obtenerRangosPorBaremo, obtenerRespuestasEjecucion, obtenerSubescalasPorTest, obtenerTestPorCodigo, obtenerUsuarioCuestionario,
 } from "@/services/cuestionarios/cuestionarios.service";
 
-import type {
-    OpcionRespuestaTest,
-    PreguntaTestConOpciones,
-    RespuestaSeleccionada,
-    UsuarioCuestionario,
-} from "@/services/cuestionarios/cuestionarios.service";
+import type { OpcionRespuestaTest, PreguntaTestConOpciones, RespuestaSeleccionada, UsuarioCuestionario } from "@/services/cuestionarios/cuestionarios.service";
 
 import type { RangoBaremo, SubescalaTest, Test } from "@/types/cuestionarios";
 
@@ -47,7 +29,6 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 
 import { useLocalSearchParams, useRouter } from "expo-router";
-
 import React, { useEffect, useRef, useState } from "react";
 
 import {
@@ -66,6 +47,7 @@ import {
 
 const PREGUNTAS_POR_PAGINA = 4;
 
+
 // ==========================================================
 
 // COMPONENTE
@@ -73,13 +55,13 @@ const PREGUNTAS_POR_PAGINA = 4;
 // ==========================================================
 
 export default function CuestionarioDetalle() {
-    const router = useRouter();
 
-    const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
+    const router = useRouter();
 
     const { id } = useLocalSearchParams<{
         id: string;
     }>();
+
 
     // ======================================================
 
@@ -88,26 +70,17 @@ export default function CuestionarioDetalle() {
     // ======================================================
 
     const backgroundColor = useThemeColor({}, "background");
-
     const surfaceColor = useThemeColor({}, "surface");
-
     const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
-
     const textColor = useThemeColor({}, "text");
-
     const textSecondaryColor = useThemeColor({}, "textSecondary");
-
     const borderColor = useThemeColor({}, "border");
-
     const primaryColor = useThemeColor({}, "primary");
-
     const primarySoftColor = useThemeColor({}, "primarySoft");
-
     const accentColor = useThemeColor({}, "accent");
-
     const warningColor = useThemeColor({}, "warning");
-
     const disabledColor = useThemeColor({}, "disabled");
+
 
     // ======================================================
 
@@ -117,30 +90,33 @@ export default function CuestionarioDetalle() {
 
     const scrollViewRef = useRef<ScrollView>(null);
 
+
     // ======================================================
 
     // ESTADOS
 
     // ======================================================
 
-    const [cuestionario, setCuestionario] = useState<Test | null>(null);
+    const [cuestionario, setCuestionario] =
+        useState<Test | null>(null);
 
-    const [usuario, setUsuario] = useState<UsuarioCuestionario | null>(null);
+    const [usuario, setUsuario] =
+        useState<UsuarioCuestionario | null>(null);
 
-    const [preguntas, setPreguntas] = useState<PreguntaTestConOpciones[]>([]);
+    const [preguntas, setPreguntas] =
+        useState<PreguntaTestConOpciones[]>([]);
 
-    const [subescalas, setSubescalas] = useState<SubescalaTest[]>([]);
+    const [subescalas, setSubescalas] =
+        useState<SubescalaTest[]>([]);
 
-    const [respuestas, setRespuestas] = useState<
-        Record<string, RespuestaSeleccionada>
-    >({});
+    const [respuestas, setRespuestas] =
+        useState<Record<string, RespuestaSeleccionada>>({});
 
-    const [idEjecucion, setIdEjecucion] = useState<string | null>(null);
+    const [idEjecucion, setIdEjecucion] =
+        useState<string | null>(null);
 
     const [paginaActual, setPaginaActual] = useState(0);
-
     const [cargando, setCargando] = useState(true);
-
     const [finalizando, setFinalizando] = useState(false);
     const [guardadosPendientes, setGuardadosPendientes] = useState(0);
     const [accionError, setAccionError] = useState<string | null>(null);
@@ -166,7 +142,6 @@ export default function CuestionarioDetalle() {
             ? ("92%" as const)
             : ("100%" as const);
 
-    const tamanoTituloPregunta = esEscritorio ? 22 : esTablet ? 21 : 21;
 
     // ======================================================
 
@@ -175,12 +150,15 @@ export default function CuestionarioDetalle() {
     // ======================================================
 
     useEffect(() => {
+
         if (!id) {
             return;
         }
 
         cargarCuestionario();
+
     }, [id]);
+
 
     // ======================================================
 
@@ -189,6 +167,7 @@ export default function CuestionarioDetalle() {
     // ======================================================
 
     useEffect(() => {
+
         requestAnimationFrame(() => {
             scrollViewRef.current?.scrollTo({
                 y: 0,
@@ -196,7 +175,9 @@ export default function CuestionarioDetalle() {
                 animated: true,
             });
         });
+
     }, [paginaActual]);
+
 
     // ======================================================
 
@@ -205,14 +186,17 @@ export default function CuestionarioDetalle() {
     // ======================================================
 
     const cargarCuestionario = async () => {
+
         if (!id) {
             return;
         }
 
         try {
+
             setCargando(true);
 
             setError(null);
+
 
             // ==========================================
 
@@ -220,13 +204,15 @@ export default function CuestionarioDetalle() {
 
             // ==========================================
 
-            const test = await obtenerTestPorCodigo(id);
+            const test =
+                await obtenerTestPorCodigo(id);
 
             if (!test) {
                 throw new Error(
-                    "El cuestionario solicitado no se encuentra disponible.",
+                    "El cuestionario solicitado no se encuentra disponible."
                 );
             }
+
 
             // ==========================================
 
@@ -234,7 +220,9 @@ export default function CuestionarioDetalle() {
 
             // ==========================================
 
-            const usuarioActual = await obtenerUsuarioCuestionario();
+            const usuarioActual =
+                await obtenerUsuarioCuestionario();
+
 
             // ==========================================
 
@@ -254,14 +242,16 @@ export default function CuestionarioDetalle() {
 
             // ==========================================
 
-            const [subescalasObtenidas, preguntasObtenidas, respuestasExistentes] =
-                await Promise.all([
-                    obtenerSubescalasPorTest(test.id_test),
+            const [
+                subescalasObtenidas,
+                preguntasObtenidas,
+                respuestasExistentes,
+            ] = await Promise.all([
+                obtenerSubescalasPorTest(test.id_test),
+                obtenerPreguntasConOpciones(test.id_test),
+                obtenerRespuestasEjecucion(ejecucion.id_ejecucion),
+            ]);
 
-                    obtenerPreguntasConOpciones(test.id_test),
-
-                    obtenerRespuestasEjecucion(ejecucion.id_ejecucion),
-                ]);
 
             // ==========================================
 
@@ -269,29 +259,37 @@ export default function CuestionarioDetalle() {
 
             // ==========================================
 
-            const respuestasRecuperadas: Record<string, RespuestaSeleccionada> = {};
+            const respuestasRecuperadas:
+                Record<string, RespuestaSeleccionada> = {};
 
             for (const respuesta of respuestasExistentes) {
+
                 if (!respuesta.id_opcion) {
                     continue;
                 }
 
-                const pregunta = preguntasObtenidas.find(
-                    (item) => item.id_pregunta === respuesta.id_pregunta,
-                );
+                const pregunta =
+                    preguntasObtenidas.find(
+                        (item) =>
+                            item.id_pregunta === respuesta.id_pregunta
+                    );
 
-                const opcion = pregunta?.opciones.find(
-                    (item) => item.id === respuesta.id_opcion,
-                );
+                const opcion =
+                    pregunta?.opciones.find(
+                        (item) =>
+                            item.id === respuesta.id_opcion
+                    );
 
                 if (pregunta && opcion) {
-                    respuestasRecuperadas[pregunta.id_pregunta] = {
+                    respuestasRecuperadas[
+                        pregunta.id_pregunta
+                    ] = {
                         idOpcion: opcion.id,
-
                         valor: opcion.valor,
                     };
                 }
             }
+
 
             // ==========================================
 
@@ -300,30 +298,32 @@ export default function CuestionarioDetalle() {
             // ==========================================
 
             setCuestionario(test);
-
             setUsuario(usuarioActual);
-
             setIdEjecucion(ejecucion.id_ejecucion);
-
             setSubescalas(subescalasObtenidas);
-
             setPreguntas(preguntasObtenidas);
-
             setRespuestas(respuestasRecuperadas);
-
             setPaginaActual(0);
+
         } catch (error) {
-            console.error("Error cargando cuestionario:", error);
+
+            console.error(
+                "Error cargando cuestionario:",
+                error
+            );
 
             setError(
                 error instanceof Error
                     ? error.message
-                    : "No fue posible cargar el cuestionario.",
+                    : "No fue posible cargar el cuestionario."
             );
+
         } finally {
+
             setCargando(false);
         }
     };
+
 
     // ======================================================
 
@@ -333,7 +333,7 @@ export default function CuestionarioDetalle() {
 
     const seleccionarRespuesta = async (
         pregunta: PreguntaTestConOpciones,
-        opcion: OpcionRespuestaTest,
+        opcion: OpcionRespuestaTest
     ) => {
         if (!idEjecucion || finalizando) return;
         const idPregunta = pregunta.id_pregunta;
@@ -347,6 +347,7 @@ export default function CuestionarioDetalle() {
             [idPregunta]: { idOpcion: opcion.id, valor: opcion.valor },
         }));
         try {
+
             await guardarRespuestaTest({
                 idEjecucion,
                 idPregunta,
@@ -369,6 +370,7 @@ export default function CuestionarioDetalle() {
         }
     };
 
+
     // ======================================================
 
     // FINALIZAR CUESTIONARIO
@@ -388,11 +390,13 @@ export default function CuestionarioDetalle() {
         }
 
         try {
+
             setFinalizando(true);
             setAccionError(null);
             validarRespuestasObligatorias(preguntas, respuestas);
             if (cuestionario.codigo === "EAG")
                 validarConfiguracionEAG(preguntas, respuestas);
+
 
             // ==========================================
 
@@ -428,7 +432,10 @@ export default function CuestionarioDetalle() {
 
             // ==========================================
 
-            const { esValido, observaciones } = evaluarValidezInstrumento(
+            const {
+                esValido,
+                observaciones,
+            } = evaluarValidezInstrumento(
                 cuestionario,
 
                 subescalas,
@@ -438,13 +445,17 @@ export default function CuestionarioDetalle() {
                 respuestas,
             );
 
+
             // ==========================================
 
             // 3. BAREMO
 
             // ==========================================
 
-            const baremos = await obtenerBaremosPorTest(cuestionario.id_test);
+            const baremos =
+                await obtenerBaremosPorTest(
+                    cuestionario.id_test
+                );
 
             const baremo =
                 cuestionario.codigo === "EAG"
@@ -459,11 +470,9 @@ export default function CuestionarioDetalle() {
                     );
 
             let rangos: RangoBaremo[] = [];
-
             let rangoGlobal: RangoBaremo | null = null;
 
             if (baremo) {
-                rangos = await obtenerRangosPorBaremo(baremo.id_baremo);
 
                 const valorBaremo = obtenerValorBaremo(
                     baremo,
@@ -474,7 +483,12 @@ export default function CuestionarioDetalle() {
                 );
 
                 if (valorBaremo !== null) {
-                    rangoGlobal = buscarRango(rangos, valorBaremo, null);
+                    rangoGlobal =
+                        buscarRango(
+                            rangos,
+                            valorBaremo,
+                            null
+                        );
                 }
             }
 
@@ -499,25 +513,21 @@ export default function CuestionarioDetalle() {
 
             // ==========================================
 
-            const resultado = await guardarResultadoTest({
-                idEjecucion,
+            const resultado =
+                await guardarResultadoTest({
+                    idEjecucion,
+                    puntajeDirecto,
+                    puntajeTotal,
+                    nivel: rangoGlobal?.nivel ?? null,
+                    interpretacion:
+                        rangoGlobal?.interpretacion ?? null,
+                    esValido,
+                    observaciones,
+                    idBaremo: baremo?.id_baremo ?? null,
+                    idRangoBaremo:
+                        rangoGlobal?.id_rango ?? null,
+                });
 
-                puntajeDirecto,
-
-                puntajeTotal,
-
-                nivel: rangoGlobal?.nivel ?? null,
-
-                interpretacion: rangoGlobal?.interpretacion ?? null,
-
-                esValido,
-
-                observaciones,
-
-                idBaremo: baremo?.id_baremo ?? null,
-
-                idRangoBaremo: rangoGlobal?.id_rango ?? null,
-            });
 
             // ==========================================
 
@@ -526,12 +536,16 @@ export default function CuestionarioDetalle() {
             // ==========================================
 
             if (cuestionario.tiene_subescalas) {
+
                 for (const subescala of subescalas) {
-                    const tienePreguntas = preguntas.some(
-                        (pregunta) =>
-                            pregunta.id_subescala === subescala.id_subescala &&
-                            pregunta.puntua,
-                    );
+
+                    const tienePreguntas =
+                        preguntas.some(
+                            (pregunta) =>
+                                pregunta.id_subescala ===
+                                subescala.id_subescala &&
+                                pregunta.puntua
+                        );
 
                     if (!tienePreguntas) {
                         continue;
@@ -545,23 +559,27 @@ export default function CuestionarioDetalle() {
                         respuestas,
                     );
 
-                    const rangoSubescala = baremo
-                        ? buscarRango(rangos, puntajeSubescala, subescala.id_subescala)
-                        : null;
+                    const rangoSubescala =
+                        baremo
+                            ? buscarRango(
+                                rangos,
+                                puntajeSubescala,
+                                subescala.id_subescala
+                            )
+                            : null;
 
                     await guardarResultadoSubescala({
                         idResultado: resultado.id_resultado,
-
                         idSubescala: subescala.id_subescala,
-
                         puntajeDirecto: puntajeSubescala,
-
-                        nivel: rangoSubescala?.nivel ?? null,
-
-                        interpretacion: rangoSubescala?.interpretacion ?? null,
+                        nivel:
+                            rangoSubescala?.nivel ?? null,
+                        interpretacion:
+                            rangoSubescala?.interpretacion ?? null,
                     });
                 }
             }
+
 
             // ==========================================
 
@@ -571,6 +589,7 @@ export default function CuestionarioDetalle() {
 
             await completarEjecucion(idEjecucion);
 
+
             // ==========================================
 
             // 7. RESULTADO
@@ -579,25 +598,31 @@ export default function CuestionarioDetalle() {
 
             router.replace({
                 pathname: "/cuestionarios/[id]/resultado",
-
                 params: {
                     id: cuestionario.codigo,
-
                     idResultado: resultado.id_resultado,
                 },
             } as any);
+
         } catch (error) {
-            console.error("Error finalizando cuestionario:", error);
+
+            console.error(
+                "Error finalizando cuestionario:",
+                error
+            );
 
             setAccionError(
                 error instanceof Error
                     ? error.message
                     : "No fue posible finalizar el cuestionario.",
             );
+
         } finally {
+
             setFinalizando(false);
         }
     };
+
 
     // ======================================================
 
@@ -605,25 +630,40 @@ export default function CuestionarioDetalle() {
 
     // ======================================================
 
-    const totalPaginas = Math.ceil(preguntas.length / PREGUNTAS_POR_PAGINA);
+    const totalPaginas =
+        Math.ceil(
+            preguntas.length /
+            PREGUNTAS_POR_PAGINA
+        );
 
-    const indiceInicial = paginaActual * PREGUNTAS_POR_PAGINA;
+    const indiceInicial =
+        paginaActual *
+        PREGUNTAS_POR_PAGINA;
 
-    const preguntasPagina = preguntas.slice(
-        indiceInicial,
+    const preguntasPagina =
+        preguntas.slice(
+            indiceInicial,
+            indiceInicial + PREGUNTAS_POR_PAGINA
+        );
 
-        indiceInicial + PREGUNTAS_POR_PAGINA,
-    );
+    const todasRespondidasEnPagina =
+        preguntasPagina.every(
+            (pregunta) =>
+                !pregunta.obligatoria ||
+                respuestas[
+                pregunta.id_pregunta
+                ] !== undefined
+        );
 
-    const todasRespondidasEnPagina = preguntasPagina.every(
-        (pregunta) =>
-            !pregunta.obligatoria || respuestas[pregunta.id_pregunta] !== undefined,
-    );
+    const todasRespondidas =
+        preguntas.every(
+            (pregunta) =>
+                !pregunta.obligatoria ||
+                respuestas[
+                pregunta.id_pregunta
+                ] !== undefined
+        );
 
-    const todasRespondidas = preguntas.every(
-        (pregunta) =>
-            !pregunta.obligatoria || respuestas[pregunta.id_pregunta] !== undefined,
-    );
 
     // ======================================================
 
@@ -642,7 +682,9 @@ export default function CuestionarioDetalle() {
         }
 
         if (paginaActual < totalPaginas - 1) {
-            setPaginaActual((pagina) => pagina + 1);
+            setPaginaActual(
+                (pagina) => pagina + 1
+            );
 
             return;
         }
@@ -651,6 +693,7 @@ export default function CuestionarioDetalle() {
             finalizarCuestionario();
         }
     };
+
 
     const retroceder = () => {
         if (
@@ -661,13 +704,16 @@ export default function CuestionarioDetalle() {
             return;
 
         if (paginaActual > 0) {
-            setPaginaActual((pagina) => pagina - 1);
+            setPaginaActual(
+                (pagina) => pagina - 1
+            );
 
             return;
         }
 
         router.back();
     };
+
 
     // ======================================================
 
@@ -676,30 +722,26 @@ export default function CuestionarioDetalle() {
     // ======================================================
 
     if (cargando) {
+
         return (
             <View
                 style={{
                     flex: 1,
-
                     backgroundColor,
-
                     alignItems: "center",
-
                     justifyContent: "center",
-
-                    paddingHorizontal,
                 }}
             >
-                <ActivityIndicator size="large" color={primaryColor} />
+                <ActivityIndicator
+                    size="large"
+                    color={primaryColor}
+                />
 
                 <Text
                     style={{
                         marginTop: 12,
-
                         fontFamily: "Nunito-Medium",
-
                         fontSize: 15,
-
                         color: textSecondaryColor,
                     }}
                 >
@@ -709,6 +751,7 @@ export default function CuestionarioDetalle() {
         );
     }
 
+
     // ======================================================
 
     // ERROR
@@ -716,47 +759,57 @@ export default function CuestionarioDetalle() {
     // ======================================================
 
     if (error || !cuestionario) {
+
         return (
             <View
                 style={{
                     flex: 1,
-
+                    paddingHorizontal: 24,
                     backgroundColor,
-
                     alignItems: "center",
-
                     justifyContent: "center",
-
-                    paddingHorizontal,
                 }}
             >
-                <View
+                <Ionicons
+                    name="alert-circle-outline"
+                    size={50}
+                    color={accentColor}
+                />
+
+                <Text
                     style={{
-                        width: "100%",
-
-                        maxWidth: MAX_WIDTHS.formularioAuth,
-
-                        alignItems: "center",
+                        marginTop: 12,
+                        fontFamily: "Nunito-Bold",
+                        fontSize: 19,
+                        lineHeight: 25,
+                        color: textColor,
+                        textAlign: "center",
                     }}
                 >
-                    <Ionicons name="alert-circle-outline" size={50} color={accentColor} />
+                    {
+                        error ??
+                        "Cuestionario no encontrado."
+                    }
+                </Text>
 
+                <Pressable
+                    onPress={() => router.back()}
+                    style={{
+                        marginTop: 20,
+                        paddingHorizontal: 24,
+                        paddingVertical: 12,
+                        borderRadius: 12,
+                        backgroundColor: primaryColor,
+                    }}
+                >
                     <Text
                         style={{
-                            marginTop: 12,
-
-                            fontFamily: "Nunito-Bold",
-
-                            fontSize: esEscritorio ? 21 : 19,
-
-                            lineHeight: esEscritorio ? 28 : 25,
-
-                            color: textColor,
-
-                            textAlign: "center",
+                            fontFamily: "Nunito-SemiBold",
+                            fontSize: 14,
+                            color: "#FFFFFF",
                         }}
                     >
-                        {error ?? "Cuestionario no encontrado."}
+                        Volver
                     </Text>
 
                     <Pressable
@@ -791,6 +844,7 @@ export default function CuestionarioDetalle() {
         );
     }
 
+
     // ======================================================
 
     // SIN PREGUNTAS
@@ -798,27 +852,30 @@ export default function CuestionarioDetalle() {
     // ======================================================
 
     if (preguntas.length === 0) {
+
         return (
             <View
                 style={{
                     flex: 1,
-
+                    paddingHorizontal: 24,
                     backgroundColor,
-
                     alignItems: "center",
-
                     justifyContent: "center",
-
-                    paddingHorizontal,
                 }}
             >
-                <View
+                <Ionicons
+                    name="document-text-outline"
+                    size={50}
+                    color={accentColor}
+                />
+
+                <Text
                     style={{
-                        width: "100%",
-
-                        maxWidth: MAX_WIDTHS.formularioAuth,
-
-                        alignItems: "center",
+                        marginTop: 12,
+                        fontFamily: "Nunito-Bold",
+                        fontSize: 19,
+                        color: textColor,
+                        textAlign: "center",
                     }}
                 >
                     <Ionicons
@@ -829,22 +886,24 @@ export default function CuestionarioDetalle() {
                         color={accentColor}
                     />
 
+                <Pressable
+                    onPress={() => router.back()}
+                    style={{
+                        marginTop: 20,
+                        paddingHorizontal: 24,
+                        paddingVertical: 12,
+                        borderRadius: 12,
+                        backgroundColor: primaryColor,
+                    }}
+                >
                     <Text
                         style={{
-                            marginTop: 12,
-
-                            fontFamily: "Nunito-Bold",
-
-                            fontSize: esEscritorio ? 21 : 19,
-
-                            lineHeight: esEscritorio ? 28 : 25,
-
-                            color: textColor,
-
-                            textAlign: "center",
+                            fontFamily: "Nunito-SemiBold",
+                            fontSize: 14,
+                            color: "#FFFFFF",
                         }}
                     >
-                        Este cuestionario aún no contiene preguntas.
+                        Volver
                     </Text>
 
                     <Pressable
@@ -878,6 +937,7 @@ export default function CuestionarioDetalle() {
             </View>
         );
     }
+
 
     // ======================================================
 
@@ -901,11 +961,9 @@ export default function CuestionarioDetalle() {
                 }}
 
                 contentContainerStyle={{
-                    paddingTop: esEscritorio ? 32 : 18,
-
+                    paddingHorizontal: 20,
+                    paddingTop: 18,
                     paddingBottom: 120,
-
-                    alignItems: "center",
                 }}
 
                 showsVerticalScrollIndicator={false}
@@ -916,17 +974,14 @@ export default function CuestionarioDetalle() {
 
                 keyboardShouldPersistTaps="handled"
             >
+
                 {/* ==================================================
 
                     CONTENEDOR PRINCIPAL RESPONSIVE
 
                 ================================================== */}
 
-                <View
-                    style={{
-                        width: anchoContenido,
-
-                        alignSelf: "center",
+                <View className="flex-row items-center mb-5">
 
                         paddingHorizontal: esTelefono
                             ? PADDING_RESPONSIVE.telefono
@@ -951,13 +1006,14 @@ export default function CuestionarioDetalle() {
 
                     ================================================== */}
 
-                    <View
+                    <Text
+                        numberOfLines={1}
                         style={{
-                            flexDirection: "row",
-
-                            alignItems: "center",
-
-                            marginBottom: esEscritorio ? 24 : 20,
+                            flex: 1,
+                            marginLeft: 8,
+                            fontFamily: "Nunito-Bold",
+                            fontSize: 18,
+                            color: textColor,
                         }}
                     >
                         <Pressable
@@ -994,16 +1050,17 @@ export default function CuestionarioDetalle() {
 
                                 fontFamily: "Nunito-Bold",
 
-                                fontSize: esEscritorio ? 21 : esTablet ? 20 : 18,
 
-                                lineHeight: esEscritorio ? 28 : 25,
+                {/* ==================================================
+                    PROGRESO
+                ================================================== */}
 
-                                color: textColor,
-                            }}
-                        >
-                            {cuestionario.nombre}
-                        </Text>
-                    </View>
+                <ProgresoCuestionario
+                    paginaActual={paginaActual + 1}
+                    totalPaginas={totalPaginas}
+                    respondidas={Object.keys(respuestas).length}
+                    totalPreguntas={preguntas.length}
+                />
 
                     {/* ==================================================
 
@@ -1027,29 +1084,18 @@ export default function CuestionarioDetalle() {
 
                     ================================================== */}
 
-                    {paginaActual === 0 && cuestionario.instrucciones && (
                         <View
                             style={{
-                                marginBottom: esEscritorio ? 32 : 28,
-
-                                padding: esEscritorio ? 18 : 16,
-
+                                marginBottom: 28,
+                                padding: 16,
                                 borderRadius: 16,
-
                                 borderWidth: 1,
-
                                 borderColor,
-
                                 backgroundColor: primarySoftColor,
                             }}
                         >
-                            <View
-                                style={{
-                                    flexDirection: "row",
+                            <View className="flex-row items-start">
 
-                                    alignItems: "flex-start",
-                                }}
-                            >
                                 <Ionicons
                                     name="information-circle-outline"
 
@@ -1061,20 +1107,16 @@ export default function CuestionarioDetalle() {
                                 <Text
                                     style={{
                                         flex: 1,
-
                                         marginLeft: 8,
-
                                         fontFamily: "Nunito-Medium",
-
-                                        fontSize: esEscritorio ? 14 : 13,
-
-                                        lineHeight: esEscritorio ? 21 : 19,
-
+                                        fontSize: 13,
+                                        lineHeight: 19,
                                         color: textSecondaryColor,
                                     }}
                                 >
                                     {cuestionario.instrucciones}
                                 </Text>
+
                             </View>
                         </View>
                     )}
@@ -1108,16 +1150,26 @@ export default function CuestionarioDetalle() {
 
                                         ================================== */}
 
-                                <Text
-                                    style={{
-                                        fontFamily: "Nunito-Bold",
+                {/* ==================================================
+                    PREGUNTAS
+                ================================================== */}
 
-                                        fontSize: tamanoTituloPregunta,
+                {
+                    preguntasPagina.map(
+                        (
+                            pregunta,
+                            index
+                        ) => {
 
-                                        lineHeight: esEscritorio ? 30 : 28,
+                            const numeroPregunta =
+                                indiceInicial +
+                                index +
+                                1;
 
-                                        color: textColor,
-                                    }}
+                            return (
+                                <View
+                                    key={pregunta.id_pregunta}
+                                    className="mb-9"
                                 >
                                     {numeroPregunta}. {pregunta.enunciado}
                                 </Text>
@@ -1131,24 +1183,14 @@ export default function CuestionarioDetalle() {
                                 {pregunta.descripcion_apoyo && (
                                     <Text
                                         style={{
-                                            marginTop: 8,
-
-                                            marginBottom: 16,
-
-                                            fontFamily: "Nunito-Medium",
-
-                                            fontSize: esEscritorio ? 14 : 13,
-
-                                            lineHeight: esEscritorio ? 21 : 19,
-
-                                            color: textSecondaryColor,
-
-                                            textAlign: "left",
-
-                                            maxWidth: esEscritorio ? 720 : undefined,
+                                            fontFamily: "Nunito-Bold",
+                                            fontSize: 21,
+                                            lineHeight: 28,
+                                            color: textColor,
                                         }}
                                     >
-                                        {pregunta.descripcion_apoyo}
+                                        {numeroPregunta}.{" "}
+                                        {pregunta.enunciado}
                                     </Text>
                                 )}
 
@@ -1185,18 +1227,19 @@ export default function CuestionarioDetalle() {
 
                                                 borderWidth: 1,
 
-                                                borderColor: warningColor,
 
-                                                borderRadius: 16,
+                                    {
+                                        pregunta.descripcion_apoyo && (
 
-                                                backgroundColor: surfaceSecondaryColor,
-                                            }}
-                                        >
-                                            <View
+                                            <Text
                                                 style={{
-                                                    flexDirection: "row",
-
-                                                    alignItems: "flex-start",
+                                                    marginTop: 10,
+                                                    marginBottom: 10,
+                                                    fontFamily: "Nunito-Medium",
+                                                    fontSize: 13,
+                                                    lineHeight: 18,
+                                                    color: textSecondaryColor,
+                                                    textAlign: "center",
                                                 }}
                                             >
                                                 <Ionicons
@@ -1219,15 +1262,7 @@ export default function CuestionarioDetalle() {
 
                                                         lineHeight: 18,
 
-                                                        color: textSecondaryColor,
-                                                    }}
-                                                >
-                                                    Esta pregunta no tiene opciones de respuesta
-                                                    disponibles.
-                                                </Text>
-                                            </View>
-                                        </View>
-                                    )}
+                                    </View>
                                 </View>
                             </View>
                         );
@@ -1252,19 +1287,26 @@ export default function CuestionarioDetalle() {
 
                     ================================================== */}
 
-                    <View
+
+                {/* ==================================================
+                    NAVEGACIÓN
+                ================================================== */}
+
+                <View className="flex-row gap-4 mt-3">
+
+                    <Pressable
+                        onPress={retroceder}
+                        disabled={finalizando}
                         style={{
-                            width: "100%",
-
-                            maxWidth: esEscritorio ? 620 : undefined,
-
-                            alignSelf: "center",
-
+                            flex: 1,
+                            paddingVertical: 16,
+                            borderRadius: 12,
+                            borderWidth: 1,
+                            borderColor,
+                            backgroundColor: surfaceSecondaryColor,
                             flexDirection: "row",
-
-                            gap: 16,
-
-                            marginTop: esEscritorio ? 4 : 12,
+                            alignItems: "center",
+                            justifyContent: "center",
                         }}
                     >
                         {/* ==============================================
@@ -1357,23 +1399,33 @@ export default function CuestionarioDetalle() {
                                         : disabledColor,
                             }}
                         >
-                            {finalizando ? (
-                                <ActivityIndicator size="small" color="#FFFFFF" />
-                            ) : (
-                                <>
-                                    <Text
-                                        style={{
-                                            fontFamily: "Nunito-SemiBold",
+                            Anterior
+                        </Text>
+                    </Pressable>
 
-                                            fontSize: 14,
 
-                                            color: "#FFFFFF",
-                                        }}
-                                    >
-                                        {paginaActual === totalPaginas - 1
-                                            ? "Finalizar"
-                                            : "Siguiente"}
-                                    </Text>
+                    <Pressable
+                        disabled={
+                            !todasRespondidasEnPagina ||
+                            finalizando
+                        }
+                        onPress={avanzar}
+                        style={{
+                            flex: 1.5,
+                            paddingVertical: 16,
+                            borderRadius: 12,
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backgroundColor:
+                                todasRespondidasEnPagina &&
+                                    !finalizando
+                                    ? primaryColor
+                                    : disabledColor,
+                        }}
+                    >
+                        {
+                            finalizando
 
                                     <Ionicons
                                         name={
@@ -1390,11 +1442,45 @@ export default function CuestionarioDetalle() {
                                             marginLeft: 5,
                                         }}
                                     />
-                                </>
-                            )}
-                        </Pressable>
-                    </View>
+                                )
+
+                                : (
+                                    <>
+                                        <Text
+                                            style={{
+                                                fontFamily: "Nunito-SemiBold",
+                                                fontSize: 14,
+                                                color: "#FFFFFF",
+                                            }}
+                                        >
+                                            {
+                                                paginaActual ===
+                                                    totalPaginas - 1
+                                                    ? "Finalizar"
+                                                    : "Siguiente"
+                                            }
+                                        </Text>
+
+                                        <Ionicons
+                                            name={
+                                                paginaActual ===
+                                                    totalPaginas - 1
+                                                    ? "checkmark-outline"
+                                                    : "arrow-forward-outline"
+                                            }
+                                            size={16}
+                                            color="#FFFFFF"
+                                            style={{
+                                                marginLeft: 5,
+                                            }}
+                                        />
+                                    </>
+                                )
+                        }
+                    </Pressable>
+
                 </View>
+
             </ScrollView>
         </View>
     );

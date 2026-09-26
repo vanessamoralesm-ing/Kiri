@@ -2,10 +2,10 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import {
   ActivityIndicator,
-  LayoutChangeEvent,
   Pressable,
   ScrollView,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -29,11 +29,7 @@ import { EntradaDiarioResumen } from "@/types/diario";
 export default function DiarioScreen() {
   const { user, profile } = useAuth();
 
-  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
-
-  // ========================================================
-  // ESTADOS
-  // ========================================================
+  const { width } = useWindowDimensions();
 
   const [cargando, setCargando] = useState(true);
 
@@ -43,7 +39,7 @@ export default function DiarioScreen() {
 
   // ========================================================
   // TEMA
-  // ========================================================
+  // ======================================================
 
   const backgroundColor = useThemeColor({}, "background");
   const surfaceColor = useThemeColor({}, "surface");
@@ -57,7 +53,7 @@ export default function DiarioScreen() {
   const primarySoftColor = useThemeColor({}, "primarySoft");
   const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
 
-  // ========================================================
+  // ======================================================
   // RESPONSIVE
   // ========================================================
 
@@ -90,7 +86,7 @@ export default function DiarioScreen() {
 
   // ========================================================
   // NOMBRE DEL USUARIO
-  // ========================================================
+  // ======================================================
 
   const nombreUsuario = useMemo(() => {
     const nombrePreferidoPerfil =
@@ -125,9 +121,9 @@ export default function DiarioScreen() {
     user?.user_metadata?.nombres,
   ]);
 
-  // ========================================================
+  // ======================================================
   // CARGAR DATOS
-  // ========================================================
+  // ======================================================
 
   const cargarDatos = useCallback(async () => {
     try {
@@ -151,9 +147,9 @@ export default function DiarioScreen() {
     }, [cargarDatos]),
   );
 
-  // ========================================================
+  // ======================================================
   // NAVEGACIÓN
-  // ========================================================
+  // ======================================================
 
   const irANuevoRegistro = () => {
     router.push({
@@ -172,9 +168,9 @@ export default function DiarioScreen() {
     router.push(`/diario/${id}` as never);
   };
 
-  // ========================================================
+  // ======================================================
   // FORMATEAR FECHA
-  // ========================================================
+  // ======================================================
 
   const formatearFecha = (fechaIso: string) => {
     const fecha = new Date(fechaIso);
@@ -201,7 +197,7 @@ export default function DiarioScreen() {
 
   // ========================================================
   // UI
-  // ========================================================
+  // ======================================================
 
   return (
     <View

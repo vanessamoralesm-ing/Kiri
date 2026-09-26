@@ -62,10 +62,8 @@ const categorias = [
 // ==========================================================
 
 export default function EducacionScreen() {
-  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
-
   // ========================================================
-  // ESTADOS
+  // TEMA
   // ========================================================
 
   const [busqueda, setBusqueda] = useState("");
@@ -106,11 +104,10 @@ export default function EducacionScreen() {
       ? PADDING_RESPONSIVE.tablet
       : PADDING_RESPONSIVE.telefono;
 
-  const maxWidthContenido = esEscritorio
-    ? MAX_WIDTHS.dashboard
-    : esTablet
-      ? MAX_WIDTHS.contenido
-      : undefined;
+  const surfaceColor = useThemeColor(
+    {},
+    "surface"
+  );
 
   // Móvil: tarjetas horizontales.
   // Tablet: dos columnas.
@@ -121,10 +118,10 @@ export default function EducacionScreen() {
   const gapHorizontal = 18;
   const gapVertical = 20;
 
-  const anchoTarjeta =
-    anchoGrid > 0
-      ? (anchoGrid - gapHorizontal * (numeroColumnas - 1)) / numeroColumnas
-      : undefined;
+  const primaryColor = useThemeColor(
+    {},
+    "primary"
+  );
 
   const paddingTop = esEscritorio ? 30 : esTablet ? 26 : 20;
 
@@ -132,18 +129,23 @@ export default function EducacionScreen() {
   // Dejamos espacio adicional para poder ver la última
   // categoría y el mensaje final completamente.
 
-  const paddingBottom = esEscritorio ? 64 : 145;
+  const inputBackgroundColor = useThemeColor(
+    {},
+    "inputBackground"
+  );
 
-  // ========================================================
-  // FILTRADO
-  // ========================================================
+  const inputBorderColor = useThemeColor(
+    {},
+    "inputBorder"
+  );
 
   const categoriasFiltradas = useMemo(() => {
     const termino = busqueda.trim().toLocaleLowerCase("es");
 
-    if (!termino) {
-      return categorias;
-    }
+  const iconColor = useThemeColor(
+    {},
+    "icon"
+  );
 
     return categorias.filter((categoria) =>
       categoria.titulo.toLocaleLowerCase("es").includes(termino),
@@ -195,9 +197,10 @@ export default function EducacionScreen() {
           paddingHorizontal,
         }}
       >
+
         {/* ==================================================
             ENCABEZADO
-        ================================================== */}
+            ================================================== */}
 
         <View
           style={{
@@ -234,7 +237,7 @@ export default function EducacionScreen() {
 
         {/* ==================================================
             BUSCADOR
-        ================================================== */}
+            ================================================== */}
 
         <View
           style={{
@@ -274,8 +277,6 @@ export default function EducacionScreen() {
           <Ionicons name="search-outline" size={22} color={iconColor} />
 
           <TextInput
-            value={busqueda}
-            onChangeText={setBusqueda}
             placeholder="¿Qué tema te gustaría explorar hoy?"
             placeholderTextColor={placeholderColor}
             selectionColor={primaryColor}
@@ -313,7 +314,7 @@ export default function EducacionScreen() {
 
         {/* ==================================================
             TÍTULO DE CATEGORÍAS
-        ================================================== */}
+            ================================================== */}
 
         <View
           style={{
@@ -526,6 +527,7 @@ export default function EducacionScreen() {
             }}
           >
             <View
+              key={categoria.id}
               style={{
                 width: 58,
                 height: 58,
@@ -535,7 +537,13 @@ export default function EducacionScreen() {
                 backgroundColor: primarySoftColor,
               }}
             >
-              <Ionicons name="search-outline" size={26} color={primaryColor} />
+              <CategoriaCard
+                titulo={categoria.titulo}
+                imagen={categoria.imagen}
+                onPress={() =>
+                  abrirCategoria(categoria.id)
+                }
+              />
             </View>
 
             <Text
@@ -567,8 +575,8 @@ export default function EducacionScreen() {
         )}
 
         {/* ==================================================
-            MENSAJE FINAL
-        ================================================== */}
+            MENSAJE FINAL DE ORIENTACIÓN
+            ================================================== */}
 
         <View
           style={{
@@ -618,7 +626,11 @@ export default function EducacionScreen() {
                 backgroundColor: primarySoftColor,
               }}
             >
-              <Ionicons name="leaf-outline" size={23} color={primaryColor} />
+              <Ionicons
+                name="leaf-outline"
+                size={22}
+                color={primaryColor}
+              />
             </View>
 
             <View
@@ -652,8 +664,10 @@ export default function EducacionScreen() {
                 tema.
               </Text>
             </View>
+
           </View>
         </View>
+
       </View>
     </ScrollView>
   );

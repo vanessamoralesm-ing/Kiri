@@ -18,7 +18,7 @@ import { SidebarDesktop } from "@/components/ui/SideBarDesktop";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
 
-import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+import { BarraNavegacionCurva } from "../../components/ui/BarraNavegacionCurva";
 
 // ==========================================================
 // CONFIGURACIÓN DE PESTAÑAS
@@ -115,18 +115,16 @@ export default function LayoutPestanas() {
 
   const backgroundColor = useThemeColor({}, "background");
 
-  // ========================================================
-  // ESCRITORIO
-  // ========================================================
+  return (
+    <Tabs
+      tabBar={(props) => <BarraNavegacionCurva {...props} />}
 
-  if (esEscritorio) {
-    return (
-      <View
-        style={{
-          flex: 1,
+      screenOptions={{
+        headerShown: true,
 
-          flexDirection: "row",
+        header: () => <AppHeader />,
 
+        sceneStyle: {
           backgroundColor,
         }}
       >
