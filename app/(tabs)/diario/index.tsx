@@ -16,12 +16,15 @@ import ResumenDiario from "@/components/diario/ResumenDiario";
 import TarjetaBienvenidaDiario from "@/components/diario/TarjetaBienvenidaDiario";
 import TarjetaEntradaDiario from "@/components/diario/TarjetaEntradaDiario";
 
+import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
+
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+
 import { useAuth } from "@/services/authProvider";
 import { obtenerHistorialDiario } from "@/services/diario/autorregistro.service";
 
 import { EntradaDiarioResumen } from "@/types/diario";
-
-import { useThemeColor } from "@/hooks/use-theme-color";
 
 export default function DiarioScreen() {
   const { user, profile } = useAuth();
@@ -32,7 +35,9 @@ export default function DiarioScreen() {
 
   const [entradas, setEntradas] = useState<EntradaDiarioResumen[]>([]);
 
-  // ======================================================
+  const [anchoGrid, setAnchoGrid] = useState(0);
+
+  // ========================================================
   // TEMA
   // ======================================================
 
@@ -50,13 +55,36 @@ export default function DiarioScreen() {
 
   // ======================================================
   // RESPONSIVE
-  // ======================================================
+  // ========================================================
 
-  const esTablet = width >= 768;
+  const paddingHorizontal = esEscritorio
+    ? PADDING_RESPONSIVE.escritorio
+    : esTablet
+      ? PADDING_RESPONSIVE.tablet
+      : PADDING_RESPONSIVE.telefono;
 
-  const esWebGrande = width >= 1100;
+  const maxWidthContenido = esEscritorio
+    ? MAX_WIDTHS.dashboard
+    : esTablet
+      ? MAX_WIDTHS.contenido
+      : undefined;
 
-  // ======================================================
+  const numeroColumnas = esTelefono ? 1 : 2;
+
+  const gapEntradas = esEscritorio ? 18 : 16;
+
+  const anchoTarjeta =
+    anchoGrid > 0
+      ? Math.max(
+        0,
+        (anchoGrid - gapEntradas * (numeroColumnas - 1)) / numeroColumnas,
+      )
+      : undefined;
+
+  // Espacio para la barra inferior del layout compartido.
+  const paddingBottom = esEscritorio ? 64 : esTablet ? 100 : 116;
+
+  // ========================================================
   // NOMBRE DEL USUARIO
   // ======================================================
 
@@ -113,10 +141,6 @@ export default function DiarioScreen() {
     }
   }, []);
 
-  // ======================================================
-  // ACTUALIZAR AL TOMAR FOCO
-  // ======================================================
-
   useFocusEffect(
     useCallback(() => {
       cargarDatos();
@@ -159,7 +183,19 @@ export default function DiarioScreen() {
     });
   };
 
-  // ======================================================
+  // ========================================================
+  // MEDIR GRID
+  // ========================================================
+
+  const medirGrid = (event: LayoutChangeEvent) => {
+    const nuevoAncho = event.nativeEvent.layout.width;
+
+    setAnchoGrid((anchoAnterior) =>
+      Math.abs(nuevoAncho - anchoAnterior) > 1 ? nuevoAncho : anchoAnterior,
+    );
+  };
+
+  // ========================================================
   // UI
   // ======================================================
 
@@ -167,6 +203,7 @@ export default function DiarioScreen() {
     <View
       style={{
         flex: 1,
+        minWidth: 0,
         backgroundColor,
       }}
     >
@@ -178,31 +215,21 @@ export default function DiarioScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
-          paddingBottom: 110,
+          paddingTop: esEscritorio ? 28 : 20,
+          paddingBottom,
         }}
       >
-        {/* ==================================================
-                    CONTENEDOR PRINCIPAL
-                ================================================== */}
-
         <View
           style={{
             width: "100%",
-
-            maxWidth: esWebGrande ? 1080 : 960,
-
+            maxWidth: maxWidthContenido,
             alignSelf: "center",
-
-            paddingHorizontal: esTablet ? 28 : 20,
-
-            paddingTop: 24,
-
-            paddingBottom: 20,
+            paddingHorizontal,
           }}
         >
-          {/* ==================================================
-                        BIENVENIDA
-                    ================================================== */}
+          {/* ==============================================
+              BIENVENIDA / NUEVO REGISTRO
+          ============================================== */}
 
           <View
             style={{
@@ -216,9 +243,9 @@ export default function DiarioScreen() {
             />
           </View>
 
-          {/* ==================================================
-                        RESUMEN
-                    ================================================== */}
+          {/* ==============================================
+              RESUMEN DEL DIARIO
+          ============================================== */}
 
           <View
             style={{
@@ -233,21 +260,15 @@ export default function DiarioScreen() {
             />
           </View>
 
-          {/* ==================================================
-                        ENCABEZADO ENTRADAS RECIENTES
-                    ================================================== */}
+          {/* ==============================================
+              ENTRADAS RECIENTES
+          ============================================== */}
 
           <View
             style={{
-              marginTop: 32,
-
-              marginBottom: 20,
-
-              flexDirection: "row",
-
-              alignItems: "center",
-
-              justifyContent: "space-between",
+              width: "100%",
+              marginTop: esEscritorio ? 38 : esTablet ? 34 : 30,
+              marginBottom: esTelefono ? 18 : 20,
             }}
           >
             <View
@@ -261,23 +282,21 @@ export default function DiarioScreen() {
             >
               <View
                 style={{
-                  fontFamily: "Nunito-Bold",
-
-                  fontSize: 20,
-
-                  color: textColor,
+                  flex: 1,
+                  minWidth: 0,
                 }}
               >
-                Entradas Recientes
-              </Text>
-
-              <Text
-                style={{
-                  marginTop: 4,
-
-                  fontFamily: "Nunito-Medium",
-
-                  fontSize: 13,
+                <Text
+                  style={{
+                    fontFamily: "Nunito-Bold",
+                    fontSize: esEscritorio ? 23 : esTelefono ? 19 : 21,
+                    lineHeight: esEscritorio ? 30 : 26,
+                    color: textColor,
+                  }}
+                >
+                  Entradas recientes
+                </Text>
+              </View>
 
               <Pressable
                 onPress={verTodasLasEntradas}
@@ -325,30 +344,22 @@ export default function DiarioScreen() {
               </Pressable>
             </View>
 
-            <Pressable
-              onPress={verTodasLasEntradas}
-              hitSlop={8}
-              style={({ pressed }) => ({
-                paddingHorizontal: 8,
-
-                paddingVertical: 8,
-
-                borderRadius: 12,
-
-                flexDirection: "row",
-
-                alignItems: "center",
-
-                backgroundColor: pressed ? primarySoftColor : "transparent",
-              })}
+            <Text
+              style={{
+                marginTop: 6,
+                fontFamily: "Nunito-Medium",
+                fontSize: esTelefono ? 13 : 14,
+                lineHeight: 20,
+                color: textMutedColor,
+              }}
             >
               Tus últimos momentos registrados
             </Text>
           </View>
 
-          {/* ==================================================
-                        CARGANDO
-                    ================================================== */}
+          {/* ==============================================
+              CONTENIDO
+          ============================================== */}
 
           {cargando ? (
             // ==================================================
@@ -357,9 +368,15 @@ export default function DiarioScreen() {
 
             <View
               style={{
-                paddingVertical: 32,
-
+                width: "100%",
+                minHeight: 160,
+                padding: 28,
+                borderRadius: 22,
+                borderWidth: 1,
+                borderColor,
+                backgroundColor: surfaceColor,
                 alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <ActivityIndicator size="small" color={primaryColor} />
@@ -379,14 +396,18 @@ export default function DiarioScreen() {
             </View>
           ) : entradas.length === 0 ? (
             // ==================================================
-            // SIN REGISTROS
+            // ESTADO VACÍO
             // ==================================================
 
             <View
               style={{
-                padding: 24,
+                width: "100%",
+                maxWidth: esEscritorio ? 640 : undefined,
+                alignSelf: "center",
 
-                borderRadius: 22,
+                paddingHorizontal: esTelefono ? 20 : 30,
+                paddingTop: esTelefono ? 24 : 32,
+                paddingBottom: esTelefono ? 26 : 34,
 
                 borderRadius: 24,
                 borderWidth: 1,
@@ -400,11 +421,11 @@ export default function DiarioScreen() {
 
               <View
                 style={{
-                  width: 58,
+                  width: esTelefono ? 64 : 72,
+                  height: esTelefono ? 64 : 72,
+                  borderRadius: 20,
 
-                  height: 58,
-
-                  borderRadius: 29,
+                  backgroundColor: primarySoftColor,
 
                   alignItems: "center",
                   justifyContent: "center",
@@ -417,72 +438,169 @@ export default function DiarioScreen() {
                 />
               </View>
 
-              <Text
+              {/* MENSAJES */}
+
+              <View
                 style={{
-                  marginTop: 12,
-
-                  textAlign: "center",
-
-                  fontFamily: "Nunito-SemiBold",
-
-                  fontSize: 14,
-
-                  color: textSecondaryColor,
+                  width: "100%",
+                  marginTop: 18,
+                  alignItems: "center",
                 }}
               >
-                Aún no has registrado ninguna entrada.
-              </Text>
+                <Text
+                  style={{
+                    width: "100%",
 
-              <Text
+                    fontFamily: "Nunito-Bold",
+                    fontSize: esTelefono ? 16 : 18,
+                    lineHeight: esTelefono ? 23 : 25,
+
+                    textAlign: "center",
+                    color: textColor,
+                  }}
+                >
+                  Aún no has registrado ninguna entrada.
+                </Text>
+
+                <Text
+                  style={{
+                    width: "100%",
+                    marginTop: 8,
+
+                    fontFamily: "Nunito-Medium",
+                    fontSize: esTelefono ? 13 : 14,
+                    lineHeight: 20,
+
+                    textAlign: "center",
+                    color: textSecondaryColor,
+                  }}
+                >
+                  Tu próximo registro aparecerá aquí.
+                </Text>
+              </View>
+
+              {/* ==========================================
+                  BOTÓN CREAR PRIMER REGISTRO
+
+                  El texto se centra respecto al ancho
+                  TOTAL del botón. El icono no participa
+                  en la distribución del texto.
+              ========================================== */}
+
+              <View
                 style={{
-                  marginTop: 4,
-
-                  textAlign: "center",
-
-                  fontFamily: "Nunito-Medium",
-
-                  fontSize: 12,
-
-                  color: textMutedColor,
+                  width: "100%",
+                  marginTop: esTelefono ? 28 : 32,
+                  alignItems: "center",
                 }}
               >
-                Tu próximo registro aparecerá aquí.
-              </Text>
+                <Pressable
+                  onPress={irANuevoRegistro}
+                  accessibilityRole="button"
+                  accessibilityLabel="Crear primer registro"
+                  style={({ pressed }) => ({
+                    width: "100%",
+                    maxWidth: 320,
+
+                    borderRadius: 14,
+                    overflow: "hidden",
+
+                    opacity: pressed ? 0.82 : 1,
+                  })}
+                >
+                  <View
+                    style={{
+                      width: "100%",
+                      minHeight: 54,
+
+                      paddingHorizontal: 16,
+                      paddingVertical: 12,
+
+                      borderRadius: 14,
+
+                      backgroundColor: primaryColor,
+
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+
+                      position: "relative",
+                    }}
+                  >
+                    {/* TEXTO CENTRADO */}
+
+                    <Text
+                      numberOfLines={2}
+                      style={{
+                        width: "100%",
+
+                        // Deja espacio para el icono
+                        // sin desplazar el centro del texto.
+                        paddingHorizontal: 24,
+
+                        fontFamily: "Nunito-Bold",
+                        fontSize: 14,
+                        lineHeight: 20,
+
+                        textAlign: "center",
+                        color: textOnPrimaryColor,
+                      }}
+                    >
+                      Crear primer registro
+                    </Text>
+
+                    {/* ICONO INDEPENDIENTE */}
+
+                    <View
+                      style={{
+                        position: "absolute",
+
+                        left: 16,
+                        top: 0,
+                        bottom: 0,
+
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Ionicons
+                        name="add"
+                        size={24}
+                        color={textOnPrimaryColor}
+                      />
+                    </View>
+                  </View>
+                </Pressable>
+              </View>
             </View>
           ) : (
             // ==================================================
-            // REGISTROS
+            // ENTRADAS RECIENTES
             // ==================================================
 
             <View
-              style={
-                esTablet
-                  ? {
-                      flexDirection: "row",
+              onLayout={medirGrid}
+              style={{
+                width: "100%",
+                minWidth: 0,
 
-                      flexWrap: "wrap",
+                flexDirection: numeroColumnas > 1 ? "row" : "column",
 
-                      gap: 16,
-                    }
-                  : undefined
-              }
+                flexWrap: numeroColumnas > 1 ? "wrap" : "nowrap",
+
+                alignItems: "stretch",
+
+                gap: gapEntradas,
+              }}
             >
               {entradas.map((item) => (
                 <View
                   key={item.id_registro}
-                  style={
-                    esTablet
-                      ? {
-                          width: esWebGrande
-                            ? ("calc(50% - 8px)" as never)
-                            : "48.5%",
-                        }
-                      : {
-                          width: "100%",
-
-                          marginBottom: 18,
-                        }
-                  }
+                  style={{
+                    width:
+                      numeroColumnas === 1 ? "100%" : (anchoTarjeta ?? "100%"),
+                    minWidth: 0,
+                  }}
                 >
                   <TarjetaEntradaDiario
                     fecha={formatearFecha(item.fecha_inicio)}

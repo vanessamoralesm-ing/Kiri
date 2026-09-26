@@ -1,122 +1,77 @@
-import React, {
-  useState,
-} from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@react-navigation/native";
+import { usePathname, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { Image, Platform, Pressable, View } from "react-native";
 
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import {
-  Pressable,
-  Text,
-  View,
-} from "react-native";
-
-import {
-  Ionicons,
-} from "@expo/vector-icons";
-
-import {
-  useRouter,
-} from "expo-router";
-
-import Logo from "@/components/ui/Logo_izq";
-
-import LogoutModal from "@/components/ui/LogoutModal";
-
-import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
-
+  obtenerPerfilCompleto,
+  suscribirFotoPerfil,
+} from "@/services/perfil/perfilService";
 
 export default function AppHeader() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { dark: isDarkMode } = useTheme();
 
-  const router =
-    useRouter();
+  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
-  const [
-    menuAbierto,
-    setMenuAbierto,
-  ] =
-    useState(false);
+  // TEMA
+  const surfaceColor = useThemeColor({}, "surface");
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+  const borderColor = useThemeColor({}, "border");
+  const primaryColor = useThemeColor({}, "primary");
 
-  const [
-    mostrarLogout,
-    setMostrarLogout,
-  ] =
-    useState(false);
+  // ESTADO
+  const [fotoPerfil, setFotoPerfil] = useState<string | null>(null);
+  const [versionFoto, setVersionFoto] = useState(0);
+  const [imagenFallida, setImagenFallida] = useState(false);
 
+  // RESPONSIVE
+  const alturaHeader = esTelefono ? 68 : esTablet ? 76 : 72;
 
-  // ========================================================
-  // COLORES DEL TEMA
-  // ========================================================
+  const paddingHorizontal = esTelefono ? 16 : esTablet ? 24 : 28;
 
-  const surfaceColor =
-    useThemeColor(
-      {},
-      "surface"
-    );
+  const anchoLogo = esTelefono ? 108 : 125;
+  const altoLogo = esTelefono ? 52 : 58;
 
-  const backgroundColor =
-    useThemeColor(
-      {},
-      "background"
-    );
+  const tamanoAvatar = esTelefono ? 42 : 46;
 
-  const borderColor =
-    useThemeColor(
-      {},
-      "border"
-    );
+  // ESCUCHAR ACTUALIZACIONES DE FOTOGRAFÍA
+  useEffect(() => {
+    return suscribirFotoPerfil(() => {
+      setImagenFallida(false);
+      setVersionFoto((actual) => actual + 1);
+    });
+  }, []);
 
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
+  // RECUPERAR FOTOGRAFÍA
+  useEffect(() => {
+    let activo = true;
 
-  const iconColor =
-    useThemeColor(
-      {},
-      "icon"
-    );
+    async function cargarFotoPerfil() {
+      try {
+        const perfil = await obtenerPerfilCompleto();
 
-  const primaryColor =
-    useThemeColor(
-      {},
-      "primary"
-    );
+        if (!activo) return;
 
-  const accentColor =
-    useThemeColor(
-      {},
-      "accent"
-    );
+        const foto = perfil?.foto_url?.trim() || null;
 
-  const dividerColor =
-    useThemeColor(
-      {},
-      "divider"
-    );
+        setFotoPerfil(foto);
+        setImagenFallida(false);
+      } catch (error) {
+        console.error("No se pudo recuperar la fotografía del perfil:", error);
 
+        if (activo) {
+          setFotoPerfil(null);
+          setImagenFallida(false);
+        }
+      }
+    }
 
-  // ========================================================
-  // ACCIONES
-  // ========================================================
-
-  function irPerfil() {
-
-    setMenuAbierto(false);
-
-    router.push(
-      "/(tabs)/perfil"
-    );
-  }
-
-
-  function salir() {
-
-    setMenuAbierto(false);
-
-    setMostrarLogout(true);
-  }
-
+    void cargarFotoPerfil();
 
     return () => {
       activo = false;
@@ -133,234 +88,106 @@ export default function AppHeader() {
 
   return (
     <View
-      className="
-        relative
-        z-50
-        w-full
-        flex-row
-        items-center
-        justify-between
-        px-5
-        py-2
-      "
       style={{
-        backgroundColor:
-          surfaceColor,
+        width: "100%",
+        height: alturaHeader,
+        paddingHorizontal,
 
-        borderBottomWidth:
-          1,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: esEscritorio ? "flex-end" : "space-between",
 
-        borderBottomColor:
-          borderColor,
+        backgroundColor: surfaceColor,
+        borderBottomWidth: 1,
+        borderBottomColor: borderColor,
+
+        ...(Platform.OS === "web"
+          ? ({
+            boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.03)",
+          } as any)
+          : {}),
       }}
     >
-
-      {/* Logo */}
-
-      <Logo />
-
-
-      {/* Usuario */}
-
-      <View className="relative">
-
-        <Pressable
-          onPress={() =>
-            setMenuAbierto(
-              !menuAbierto
-            )
-          }
-
-          className="
-            h-12
-            w-12
-            items-center
-            justify-center
-            rounded-full
-          "
-
+      {/* LOGO: TELÉFONO Y TABLETA */}
+      {!esEscritorio && (
+        <View
           style={{
-            backgroundColor:
-              backgroundColor,
+            width: anchoLogo,
+            height: altoLogo,
+            flexShrink: 1,
 
-            borderWidth:
-              1,
-
-            borderColor:
-              accentColor,
+            alignItems: "flex-start",
+            justifyContent: "center",
           }}
         >
+          <Image
+            source={
+              isDarkMode
+                ? require("../../assets/images/splash-icon-ps.png")
+                : require("../../assets/images/splash-icon.png")
+            }
+            resizeMode="contain"
+            style={{
+              width: "100%",
+              height: "100%",
+            }}
+          />
+        </View>
+      )}
 
+      {/* AVATAR: SIEMPRE VISIBLE */}
+      <Pressable
+        onPress={() => router.push("/(tabs)/perfil")}
+        accessibilityRole="button"
+        accessibilityLabel="Abrir mi perfil"
+        hitSlop={8}
+        style={({ pressed }) => ({
+          width: tamanoAvatar,
+          height: tamanoAvatar,
+          minWidth: tamanoAvatar,
+          minHeight: tamanoAvatar,
+
+          marginLeft: 12,
+          flexShrink: 0,
+
+          borderRadius: tamanoAvatar / 2,
+          borderWidth: 1,
+          borderColor,
+
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+
+          opacity: pressed ? 0.75 : 1,
+          backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
+        })}
+      >
+        {uriFoto && !imagenFallida ? (
+          <Image
+            key={uriFoto}
+            source={{ uri: uriFoto }}
+            resizeMode="cover"
+            onError={(event) => {
+              console.warn(
+                "No se pudo cargar el avatar:",
+                event.nativeEvent.error,
+              );
+              setImagenFallida(true);
+            }}
+            style={{
+              width: tamanoAvatar - 2,
+              height: tamanoAvatar - 2,
+              borderRadius: (tamanoAvatar - 2) / 2,
+            }}
+          />
+        ) : (
           <Ionicons
             name="person-outline"
-            size={23}
-            color={
-              iconColor
-            }
+            size={esTelefono ? 23 : 25}
+            color={primaryColor}
           />
-
-        </Pressable>
-
-
-        {/* Menú desplegable */}
-
-        {menuAbierto && (
-
-          <View
-            className="
-              absolute
-              right-0
-              top-14
-              z-50
-              w-48
-              rounded-2xl
-              py-1
-            "
-
-            style={{
-              backgroundColor:
-                surfaceColor,
-
-              borderWidth:
-                1,
-
-              borderColor:
-                accentColor,
-
-              shadowColor:
-                "#000000",
-
-              shadowOffset: {
-                width: 0,
-                height: 4,
-              },
-
-              shadowOpacity:
-                0.15,
-
-              shadowRadius:
-                8,
-
-              elevation:
-                8,
-            }}
-          >
-
-            {/* Mi perfil */}
-
-            <Pressable
-              onPress={
-                irPerfil
-              }
-
-              className="
-                flex-row
-                items-center
-                gap-3
-                px-4
-                py-3
-              "
-            >
-
-              <Ionicons
-                name="person-outline"
-                size={20}
-                color={
-                  primaryColor
-                }
-              />
-
-              <Text
-                style={{
-                  fontFamily:
-                    "Nunito-Bold",
-
-                  fontSize:
-                    14,
-
-                  color:
-                    textColor,
-                }}
-              >
-                Mi perfil
-              </Text>
-
-            </Pressable>
-
-
-            {/* Separador */}
-
-            <View
-              className="
-                mx-3
-                h-px
-              "
-              style={{
-                backgroundColor:
-                  dividerColor,
-              }}
-            />
-
-
-            {/* Cerrar sesión */}
-
-            <Pressable
-              onPress={
-                salir
-              }
-
-              className="
-                flex-row
-                items-center
-                gap-3
-                px-4
-                py-3
-              "
-            >
-
-              <Ionicons
-                name="log-out-outline"
-                size={20}
-                color={
-                  iconColor
-                }
-              />
-
-              <Text
-                style={{
-                  fontFamily:
-                    "Nunito-Bold",
-
-                  fontSize:
-                    14,
-
-                  color:
-                    textColor,
-                }}
-              >
-                Cerrar sesión
-              </Text>
-
-            </Pressable>
-
-          </View>
         )}
-
-      </View>
-
-
-      <LogoutModal
-        visible={
-          mostrarLogout
-        }
-
-        onClose={() =>
-          setMostrarLogout(
-            false
-          )
-        }
-      />
-
+      </Pressable>
     </View>
   );
 }

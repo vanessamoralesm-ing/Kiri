@@ -90,6 +90,126 @@ export default function HomeScreen() {
               >
                 5
               </Text>
+
+              <View
+                style={{
+                  flex: esEscritorio ? 1 : undefined,
+
+                  flexDirection: esTelefono ? "column" : "row",
+
+                  alignItems: esTelefono ? "flex-start" : "center",
+
+                  justifyContent: "space-between",
+
+                  gap: esTelefono ? 14 : 10,
+
+                  marginTop: 8,
+                }}
+              >
+                {/* ==========================================
+                    DÍAS DE RACHA
+                ========================================== */}
+
+                <View
+                  style={{
+                    flexDirection: "row",
+
+                    alignItems: "baseline",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: "Nunito-Bold",
+
+                      fontSize: esEscritorio ? 39 : 35,
+
+                      color: textOnPrimaryColor,
+                    }}
+                  >
+                    {cargandoProgreso ? "—" : rachaActual}
+                  </Text>
+
+                  <Text
+                    style={{
+                      marginLeft: 5,
+
+                      fontFamily: "Nunito-Medium",
+
+                      fontSize: 13,
+
+                      color: textOnPrimaryColor,
+                    }}
+                  >
+                    {rachaActual === 1 ? "día" : "días"}
+                  </Text>
+                </View>
+
+                {/* ==========================================
+                    ÚLTIMOS SIETE DÍAS
+                ========================================== */}
+
+                <View
+                  style={{
+                    flexDirection: "row",
+
+                    flexWrap: "wrap",
+
+                    gap: 5,
+                  }}
+                >
+                  {diasSemana.map((dia) => (
+                    <View
+                      key={dia.fecha}
+                      style={{
+                        width: 29,
+
+                        height: 29,
+
+                        borderRadius: 15,
+
+                        borderWidth: dia.esHoy ? 1.5 : 0,
+
+                        borderColor: "rgba(255,255,255,0.95)",
+
+                        alignItems: "center",
+
+                        justifyContent: "center",
+
+                        backgroundColor: dia.completado
+                          ? secondaryColor
+                          : "rgba(255,255,255,0.22)",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: "Nunito-Bold",
+
+                          fontSize: 11,
+
+                          color: textOnPrimaryColor,
+                        }}
+                      >
+                        {dia.etiqueta}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+
+                {/* ==========================================
+                    LLAMA
+                ========================================== */}
+
+                <Ionicons
+                  name={actividadHoy ? "flame" : "flame-outline"}
+                  size={28}
+                  color={textOnPrimaryColor}
+                />
+              </View>
+
+              {/* ==========================================
+                  MENSAJE
+              ========================================== */}
+
               <Text
                 style={{
                   marginLeft: 4,
@@ -163,13 +283,17 @@ export default function HomeScreen() {
           <View className="flex-row items-center">
             <View
               style={{
-                width: 40,
-                height: 40,
-                marginRight: 12,
-                borderRadius: 20,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "rgba(255,255,255,0.20)",
+                width: "100%",
+
+                flexDirection: "row",
+
+                flexWrap: "wrap",
+
+                columnGap: gapModulos,
+
+                rowGap: esTelefono ? 12 : 16,
+
+                alignItems: "flex-start",
               }}
             >
               <Ionicons
@@ -179,27 +303,22 @@ export default function HomeScreen() {
               />
             </View>
 
-            <View style={{ flexShrink: 1 }}>
-              <Text
-                style={{
-                  fontFamily: "Nunito-Bold",
-                  fontSize: 16,
-                  color: "#FFFFFF",
-                }}
-              >
-                Mi Progreso
-              </Text>
-              <Text
-                numberOfLines={2}
-                style={{
-                  marginTop: 2,
-                  fontFamily: "Nunito-Medium",
-                  fontSize: 12,
-                  color: "#ECFDF5",
-                }}
-              >
-                0 insignias - 0 retos completados
-              </Text>
+                    minHeight: esEscritorio ? 175 : esTablet ? 180 : undefined,
+                    flexGrow: 0,
+                    flexShrink: 0,
+                  }}
+                >
+                  <TarjetaModulo
+                    titulo={modulo.titulo}
+                    descripcion={modulo.descripcion}
+                    nombreIcono={modulo.icono}
+                    colorAcento={modulo.color}
+                    fondoIconoClaro={modulo.fondoIconoClaro}
+                    fondoIconoOscuro={modulo.fondoIconoOscuro}
+                    onPress={() => abrirModulo(modulo.id)}
+                  />
+                </View>
+              ))}
             </View>
           </View>
 

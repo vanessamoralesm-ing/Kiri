@@ -30,9 +30,19 @@ import type {
   PerfilCompleto,
 } from "@/services/perfil/perfilService";
 
-import { useThemeColor } from "@/hooks/use-theme-color";
+import LogoutModal from "@/components/ui/LogoutModal";
 
-import { useThemeMode } from "@/contexts/ThemeModeContext";
+import {
+  useThemeMode,
+} from "@/contexts/ThemeModeContext";
+
+import type {
+  ThemePreference,
+} from "@/contexts/ThemeModeContext";
+
+import {
+  useThemeColor,
+} from "@/hooks/use-theme-color";
 
 // ==========================================================
 // CONSTANTES
@@ -101,8 +111,6 @@ export default function PerfilScreen() {
   const { width } = useWindowDimensions();
 
   const insets = useSafeAreaInsets();
-
-  const movil = width < 600;
 
   // ========================================================
   // RESPONSIVE
@@ -175,6 +183,46 @@ export default function PerfilScreen() {
   const textColor = useThemeColor(
     {},
     "text",
+  );
+
+  const textSecondaryColor = useThemeColor(
+    {},
+    "textSecondary",
+  );
+
+  const textMutedColor = useThemeColor(
+    {},
+    "textMuted",
+  );
+
+  const primaryColor = useThemeColor(
+    {},
+    "primary",
+  );
+
+  const primarySoftColor = useThemeColor(
+    {},
+    "primarySoft",
+  );
+
+  const secondaryColor = useThemeColor(
+    {},
+    "secondary",
+  );
+
+  const inputBackgroundColor = useThemeColor(
+    {},
+    "inputBackground",
+  );
+
+  const inputBorderColor = useThemeColor(
+    {},
+    "inputBorder",
+  );
+
+  const iconColor = useThemeColor(
+    {},
+    "icon",
   );
 
   // ========================================================
@@ -377,25 +425,28 @@ export default function PerfilScreen() {
       return;
     }
 
-    Alert.alert("Foto de perfil", "Selecciona una opción", [
-      {
-        text: "Cámara",
-
-        onPress: tomarFoto,
-      },
-
-      {
-        text: "Galería",
-
-        onPress: abrirGaleria,
-      },
-
-      {
-        text: "Cancelar",
-
-        style: "cancel",
-      },
-    ]);
+    Alert.alert(
+      "Foto de perfil",
+      "Selecciona una opción",
+      [
+        {
+          text: "Cámara",
+          onPress: () => {
+            void tomarFoto();
+          },
+        },
+        {
+          text: "Galería",
+          onPress: () => {
+            void abrirGaleria();
+          },
+        },
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+      ],
+    );
   }
 
   async function tomarFoto() {
@@ -660,16 +711,13 @@ export default function PerfilScreen() {
   // ========================================================
 
   return (
-    <SafeAreaView
-      edges={["top"]}
-
-      style={[
-        styles.pantalla,
-
-        {
-          backgroundColor,
-        },
-      ]}
+    <View
+      style={{
+        flex: 1,
+        width: "100%",
+        minWidth: 0,
+        backgroundColor,
+      }}
     >
       <ScrollView
         style={{
@@ -679,243 +727,556 @@ export default function PerfilScreen() {
         showsVerticalScrollIndicator={false}
 
         keyboardShouldPersistTaps="handled"
-
-        contentContainerStyle={[
-          styles.scroll,
-
-          movil && {
-            paddingBottom: Math.max(
-              insets.bottom + 120,
-
-              145,
-            ),
-          },
-        ]}
+        contentContainerStyle={{
+          flexGrow: 1,
+          width: "100%",
+          alignItems: "center",
+          paddingTop: esTelefono ? 22 : 30,
+          paddingBottom: paddingInferior,
+        }}
       >
-        {/* =================================================
-            HEADER
-        ================================================= */}
+        {/* CONTENEDOR CENTRAL */}
 
-        <View style={styles.header}>
-          <Text
-            style={[
-              styles.titulo,
+        <View
+          style={{
+            width: anchoContenido,
+            maxWidth: 1180,
+            alignSelf: "center",
+            flexDirection: "column",
+            alignItems: "stretch",
+            minWidth: 0,
+          }}
+        >
+          {/* ==================================================
+              ENCABEZADO
+          ================================================== */}
 
-              {
-                color: textColor,
-              },
-            ]}
-          >
-            Mi perfil
-          </Text>
-
-          <Text
-            style={[
-              styles.subtitulo,
-
-              {
-                color: textSecondaryColor,
-              },
-            ]}
-          >
-            Administra tu información y tu cuenta
-          </Text>
-        </View>
-
-        {/* =================================================
-            FOTO
-        ================================================= */}
-
-        <View style={styles.fotoZona}>
           <View
-            style={[
-              styles.avatar,
-
-              {
-                backgroundColor: surfaceSecondaryColor,
-
-                borderColor,
-              },
-            ]}
+            style={{
+              width: "100%",
+              alignItems: "center",
+              marginBottom: esTelefono
+                ? 26
+                : 32,
+            }}
           >
-            {perfil?.foto_url ? (
-              <Image
-                source={{
-                  uri: perfil.foto_url,
-                }}
+            <Text
+              style={{
+                fontFamily: FONT.bold,
+                fontSize: esEscritorio
+                  ? 30
+                  : 25,
+                color: textColor,
+                textAlign: "center",
+              }}
+            >
+              Mi perfil
+            </Text>
 
-                style={styles.foto}
-              />
-            ) : (
-              <Ionicons name="person" size={54} color={primaryColor} />
-            )}
+            <Text
+              style={{
+                marginTop: 5,
+                fontFamily: FONT.regular,
+                fontSize: esTelefono
+                  ? 14
+                  : 15,
+                lineHeight: 22,
+                color: textSecondaryColor,
+                textAlign: "center",
+              }}
+            >
+              Administra tu información y tu cuenta
+            </Text>
           </View>
 
-          <TouchableOpacity
-            activeOpacity={0.75}
+          {/* ==================================================
+              LAYOUT PRINCIPAL
+          ================================================== */}
 
             disabled={subiendoFoto}
 
-            onPress={seleccionarFoto}
+              flexDirection:
+                esEscritorio
+                  ? "row"
+                  : "column",
 
-            style={[
-              styles.camara,
+              alignItems: "stretch",
 
-              subiendoFoto && styles.deshabilitado,
-
-              {
-                backgroundColor: primaryColor,
-              },
-            ]}
+              gap: esEscritorio
+                ? 28
+                : 0,
+            }}
           >
-            {subiendoFoto ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <Ionicons name="camera" size={17} color="#FFFFFF" />
-            )}
-          </TouchableOpacity>
+            {/* ==================================================
+                COLUMNA IZQUIERDA
+            ================================================== */}
 
-          <Text
-            style={[
-              styles.cambiarFoto,
+            <View
+              style={{
+                width: esEscritorio
+                  ? 320
+                  : "100%",
 
-              {
-                color: textSecondaryColor,
-              },
-            ]}
-          >
-            Toca la cámara para cambiar tu foto
-          </Text>
-        </View>
+                minWidth: 0,
 
-        {/* =================================================
-            INFORMACIÓN PERSONAL
-        ================================================= */}
+                flexShrink:
+                  esEscritorio
+                    ? 0
+                    : 1,
+              }}
+            >
+              {/* ==============================================
+                  FOTO DE PERFIL
+              ============================================== */}
 
-        <TituloSeccion>INFORMACIÓN PERSONAL</TituloSeccion>
+              <View
+                style={{
+                  ...tarjetaBase,
 
-        <Campo
-          titulo="Nombres"
-          valor={nombres}
-          onChange={setNombres}
-          placeholder="Tus nombres"
-          icono="person-outline"
-        />
+                  alignItems: "center",
 
-        <Campo
-          titulo="Apellidos"
-          valor={apellidos}
-          onChange={setApellidos}
-          placeholder="Tus apellidos"
-          icono="person-outline"
-        />
+                  padding: esEscritorio
+                    ? 24
+                    : 20,
 
-        <Campo
-          titulo="Nombre preferido"
-          valor={nombrePreferido}
-          onChange={setNombrePreferido}
-          placeholder="¿Cómo quieres que te llamemos?"
-          icono="happy-outline"
-        />
-
-        <Campo
-          titulo="Fecha de nacimiento"
-          valor={fechaNacimiento}
-          onChange={setFechaNacimiento}
-          placeholder="AAAA-MM-DD"
-          icono="calendar-outline"
-        />
-
-        {/* Género */}
-
-        <Text
-          style={[
-            styles.label,
-
-            {
-              color: textColor,
-            },
-          ]}
-        >
-          Género
-        </Text>
-
-        <TouchableOpacity
-          activeOpacity={0.75}
-
-          onPress={() => setMostrarGeneros((actual) => !actual)}
-
-          style={[
-            styles.input,
-
-            {
-              backgroundColor: inputBackgroundColor,
-
-              borderColor: inputBorderColor,
-            },
-          ]}
-        >
-          <Ionicons name="people-outline" size={19} color={primaryColor} />
-
-          <Text
-            style={[
-              styles.inputTexto,
-
-              {
-                color: textColor,
-              },
-            ]}
-          >
-            {generoTexto}
-          </Text>
-
-          <Ionicons
-            name={mostrarGeneros ? "chevron-up" : "chevron-down"}
-
-            size={18}
-
-            color={iconColor}
-          />
-        </TouchableOpacity>
-
-        {mostrarGeneros && (
-          <View
-            style={[
-              styles.listaGenero,
-
-              {
-                backgroundColor: surfaceColor,
-
-                borderColor,
-              },
-            ]}
-          >
-            {GENEROS.map((opcion) => (
-              <TouchableOpacity
-                key={opcion.value}
-
-                activeOpacity={0.7}
-
-                onPress={() => {
-                  setGenero(opcion.value);
-
-                  setMostrarGeneros(false);
+                  marginBottom: 22,
                 }}
+              >
+                <View
+                  style={{
+                    width: "100%",
+                    alignItems: "center",
+                  }}
+                >
+                  <View
+                    style={{
+                      width: esEscritorio
+                        ? 124
+                        : 112,
 
-                style={[
-                  styles.opcionGenero,
+                      height: esEscritorio
+                        ? 124
+                        : 112,
 
-                  {
-                    borderBottomColor: dividerColor,
-                  },
-                ]}
+                      position: "relative",
+
+                      marginBottom: 22,
+                    }}
+                  >
+                    {/* AVATAR */}
+
+                    <View
+                      style={{
+                        width: "100%",
+                        height: "100%",
+
+                        borderRadius: 100,
+
+                        borderWidth: 3,
+
+                        borderColor:
+                          secondaryColor,
+
+                        backgroundColor:
+                          surfaceSecondaryColor,
+
+                        alignItems: "center",
+
+                        justifyContent: "center",
+
+                        overflow: "hidden",
+                      }}
+                    >
+                      {uriFoto ? (
+                        <Image
+                          key={uriFoto}
+                          source={{
+                            uri: uriFoto,
+                          }}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                          }}
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <Ionicons
+                          name="person"
+                          size={58}
+                          color={primaryColor}
+                        />
+                      )}
+                    </View>
+
+                    {/* CÁMARA */}
+
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      disabled={subiendoFoto}
+                      onPress={seleccionarFoto}
+                      accessibilityRole="button"
+                      accessibilityLabel="Cambiar foto de perfil"
+                      style={{
+                        position: "absolute",
+
+                        right: -3,
+                        bottom: -3,
+
+                        width: 40,
+                        height: 40,
+
+                        borderRadius: 20,
+
+                        borderWidth: 3,
+
+                        borderColor:
+                          surfaceColor,
+
+                        backgroundColor:
+                          primaryColor,
+
+                        alignItems: "center",
+
+                        justifyContent: "center",
+
+                        opacity:
+                          subiendoFoto
+                            ? 0.6
+                            : 1,
+                      }}
+                    >
+                      {subiendoFoto ? (
+                        <ActivityIndicator
+                          size="small"
+                          color="#FFFFFF"
+                        />
+                      ) : (
+                        <Ionicons
+                          name="camera"
+                          size={18}
+                          color="#FFFFFF"
+                        />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+
+                  <Text
+                    style={{
+                      fontFamily:
+                        FONT.regular,
+
+                      fontSize: 13,
+
+                      lineHeight: 19,
+
+                      color:
+                        textSecondaryColor,
+
+                      textAlign: "center",
+                    }}
+                  >
+                    Toca la cámara para cambiar tu foto
+                  </Text>
+                </View>
+              </View>
+
+              {/* ==============================================
+                  CUENTA E INSTITUCIÓN
+              ============================================== */}
+
+              <TituloSeccion>
+                CUENTA E INSTITUCIÓN
+              </TituloSeccion>
+
+              <View
+                style={{
+                  ...tarjetaBase,
+
+                  padding: 17,
+
+                  marginBottom: 24,
+                }}
+              >
+                <FilaInformacion
+                  icono="person-circle-outline"
+                  color={primaryColor}
+                  titulo="Tipo de cuenta"
+                  valor={
+                    perfil?.rol_nombre ??
+                    "Sin rol"
+                  }
+                />
+
+                <View
+                  style={{
+                    width: "100%",
+
+                    height: 1,
+
+                    backgroundColor:
+                      dividerColor,
+
+                    marginVertical: 16,
+                  }}
+                />
+
+                <FilaInformacion
+                  icono="school-outline"
+                  color={secondaryColor}
+                  titulo="Institución"
+                  valor={
+                    perfil?.institucion_nombre ??
+                    "Cuenta independiente"
+                  }
+                />
+              </View>
+
+              {/* ==============================================
+                  APARIENCIA
+              ============================================== */}
+
+              <TituloSeccion>
+                APARIENCIA
+              </TituloSeccion>
+
+              <View
+                accessibilityRole="radiogroup"
+                style={{
+                  ...tarjetaBase,
+
+                  padding: 16,
+
+                  marginBottom: 24,
+                }}
               >
                 <Text
-                  style={[
-                    styles.textoGenero,
+                  style={{
+                    fontFamily: FONT.bold,
 
-                    {
-                      color: textColor,
+                    fontSize: 15,
+
+                    color: textColor,
+                  }}
+                >
+                  Tema de la aplicación
+                </Text>
+
+                <Text
+                  style={{
+                    marginTop: 5,
+
+                    marginBottom: 16,
+
+                    fontFamily: FONT.regular,
+
+                    fontSize: 12,
+
+                    lineHeight: 19,
+
+                    color:
+                      textSecondaryColor,
+                  }}
+                >
+                  Elige cómo quieres visualizar Kiri.
+                  Por defecto utilizamos la apariencia
+                  de tu dispositivo.
+                </Text>
+
+                {/* OPCIONES DE TEMA */}
+
+                <View
+                  style={{
+                    width: "100%",
+
+                    gap: 10,
+                  }}
+                >
+                  {OPCIONES_TEMA.map(
+                    (opcion) => {
+                      const seleccionada =
+                        themePreference ===
+                        opcion.value;
+
+                      const descripcion =
+                        opcion.value ===
+                          "system"
+                          ? `Seguir el dispositivo (actualmente ${systemTheme ===
+                            "dark"
+                            ? "oscuro"
+                            : "claro"
+                          })`
+                          : opcion.description;
+
+                      return (
+                        <TouchableOpacity
+                          key={opcion.value}
+                          activeOpacity={0.8}
+                          onPress={() =>
+                            setThemeMode(
+                              opcion.value,
+                            )
+                          }
+                          accessibilityRole="radio"
+                          accessibilityLabel={
+                            opcion.title
+                          }
+                          accessibilityState={{
+                            checked:
+                              seleccionada,
+                          }}
+                          style={{
+                            width: "100%",
+
+                            borderRadius: 15,
+
+                            overflow:
+                              "hidden",
+                          }}
+                        >
+                          <View
+                            style={{
+                              width: "100%",
+
+                              minHeight: 76,
+
+                              paddingHorizontal:
+                                12,
+
+                              paddingVertical:
+                                12,
+
+                              borderWidth:
+                                seleccionada
+                                  ? 2
+                                  : 1,
+
+                              borderColor:
+                                seleccionada
+                                  ? primaryColor
+                                  : borderColor,
+
+                              borderRadius:
+                                15,
+
+                              backgroundColor:
+                                seleccionada
+                                  ? primarySoftColor
+                                  : surfaceSecondaryColor,
+
+                              flexDirection:
+                                "row",
+
+                              alignItems:
+                                "center",
+
+                              gap: 11,
+                            }}
+                          >
+                            {/* ICONO */}
+
+                            <View
+                              style={{
+                                width: 42,
+
+                                height: 42,
+
+                                borderRadius:
+                                  13,
+
+                                flexShrink: 0,
+
+                                backgroundColor:
+                                  surfaceColor,
+
+                                alignItems:
+                                  "center",
+
+                                justifyContent:
+                                  "center",
+                              }}
+                            >
+                              <Ionicons
+                                name={
+                                  opcion.icon
+                                }
+                                size={21}
+                                color={
+                                  primaryColor
+                                }
+                              />
+                            </View>
+
+                            {/* DESCRIPCIÓN */}
+
+                            <View
+                              style={{
+                                flex: 1,
+
+                                minWidth: 0,
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  fontFamily:
+                                    FONT.bold,
+
+                                  fontSize:
+                                    14,
+
+                                  lineHeight:
+                                    19,
+
+                                  color:
+                                    textColor,
+                                }}
+                              >
+                                {
+                                  opcion.title
+                                }
+                              </Text>
+
+                              <Text
+                                style={{
+                                  marginTop:
+                                    3,
+
+                                  fontFamily:
+                                    FONT.regular,
+
+                                  fontSize:
+                                    12,
+
+                                  lineHeight:
+                                    17,
+
+                                  color:
+                                    textSecondaryColor,
+                                }}
+                              >
+                                {
+                                  descripcion
+                                }
+                              </Text>
+                            </View>
+
+                            {/* SELECCIÓN */}
+
+                            <Ionicons
+                              name={
+                                seleccionada
+                                  ? "radio-button-on"
+                                  : "radio-button-off"
+                              }
+                              size={23}
+                              color={
+                                seleccionada
+                                  ? primaryColor
+                                  : textMutedColor
+                              }
+                            />
+                          </View>
+                        </TouchableOpacity>
+                      );
                     },
                   )}
                 </View>
@@ -942,14 +1303,95 @@ export default function PerfilScreen() {
                     gap: 8,
                   }}
                 >
+                  <Ionicons
+                    name={
+                      themeMode === "dark"
+                        ? "moon-outline"
+                        : "sunny-outline"
+                    }
+                    size={17}
+                    color={primaryColor}
+                  />
+
+                  <Text
+                    style={{
+                      fontFamily:
+                        FONT.semibold,
+
+                      fontSize: 12,
+
+                      color:
+                        textSecondaryColor,
+                    }}
+                  >
+                    Tema activo:{" "}
+                    {themeMode === "dark"
+                      ? "Oscuro"
+                      : "Claro"}
+                  </Text>
+                </View>
+              </View>
+
+              {/* ==============================================
+                  PRIVACIDAD
+              ============================================== */}
+
+              <TituloSeccion>
+                PRIVACIDAD
+              </TituloSeccion>
+
+              <View
+                style={{
+                  width: "100%",
+
+                  borderWidth: 1,
+
+                  borderColor,
+
+                  borderRadius: 18,
+
+                  backgroundColor:
+                    primarySoftColor,
+
+                  padding: 17,
+
+                  marginBottom: 24,
+
+                  flexDirection: "row",
+
+                  alignItems:
+                    "flex-start",
+
+                  gap: 12,
+                }}
+              >
+                <View
+                  style={{
+                    width: 44,
+
+                    height: 44,
+
+                    borderRadius: 22,
+
+                    flexShrink: 0,
+
+                    alignItems: "center",
+
+                    justifyContent:
+                      "center",
+
+                    backgroundColor:
+                      surfaceColor,
+                  }}
+                >
                   {opcion.label}
                 </Text>
 
                 {genero === opcion.value && (
                   <Ionicons
-                    name="checkmark-circle"
-                    size={20}
-                    color={secondaryColor}
+                    name="shield-checkmark-outline"
+                    size={23}
+                    color={primaryColor}
                   />
                 )}
               </TouchableOpacity>
@@ -966,228 +1408,508 @@ export default function PerfilScreen() {
           keyboardType="phone-pad"
         />
 
-        {/* =================================================
-            CUENTA
-        ================================================= */}
+                <View
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily:
+                        FONT.bold,
 
-        <TituloSeccion>CUENTA</TituloSeccion>
+                      fontSize: 15,
 
-        <Text
-          style={[
-            styles.label,
+                      color: textColor,
+                    }}
+                  >
+                    Privacidad de datos
+                  </Text>
 
-            {
-              color: textColor,
-            },
-          ]}
-        >
-          Correo electrónico
-        </Text>
+                  <Text
+                    style={{
+                      marginTop: 5,
 
-        <View
-          style={[
-            styles.input,
-            styles.bloqueado,
+                      fontFamily:
+                        FONT.regular,
 
-            {
-              backgroundColor: surfaceSecondaryColor,
+                      fontSize: 12,
 
-              borderColor,
-            },
-          ]}
-        >
-          <Ionicons name="mail-outline" size={19} color={primaryColor} />
+                      lineHeight: 19,
 
-          <Text
-            numberOfLines={1}
-
-            style={[
-              styles.inputTexto,
-
-              {
-                color: textSecondaryColor,
-              },
-            ]}
-          >
-            {perfil?.correo}
-          </Text>
-
-          <Ionicons name="lock-closed-outline" size={17} color={iconColor} />
-        </View>
-
-        {/* =================================================
-            CUENTA E INSTITUCIÓN
-        ================================================= */}
-
-        <TituloSeccion>CUENTA E INSTITUCIÓN</TituloSeccion>
-
-        <View
-          style={[
-            styles.tarjetaCuenta,
-
-            {
-              backgroundColor: surfaceColor,
-
-              borderColor,
-            },
-          ]}
-        >
-          <FilaInformacion
-            icono="person-circle-outline"
-
-            color={primaryColor}
-
-            titulo="Tipo de cuenta"
-
-            valor={perfil?.rol_nombre ?? "Sin rol"}
-          />
-
-          <View
-            style={[
-              styles.separador,
-
-              {
-                backgroundColor: dividerColor,
-              },
-            ]}
-          />
-
-          <FilaInformacion
-            icono="school-outline"
-
-            color={secondaryColor}
-
-            titulo="Institución"
-
-            valor={perfil?.institucion_nombre ?? "Cuenta independiente"}
-          />
-        </View>
-
-        {/* =================================================
-            APARIENCIA
-        ================================================= */}
-
-        <TituloSeccion>APARIENCIA</TituloSeccion>
-
-        <View
-          style={[
-            styles.opcionSeguridad,
-
-            {
-              backgroundColor: surfaceColor,
-
-              borderColor,
-            },
-          ]}
-        >
-          {/* Icono del tema */}
-
-          <View
-            style={[
-              styles.iconoCuenta,
-
-              {
-                backgroundColor: primarySoftColor,
-              },
-            ]}
-          >
-            <Ionicons
-              name={isDarkMode ? "moon" : "sunny-outline"}
-
-              size={21}
-
-              color={primaryColor}
-            />
-          </View>
-
-          {/* Información */}
-
-          <View style={styles.flex}>
-            <Text
-              style={[
-                styles.valorCuenta,
-
-                {
-                  color: textColor,
-                },
-              ]}
-            >
-              Modo oscuro
-            </Text>
-
-            <Text
-              style={[
-                styles.labelCuenta,
-
-                {
-                  color: textSecondaryColor,
-                },
-              ]}
-            >
-              {isDarkMode
-                ? "El tema oscuro está activado"
-                : "El tema claro está activado"}
-            </Text>
-          </View>
-
-          {/* Interruptor */}
-
-          <Switch
-            value={isDarkMode}
-
-            onValueChange={toggleDarkMode}
-
-            trackColor={{
-              false: surfaceSecondaryColor,
-
-              true: primarySoftColor,
-            }}
-
-            thumbColor={isDarkMode ? primaryColor : textMutedColor}
-
-            ios_backgroundColor={surfaceSecondaryColor}
-          />
-        </View>
-
-        {/* =================================================
-            SEGURIDAD
-        ================================================= */}
-
-        {esIndependiente && (
-          <>
-            <TituloSeccion>SEGURIDAD</TituloSeccion>
-
-            <TouchableOpacity
-              activeOpacity={0.75}
-
-              onPress={() => setMostrarPassword((actual) => !actual)}
-
-              style={[
-                styles.opcionSeguridad,
-
-                {
-                  backgroundColor: surfaceColor,
-
-                  borderColor,
-                },
-              ]}
-            >
-              <View
-                style={[
-                  styles.iconoCuenta,
-
-                  {
-                    backgroundColor: primarySoftColor,
-                  },
-                ]}
-              >
-                <Ionicons name="key-outline" size={20} color={primaryColor} />
+                      color:
+                        textSecondaryColor,
+                    }}
+                  >
+                    Tu información personal se mantiene
+                    privada y se utiliza para personalizar
+                    tu experiencia dentro de Kiri.
+                  </Text>
+                </View>
               </View>
+
+              {/* ==============================================
+                  CERRAR SESIÓN EN ESCRITORIO
+              ============================================== */}
+
+              {esEscritorio && (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() =>
+                    setMostrarLogout(
+                      true,
+                    )
+                  }
+                  style={{
+                    ...tarjetaBase,
+
+                    minHeight: 54,
+
+                    flexDirection:
+                      "row",
+
+                    alignItems:
+                      "center",
+
+                    justifyContent:
+                      "center",
+
+                    gap: 9,
+
+                    paddingHorizontal:
+                      16,
+                  }}
+                >
+                  <Ionicons
+                    name="log-out-outline"
+                    size={21}
+                    color={iconColor}
+                  />
+
+                  <Text
+                    style={{
+                      fontFamily:
+                        FONT.bold,
+
+                      fontSize: 15,
+
+                      color: textColor,
+                    }}
+                  >
+                    Cerrar sesión
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* ==================================================
+                COLUMNA DERECHA
+            ================================================== */}
+
+            <View
+              style={{
+                flex: esEscritorio
+                  ? 1
+                  : undefined,
+
+                width: esEscritorio
+                  ? undefined
+                  : "100%",
+
+                minWidth: 0,
+
+                flexShrink: 1,
+              }}
+            >
+              {/* ==============================================
+                  INFORMACIÓN PERSONAL
+              ============================================== */}
+
+              <View
+                style={{
+                  ...tarjetaBase,
+
+                  padding: esTelefono
+                    ? 18
+                    : 24,
+
+                  marginBottom: 22,
+                }}
+              >
+                <TituloSeccion
+                  sinMargenSuperior
+                >
+                  INFORMACIÓN PERSONAL
+                </TituloSeccion>
+
+                {/* NOMBRES / APELLIDOS */}
+
+                <View
+                  style={
+                    estiloFilaFormulario
+                  }
+                >
+                  <View
+                    style={
+                      estiloCampoFormulario
+                    }
+                  >
+                    <Campo
+                      titulo="Nombres"
+                      valor={nombres}
+                      onChange={
+                        setNombres
+                      }
+                      placeholder="Tus nombres"
+                      icono="person-outline"
+                    />
+                  </View>
+
+                  <View
+                    style={
+                      estiloCampoFormulario
+                    }
+                  >
+                    <Campo
+                      titulo="Apellidos"
+                      valor={
+                        apellidos
+                      }
+                      onChange={
+                        setApellidos
+                      }
+                      placeholder="Tus apellidos"
+                      icono="person-outline"
+                    />
+                  </View>
+                </View>
+
+                {/* NOMBRE PREFERIDO / NACIMIENTO */}
+
+                <View
+                  style={
+                    estiloFilaFormulario
+                  }
+                >
+                  <View
+                    style={
+                      estiloCampoFormulario
+                    }
+                  >
+                    <Campo
+                      titulo="Nombre preferido"
+                      valor={
+                        nombrePreferido
+                      }
+                      onChange={
+                        setNombrePreferido
+                      }
+                      placeholder="¿Cómo quieres que te llamemos?"
+                      icono="happy-outline"
+                    />
+                  </View>
+
+                  <View
+                    style={
+                      estiloCampoFormulario
+                    }
+                  >
+                    <Campo
+                      titulo="Fecha de nacimiento"
+                      valor={
+                        fechaNacimiento
+                      }
+                      onChange={
+                        setFechaNacimiento
+                      }
+                      placeholder="AAAA-MM-DD"
+                      icono="calendar-outline"
+                      keyboardType="default"
+                    />
+                  </View>
+                </View>
+
+                {/* GÉNERO / TELÉFONO */}
+
+                <View
+                  style={{
+                    ...estiloFilaFormulario,
+
+                    alignItems:
+                      "flex-start",
+                  }}
+                >
+                  {/* GÉNERO */}
+
+                  <View
+                    style={
+                      estiloCampoFormulario
+                    }
+                  >
+                    <Text
+                      style={{
+                        marginBottom:
+                          7,
+
+                        fontFamily:
+                          FONT.semibold,
+
+                        fontSize: 13,
+
+                        color:
+                          textColor,
+                      }}
+                    >
+                      Género
+                    </Text>
+
+                    <TouchableOpacity
+                      activeOpacity={
+                        0.8
+                      }
+                      onPress={() =>
+                        setMostrarGeneros(
+                          (actual) =>
+                            !actual,
+                        )
+                      }
+                      style={{
+                        width:
+                          "100%",
+
+                        minHeight:
+                          52,
+
+                        borderWidth:
+                          1,
+
+                        borderColor:
+                          inputBorderColor,
+
+                        borderRadius:
+                          14,
+
+                        backgroundColor:
+                          inputBackgroundColor,
+
+                        paddingHorizontal:
+                          14,
+
+                        flexDirection:
+                          "row",
+
+                        alignItems:
+                          "center",
+
+                        gap: 10,
+                      }}
+                    >
+                      <Ionicons
+                        name="people-outline"
+                        size={19}
+                        color={
+                          primaryColor
+                        }
+                      />
+
+                      <Text
+                        numberOfLines={
+                          1
+                        }
+                        style={{
+                          flex: 1,
+
+                          minWidth:
+                            0,
+
+                          fontFamily:
+                            FONT.regular,
+
+                          fontSize:
+                            14,
+
+                          color:
+                            textColor,
+                        }}
+                      >
+                        {
+                          generoTexto
+                        }
+                      </Text>
+
+                      <Ionicons
+                        name={
+                          mostrarGeneros
+                            ? "chevron-up"
+                            : "chevron-down"
+                        }
+                        size={18}
+                        color={
+                          iconColor
+                        }
+                      />
+                    </TouchableOpacity>
+
+                    {/* LISTA DE GÉNEROS */}
+
+                    {mostrarGeneros && (
+                      <View
+                        style={{
+                          width:
+                            "100%",
+
+                          marginTop:
+                            7,
+
+                          marginBottom:
+                            16,
+
+                          backgroundColor:
+                            surfaceColor,
+
+                          borderWidth:
+                            1,
+
+                          borderColor,
+
+                          borderRadius:
+                            14,
+
+                          overflow:
+                            "hidden",
+                        }}
+                      >
+                        {GENEROS.map(
+                          (
+                            opcion,
+                            index,
+                          ) => (
+                            <TouchableOpacity
+                              key={
+                                opcion.value
+                              }
+                              activeOpacity={
+                                0.75
+                              }
+                              onPress={() => {
+                                setGenero(
+                                  opcion.value,
+                                );
+
+                                setMostrarGeneros(
+                                  false,
+                                );
+                              }}
+                              style={{
+                                minHeight:
+                                  47,
+
+                                paddingHorizontal:
+                                  14,
+
+                                flexDirection:
+                                  "row",
+
+                                alignItems:
+                                  "center",
+
+                                justifyContent:
+                                  "space-between",
+
+                                borderBottomWidth:
+                                  index ===
+                                    GENEROS.length -
+                                    1
+                                    ? 0
+                                    : 1,
+
+                                borderBottomColor:
+                                  dividerColor,
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  fontFamily:
+                                    FONT.regular,
+
+                                  fontSize:
+                                    14,
+
+                                  color:
+                                    textColor,
+                                }}
+                              >
+                                {
+                                  opcion.label
+                                }
+                              </Text>
+
+                              {genero ===
+                                opcion.value && (
+                                  <Ionicons
+                                    name="checkmark-circle"
+                                    size={20}
+                                    color={
+                                      secondaryColor
+                                    }
+                                  />
+                                )}
+                            </TouchableOpacity>
+                          ),
+                        )}
+                      </View>
+                    )}
+                  </View>
+
+                  {/* TELÉFONO */}
+
+                  <View
+                    style={
+                      estiloCampoFormulario
+                    }
+                  >
+                    <Campo
+                      titulo="Teléfono"
+                      valor={
+                        telefono
+                      }
+                      onChange={
+                        setTelefono
+                      }
+                      placeholder="Número de teléfono"
+                      icono="call-outline"
+                      keyboardType="phone-pad"
+                    />
+                  </View>
+                </View>
+              </View>
+
+              {/* ==============================================
+                  CUENTA
+              ============================================== */}
+
+              <View
+                style={{
+                  ...tarjetaBase,
+
+                  padding: esTelefono
+                    ? 18
+                    : 24,
+
+                  marginBottom: 22,
+                }}
+              >
+                <TituloSeccion
+                  sinMargenSuperior
+                >
+                  CUENTA
+                </TituloSeccion>
 
               <View style={styles.flex}>
                 <Text
-                  style={[
-                    styles.valorCuenta,
+                  style={{
+                    marginBottom: 7,
 
                     fontFamily:
                       FONT.semibold,
@@ -1200,99 +1922,176 @@ export default function PerfilScreen() {
                   Cambiar contraseña
                 </Text>
 
-                <Text
-                  style={[
-                    styles.labelCuenta,
+                <View
+                  style={{
+                    width: "100%",
 
-                    {
-                      color: textSecondaryColor,
-                    },
-                  ]}
-                >
-                  Actualiza la contraseña de tu cuenta
-                </Text>
-              </View>
+                    minHeight: 52,
 
-              <Ionicons
-                name={mostrarPassword ? "chevron-up" : "chevron-down"}
-
-                size={19}
-
-                color={iconColor}
-              />
-            </TouchableOpacity>
-
-            {mostrarPassword && (
-              <View
-                style={[
-                  styles.passwordCard,
-
-                  {
-                    backgroundColor: surfaceColor,
+                    borderWidth: 1,
 
                     borderColor,
-                  },
-                ]}
-              >
-                <PasswordInput
-                  titulo="Nueva contraseña"
 
-                  valor={nuevaPassword}
+                    borderRadius: 14,
 
-                  onChange={setNuevaPassword}
+                    backgroundColor:
+                      surfaceSecondaryColor,
 
-                  visible={verPassword}
+                    paddingHorizontal:
+                      14,
 
-                  onToggle={() => setVerPassword((actual) => !actual)}
-                />
+                    flexDirection:
+                      "row",
 
-                <PasswordInput
-                  titulo="Confirmar contraseña"
+                    alignItems:
+                      "center",
 
-                  valor={confirmarPassword}
-
-                  onChange={setConfirmarPassword}
-
-                  visible={verConfirmacion}
-
-                  onToggle={() => setVerConfirmacion((actual) => !actual)}
-                />
-
-                <TouchableOpacity
-                  activeOpacity={0.8}
-
-                  disabled={guardandoPassword}
-
-                  onPress={actualizarPassword}
-
-                  style={[
-                    styles.botonPassword,
-
-                    guardandoPassword && styles.deshabilitado,
-
-                    {
-                      backgroundColor: primaryColor,
-                    },
-                  ]}
+                    gap: 10,
+                  }}
                 >
-                  {guardandoPassword ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
-                  ) : (
-                    <>
+                  <Ionicons
+                    name="mail-outline"
+                    size={19}
+                    color={
+                      primaryColor
+                    }
+                  />
+
+                  <Text
+                    numberOfLines={
+                      1
+                    }
+                    style={{
+                      flex: 1,
+
+                      minWidth: 0,
+
+                      fontFamily:
+                        FONT.regular,
+
+                      fontSize: 14,
+
+                      color:
+                        textSecondaryColor,
+                    }}
+                  >
+                    {perfil?.correo ??
+                      ""}
+                  </Text>
+
+                  <Ionicons
+                    name="lock-closed-outline"
+                    size={17}
+                    color={
+                      iconColor
+                    }
+                  />
+                </View>
+              </View>
+
+              {/* ==============================================
+                  SEGURIDAD
+              ============================================== */}
+
+              {esIndependiente && (
+                <View
+                  style={{
+                    ...tarjetaBase,
+
+                    padding: esTelefono
+                      ? 18
+                      : 24,
+
+                    marginBottom:
+                      22,
+                  }}
+                >
+                  <TituloSeccion
+                    sinMargenSuperior
+                  >
+                    SEGURIDAD
+                  </TituloSeccion>
+
+                  <TouchableOpacity
+                    activeOpacity={
+                      0.8
+                    }
+                    onPress={() =>
+                      setMostrarPassword(
+                        (actual) =>
+                          !actual,
+                      )
+                    }
+                    style={{
+                      width: "100%",
+
+                      minHeight: 75,
+
+                      padding: 14,
+
+                      backgroundColor:
+                        surfaceSecondaryColor,
+
+                      borderRadius: 15,
+
+                      flexDirection:
+                        "row",
+
+                      alignItems:
+                        "center",
+
+                      gap: 12,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 43,
+
+                        height: 43,
+
+                        borderRadius:
+                          22,
+
+                        backgroundColor:
+                          primarySoftColor,
+
+                        alignItems:
+                          "center",
+
+                        justifyContent:
+                          "center",
+
+                        flexShrink:
+                          0,
+                      }}
+                    >
                       <Ionicons
-                        name="shield-checkmark-outline"
-                        size={19}
-                        color="#FFFFFF"
+                        name="key-outline"
+                        size={21}
+                        color={
+                          primaryColor
+                        }
                       />
 
-                      <Text
-                        style={[
-                          styles.textoBotonPrincipal,
+                    <View
+                      style={{
+                        flex: 1,
 
-                          {
-                            color: "#FFFFFF",
-                          },
-                        ]}
+                        minWidth:
+                          0,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily:
+                            FONT.bold,
+
+                          fontSize:
+                            15,
+
+                          color:
+                            textColor,
+                        }}
                       >
                         Actualizar contraseña
                       </Text>
@@ -1304,148 +2103,319 @@ export default function PerfilScreen() {
           </>
         )}
 
-        {/* =================================================
-            PRIVACIDAD
-        ================================================= */}
+                      <Text
+                        style={{
+                          marginTop:
+                            3,
 
-        <TituloSeccion>PRIVACIDAD</TituloSeccion>
+                          fontFamily:
+                            FONT.regular,
 
-        <View
-          style={[
-            styles.privacidad,
+                          fontSize:
+                            12,
 
-            {
-              backgroundColor: primarySoftColor,
+                          lineHeight:
+                            18,
 
-              borderColor,
-            },
-          ]}
-        >
-          <View
-            style={[
-              styles.privacidadIcono,
+                          color:
+                            textSecondaryColor,
+                        }}
+                      >
+                        Actualiza la contraseña de tu cuenta
+                      </Text>
+                    </View>
 
-              {
-                backgroundColor: surfaceColor,
-              },
-            ]}
-          >
-            <Ionicons
-              name="shield-checkmark-outline"
-              size={24}
+                    <Ionicons
+                      name={
+                        mostrarPassword
+                          ? "chevron-up"
+                          : "chevron-down"
+                      }
+                      size={19}
+                      color={
+                        iconColor
+                      }
+                    />
+                  </TouchableOpacity>
 
-              color={primaryColor}
-            />
-          </View>
+                  {/* FORMULARIO DE CONTRASEÑA */}
 
-          <View style={styles.flex}>
-            <Text
-              style={[
-                styles.privacidadTitulo,
+                  {mostrarPassword && (
+                    <View
+                      style={{
+                        width: "100%",
 
-                {
-                  color: textColor,
-                },
-              ]}
-            >
-              Privacidad de datos
-            </Text>
+                        marginTop:
+                          14,
 
-            <Text
-              style={[
-                styles.privacidadTexto,
+                        padding:
+                          esTelefono
+                            ? 14
+                            : 18,
 
-                {
-                  color: textSecondaryColor,
-                },
-              ]}
-            >
-              Tu información personal se mantiene privada y se utiliza para
-              personalizar tu experiencia dentro de Kiri.
-            </Text>
+                        borderWidth:
+                          1,
+
+                        borderColor,
+
+                        borderRadius:
+                          15,
+
+                        backgroundColor:
+                          surfaceColor,
+                      }}
+                    >
+                      <PasswordInput
+                        titulo="Nueva contraseña"
+                        valor={
+                          nuevaPassword
+                        }
+                        onChange={
+                          setNuevaPassword
+                        }
+                        visible={
+                          verPassword
+                        }
+                        onToggle={() =>
+                          setVerPassword(
+                            (actual) =>
+                              !actual,
+                          )
+                        }
+                      />
+
+                      <PasswordInput
+                        titulo="Confirmar contraseña"
+                        valor={
+                          confirmarPassword
+                        }
+                        onChange={
+                          setConfirmarPassword
+                        }
+                        visible={
+                          verConfirmacion
+                        }
+                        onToggle={() =>
+                          setVerConfirmacion(
+                            (actual) =>
+                              !actual,
+                          )
+                        }
+                      />
+
+                      <TouchableOpacity
+                        activeOpacity={
+                          0.8
+                        }
+                        disabled={
+                          guardandoPassword
+                        }
+                        onPress={
+                          actualizarPassword
+                        }
+                        style={{
+                          width:
+                            "100%",
+
+                          minHeight:
+                            50,
+
+                          borderRadius:
+                            14,
+
+                          backgroundColor:
+                            primaryColor,
+
+                          flexDirection:
+                            "row",
+
+                          alignItems:
+                            "center",
+
+                          justifyContent:
+                            "center",
+
+                          gap: 9,
+
+                          paddingHorizontal:
+                            12,
+
+                          opacity:
+                            guardandoPassword
+                              ? 0.65
+                              : 1,
+                        }}
+                      >
+                        {guardandoPassword ? (
+                          <ActivityIndicator
+                            size="small"
+                            color="#FFFFFF"
+                          />
+                        ) : (
+                          <>
+                            <Ionicons
+                              name="shield-checkmark-outline"
+                              size={19}
+                              color="#FFFFFF"
+                            />
+
+                            <Text
+                              style={{
+                                fontFamily:
+                                  FONT.bold,
+
+                                fontSize:
+                                  14,
+
+                                color:
+                                  "#FFFFFF",
+                              }}
+                            >
+                              Actualizar contraseña
+                            </Text>
+                          </>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              )}
+
+              {/* ==============================================
+                  GUARDAR CAMBIOS
+              ============================================== */}
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                disabled={guardando}
+                onPress={
+                  guardarCambios
+                }
+                style={{
+                  width:
+                    esEscritorio
+                      ? 320
+                      : "100%",
+
+                  alignSelf:
+                    esEscritorio
+                      ? "flex-end"
+                      : "stretch",
+
+                  minHeight: 54,
+
+                  borderRadius: 15,
+
+                  backgroundColor:
+                    primaryColor,
+
+                  paddingHorizontal:
+                    18,
+
+                  flexDirection:
+                    "row",
+
+                  alignItems:
+                    "center",
+
+                  justifyContent:
+                    "center",
+
+                  gap: 10,
+
+                  opacity:
+                    guardando
+                      ? 0.65
+                      : 1,
+                }}
+              >
+                {guardando ? (
+                  <ActivityIndicator
+                    size="small"
+                    color="#FFFFFF"
+                  />
+                ) : (
+                  <>
+                    <Ionicons
+                      name="save-outline"
+                      size={20}
+                      color="#FFFFFF"
+                    />
+
+                    <Text
+                      style={{
+                        fontFamily:
+                          FONT.bold,
+
+                        fontSize: 15,
+
+                        color:
+                          "#FFFFFF",
+                      }}
+                    >
+                      Guardar cambios
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
+              {/* ==============================================
+                  CERRAR SESIÓN MÓVIL / TABLET
+              ============================================== */}
+
+              {!esEscritorio && (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() =>
+                    setMostrarLogout(
+                      true,
+                    )
+                  }
+                  style={{
+                    ...tarjetaBase,
+
+                    minHeight: 54,
+
+                    marginTop: 14,
+
+                    flexDirection:
+                      "row",
+
+                    alignItems:
+                      "center",
+
+                    justifyContent:
+                      "center",
+
+                    gap: 9,
+
+                    paddingHorizontal:
+                      16,
+                  }}
+                >
+                  <Ionicons
+                    name="log-out-outline"
+                    size={21}
+                    color={iconColor}
+                  />
+
+                  <Text
+                    style={{
+                      fontFamily:
+                        FONT.bold,
+
+                      fontSize: 15,
+
+                      color: textColor,
+                    }}
+                  >
+                    Cerrar sesión
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         </View>
-
-        {/* =================================================
-            GUARDAR
-        ================================================= */}
-
-        <TouchableOpacity
-          activeOpacity={0.8}
-
-          disabled={guardando}
-
-          onPress={guardarCambios}
-
-          style={[
-            styles.botonGuardar,
-
-            guardando && styles.deshabilitado,
-
-            {
-              backgroundColor: primaryColor,
-            },
-          ]}
-        >
-          {guardando ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
-          ) : (
-            <>
-              <Ionicons name="save-outline" size={20} color="#FFFFFF" />
-
-              <Text
-                style={[
-                  styles.textoBotonPrincipal,
-
-                  {
-                    color: "#FFFFFF",
-                  },
-                ]}
-              >
-                Guardar cambios
-              </Text>
-            </>
-          )}
-        </TouchableOpacity>
-
-        {/* =================================================
-            CERRAR SESIÓN
-        ================================================= */}
-
-        <TouchableOpacity
-          activeOpacity={0.75}
-
-          onPress={() => setMostrarLogout(true)}
-
-          style={[
-            styles.botonSalir,
-
-            {
-              backgroundColor: surfaceColor,
-
-              borderColor,
-            },
-          ]}
-        >
-          <Ionicons
-            name="log-out-outline"
-            size={21}
-
-            color={iconColor}
-          />
-
-          <Text
-            style={[
-              styles.textoSalir,
-
-              {
-                color: textColor,
-              },
-            ]}
-          >
-            Cerrar sesión
-          </Text>
-        </TouchableOpacity>
       </ScrollView>
 
       {/* ==================================================
@@ -1454,8 +2424,9 @@ export default function PerfilScreen() {
 
       <LogoutModal
         visible={mostrarLogout}
-
-        onClose={() => setMostrarLogout(false)}
+        onClose={() =>
+          setMostrarLogout(false)
+        }
       />
     </View>
   );
@@ -1557,9 +2528,7 @@ function Campo({
       >
         <Ionicons
           name={icono}
-
           size={19}
-
           color={primaryColor}
         />
 
@@ -1569,15 +2538,21 @@ function Campo({
           onChangeText={onChange}
 
           placeholder={placeholder}
-
-          placeholderTextColor={placeholderColor}
-
+          placeholderTextColor={
+            placeholderColor
+          }
           selectionColor={primaryColor}
 
           keyboardType={keyboardType}
+          style={{
+            flex: 1,
 
-          style={[
-            styles.textInput,
+            minWidth: 0,
+
+            minHeight: 50,
+
+            fontFamily:
+              FONT.regular,
 
             fontSize: 14,
 
@@ -1690,7 +2665,6 @@ function PasswordInput({
         <Ionicons
           name="lock-closed-outline"
           size={19}
-
           color={primaryColor}
         />
 
@@ -1702,15 +2676,25 @@ function PasswordInput({
           secureTextEntry={!visible}
 
           placeholder="••••••••"
-
-          placeholderTextColor={placeholderColor}
-
+          placeholderTextColor={
+            placeholderColor
+          }
           selectionColor={primaryColor}
 
           autoCapitalize="none"
+          style={{
+            flex: 1,
 
-          style={[
-            styles.textInput,
+            minWidth: 0,
+
+            minHeight: 50,
+
+            fontFamily:
+              FONT.regular,
+
+            fontSize: 14,
+
+            color: textColor,
 
             paddingVertical: 8,
           }}
@@ -1718,12 +2702,30 @@ function PasswordInput({
 
         <TouchableOpacity
           activeOpacity={0.7}
-
           onPress={onToggle}
+          hitSlop={10}
+          accessibilityRole="button"
+          accessibilityLabel={
+            visible
+              ? "Ocultar contraseña"
+              : "Mostrar contraseña"
+          }
+          style={{
+            width: 30,
+
+            height: 36,
+
+            alignItems: "center",
+
+            justifyContent: "center",
+          }}
         >
           <Ionicons
-            name={visible ? "eye-off-outline" : "eye-outline"}
-
+            name={
+              visible
+                ? "eye-off-outline"
+                : "eye-outline"
+            }
             size={19}
 
             color={iconColor}
@@ -1798,9 +2800,7 @@ function FilaInformacion({
       >
         <Ionicons
           name={icono}
-
-          size={21}
-
+          size={22}
           color={color}
         />
       </View>

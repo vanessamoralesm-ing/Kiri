@@ -2,23 +2,43 @@ import React from "react";
 
 import { Tabs } from "expo-router";
 
+import { View } from "react-native";
+
+import { useTheme } from "@react-navigation/native";
+
+import { StatusBar } from "expo-status-bar";
+
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import AppHeader from "@/components/layout/AppHeader";
+
+import { BarraNavegacionCurva } from "@/components/ui/BarraNavegacionCurva";
+
+import { SidebarDesktop } from "@/components/ui/SideBarDesktop";
+
 import { useThemeColor } from "@/hooks/use-theme-color";
 
 import { BarraNavegacionCurva } from "../../components/ui/BarraNavegacionCurva";
 
-import AppHeader from "@/components/layout/AppHeader";
+// ==========================================================
+// CONFIGURACIÓN DE PESTAÑAS
+// ==========================================================
 
-export default function LayoutPestanas() {
-  const backgroundColor = useThemeColor({}, "background");
+interface PestanasProps {
+  backgroundColor: string;
+  esEscritorio: boolean;
+}
 
+function Pestanas({ backgroundColor, esEscritorio }: PestanasProps) {
   return (
     <Tabs
-      tabBar={(props) => <BarraNavegacionCurva {...props} />}
-
+      tabBar={
+        esEscritorio
+          ? () => null
+          : (props) => <BarraNavegacionCurva {...props} />
+      }
       screenOptions={{
-        headerShown: true,
-
-        header: () => <AppHeader />,
+        headerShown: false,
 
         sceneStyle: {
           backgroundColor,
@@ -73,6 +93,105 @@ export default function LayoutPestanas() {
           href: null,
         }}
       />
+
+      <Tabs.Screen
+        name="progreso"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
+  );
+}
+
+// ==========================================================
+// LAYOUT PRINCIPAL
+// ==========================================================
+
+export default function LayoutPestanas() {
+  const { esEscritorio } = useResponsiveLayout();
+
+  const { dark: isDarkMode } = useTheme();
+
+  const backgroundColor = useThemeColor({}, "background");
+
+  return (
+    <Tabs
+      tabBar={(props) => <BarraNavegacionCurva {...props} />}
+
+      screenOptions={{
+        headerShown: true,
+
+        header: () => <AppHeader />,
+
+        sceneStyle: {
+          backgroundColor,
+        }}
+      >
+        <SidebarDesktop />
+
+        <View
+          style={{
+            flex: 1,
+
+            minWidth: 0,
+
+            backgroundColor,
+          }}
+        >
+          <AppHeader />
+
+          <View
+            style={{
+              flex: 1,
+
+              minHeight: 0,
+            }}
+          >
+            <Pestanas backgroundColor={backgroundColor} esEscritorio />
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  // ========================================================
+  // TELÉFONO Y TABLET
+  // ========================================================
+
+  return (
+    <SafeAreaView
+      edges={["top"]}
+      style={{
+        flex: 1,
+
+        backgroundColor,
+      }}
+    >
+      {/* BARRA DE ESTADO */}
+
+      <StatusBar
+        style={isDarkMode ? "light" : "dark"}
+        backgroundColor={backgroundColor}
+      />
+
+      {/* ENCABEZADO COMPARTIDO */}
+
+      <AppHeader />
+
+      {/* CONTENIDO Y NAVEGACIÓN INFERIOR */}
+
+      <View
+        style={{
+          flex: 1,
+
+          minHeight: 0,
+
+          backgroundColor,
+        }}
+      >
+        <Pestanas backgroundColor={backgroundColor} esEscritorio={false} />
+      </View>
+    </SafeAreaView>
   );
 }

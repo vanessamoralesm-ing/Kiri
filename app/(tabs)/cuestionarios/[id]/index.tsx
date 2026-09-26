@@ -1,6 +1,9 @@
 import OpcionRespuesta from "@/components/cuestionarios/OpcionRespuesta";
+
 import ProgresoCuestionario from "@/components/cuestionarios/ProgresoCuestionario";
 import { useThemeColor } from "@/hooks/use-theme-color";
+
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 import {
     completarEjecucion, guardarRespuestaTest, guardarResultadoSubescala, guardarResultadoTest, obtenerBaremosPorTest, obtenerOCrearEjecucion,
@@ -12,26 +15,43 @@ import type { OpcionRespuestaTest, PreguntaTestConOpciones, RespuestaSeleccionad
 import type { RangoBaremo, SubescalaTest, Test } from "@/types/cuestionarios";
 
 import {
-    buscarRango, calcularPuntajeDirecto, calcularPuntajeSubescala, evaluarValidezInstrumento, obtenerValorBaremo, seleccionarBaremo,
-    transformarPuntajeTotal
+    buscarRango,
+    calcularPuntajeDirecto,
+    calcularPuntajeSubescala,
+    evaluarValidezInstrumento,
+    obtenerValorBaremo,
+    seleccionarBaremo,
+    transformarPuntajeTotal,
+    validarConfiguracionEAG,
+    validarRespuestasObligatorias,
 } from "@/utils/cuestionarios/cuestionarioUtils";
 
 import { Ionicons } from "@expo/vector-icons";
+
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "react-native";
-
+import {
+    ActivityIndicator,
+    Pressable,
+    ScrollView,
+    Text,
+    View
+} from "react-native";
 
 // ==========================================================
+
 // CONFIGURACIÓN
+
 // ==========================================================
 
 const PREGUNTAS_POR_PAGINA = 4;
 
 
 // ==========================================================
+
 // COMPONENTE
+
 // ==========================================================
 
 export default function CuestionarioDetalle() {
@@ -44,7 +64,9 @@ export default function CuestionarioDetalle() {
 
 
     // ======================================================
+
     // TEMA
+
     // ======================================================
 
     const backgroundColor = useThemeColor({}, "background");
@@ -61,14 +83,18 @@ export default function CuestionarioDetalle() {
 
 
     // ======================================================
+
     // REFERENCIAS
+
     // ======================================================
 
     const scrollViewRef = useRef<ScrollView>(null);
 
 
     // ======================================================
+
     // ESTADOS
+
     // ======================================================
 
     const [cuestionario, setCuestionario] =
@@ -92,13 +118,35 @@ export default function CuestionarioDetalle() {
     const [paginaActual, setPaginaActual] = useState(0);
     const [cargando, setCargando] = useState(true);
     const [finalizando, setFinalizando] = useState(false);
+    const [guardadosPendientes, setGuardadosPendientes] = useState(0);
+    const [accionError, setAccionError] = useState<string | null>(null);
+    const preguntasGuardandoRef = useRef<Set<string>>(new Set());
 
-    const [error, setError] =
-        useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    // ======================================================
+
+    // RESPONSIVE
+
+    // ======================================================
+
+    const paddingHorizontal = esEscritorio
+        ? PADDING_RESPONSIVE.escritorio
+        : esTablet
+            ? PADDING_RESPONSIVE.tablet
+            : PADDING_RESPONSIVE.telefono;
+
+    const anchoContenido = esEscritorio
+        ? 900
+        : esTablet
+            ? ("92%" as const)
+            : ("100%" as const);
 
 
     // ======================================================
+
     // CARGA INICIAL
+
     // ======================================================
 
     useEffect(() => {
@@ -113,7 +161,9 @@ export default function CuestionarioDetalle() {
 
 
     // ======================================================
+
     // SCROLL AL CAMBIAR DE PÁGINA
+
     // ======================================================
 
     useEffect(() => {
@@ -121,6 +171,7 @@ export default function CuestionarioDetalle() {
         requestAnimationFrame(() => {
             scrollViewRef.current?.scrollTo({
                 y: 0,
+
                 animated: true,
             });
         });
@@ -129,7 +180,9 @@ export default function CuestionarioDetalle() {
 
 
     // ======================================================
+
     // CARGAR CUESTIONARIO
+
     // ======================================================
 
     const cargarCuestionario = async () => {
@@ -141,11 +194,14 @@ export default function CuestionarioDetalle() {
         try {
 
             setCargando(true);
+
             setError(null);
 
 
             // ==========================================
+
             // TEST
+
             // ==========================================
 
             const test =
@@ -159,7 +215,9 @@ export default function CuestionarioDetalle() {
 
 
             // ==========================================
+
             // USUARIO
+
             // ==========================================
 
             const usuarioActual =
@@ -167,18 +225,21 @@ export default function CuestionarioDetalle() {
 
 
             // ==========================================
+
             // EJECUCIÓN
-            // ==========================================
-
-            const ejecucion =
-                await obtenerOCrearEjecucion(
-                    usuarioActual.id_usuario,
-                    test.id_test
-                );
-
 
             // ==========================================
+
+            const ejecucion = await obtenerOCrearEjecucion(
+                usuarioActual.id_usuario,
+
+                test.id_test,
+            );
+
+            // ==========================================
+
             // DATOS DEL CUESTIONARIO
+
             // ==========================================
 
             const [
@@ -193,7 +254,9 @@ export default function CuestionarioDetalle() {
 
 
             // ==========================================
+
             // RECUPERAR RESPUESTAS
+
             // ==========================================
 
             const respuestasRecuperadas:
@@ -229,7 +292,9 @@ export default function CuestionarioDetalle() {
 
 
             // ==========================================
+
             // ACTUALIZAR ESTADO
+
             // ==========================================
 
             setCuestionario(test);
@@ -261,91 +326,65 @@ export default function CuestionarioDetalle() {
 
 
     // ======================================================
+
     // SELECCIONAR RESPUESTA
+
     // ======================================================
 
     const seleccionarRespuesta = async (
         pregunta: PreguntaTestConOpciones,
         opcion: OpcionRespuestaTest
     ) => {
-
-        if (!idEjecucion) {
-            return;
-        }
-
-        const respuestaAnterior =
-            respuestas[pregunta.id_pregunta];
-
-
-        // ==========================================
-        // ACTUALIZACIÓN OPTIMISTA
-        // ==========================================
-
+        if (!idEjecucion || finalizando) return;
+        const idPregunta = pregunta.id_pregunta;
+        if (preguntasGuardandoRef.current.has(idPregunta)) return;
+        const respuestaAnterior = respuestas[idPregunta];
+        preguntasGuardandoRef.current.add(idPregunta);
+        setGuardadosPendientes((actual) => actual + 1);
+        setAccionError(null);
         setRespuestas((anteriores) => ({
             ...anteriores,
-
-            [pregunta.id_pregunta]: {
-                idOpcion: opcion.id,
-                valor: opcion.valor,
-            },
+            [idPregunta]: { idOpcion: opcion.id, valor: opcion.valor },
         }));
-
-
         try {
 
             await guardarRespuestaTest({
                 idEjecucion,
-                idPregunta: pregunta.id_pregunta,
+                idPregunta,
                 idOpcion: opcion.id,
             });
-
-        } catch (error) {
-
-            console.error(
-                "Error guardando respuesta:",
-                error
-            );
-
-
-            // ======================================
-            // RESTAURAR RESPUESTA ANTERIOR
-            // ======================================
-
+        } catch (err) {
+            console.error("Error guardando respuesta:", err);
             setRespuestas((anteriores) => {
-
-                const copia = {
-                    ...anteriores,
-                };
-
-                if (respuestaAnterior) {
-                    copia[pregunta.id_pregunta] =
-                        respuestaAnterior;
-                } else {
-                    delete copia[pregunta.id_pregunta];
-                }
-
+                const copia = { ...anteriores };
+                if (respuestaAnterior) copia[idPregunta] = respuestaAnterior;
+                else delete copia[idPregunta];
                 return copia;
             });
-
-            Alert.alert(
-                "No se pudo guardar",
-                "La respuesta no pudo guardarse. Inténtalo nuevamente."
+            setAccionError(
+                "No fue posible guardar la respuesta. Inténtalo nuevamente.",
             );
+        } finally {
+            preguntasGuardandoRef.current.delete(idPregunta);
+            setGuardadosPendientes((actual) => Math.max(0, actual - 1));
         }
     };
 
 
     // ======================================================
+
     // FINALIZAR CUESTIONARIO
+
     // ======================================================
 
     const finalizarCuestionario = async () => {
-
         if (
             !cuestionario ||
             !usuario ||
             !idEjecucion ||
-            finalizando
+            finalizando ||
+            guardadosPendientes > 0 ||
+            preguntasGuardandoRef.current.size > 0
         ) {
             return;
         }
@@ -353,28 +392,44 @@ export default function CuestionarioDetalle() {
         try {
 
             setFinalizando(true);
+            setAccionError(null);
+            validarRespuestasObligatorias(preguntas, respuestas);
+            if (cuestionario.codigo === "EAG")
+                validarConfiguracionEAG(preguntas, respuestas);
 
 
             // ==========================================
+
             // 1. PUNTAJES
-            // ==========================================
-
-            const puntajeDirecto =
-                calcularPuntajeDirecto(
-                    preguntas,
-                    respuestas,
-                    subescalas
-                );
-
-            const puntajeTotal =
-                transformarPuntajeTotal(
-                    cuestionario.codigo,
-                    puntajeDirecto
-                );
-
 
             // ==========================================
+
+            const puntajeDirecto = calcularPuntajeDirecto(
+                preguntas,
+
+                respuestas,
+
+                subescalas,
+            );
+
+            const puntajeTotal = transformarPuntajeTotal(
+                cuestionario.codigo,
+
+                puntajeDirecto,
+            );
+            if (
+                cuestionario.codigo === "EAG" &&
+                (!Number.isInteger(puntajeTotal) ||
+                    puntajeTotal < 11 ||
+                    puntajeTotal > 77)
+            ) {
+                throw new Error("La puntuación EAG debe estar entre 11 y 77.");
+            }
+
+            // ==========================================
+
             // 2. VALIDEZ
+
             // ==========================================
 
             const {
@@ -382,14 +437,19 @@ export default function CuestionarioDetalle() {
                 observaciones,
             } = evaluarValidezInstrumento(
                 cuestionario,
+
                 subescalas,
+
                 preguntas,
-                respuestas
+
+                respuestas,
             );
 
 
             // ==========================================
+
             // 3. BAREMO
+
             // ==========================================
 
             const baremos =
@@ -398,28 +458,29 @@ export default function CuestionarioDetalle() {
                 );
 
             const baremo =
-                seleccionarBaremo(
-                    baremos,
-                    usuario.fecha_nacimiento,
-                    usuario.genero
-                );
+                cuestionario.codigo === "EAG"
+                    ? (baremos.find(
+                        (b) =>
+                            b.codigo === "EAG-GENERAL" && b.tipo_valor === "puntaje_total",
+                    ) ?? null)
+                    : seleccionarBaremo(
+                        baremos,
+                        usuario.fecha_nacimiento,
+                        usuario.genero,
+                    );
 
             let rangos: RangoBaremo[] = [];
             let rangoGlobal: RangoBaremo | null = null;
 
             if (baremo) {
 
-                rangos =
-                    await obtenerRangosPorBaremo(
-                        baremo.id_baremo
-                    );
+                const valorBaremo = obtenerValorBaremo(
+                    baremo,
 
-                const valorBaremo =
-                    obtenerValorBaremo(
-                        baremo,
-                        puntajeDirecto,
-                        puntajeTotal
-                    );
+                    puntajeDirecto,
+
+                    puntajeTotal,
+                );
 
                 if (valorBaremo !== null) {
                     rangoGlobal =
@@ -431,9 +492,25 @@ export default function CuestionarioDetalle() {
                 }
             }
 
+            if (cuestionario.codigo === "EAG") {
+                if (
+                    !baremo ||
+                    baremo.codigo !== "EAG-GENERAL" ||
+                    baremo.tipo_valor !== "puntaje_total"
+                )
+                    throw new Error(
+                        "No se encontró el baremo EAG-GENERAL activo con tipo puntaje_total.",
+                    );
+                if (!rangoGlobal)
+                    throw new Error(
+                        "No se encontró un rango activo para la puntuación EAG.",
+                    );
+            }
 
             // ==========================================
+
             // 4. RESULTADO PRINCIPAL
+
             // ==========================================
 
             const resultado =
@@ -453,7 +530,9 @@ export default function CuestionarioDetalle() {
 
 
             // ==========================================
+
             // 5. RESULTADOS DE SUBESCALAS
+
             // ==========================================
 
             if (cuestionario.tiene_subescalas) {
@@ -472,12 +551,13 @@ export default function CuestionarioDetalle() {
                         continue;
                     }
 
-                    const puntajeSubescala =
-                        calcularPuntajeSubescala(
-                            subescala.id_subescala,
-                            preguntas,
-                            respuestas
-                        );
+                    const puntajeSubescala = calcularPuntajeSubescala(
+                        subescala.id_subescala,
+
+                        preguntas,
+
+                        respuestas,
+                    );
 
                     const rangoSubescala =
                         baremo
@@ -502,14 +582,18 @@ export default function CuestionarioDetalle() {
 
 
             // ==========================================
+
             // 6. COMPLETAR EJECUCIÓN
+
             // ==========================================
 
             await completarEjecucion(idEjecucion);
 
 
             // ==========================================
+
             // 7. RESULTADO
+
             // ==========================================
 
             router.replace({
@@ -527,9 +611,10 @@ export default function CuestionarioDetalle() {
                 error
             );
 
-            Alert.alert(
-                "No se pudo finalizar",
-                "No fue posible guardar correctamente el resultado. Inténtalo nuevamente."
+            setAccionError(
+                error instanceof Error
+                    ? error.message
+                    : "No fue posible finalizar el cuestionario.",
             );
 
         } finally {
@@ -540,7 +625,9 @@ export default function CuestionarioDetalle() {
 
 
     // ======================================================
+
     // PAGINACIÓN
+
     // ======================================================
 
     const totalPaginas =
@@ -579,12 +666,18 @@ export default function CuestionarioDetalle() {
 
 
     // ======================================================
+
     // NAVEGACIÓN
+
     // ======================================================
 
     const avanzar = () => {
-
-        if (!todasRespondidasEnPagina) {
+        if (
+            finalizando ||
+            guardadosPendientes > 0 ||
+            preguntasGuardandoRef.current.size > 0 ||
+            !todasRespondidasEnPagina
+        ) {
             return;
         }
 
@@ -603,6 +696,12 @@ export default function CuestionarioDetalle() {
 
 
     const retroceder = () => {
+        if (
+            finalizando ||
+            guardadosPendientes > 0 ||
+            preguntasGuardandoRef.current.size > 0
+        )
+            return;
 
         if (paginaActual > 0) {
             setPaginaActual(
@@ -617,7 +716,9 @@ export default function CuestionarioDetalle() {
 
 
     // ======================================================
+
     // CARGANDO
+
     // ======================================================
 
     if (cargando) {
@@ -652,7 +753,9 @@ export default function CuestionarioDetalle() {
 
 
     // ======================================================
+
     // ERROR
+
     // ======================================================
 
     if (error || !cuestionario) {
@@ -708,14 +811,44 @@ export default function CuestionarioDetalle() {
                     >
                         Volver
                     </Text>
-                </Pressable>
+
+                    <Pressable
+                        onPress={() => router.back()}
+
+                        style={{
+                            marginTop: 20,
+
+                            paddingHorizontal: 24,
+
+                            paddingVertical: 12,
+
+                            borderRadius: 12,
+
+                            backgroundColor: primaryColor,
+                        }}
+                    >
+                        <Text
+                            style={{
+                                fontFamily: "Nunito-SemiBold",
+
+                                fontSize: 14,
+
+                                color: "#FFFFFF",
+                            }}
+                        >
+                            Volver
+                        </Text>
+                    </Pressable>
+                </View>
             </View>
         );
     }
 
 
     // ======================================================
+
     // SIN PREGUNTAS
+
     // ======================================================
 
     if (preguntas.length === 0) {
@@ -745,8 +878,13 @@ export default function CuestionarioDetalle() {
                         textAlign: "center",
                     }}
                 >
-                    Este cuestionario aún no contiene preguntas.
-                </Text>
+                    <Ionicons
+                        name="document-text-outline"
+
+                        size={50}
+
+                        color={accentColor}
+                    />
 
                 <Pressable
                     onPress={() => router.back()}
@@ -767,56 +905,106 @@ export default function CuestionarioDetalle() {
                     >
                         Volver
                     </Text>
-                </Pressable>
+
+                    <Pressable
+                        onPress={() => router.back()}
+
+                        style={{
+                            marginTop: 20,
+
+                            paddingHorizontal: 24,
+
+                            paddingVertical: 12,
+
+                            borderRadius: 12,
+
+                            backgroundColor: primaryColor,
+                        }}
+                    >
+                        <Text
+                            style={{
+                                fontFamily: "Nunito-SemiBold",
+
+                                fontSize: 14,
+
+                                color: "#FFFFFF",
+                            }}
+                        >
+                            Volver
+                        </Text>
+                    </Pressable>
+                </View>
             </View>
         );
     }
 
 
     // ======================================================
+
     // INTERFAZ
+
     // ======================================================
 
     return (
         <View
             style={{
                 flex: 1,
+
                 backgroundColor,
             }}
         >
             <ScrollView
                 ref={scrollViewRef}
+
                 style={{
                     flex: 1,
                 }}
+
                 contentContainerStyle={{
                     paddingHorizontal: 20,
                     paddingTop: 18,
                     paddingBottom: 120,
                 }}
+
                 showsVerticalScrollIndicator={false}
+
                 bounces={false}
+
                 overScrollMode="never"
+
                 keyboardShouldPersistTaps="handled"
             >
 
                 {/* ==================================================
-                    ENCABEZADO
+
+                    CONTENEDOR PRINCIPAL RESPONSIVE
+
                 ================================================== */}
 
                 <View className="flex-row items-center mb-5">
 
-                    <Pressable
-                        onPress={retroceder}
-                        disabled={finalizando}
-                        className="w-10 h-10 items-center justify-center"
-                    >
-                        <Ionicons
-                            name="arrow-back-outline"
-                            size={24}
-                            color={textSecondaryColor}
-                        />
-                    </Pressable>
+                        paddingHorizontal: esTelefono
+                            ? PADDING_RESPONSIVE.telefono
+                            : esTablet
+                                ? PADDING_RESPONSIVE.tablet
+                                : 32,
+
+                        paddingVertical: esEscritorio ? 28 : 0,
+
+                        borderRadius: esEscritorio ? 28 : 0,
+
+                        borderWidth: esEscritorio ? 1 : 0,
+
+                        borderColor,
+
+                        backgroundColor: esEscritorio ? surfaceColor : "transparent",
+                    }}
+                >
+                    {/* ==================================================
+
+                        ENCABEZADO
+
+                    ================================================== */}
 
                     <Text
                         numberOfLines={1}
@@ -828,9 +1016,39 @@ export default function CuestionarioDetalle() {
                             color: textColor,
                         }}
                     >
-                        {cuestionario.nombre}
-                    </Text>
-                </View>
+                        <Pressable
+                            onPress={retroceder}
+
+                            disabled={finalizando || guardadosPendientes > 0}
+
+                            style={{
+                                width: 40,
+
+                                height: 40,
+
+                                alignItems: "center",
+
+                                justifyContent: "center",
+                            }}
+                        >
+                            <Ionicons
+                                name="arrow-back-outline"
+
+                                size={24}
+
+                                color={textSecondaryColor}
+                            />
+                        </Pressable>
+
+                        <Text
+                            numberOfLines={2}
+
+                            style={{
+                                flex: 1,
+
+                                marginLeft: 8,
+
+                                fontFamily: "Nunito-Bold",
 
 
                 {/* ==================================================
@@ -844,14 +1062,27 @@ export default function CuestionarioDetalle() {
                     totalPreguntas={preguntas.length}
                 />
 
+                    {/* ==================================================
 
-                {/* ==================================================
-                    INSTRUCCIONES
-                ================================================== */}
+                        PROGRESO
 
-                {
-                    paginaActual === 0 &&
-                    cuestionario.instrucciones && (
+                    ================================================== */}
+
+                    <ProgresoCuestionario
+                        paginaActual={paginaActual + 1}
+
+                        totalPaginas={totalPaginas}
+
+                        respondidas={Object.keys(respuestas).length}
+
+                        totalPreguntas={preguntas.length}
+                    />
+
+                    {/* ==================================================
+
+                        INSTRUCCIONES
+
+                    ================================================== */}
 
                         <View
                             style={{
@@ -867,7 +1098,9 @@ export default function CuestionarioDetalle() {
 
                                 <Ionicons
                                     name="information-circle-outline"
+
                                     size={22}
+
                                     color={primaryColor}
                                 />
 
@@ -886,9 +1119,36 @@ export default function CuestionarioDetalle() {
 
                             </View>
                         </View>
-                    )
-                }
+                    )}
 
+                    {/* ==================================================
+
+                        PREGUNTAS
+
+                    ================================================== */}
+
+                    {preguntasPagina.map((pregunta, index) => {
+                        const numeroPregunta = indiceInicial + index + 1;
+
+                        return (
+                            <View
+                                key={pregunta.id_pregunta}
+
+                                style={{
+                                    marginBottom: 36,
+
+                                    paddingBottom: esEscritorio ? 32 : 0,
+
+                                    borderBottomWidth: esEscritorio ? 1 : 0,
+
+                                    borderBottomColor: borderColor,
+                                }}
+                            >
+                                {/* ==================================
+
+                                            ENUNCIADO
+
+                                        ================================== */}
 
                 {/* ==================================================
                     PREGUNTAS
@@ -911,6 +1171,16 @@ export default function CuestionarioDetalle() {
                                     key={pregunta.id_pregunta}
                                     className="mb-9"
                                 >
+                                    {numeroPregunta}. {pregunta.enunciado}
+                                </Text>
+
+                                {/* ==================================
+
+                                            DESCRIPCIÓN DE APOYO
+
+                                        ================================== */}
+
+                                {pregunta.descripcion_apoyo && (
                                     <Text
                                         style={{
                                             fontFamily: "Nunito-Bold",
@@ -922,6 +1192,40 @@ export default function CuestionarioDetalle() {
                                         {numeroPregunta}.{" "}
                                         {pregunta.enunciado}
                                     </Text>
+                                )}
+
+                                {/* ==================================
+
+                                            OPCIONES
+
+                                        ================================== */}
+
+                                <View
+                                    style={{
+                                        marginTop: pregunta.descripcion_apoyo ? 4 : 20,
+                                    }}
+                                >
+                                    {pregunta.opciones.length > 0 ? (
+                                        pregunta.opciones.map((opcion) => (
+                                            <OpcionRespuesta
+                                                key={opcion.id}
+
+                                                texto={opcion.texto}
+
+                                                seleccionada={
+                                                    respuestas[pregunta.id_pregunta]?.idOpcion ===
+                                                    opcion.id
+                                                }
+
+                                                onPress={() => seleccionarRespuesta(pregunta, opcion)}
+                                            />
+                                        ))
+                                    ) : (
+                                        <View
+                                            style={{
+                                                padding: 16,
+
+                                                borderWidth: 1,
 
 
                                     {
@@ -938,81 +1242,50 @@ export default function CuestionarioDetalle() {
                                                     textAlign: "center",
                                                 }}
                                             >
-                                                {pregunta.descripcion_apoyo}
-                                            </Text>
-                                        )
-                                    }
+                                                <Ionicons
+                                                    name="information-circle-outline"
 
+                                                    size={20}
 
-                                    <View className="mt-5">
+                                                    color={warningColor}
+                                                />
 
-                                        {
-                                            pregunta.opciones.length > 0
+                                                <Text
+                                                    style={{
+                                                        flex: 1,
 
-                                                ? pregunta.opciones.map(
-                                                    (opcion) => (
+                                                        marginLeft: 8,
 
-                                                        <OpcionRespuesta
-                                                            key={opcion.id}
-                                                            texto={opcion.texto}
-                                                            seleccionada={
-                                                                respuestas[
-                                                                    pregunta.id_pregunta
-                                                                ]?.idOpcion ===
-                                                                opcion.id
-                                                            }
-                                                            onPress={() =>
-                                                                seleccionarRespuesta(
-                                                                    pregunta,
-                                                                    opcion
-                                                                )
-                                                            }
-                                                        />
-                                                    )
-                                                )
+                                                        fontFamily: "Nunito-Medium",
 
-                                                : (
-                                                    <View
-                                                        style={{
-                                                            padding: 16,
-                                                            borderWidth: 1,
-                                                            borderColor: warningColor,
-                                                            borderRadius: 16,
-                                                            backgroundColor: surfaceColor,
-                                                        }}
-                                                    >
-                                                        <View className="flex-row items-start">
+                                                        fontSize: 13,
 
-                                                            <Ionicons
-                                                                name="information-circle-outline"
-                                                                size={20}
-                                                                color={warningColor}
-                                                            />
-
-                                                            <Text
-                                                                style={{
-                                                                    flex: 1,
-                                                                    marginLeft: 8,
-                                                                    fontFamily: "Nunito-Medium",
-                                                                    fontSize: 13,
-                                                                    lineHeight: 18,
-                                                                    color: textSecondaryColor,
-                                                                }}
-                                                            >
-                                                                Esta pregunta no tiene opciones de respuesta disponibles.
-                                                            </Text>
-
-                                                        </View>
-                                                    </View>
-                                                )
-                                        }
+                                                        lineHeight: 18,
 
                                     </View>
                                 </View>
-                            );
-                        }
-                    )
-                }
+                            </View>
+                        );
+                    })}
+
+                    {accionError && (
+                        <Text
+                            style={{
+                                color: warningColor,
+                                fontFamily: "Nunito-Medium",
+                                textAlign: "center",
+                                marginTop: 12,
+                            }}
+                        >
+                            {accionError}
+                        </Text>
+                    )}
+
+                    {/* ==================================================
+
+                        NAVEGACIÓN
+
+                    ================================================== */}
 
 
                 {/* ==================================================
@@ -1036,18 +1309,94 @@ export default function CuestionarioDetalle() {
                             justifyContent: "center",
                         }}
                     >
-                        <Ionicons
-                            name="arrow-back-outline"
-                            size={16}
-                            color={textSecondaryColor}
-                        />
+                        {/* ==============================================
 
-                        <Text
+                            ANTERIOR
+
+                        ============================================== */}
+
+                        <Pressable
+                            onPress={retroceder}
+
+                            disabled={finalizando}
+
                             style={{
-                                marginLeft: 5,
-                                fontFamily: "Nunito-SemiBold",
-                                fontSize: 14,
-                                color: textSecondaryColor,
+                                flex: 1,
+
+                                paddingVertical: 16,
+
+                                borderRadius: 12,
+
+                                borderWidth: 1,
+
+                                borderColor,
+
+                                backgroundColor: surfaceSecondaryColor,
+
+                                flexDirection: "row",
+
+                                alignItems: "center",
+
+                                justifyContent: "center",
+                            }}
+                        >
+                            <Ionicons
+                                name="arrow-back-outline"
+
+                                size={16}
+
+                                color={textSecondaryColor}
+                            />
+
+                            <Text
+                                style={{
+                                    marginLeft: 5,
+
+                                    fontFamily: "Nunito-SemiBold",
+
+                                    fontSize: 14,
+
+                                    color: textSecondaryColor,
+                                }}
+                            >
+                                Anterior
+                            </Text>
+                        </Pressable>
+
+                        {/* ==============================================
+
+                            SIGUIENTE / FINALIZAR
+
+                        ============================================== */}
+
+                        <Pressable
+                            disabled={
+                                !todasRespondidasEnPagina ||
+                                finalizando ||
+                                guardadosPendientes > 0
+                            }
+
+                            onPress={avanzar}
+
+                            style={{
+                                flex: 1.5,
+
+                                paddingVertical: 16,
+
+                                borderRadius: 12,
+
+                                flexDirection: "row",
+
+                                alignItems: "center",
+
+                                justifyContent: "center",
+
+                                backgroundColor:
+                                    todasRespondidasEnPagina &&
+                                        !finalizando &&
+                                        guardadosPendientes === 0
+                                        ? primaryColor
+                                        : disabledColor,
                             }}
                         >
                             Anterior
@@ -1078,10 +1427,20 @@ export default function CuestionarioDetalle() {
                         {
                             finalizando
 
-                                ? (
-                                    <ActivityIndicator
-                                        size="small"
+                                    <Ionicons
+                                        name={
+                                            paginaActual === totalPaginas - 1
+                                                ? "checkmark-outline"
+                                                : "arrow-forward-outline"
+                                        }
+
+                                        size={16}
+
                                         color="#FFFFFF"
+
+                                        style={{
+                                            marginLeft: 5,
+                                        }}
                                     />
                                 )
 

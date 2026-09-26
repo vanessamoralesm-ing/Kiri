@@ -218,6 +218,36 @@ export default function ResultadoCuestionario() {
                 const resultadoPreparado =
                     resultadoData as ResultadoTest;
 
+            const resultadoPreparado = resultadoData as ResultadoTest;
+
+            setResultado(resultadoPreparado);
+            setBaremo(null);
+            setRangosGlobales([]);
+            setRangoAplicado(null);
+
+            // ==================================================
+            // 2. EJECUCIÓN
+            // ==================================================
+
+            const { data: ejecucionData, error: ejecucionError } = await supabase
+                .from("ejecucion_test")
+                .select(
+                    `
+                    id_ejecucion,
+                    id_usuario,
+                    id_test,
+                    estado,
+                    fecha_inicio,
+                    fecha_fin,
+                    fecha_actualizacion
+                `,
+                )
+                .eq("id_ejecucion", resultadoPreparado.id_ejecucion)
+                .maybeSingle();
+
+            if (ejecucionError) {
+                throw ejecucionError;
+            }
 
                 setResultado(
                     resultadoPreparado
@@ -553,7 +583,36 @@ export default function ResultadoCuestionario() {
                     error:
                         subescalasError,
 
-                } = await supabase
+    // Buscar el rango por puntuación si el resultado histórico no guardó id_rango_baremo.
+    // La interpretación persistida siempre tiene prioridad al presentar el resultado.
+    const rangoCorrespondiente = useMemo(() => {
+        if (rangoAplicado && rangoAplicado.id_baremo === resultado?.id_baremo)
+            return rangoAplicado;
+        if (!resultado?.id_baremo || !Number.isFinite(puntajeTotal)) return null;
+        return (
+            rangosGlobales.find((rango) => {
+                if (
+                    rango.id_baremo !== resultado.id_baremo ||
+                    rango.id_subescala !== null
+                )
+                    return false;
+                const minimo =
+                    rango.valor_minimo === null ? -Infinity : Number(rango.valor_minimo);
+                const maximo =
+                    rango.valor_maximo === null ? Infinity : Number(rango.valor_maximo);
+                return (
+                    !Number.isNaN(minimo) &&
+                    !Number.isNaN(maximo) &&
+                    puntajeTotal >= minimo &&
+                    puntajeTotal <= maximo
+                );
+            }) ?? null
+        );
+    }, [rangoAplicado, rangosGlobales, resultado?.id_baremo, puntajeTotal]);
+
+    // ======================================================
+    // RANGO TEÓRICO / VISUAL
+    // ======================================================
 
                     .from(
                         "resultado_subescala"
@@ -1136,7 +1195,13 @@ export default function ResultadoCuestionario() {
 
                     className="bg-blue-500 px-6 py-3 rounded-xl mt-5"
 
-                >
+                                                color: textColor,
+                                            }}
+                                        >
+                                            {resultado.nivel_cualitativo ??
+                                                rangoCorrespondiente?.nivel ??
+                                                "Resultado de la evaluación"}
+                                        </Text>
 
                     <Text
                         style={{
@@ -1153,7 +1218,17 @@ export default function ResultadoCuestionario() {
 
                         Volver a cuestionarios
 
-                    </Text>
+                                                marginTop: 9,
+                                            }}
+                                        >
+                                            {resultado.interpretacion_texto ??
+                                                rangoCorrespondiente?.interpretacion ??
+                                                "El instrumento no tiene una interpretación cualitativa configurada para este resultado."}
+                                        </Text>
+                                    </View>
+                                </View>
+                            </View>
+                        </View>
 
                 </Pressable>
 
@@ -2222,18 +2297,36 @@ export default function ResultadoCuestionario() {
                         }}
                     >
 
-                        Información de la evaluación
+                                            {rangoCorrespondiente && (
+                                                <Text
+                                                    style={{
+                                                        fontFamily: "Nunito-Medium",
 
                     </Text>
 
 
-                    <View className="flex-row items-center mb-3">
-
-                        <Ionicons
-                            name="document-text-outline"
-                            size={18}
-                            color="#64748B"
-                        />
+                                                        marginTop: 4,
+                                                    }}
+                                                >
+                                                    Rango aplicado:{" "}
+                                                    {rangoCorrespondiente.valor_minimo === null
+                                                        ? "Sin límite inferior"
+                                                        : formatearPuntaje(
+                                                            Number(rangoCorrespondiente.valor_minimo),
+                                                        )}
+                                                    {" – "}
+                                                    {rangoCorrespondiente.valor_maximo === null
+                                                        ? "Sin límite superior"
+                                                        : formatearPuntaje(
+                                                            Number(rangoCorrespondiente.valor_maximo),
+                                                        )}
+                                                </Text>
+                                            )}
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+                        )}
 
 
                         <Text
