@@ -2,12 +2,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { usePathname, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 
-import { ActivityIndicator, Image, Pressable, Text, View } from "react-native";
+import {
+    ActivityIndicator,
+    Pressable,
+    Text,
+    View,
+} from "react-native";
 
+import Logo from "@/components/ui/Logo_izq";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useAuth } from "@/services/authProvider";
-
-const LOGO_KIRI = require("@/assets/images/splash-icon-ps.png");
 
 // ==========================================================
 // TIPOS
@@ -81,26 +85,49 @@ export default function AdminSidebar() {
 
     const { signOut } = useAuth();
 
-    const [cerrandoSesion, setCerrandoSesion] = useState(false);
+    const [cerrandoSesion, setCerrandoSesion] =
+        useState(false);
 
     // ======================================================
     // TEMA
     // ======================================================
 
-    const surfaceColor = useThemeColor({}, "surface");
-    const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
-    const borderColor = useThemeColor({}, "border");
-    const textSecondaryColor = useThemeColor({}, "textSecondary");
-    const textMutedColor = useThemeColor({}, "textMuted");
-    const primaryColor = useThemeColor({}, "primary");
-    const primarySoftColor = useThemeColor({}, "primarySoft");
+    const surfaceColor =
+        useThemeColor({}, "surface");
+
+    const surfaceSecondaryColor =
+        useThemeColor({}, "surfaceSecondary");
+
+    const borderColor =
+        useThemeColor({}, "border");
+
+    const textSecondaryColor =
+        useThemeColor({}, "textSecondary");
+
+    const textMutedColor =
+        useThemeColor({}, "textMuted");
+
+    const primaryColor =
+        useThemeColor({}, "primary");
+
+    const primarySoftColor =
+        useThemeColor({}, "primarySoft");
+
+    const textOnPrimaryColor =
+        useThemeColor({}, "textOnPrimary");
+
+    const dangerColor =
+        useThemeColor({}, "danger");
 
     // ======================================================
     // RUTA ACTIVA
     // ======================================================
 
     const rutaActual = useMemo(() => {
-        if (pathname === "/superadmin" || pathname === "/superadmin/") {
+        if (
+            pathname === "/superadmin" ||
+            pathname === "/superadmin/"
+        ) {
             return "/superadmin";
         }
 
@@ -112,7 +139,10 @@ export default function AdminSidebar() {
             return rutaActual === "/superadmin";
         }
 
-        return rutaActual === route || rutaActual.startsWith(`${route}/`);
+        return (
+            rutaActual === route ||
+            rutaActual.startsWith(`${route}/`)
+        );
     }
 
     // ======================================================
@@ -141,7 +171,10 @@ export default function AdminSidebar() {
 
             await signOut();
         } catch (error) {
-            console.error("Error cerrando sesión:", error);
+            console.error(
+                "Error cerrando sesión:",
+                error
+            );
         } finally {
             setCerrandoSesion(false);
         }
@@ -178,13 +211,9 @@ export default function AdminSidebar() {
                     alignItems: "center",
                 }}
             >
-                <Image
-                    source={LOGO_KIRI}
-                    resizeMode="contain"
-                    style={{
-                        width: 105,
-                        height: 46,
-                    }}
+                <Logo
+                    ancho={105}
+                    alto={46}
                 />
 
                 <View
@@ -236,12 +265,15 @@ export default function AdminSidebar() {
                 }}
             >
                 {MENU_ITEMS.map((item) => {
-                    const activa = estaActiva(item.route);
+                    const activa =
+                        estaActiva(item.route);
 
                     return (
                         <Pressable
                             key={item.route}
-                            onPress={() => navegar(item.route)}
+                            onPress={() =>
+                                navegar(item.route)
+                            }
                             style={({ pressed }) => ({
                                 minHeight: 46,
                                 paddingHorizontal: 14,
@@ -258,23 +290,35 @@ export default function AdminSidebar() {
                             <Ionicons
                                 name={item.icon}
                                 size={19}
-                                color={activa ? "#FFFFFF" : textSecondaryColor}
+                                color={
+                                    activa
+                                        ? textOnPrimaryColor
+                                        : textSecondaryColor
+                                }
                             />
 
                             <Text
                                 style={{
                                     flex: 1,
                                     marginLeft: 12,
-                                    fontFamily: activa ? "Nunito-Bold" : "Nunito-Medium",
+                                    fontFamily: activa
+                                        ? "Nunito-Bold"
+                                        : "Nunito-Medium",
                                     fontSize: 14,
-                                    color: activa ? "#FFFFFF" : textSecondaryColor,
+                                    color: activa
+                                        ? textOnPrimaryColor
+                                        : textSecondaryColor,
                                 }}
                             >
                                 {item.label}
                             </Text>
 
                             {activa && (
-                                <Ionicons name="chevron-forward" size={15} color="#FFFFFF" />
+                                <Ionicons
+                                    name="chevron-forward"
+                                    size={15}
+                                    color={textOnPrimaryColor}
+                                />
                             )}
                         </Pressable>
                     );
@@ -285,7 +329,11 @@ export default function AdminSidebar() {
                 ESPACIADOR
             ================================================== */}
 
-            <View style={{ flex: 1 }} />
+            <View
+                style={{
+                    flex: 1,
+                }}
+            />
 
             {/* ==================================================
                 AYUDA
@@ -293,7 +341,9 @@ export default function AdminSidebar() {
 
             <Pressable
                 onPress={() => {
-                    console.log("Abrir documentación");
+                    console.log(
+                        "Abrir documentación"
+                    );
                 }}
                 style={({ pressed }) => ({
                     minHeight: 44,
@@ -301,10 +351,16 @@ export default function AdminSidebar() {
                     borderRadius: 12,
                     flexDirection: "row",
                     alignItems: "center",
-                    backgroundColor: pressed ? surfaceSecondaryColor : "transparent",
+                    backgroundColor: pressed
+                        ? surfaceSecondaryColor
+                        : "transparent",
                 })}
             >
-                <Ionicons name="help-circle-outline" size={19} color={textMutedColor} />
+                <Ionicons
+                    name="help-circle-outline"
+                    size={19}
+                    color={textMutedColor}
+                />
 
                 <Text
                     style={{
@@ -332,14 +388,25 @@ export default function AdminSidebar() {
                     borderRadius: 12,
                     flexDirection: "row",
                     alignItems: "center",
-                    opacity: cerrandoSesion ? 0.6 : 1,
-                    backgroundColor: pressed ? "rgba(220, 38, 38, 0.08)" : "transparent",
+                    opacity: cerrandoSesion
+                        ? 0.6
+                        : 1,
+                    backgroundColor: pressed
+                        ? "rgba(220, 38, 38, 0.08)"
+                        : "transparent",
                 })}
             >
                 {cerrandoSesion ? (
-                    <ActivityIndicator size="small" color="#DC2626" />
+                    <ActivityIndicator
+                        size="small"
+                        color={dangerColor}
+                    />
                 ) : (
-                    <Ionicons name="log-out-outline" size={19} color="#DC2626" />
+                    <Ionicons
+                        name="log-out-outline"
+                        size={19}
+                        color={dangerColor}
+                    />
                 )}
 
                 <Text
@@ -347,10 +414,12 @@ export default function AdminSidebar() {
                         marginLeft: 12,
                         fontFamily: "Nunito-SemiBold",
                         fontSize: 13,
-                        color: "#DC2626",
+                        color: dangerColor,
                     }}
                 >
-                    {cerrandoSesion ? "Cerrando sesión..." : "Cerrar sesión"}
+                    {cerrandoSesion
+                        ? "Cerrando sesión..."
+                        : "Cerrar sesión"}
                 </Text>
             </Pressable>
         </View>

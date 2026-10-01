@@ -1,12 +1,6 @@
-//Le pertenece a index.tsx de [id]
-import React, {
-  useEffect,
-} from "react";
+import React, { useEffect } from "react";
 
-import {
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { useWindowDimensions, View } from "react-native";
 
 import Animated, {
   useAnimatedStyle,
@@ -15,78 +9,150 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import { useThemeColor } from "@/hooks/use-theme-color";
+
 export function DetalleSkeleton() {
-  const {
-    width,
-  } =
-    useWindowDimensions();
+  const { width } = useWindowDimensions();
 
-  const opacity =
-    useSharedValue(0.45);
+  // ======================================================
+  // TEMA
+  // ======================================================
 
-  const esTelefono =
-    width < 768;
+  const backgroundColor = useThemeColor({}, "background");
+
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+
+  // ======================================================
+  // RESPONSIVE
+  // ======================================================
+
+  const esTelefono = width < 768;
+
+  // ======================================================
+  // ANIMACIÓN
+  // ======================================================
+
+  const opacity = useSharedValue(0.45);
 
   useEffect(() => {
-    opacity.value =
-      withRepeat(
-        withTiming(
-          1,
-          {
-            duration: 800,
-          }
-        ),
-        -1,
-        true
-      );
-  }, [
-    opacity,
-  ]);
+    opacity.value = withRepeat(
+      withTiming(1, {
+        duration: 800,
+      }),
+      -1,
+      true,
+    );
+  }, [opacity]);
 
-  const animatedStyle =
-    useAnimatedStyle(() => ({
-      opacity:
-        opacity.value,
-    }));
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
+
+  // ======================================================
+  // UI
+  // ======================================================
 
   return (
-    <View className="flex-1 bg-[#F8FBFF]">
+    <View
+      style={{
+        flex: 1,
+        backgroundColor,
+      }}
+    >
       <View
         style={{
           width: "100%",
+
           maxWidth: 920,
+
           alignSelf: "center",
-          paddingHorizontal:
-            esTelefono
-              ? 16
-              : 28,
-          paddingTop:
-            24,
+
+          paddingHorizontal: esTelefono ? 16 : 28,
+
+          paddingTop: 24,
         }}
       >
-        <Animated.View
-          style={animatedStyle}
-          className="mb-5 h-16 rounded-[20px] bg-slate-200"
-        />
+        {/* Encabezado */}
 
         <Animated.View
-          style={animatedStyle}
-          className="mb-5 h-44 rounded-[26px] bg-slate-200"
+          style={[
+            animatedStyle,
+            {
+              height: 64,
+
+              marginBottom: 20,
+
+              borderRadius: 20,
+
+              backgroundColor: surfaceSecondaryColor,
+            },
+          ]}
         />
 
-        <Animated.View
-          style={animatedStyle}
-          className="mb-4 h-28 rounded-[22px] bg-slate-200"
-        />
+        {/* Resumen */}
 
         <Animated.View
-          style={animatedStyle}
-          className="mb-4 h-28 rounded-[22px] bg-slate-200"
+          style={[
+            animatedStyle,
+            {
+              height: 176,
+
+              marginBottom: 20,
+
+              borderRadius: 26,
+
+              backgroundColor: surfaceSecondaryColor,
+            },
+          ]}
         />
 
+        {/* Respuesta 1 */}
+
         <Animated.View
-          style={animatedStyle}
-          className="h-28 rounded-[22px] bg-slate-200"
+          style={[
+            animatedStyle,
+            {
+              height: 112,
+
+              marginBottom: 16,
+
+              borderRadius: 22,
+
+              backgroundColor: surfaceSecondaryColor,
+            },
+          ]}
+        />
+
+        {/* Respuesta 2 */}
+
+        <Animated.View
+          style={[
+            animatedStyle,
+            {
+              height: 112,
+
+              marginBottom: 16,
+
+              borderRadius: 22,
+
+              backgroundColor: surfaceSecondaryColor,
+            },
+          ]}
+        />
+
+        {/* Respuesta 3 */}
+
+        <Animated.View
+          style={[
+            animatedStyle,
+            {
+              height: 112,
+
+              borderRadius: 22,
+
+              backgroundColor: surfaceSecondaryColor,
+            },
+          ]}
         />
       </View>
     </View>

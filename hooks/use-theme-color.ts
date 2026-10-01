@@ -1,44 +1,16 @@
-import {
-  useTheme,
-} from "@react-navigation/native";
-
-import {
-  Colors,
-} from "@/constants/theme";
-
+import { Colors } from "@/constants/theme";
+import { useThemeMode } from "@/contexts/ThemeModeContext";
 
 export function useThemeColor(
   props: {
     light?: string;
     dark?: string;
   },
+  colorName: keyof typeof Colors.light & keyof typeof Colors.dark,
+): string {
+  const { themeMode } = useThemeMode();
 
-  colorName:
-    keyof typeof Colors.light &
-    keyof typeof Colors.dark
-) {
+  const colorFromProps = props[themeMode];
 
-  const {
-    dark,
-  } =
-    useTheme();
-
-
-  const theme:
-    "light" | "dark" =
-      dark
-        ? "dark"
-        : "light";
-
-
-  const colorFromProps =
-    props[theme];
-
-
-  if (colorFromProps) {
-    return colorFromProps;
-  }
-
-
-  return Colors[theme][colorName];
+  return colorFromProps ?? Colors[themeMode][colorName];
 }

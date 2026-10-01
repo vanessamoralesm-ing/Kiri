@@ -1,18 +1,16 @@
-import {
-  Ionicons,
-} from "@expo/vector-icons";
-
-import {
-  router,
-  useLocalSearchParams,
-} from "expo-router";
-
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+import { router, useLocalSearchParams } from "expo-router";
 import React, {
+  useCallback,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
 import {
+  LayoutChangeEvent,
   Pressable,
   ScrollView,
   Text,
@@ -21,6 +19,9 @@ import {
 
 import Animated, {
   FadeInDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
 } from "react-native-reanimated";
 
 import EncabezadoCard from "@/components/educacion/EncabezadoCard";
@@ -28,19 +29,22 @@ import LecturaRecomendadaCard from "@/components/educacion/LecturaRecomendadaCar
 import SearchBar from "@/components/ui/SearchBar";
 
 import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
+  MAX_WIDTHS,
+  PADDING_RESPONSIVE,
+} from "@/constants/responsive";
+
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 
 // ==========================================================
-// LECTURAS
+// DATOS
 // ==========================================================
 
 const lecturas = [
   {
     id: "que-es-la-ansiedad",
     categoria: "Ansiedad",
-    tiempo: "5 min de lectura",
     titulo: "¿Qué es la ansiedad?",
     descripcion:
       "Conoce qué es la ansiedad, por qué aparece y cómo puede manifestarse en diferentes situaciones.",
@@ -48,7 +52,6 @@ const lecturas = [
   {
     id: "reconocer-ansiedad",
     categoria: "Ansiedad",
-    tiempo: "7 min de lectura",
     titulo: "Cómo reconocer la ansiedad",
     descripcion:
       "Aprende a identificar algunas señales físicas, emocionales y conductuales relacionadas con la ansiedad.",
@@ -56,7 +59,6 @@ const lecturas = [
   {
     id: "comprender-autoestima",
     categoria: "Autoestima",
-    tiempo: "6 min de lectura",
     titulo: "Comprendiendo la autoestima",
     descripcion:
       "Conoce qué es la autoestima y cómo puede influir en la manera en que pensamos y actuamos.",
@@ -64,7 +66,6 @@ const lecturas = [
   {
     id: "fortalecer-autoestima",
     categoria: "Autoestima",
-    tiempo: "7 min de lectura",
     titulo: "Cómo fortalecer tu autoestima",
     descripcion:
       "Descubre pequeñas acciones que pueden ayudarte a construir una relación más saludable contigo.",
@@ -72,7 +73,6 @@ const lecturas = [
   {
     id: "comprender-estres",
     categoria: "Estrés",
-    tiempo: "5 min de lectura",
     titulo: "Comprendiendo el estrés",
     descripcion:
       "Conoce por qué aparece el estrés y cuáles son algunas de las señales más comunes.",
@@ -80,7 +80,6 @@ const lecturas = [
   {
     id: "manejar-estres",
     categoria: "Estrés",
-    tiempo: "8 min de lectura",
     titulo: "Estrategias para manejar el estrés",
     descripcion:
       "Conoce algunas estrategias que pueden ayudarte a afrontar situaciones estresantes.",
@@ -88,7 +87,6 @@ const lecturas = [
   {
     id: "entender-procrastinacion",
     categoria: "Procrastinación",
-    tiempo: "6 min de lectura",
     titulo: "¿Por qué procrastinamos?",
     descripcion:
       "Comprende algunas de las razones que pueden llevarnos a posponer nuestras responsabilidades.",
@@ -96,7 +94,6 @@ const lecturas = [
   {
     id: "evitar-procrastinacion",
     categoria: "Procrastinación",
-    tiempo: "7 min de lectura",
     titulo: "Pequeños pasos para dejar de procrastinar",
     descripcion:
       "Aprende estrategias sencillas para comenzar tus tareas y organizar mejor tu tiempo.",
@@ -104,7 +101,6 @@ const lecturas = [
   {
     id: "comprender-soledad",
     categoria: "Soledad",
-    tiempo: "5 min de lectura",
     titulo: "Comprendiendo la soledad",
     descripcion:
       "Conoce las diferencias entre estar solo y experimentar sentimientos de soledad.",
@@ -112,17 +108,11 @@ const lecturas = [
   {
     id: "conexiones-saludables",
     categoria: "Soledad",
-    tiempo: "7 min de lectura",
     titulo: "Construyendo conexiones saludables",
     descripcion:
       "Descubre algunas formas de fortalecer nuestras relaciones y crear vínculos significativos.",
   },
 ];
-
-
-// ==========================================================
-// CATEGORÍAS
-// ==========================================================
 
 const categorias = [
   "Todas",
@@ -134,29 +124,47 @@ const categorias = [
   "Depresión",
 ];
 
+const idsCategorias: Record<string, string> = {
+  Ansiedad: "Ansiedad",
+  Autoestima: "Autoestima",
+  Estrés: "Estres",
+  Procrastinación: "Procrastinacion",
+  Soledad: "Soledad",
+  Depresión: "Depresion",
+};
+
+
+// ==========================================================
+// NORMALIZAR TEXTO
+// ==========================================================
+
+function normalizarTexto(texto: string) {
+  return texto
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
 
 // ==========================================================
 // COMPONENTE
 // ==========================================================
 
 export default function LecturasScreen() {
+  const { categoria } =
+    useLocalSearchParams<{ categoria?: string }>();
 
-  // Obtiene la categoría enviada desde la pantalla anterior
   const {
-    categoria,
-  } = useLocalSearchParams<{
-    categoria?: string;
-  }>();
+    esTelefono,
+    esTablet,
+    esEscritorio,
+  } = useResponsiveLayout();
 
+  const scrollViewRef =
+    useRef<ScrollView>(null);
 
-  // ========================================================
-  // ESTADOS
-  // ========================================================
-
-  const [
-    busqueda,
-    setBusqueda,
-  ] = useState("");
+  const [busqueda, setBusqueda] =
+    useState("");
 
   const [
     categoriaSeleccionada,
@@ -164,6 +172,27 @@ export default function LecturasScreen() {
   ] = useState(
     categoria || "Todas"
   );
+
+  const [anchoGrid, setAnchoGrid] =
+    useState(0);
+
+
+  // ========================================================
+  // ANIMACIÓN BOTÓN VOLVER
+  // ========================================================
+
+  const escalaVolver =
+    useSharedValue(1);
+
+  const estiloVolver =
+    useAnimatedStyle(() => ({
+      transform: [
+        {
+          scale:
+            escalaVolver.value,
+        },
+      ],
+    }));
 
 
   // ========================================================
@@ -224,31 +253,103 @@ export default function LecturasScreen() {
       "border"
     );
 
-  const textOnPrimaryColor =
-    useThemeColor(
-      {},
-      "textOnPrimary"
+
+  // ========================================================
+  // ACTUALIZAR CATEGORÍA
+  // ========================================================
+
+  useEffect(() => {
+    setCategoriaSeleccionada(
+      categoria || "Todas"
     );
 
+    setBusqueda("");
+  }, [categoria]);
 
   // ========================================================
-  // NORMALIZAR TEXTO
+  // VOLVER SIEMPRE AL INICIO AL ENTRAR
+  // ========================================================
+  useFocusEffect(
+    useCallback(() => {
+      const frame =
+        requestAnimationFrame(() => {
+          scrollViewRef.current?.scrollTo({
+            y: 0,
+            animated: false,
+          });
+        });
+
+      return () => {
+        cancelAnimationFrame(frame);
+      };
+    }, [])
+  );
+
+  // ========================================================
+  // RESPONSIVE DEL PROYECTO
   // ========================================================
 
-  // Permite buscar con o sin tildes
-  function normalizarTexto(
-    texto: string
-  ) {
-    return texto
-      .normalize("NFD")
-      .replace(
-        /[\u0300-\u036f]/g,
-        ""
-      )
-      .toLowerCase()
-      .trim();
-  }
+  const paddingHorizontal =
+    esEscritorio
+      ? PADDING_RESPONSIVE.escritorio
+      : esTablet
+        ? PADDING_RESPONSIVE.tablet
+        : PADDING_RESPONSIVE.telefono;
 
+  const maxWidthContenido =
+    esEscritorio
+      ? MAX_WIDTHS.dashboard
+      : esTablet
+        ? MAX_WIDTHS.contenido
+        : undefined;
+
+  const numeroColumnas =
+    esEscritorio
+      ? 4
+      : esTablet
+        ? 3
+        : 2;
+
+  const gapLecturas =
+    esEscritorio
+      ? 26
+      : esTablet
+        ? 18
+        : 12;
+
+
+  // ========================================================
+  // ANCHO DE LOS CARDS
+  // ========================================================
+
+  const anchoDisponible =
+    anchoGrid > 0
+      ? (
+          anchoGrid -
+          gapLecturas *
+            (numeroColumnas - 1)
+        ) /
+        numeroColumnas
+      : 0;
+
+  const anchoTarjeta =
+    anchoDisponible > 0
+      ? esEscritorio
+        ? Math.min(
+            anchoDisponible,
+            230
+          )
+        : esTablet
+          ? Math.min(
+              anchoDisponible,
+              190
+            )
+          : anchoDisponible
+      : esEscritorio
+        ? 230
+        : esTablet
+          ? 190
+          : 150;
 
   // ========================================================
   // FILTRAR LECTURAS
@@ -256,15 +357,11 @@ export default function LecturasScreen() {
 
   const lecturasFiltradas =
     useMemo(() => {
-
-      const textoBusqueda =
-        normalizarTexto(
-          busqueda
-        );
+      const texto =
+        normalizarTexto(busqueda);
 
       return lecturas.filter(
         (lectura) => {
-
           const coincideCategoria =
             categoriaSeleccionada ===
               "Todas" ||
@@ -272,22 +369,16 @@ export default function LecturasScreen() {
               categoriaSeleccionada;
 
           const coincideBusqueda =
-            textoBusqueda.length === 0 ||
+            !texto ||
             normalizarTexto(
               lectura.titulo
-            ).includes(
-              textoBusqueda
-            ) ||
+            ).includes(texto) ||
             normalizarTexto(
               lectura.descripcion
-            ).includes(
-              textoBusqueda
-            ) ||
+            ).includes(texto) ||
             normalizarTexto(
               lectura.categoria
-            ).includes(
-              textoBusqueda
-            );
+            ).includes(texto);
 
           return (
             coincideCategoria &&
@@ -295,7 +386,6 @@ export default function LecturasScreen() {
           );
         }
       );
-
     }, [
       busqueda,
       categoriaSeleccionada,
@@ -303,11 +393,67 @@ export default function LecturasScreen() {
 
 
   // ========================================================
+  // MEDIR GRID
+  // ========================================================
+
+  function medirGrid(
+    event: LayoutChangeEvent
+  ) {
+    const nuevoAncho =
+      event.nativeEvent.layout.width;
+
+    setAnchoGrid((anterior) =>
+      Math.abs(
+        nuevoAncho - anterior
+      ) > 1
+        ? nuevoAncho
+        : anterior
+    );
+  }
+
+  // ========================================================
+  // VOLVER A LA CATEGORÍA
+  // ========================================================
+
+  function volverACategoria() {
+    const destino =
+      categoria &&
+      categoria !== "Todas"
+        ? categoria
+        : categoriaSeleccionada !==
+            "Todas"
+          ? categoriaSeleccionada
+          : null;
+
+    const id =
+      destino
+        ? idsCategorias[destino]
+        : undefined;
+
+    if (id) {
+      router.replace({
+        pathname:
+          "/(tabs)/educacion/[id]",
+        params: {
+          id,
+        },
+      });
+
+      return;
+    }
+
+    router.replace(
+      "/(tabs)/educacion"
+    );
+  }
+
+  // ========================================================
   // UI
   // ========================================================
 
   return (
     <ScrollView
+      ref={scrollViewRef}
       className="flex-1"
       style={{
         backgroundColor,
@@ -315,94 +461,138 @@ export default function LecturasScreen() {
       showsVerticalScrollIndicator={
         false
       }
+      keyboardShouldPersistTaps="handled"
       contentContainerStyle={{
-        paddingBottom: 130,
+        paddingTop:
+          esEscritorio
+            ? 28
+            : esTablet
+              ? 24
+              : 20,
+
+        paddingBottom:
+          esEscritorio
+            ? 64
+            : 140,
       }}
     >
+      <View
+        style={{
+          width: "100%",
 
-      {/* ==================================================
-          BOTÓN VOLVER
-          ================================================== */}
+          maxWidth:
+            maxWidthContenido,
 
-      <View className="px-6 pt-6">
+          alignSelf:
+            "center",
 
-        <Pressable
-          onPress={() =>
-            router.back()
-          }
-          className="h-11 w-11 items-center justify-center rounded-full border"
-          style={({
-            pressed,
-          }) => ({
-            borderColor,
-
-            backgroundColor:
-              surfaceColor,
-
-            opacity:
-              pressed
-                ? 0.7
-                : 1,
-
-            shadowColor:
-              "#000000",
-
-            shadowOffset: {
-              width: 0,
-              height: 2,
-            },
-
-            shadowOpacity:
-              0.06,
-
-            shadowRadius:
-              4,
-
-            elevation:
-              2,
-          })}
-        >
-
-          <Ionicons
-            name="arrow-back"
-            size={23}
-            color={
-              textSecondaryColor
-            }
-          />
-
-        </Pressable>
-
-      </View>
-
-
-      {/* ==================================================
-          ENCABEZADO
-          ================================================== */}
-
-      <Animated.View
-        entering={
-          FadeInDown
-            .duration(450)
-        }
+          paddingHorizontal,
+        }}
       >
 
-        <EncabezadoCard
-          imagen={require(
-            "../../../assets/images_educacion/kiri_lee_bibliot_horiz.png"
-          )}
-          titulo="Biblioteca"
-          subtitulo="Explora contenidos sobre bienestar emocional."
-        />
+        {/* =================================================
+            BOTÓN VOLVER
+            ================================================= */}
 
-      </Animated.View>
+        <Animated.View
+          style={[
+            estiloVolver,
+            {
+              alignSelf:
+                "flex-start",
 
+              marginBottom:
+                esEscritorio
+                  ? 22
+                  : 18,
+            },
+          ]}
+        >
+          <Pressable
+            onPress={
+              volverACategoria
+            }
 
-      <View className="px-6">
+            onPressIn={() => {
+              escalaVolver.value =
+                withSpring(0.9);
+            }}
 
-        {/* ==================================================
+            onPressOut={() => {
+              escalaVolver.value =
+                withSpring(1);
+            }}
+
+            hitSlop={10}
+
+            style={({
+              pressed,
+            }) => ({
+              width: 48,
+
+              height: 48,
+
+              borderRadius: 24,
+
+              alignItems:
+                "center",
+
+              justifyContent:
+                "center",
+
+              backgroundColor:
+                surfaceSecondaryColor,
+
+              opacity:
+                pressed
+                  ? 0.72
+                  : 1,
+            })}
+          >
+            <Ionicons
+              name="chevron-back"
+              size={27}
+              color={
+                textSecondaryColor
+              }
+            />
+          </Pressable>
+        </Animated.View>
+
+        {/* =================================================
+            ENCABEZADO
+            ================================================= */}
+
+        <Animated.View
+          entering={
+            FadeInDown.duration(
+              450
+            )
+          }
+          style={{
+            width: "100%",
+
+            maxWidth:
+              esEscritorio
+                ? 1100
+                : undefined,
+
+            alignSelf:
+              "center",
+          }}
+        >
+          <EncabezadoCard
+            imagen={require(
+              "../../../assets/images_educacion/kiri_lee_bibliot_horiz.png"
+            )}
+            titulo="Biblioteca"
+            subtitulo="Explora contenidos sobre bienestar emocional."
+          />
+        </Animated.View>
+
+        {/* =================================================
             BUSCADOR
-            ================================================== */}
+            ================================================= */}
 
         <Animated.View
           entering={
@@ -410,25 +600,35 @@ export default function LecturasScreen() {
               .delay(80)
               .duration(450)
           }
-          className="mt-6"
-        >
+          style={{
+            width: "100%",
 
+            maxWidth:
+              esEscritorio
+                ? 760
+                : undefined,
+
+            alignSelf:
+              "center",
+
+            marginTop:
+              esTelefono
+                ? 20
+                : 24,
+          }}
+        >
           <SearchBar
-            value={
-              busqueda
-            }
+            value={busqueda}
             onChangeText={
               setBusqueda
             }
             placeholder="Buscar una lectura..."
           />
-
         </Animated.View>
 
-
-        {/* ==================================================
+        {/* =================================================
             CATEGORÍAS
-            ================================================== */}
+            ================================================= */}
 
         <Animated.View
           entering={
@@ -436,12 +636,23 @@ export default function LecturasScreen() {
               .delay(140)
               .duration(450)
           }
-          className="mt-6"
+          style={{
+            marginTop:
+              esEscritorio
+                ? 30
+                : 26,
+          }}
         >
-
           <Text
-            className="mb-3 font-nunito-bold text-lg"
+            className="font-nunito-bold"
             style={{
+              marginBottom: 12,
+
+              fontSize:
+                esEscritorio
+                  ? 20
+                  : 18,
+
               color:
                 textColor,
             }}
@@ -449,110 +660,140 @@ export default function LecturasScreen() {
             Categorías
           </Text>
 
-
-          {/* Scroll horizontal de categorías */}
-
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={
               false
             }
+            keyboardShouldPersistTaps="handled"
             contentContainerStyle={{
+              paddingTop: 4,
+
+              paddingBottom: 8,
+
               paddingRight: 24,
             }}
           >
+            <View
+              style={{
+                flexDirection:
+                  "row",
 
-            <View className="flex-row gap-3">
+                alignItems:
+                  "center",
 
+                gap:
+                  esEscritorio
+                    ? 12
+                    : 9,
+              }}
+            >
               {categorias.map(
                 (item) => {
-
-                  const estaSeleccionada =
+                  const seleccionada =
                     categoriaSeleccionada ===
                     item;
 
                   return (
-
                     <Pressable
-                      key={
-                        item
-                      }
+                      key={item}
+
                       onPress={() =>
                         setCategoriaSeleccionada(
                           item
                         )
                       }
-                      className="rounded-full px-5 py-3"
+
                       style={({
                         pressed,
                       }) => ({
-                        borderWidth: 1,
-
-                        borderColor:
-                          estaSeleccionada
-                            ? primaryColor
-                            : borderColor,
-
-                        backgroundColor:
-                          estaSeleccionada
-                            ? primaryColor
-                            : primarySoftColor,
-
                         opacity:
                           pressed
-                            ? 0.75
+                            ? 0.78
                             : 1,
-
-                        shadowColor:
-                          "#000000",
-
-                        shadowOffset: {
-                          width: 0,
-                          height: 1,
-                        },
-
-                        shadowOpacity:
-                          estaSeleccionada
-                            ? 0.08
-                            : 0.03,
-
-                        shadowRadius: 3,
-
-                        elevation:
-                          estaSeleccionada
-                            ? 2
-                            : 0,
                       })}
                     >
-
-                      <Text
-                        className="font-nunito-semibold text-[13px]"
+                      <View
                         style={{
-                          color:
-                            estaSeleccionada
-                              ? textOnPrimaryColor
-                              : textSecondaryColor,
+                          minHeight:
+                            esEscritorio
+                              ? 44
+                              : 40,
+
+                          minWidth:
+                            item ===
+                            "Todas"
+                              ? 78
+                              : undefined,
+
+                          paddingHorizontal:
+                            esEscritorio
+                              ? 20
+                              : 17,
+
+                          paddingVertical:
+                            esEscritorio
+                              ? 10
+                              : 8,
+
+                          borderRadius:
+                            999,
+
+                          borderWidth:
+                            1,
+
+                          borderColor:
+                            seleccionada
+                              ? primaryColor
+                              : borderColor,
+
+                          backgroundColor:
+                            seleccionada
+                              ? primaryColor
+                              : surfaceSecondaryColor,
+
+                          alignItems:
+                            "center",
+
+                          justifyContent:
+                            "center",
                         }}
                       >
-                        {item}
-                      </Text>
+                        <Text
+                          numberOfLines={
+                            1
+                          }
+                          style={{
+                            fontFamily:
+                              seleccionada
+                                ? "Nunito-Bold"
+                                : "Nunito-SemiBold",
 
+                            fontSize:
+                              esEscritorio
+                                ? 15
+                                : 13,
+
+                            color:
+                              seleccionada
+                                ? "#FFFFFF"
+                                : textSecondaryColor,
+                          }}
+                        >
+                          {item}
+                        </Text>
+                      </View>
                     </Pressable>
-
                   );
                 }
               )}
-
             </View>
-
           </ScrollView>
-
         </Animated.View>
 
-
-        {/* ==================================================
-            ENCABEZADO DE RESULTADOS
-            ================================================== */}
+        {/* =================================================
+            TÍTULO DE RESULTADOS
+            ================================================= */}
 
         <Animated.View
           entering={
@@ -560,12 +801,26 @@ export default function LecturasScreen() {
               .delay(200)
               .duration(450)
           }
-          className="mb-5 mt-8"
-        >
+          style={{
+            marginTop:
+              esEscritorio
+                ? 30
+                : 24,
 
+            marginBottom:
+              esEscritorio
+                ? 24
+                : 18,
+          }}
+        >
           <Text
-            className="font-nunito-bold text-xl"
+            className="font-nunito-bold"
             style={{
+              fontSize:
+                esEscritorio
+                  ? 24
+                  : 21,
+
               color:
                 textColor,
             }}
@@ -576,41 +831,69 @@ export default function LecturasScreen() {
               : categoriaSeleccionada}
           </Text>
 
-
           <Text
-            className="mt-1 font-nunito-medium text-[13px]"
+            className="font-nunito-medium"
             style={{
+              marginTop: 4,
+
+              fontSize:
+                esEscritorio
+                  ? 14
+                  : 13,
+
               color:
                 textMutedColor,
             }}
           >
-            {lecturasFiltradas.length}{" "}
+            {
+              lecturasFiltradas.length
+            }{" "}
             {lecturasFiltradas.length ===
             1
               ? "lectura encontrada"
               : "lecturas encontradas"}
           </Text>
-
         </Animated.View>
 
-
-        {/* ==================================================
-            RESULTADOS
-            ================================================== */}
+        {/* =================================================
+            GRID DE LECTURAS
+            ================================================= */}
 
         {lecturasFiltradas.length >
         0 ? (
+          <View
+            onLayout={
+              medirGrid
+            }
+            style={{
+              width: "100%",
 
-          /* Grid de dos columnas */
+              flexDirection:
+                "row",
 
-          <View className="flex-row flex-wrap justify-between gap-y-5">
+              flexWrap:
+                "wrap",
 
+              justifyContent:
+                "flex-start",
+
+              alignItems:
+                "flex-start",
+
+              columnGap:
+                gapLecturas,
+
+              rowGap:
+                esEscritorio
+                  ? 30
+                  : 20,
+            }}
+          >
             {lecturasFiltradas.map(
               (
                 lectura,
                 index
               ) => (
-
                 <Animated.View
                   key={
                     lectura.id
@@ -626,9 +909,13 @@ export default function LecturasScreen() {
                         400
                       )
                   }
-                  className="w-[48%] items-center"
-                >
+                  style={{
+                    width:
+                      anchoTarjeta,
 
+                    minWidth: 0,
+                  }}
+                >
                   <LecturaRecomendadaCard
                     titulo={
                       lectura.titulo
@@ -636,87 +923,149 @@ export default function LecturasScreen() {
                     index={
                       index
                     }
+                    ancho={
+                      anchoTarjeta
+                    }
                     onPress={() => {
-
                       console.log(
                         "Lectura seleccionada:",
                         lectura.id
                       );
-
                     }}
                   />
-
                 </Animated.View>
-
               )
             )}
-
           </View>
-
         ) : (
 
-          /* Estado sin resultados */
+          /* =================================================
+             ESTADO VACÍO
+             ================================================= */
 
           <Animated.View
             entering={
-              FadeInDown
-                .duration(350)
+              FadeInDown.duration(
+                350
+              )
             }
-            className="mt-5 items-center rounded-[22px] border px-6 py-10"
             style={{
+              width: "100%",
+
+              maxWidth:
+                esEscritorio
+                  ? 620
+                  : undefined,
+
+              alignSelf:
+                "center",
+
+              alignItems:
+                "center",
+
+              marginTop:
+                esEscritorio
+                  ? 12
+                  : 16,
+
+              paddingHorizontal:
+                esEscritorio
+                  ? 40
+                  : 24,
+
+              paddingVertical:
+                esEscritorio
+                  ? 38
+                  : 34,
+
+              borderRadius:
+                22,
+
+              borderWidth: 1,
+
               borderColor,
 
               backgroundColor:
                 surfaceColor,
             }}
           >
-
             <View
-              className="h-16 w-16 items-center justify-center rounded-full"
               style={{
+                width: 64,
+
+                height: 64,
+
+                borderRadius:
+                  32,
+
+                alignItems:
+                  "center",
+
+                justifyContent:
+                  "center",
+
                 backgroundColor:
-                  surfaceSecondaryColor,
+                  primarySoftColor,
               }}
             >
-
               <Ionicons
-                name="book-outline"
-                size={29}
+                name="search-outline"
+                size={28}
                 color={
-                  textMutedColor
+                  primaryColor
                 }
               />
-
             </View>
 
-
             <Text
-              className="mt-4 text-center font-nunito-semibold text-[17px]"
+              className="font-nunito-bold"
               style={{
+                marginTop: 16,
+
+                textAlign:
+                  "center",
+
+                fontSize:
+                  esEscritorio
+                    ? 18
+                    : 17,
+
                 color:
                   textColor,
               }}
             >
-              No encontramos lecturas
+              No encontramos esa categoría
             </Text>
-
 
             <Text
-              className="mt-2 text-center font-nunito-medium text-sm leading-5"
+              className="font-nunito-medium"
               style={{
+                maxWidth: 420,
+
+                marginTop: 8,
+
+                textAlign:
+                  "center",
+
+                fontSize:
+                  esEscritorio
+                    ? 14
+                    : 13,
+
+                lineHeight:
+                  esEscritorio
+                    ? 21
+                    : 20,
+
                 color:
-                  textMutedColor,
+                  textSecondaryColor,
               }}
             >
-              Intenta buscar otro tema o selecciona una categoría diferente.
+              Prueba con otra palabra o explora las categorías disponibles.
             </Text>
-
           </Animated.View>
-
         )}
-
       </View>
-
     </ScrollView>
   );
 }

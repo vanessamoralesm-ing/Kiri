@@ -1,9 +1,6 @@
 import React from "react";
 
-import {
-  Pressable,
-  Text,
-} from "react-native";
+import { Pressable, Text } from "react-native";
 
 import Animated, {
   useAnimatedStyle,
@@ -11,21 +8,21 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 interface OpcionEmocionProps {
   nombre: string;
+
   emoji: string;
+
   seleccionada: boolean;
-  ancho: number;
+
+  ancho?: number;
+
   onPress: () => void;
 }
 
-
-const AnimatedPressable =
-  Animated.createAnimatedComponent(
-    Pressable
-  );
-
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export function OpcionEmocion({
   nombre,
@@ -34,162 +31,132 @@ export function OpcionEmocion({
   ancho,
   onPress,
 }: OpcionEmocionProps) {
-  const escala =
-    useSharedValue(1);
+  // ======================================================
+  // TEMA
+  // ======================================================
 
+  const surfaceColor = useThemeColor({}, "surface");
 
-  const estiloAnimado =
-    useAnimatedStyle(() => ({
-      transform: [
-        {
-          scale:
-            escala.value,
-        },
-      ],
-    }));
+  const borderColor = useThemeColor({}, "border");
 
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
 
-  const presionar =
-    () => {
-      escala.value =
-        withSpring(
-          0.96,
-          {
-            damping:
-              15,
+  const primaryColor = useThemeColor({}, "primary");
 
-            stiffness:
-              230,
-          }
-        );
+  const primarySoftColor = useThemeColor({}, "primarySoft");
 
-      setTimeout(
-        () => {
-          escala.value =
-            withSpring(
-              1,
-              {
-                damping:
-                  15,
+  // ======================================================
+  // ANIMACIÓN
+  // ======================================================
 
-                stiffness:
-                  230,
-              }
-            );
-        },
-        80
-      );
+  const escala = useSharedValue(1);
 
-      onPress();
-    };
+  const estiloAnimado = useAnimatedStyle(() => ({
+    transform: [
+      {
+        scale: escala.value,
+      },
+    ],
+  }));
 
+  const presionar = () => {
+    escala.value = withSpring(0.96, {
+      damping: 15,
+
+      stiffness: 230,
+    });
+
+    setTimeout(() => {
+      escala.value = withSpring(1, {
+        damping: 15,
+
+        stiffness: 230,
+      });
+    }, 80);
+
+    onPress();
+  };
+
+  // ======================================================
+  // UI
+  // ======================================================
 
   return (
     <AnimatedPressable
-      onPress={
-        presionar
-      }
+      onPress={presionar}
       style={[
         estiloAnimado,
 
         {
-          width:
-            ancho,
+          width: ancho,
 
-          minHeight:
-            125,
+          minWidth: 110,
 
-          paddingHorizontal:
-            8,
+          minHeight: 118,
 
-          paddingVertical:
-            16,
+          paddingHorizontal: 10,
 
-          borderRadius:
-            20,
+          paddingVertical: 14,
 
-          borderWidth:
-            seleccionada
-              ? 2
-              : 1.5,
+          borderRadius: 18,
 
-          borderColor:
-            seleccionada
-              ? "#60A5FA"
-              : "#E6EBF2",
+          borderWidth: seleccionada ? 2 : 1.5,
 
-          backgroundColor:
-            seleccionada
-              ? "#EFF6FF"
-              : "#FFFFFF",
+          borderColor: seleccionada ? primaryColor : borderColor,
 
-          alignItems:
-            "center",
+          backgroundColor: seleccionada ? primarySoftColor : surfaceColor,
 
-          justifyContent:
-            "center",
+          alignItems: "center",
 
-          shadowColor:
-            "#64748B",
+          justifyContent: "center",
+
+          overflow: "hidden",
+
+          shadowColor: "#000000",
 
           shadowOffset: {
-            width:
-              0,
+            width: 0,
 
-            height:
-              3,
+            height: 3,
           },
 
-          shadowOpacity:
-            seleccionada
-              ? 0.12
-              : 0.07,
+          shadowOpacity: seleccionada ? 0.12 : 0.06,
 
-          shadowRadius:
-            7,
+          shadowRadius: 7,
 
-          elevation:
-            2,
+          elevation: 2,
         },
       ]}
     >
       <Text
         style={{
-          fontSize:
-            34,
+          fontSize: 32,
 
-          lineHeight:
-            42,
+          lineHeight: 38,
+
+          textAlign: "center",
         }}
       >
         {emoji}
       </Text>
 
-
       <Text
-        numberOfLines={1}
+        numberOfLines={2}
+        ellipsizeMode="tail"
         style={{
-          marginTop:
-            8,
+          marginTop: 8,
 
-          width:
-            "100%",
+          width: "100%",
 
-          textAlign:
-            "center",
+          textAlign: "center",
 
-          fontFamily:
-            seleccionada
-              ? "Nunito-Bold"
-              : "Nunito-Medium",
+          fontFamily: seleccionada ? "Nunito-Bold" : "Nunito-Medium",
 
-          fontSize:
-            14,
+          fontSize: 13,
 
-          color:
-            seleccionada
-              ? "#2563EB"
-              : "#475569",
+          lineHeight: 17,
+
+          color: seleccionada ? primaryColor : textSecondaryColor,
         }}
       >
         {nombre}

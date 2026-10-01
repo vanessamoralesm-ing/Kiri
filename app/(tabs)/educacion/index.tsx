@@ -3,6 +3,8 @@ import { router } from "expo-router";
 import React, { useMemo, useState } from "react";
 
 import {
+  LayoutChangeEvent,
+  Platform,
   ScrollView,
   Text,
   View,
@@ -12,7 +14,13 @@ import CategoriaCard from "@/components/educacion/CategoriaCard";
 import EncabezadoCard from "@/components/educacion/EncabezadoCard";
 import SearchBar from "@/components/ui/SearchBar";
 
+import {
+  MAX_WIDTHS,
+  PADDING_RESPONSIVE,
+} from "@/constants/responsive";
+
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 
 // ==========================================================
@@ -72,10 +80,25 @@ const categorias = [
 export default function EducacionScreen() {
 
   // ========================================================
+  // RESPONSIVE
+  // ========================================================
+
+  const {
+    esTelefono,
+    esTablet,
+    esEscritorio,
+  } = useResponsiveLayout();
+
+
+  // ========================================================
   // ESTADOS
   // ========================================================
 
-  const [busqueda, setBusqueda] = useState("");
+  const [busqueda, setBusqueda] =
+    useState("");
+
+  const [anchoGrid, setAnchoGrid] =
+    useState(0);
 
 
   // ========================================================
@@ -85,6 +108,11 @@ export default function EducacionScreen() {
   const backgroundColor = useThemeColor(
     {},
     "background"
+  );
+
+  const surfaceColor = useThemeColor(
+    {},
+    "surface"
   );
 
   const textColor = useThemeColor(
@@ -119,13 +147,87 @@ export default function EducacionScreen() {
 
 
   // ========================================================
+  // CONFIGURACIÓN RESPONSIVE
+  // ========================================================
+
+  const paddingHorizontal =
+    esEscritorio
+      ? PADDING_RESPONSIVE.escritorio
+      : esTablet
+        ? PADDING_RESPONSIVE.tablet
+        : PADDING_RESPONSIVE.telefono;
+
+
+  const maxWidthContenido =
+    esEscritorio
+      ? MAX_WIDTHS.dashboard
+      : esTablet
+        ? MAX_WIDTHS.contenido
+        : undefined;
+
+
+  // Tablet usa 2 columnas.
+  // Escritorio usa 3 columnas.
+  // Teléfono usa el 48% original.
+
+  const numeroColumnas =
+    esEscritorio
+      ? 3
+      : 2;
+
+
+  const gapHorizontal =
+    esTelefono
+      ? 0
+      : 18;
+
+
+  const gapVertical =
+    esTelefono
+      ? 28
+      : 20;
+
+
+  // Solo se usa para tablet y escritorio.
+
+  const anchoTarjetaResponsive =
+    anchoGrid > 0
+      ? (
+          anchoGrid -
+          gapHorizontal *
+            (numeroColumnas - 1)
+        ) /
+        numeroColumnas
+      : undefined;
+
+
+  const paddingTop =
+    esEscritorio
+      ? 30
+      : esTablet
+        ? 26
+        : 20;
+
+
+  const paddingBottom =
+    esEscritorio
+      ? 64
+      : 145;
+
+
+  // ========================================================
   // NORMALIZAR TEXTO
   // ========================================================
 
-  function normalizarTexto(texto: string) {
+  function normalizarTexto(
+    texto: string
+  ) {
     return texto
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
+      .replace(
+        /[\u0300-\u036f]/g,
+        ""
+      )
       .toLowerCase()
       .trim();
   }
@@ -135,30 +237,73 @@ export default function EducacionScreen() {
   // FILTRO DE CATEGORÍAS
   // ========================================================
 
-  const categoriasFiltradas = useMemo(() => {
-    const texto = normalizarTexto(
-      busqueda
-    );
+  const categoriasFiltradas =
+    useMemo(() => {
 
-    if (!texto) {
-      return categorias;
-    }
+      const termino =
+        normalizarTexto(
+          busqueda
+        );
 
-    return categorias.filter((categoria) =>
-      normalizarTexto(
-        categoria.titulo
-      ).includes(texto)
-    );
-  }, [busqueda]);
+
+      if (!termino) {
+        return categorias;
+      }
+
+
+      return categorias.filter(
+        (categoria) =>
+          normalizarTexto(
+            categoria.titulo
+          ).includes(
+            termino
+          )
+      );
+
+    }, [busqueda]);
 
 
   // ========================================================
   // NAVEGACIÓN
   // ========================================================
 
-  function abrirCategoria(id: string) {
+  function abrirCategoria(
+    id: string
+  ) {
     router.push(
       `/educacion/${id}` as any
+    );
+  }
+
+
+  // ========================================================
+  // MEDIR GRID
+  // ========================================================
+
+  function medirGrid(
+    event: LayoutChangeEvent
+  ) {
+
+    // En teléfono usamos 48%.
+    // No necesitamos calcular el ancho.
+
+    if (esTelefono) {
+      return;
+    }
+
+
+    const nuevoAncho =
+      event.nativeEvent.layout.width;
+
+
+    setAnchoGrid(
+      (anterior) =>
+        Math.abs(
+          nuevoAncho -
+            anterior
+        ) > 1
+          ? nuevoAncho
+          : anterior
     );
   }
 
@@ -170,39 +315,97 @@ export default function EducacionScreen() {
   return (
     <ScrollView
       className="flex-1"
+
       style={{
         backgroundColor,
       }}
-      showsVerticalScrollIndicator={false}
+
+      showsVerticalScrollIndicator={
+        false
+      }
+
+      keyboardShouldPersistTaps="handled"
+
       contentContainerStyle={{
-        paddingBottom: 130,
+        paddingTop,
+        paddingBottom,
       }}
     >
 
       {/* ==================================================
-          ENCABEZADO
+          CONTENIDO PRINCIPAL
           ================================================== */}
 
-      <EncabezadoCard
-        imagen={require(
-          "../../../assets/images_educacion/kiri_lee_edu_horiz.png"
-        )}
-        titulo="Biblioteca de Bienestar"
-        subtitulo="Conoce, aprende y descubre herramientas para tu bienestar emocional."
-      />
+      <View
+        style={{
+          width:
+            "100%",
 
+          maxWidth:
+            maxWidthContenido,
 
-      <View className="px-6">
+          alignSelf:
+            "center",
+
+          paddingHorizontal,
+        }}
+      >
+
+        {/* ==================================================
+            ENCABEZADO
+            ================================================== */}
+
+        <EncabezadoCard
+          imagen={require(
+            "../../../assets/images_educacion/kiri_lee_edu_horiz.png"
+          )}
+
+          titulo="Biblioteca de Bienestar"
+
+          subtitulo="Conoce, aprende y descubre herramientas para tu bienestar emocional."
+        />
+
 
         {/* ==================================================
             BUSCADOR
             ================================================== */}
 
-        <View className="mt-6">
+        <View
+          style={{
+            width:
+              "100%",
+
+            maxWidth:
+              esEscritorio
+                ? 760
+                : undefined,
+
+            alignSelf:
+              esEscritorio
+                ? "center"
+                : undefined,
+
+            marginTop:
+              esTelefono
+                ? 20
+                : 24,
+
+            marginBottom:
+              esTelefono
+                ? 26
+                : 32,
+          }}
+        >
 
           <SearchBar
-            value={busqueda}
-            onChangeText={setBusqueda}
+            value={
+              busqueda
+            }
+
+            onChangeText={
+              setBusqueda
+            }
+
             placeholder="¿Qué te gustaría explorar hoy?"
           />
 
@@ -213,21 +416,50 @@ export default function EducacionScreen() {
             TÍTULO DE CATEGORÍAS
             ================================================== */}
 
-        <View className="mb-5 mt-8">
+        <View
+          style={{
+            width:
+              "100%",
+
+            marginBottom:
+              esTelefono
+                ? 16
+                : 22,
+          }}
+        >
 
           <Text
-            className="font-nunito-bold text-xl"
+            className="font-nunito-bold"
+
             style={{
-              color: textColor,
+              fontSize:
+                esEscritorio
+                  ? 22
+                  : 20,
+
+              lineHeight:
+                27,
+
+              color:
+                textColor,
             }}
           >
             Explora por categoría
           </Text>
 
+
           <Text
-            className="mt-1 font-nunito-semibold text-[15px]"
+            className="mt-1 font-nunito-semibold"
+
             style={{
-              color: textMutedColor,
+              fontSize:
+                14,
+
+              lineHeight:
+                20,
+
+              color:
+                textMutedColor,
             }}
           >
             Selecciona el tema sobre el que quieras aprender.
@@ -240,68 +472,303 @@ export default function EducacionScreen() {
             TARJETAS DE CATEGORÍAS
             ================================================== */}
 
-        <View className="flex-row flex-wrap justify-between gap-y-7">
+        {categoriasFiltradas.length > 0 ? (
 
-          {categoriasFiltradas.map(
-            (categoria) => (
+          <View
+            onLayout={
+              medirGrid
+            }
 
-              <View
-                key={categoria.id}
-                className="w-[48%] items-center justify-center"
-              >
+            style={{
+              width:
+                "100%",
 
-                <CategoriaCard
-                  titulo={
-                    categoria.titulo
+              flexDirection:
+                "row",
+
+              flexWrap:
+                "wrap",
+
+              justifyContent:
+                esTelefono
+                  ? "space-between"
+                  : "flex-start",
+
+              columnGap:
+                gapHorizontal,
+
+              rowGap:
+                gapVertical,
+
+              alignItems:
+                "stretch",
+            }}
+          >
+
+            {categoriasFiltradas.map(
+              (categoria) => (
+
+                <View
+                  key={
+                    categoria.id
                   }
-                  imagen={
-                    categoria.imagen
-                  }
-                  onPress={() =>
-                    abrirCategoria(
-                      categoria.id
-                    )
-                  }
-                />
 
-              </View>
+                  style={{
+                    // En teléfono recuperamos exactamente
+                    // la distribución de dos cards por fila.
 
-            )
-          )}
+                    width:
+                      esTelefono
+                        ? "48%"
+                        : anchoTarjetaResponsive !==
+                            undefined
+                          ? anchoTarjetaResponsive
+                          : esEscritorio
+                            ? "31%"
+                            : "48%",
 
-        </View>
+                    minWidth:
+                      0,
+
+                    alignItems:
+                      "stretch",
+                  }}
+                >
+
+                  <CategoriaCard
+                    titulo={
+                      categoria.titulo
+                    }
+
+                    imagen={
+                      categoria.imagen
+                    }
+
+                    onPress={() =>
+                      abrirCategoria(
+                        categoria.id
+                      )
+                    }
+                  />
+
+                </View>
+
+              )
+            )}
+
+          </View>
+
+        ) : (
+
+          // ==================================================
+          // SIN RESULTADOS
+          // ==================================================
+
+          <View
+            style={{
+              width:
+                "100%",
+
+              minHeight:
+                210,
+
+              borderRadius:
+                22,
+
+              borderWidth:
+                1,
+
+              borderColor,
+
+              backgroundColor:
+                surfaceColor,
+
+              alignItems:
+                "center",
+
+              justifyContent:
+                "center",
+
+              padding:
+                24,
+            }}
+          >
+
+            <View
+              style={{
+                width:
+                  58,
+
+                height:
+                  58,
+
+                borderRadius:
+                  29,
+
+                alignItems:
+                  "center",
+
+                justifyContent:
+                  "center",
+
+                backgroundColor:
+                  primarySoftColor,
+              }}
+            >
+
+              <Ionicons
+                name="search-outline"
+                size={26}
+                color={
+                  primaryColor
+                }
+              />
+
+            </View>
+
+
+            <Text
+              className="mt-3 font-nunito-bold"
+
+              style={{
+                fontSize:
+                  16,
+
+                textAlign:
+                  "center",
+
+                color:
+                  textColor,
+              }}
+            >
+              No encontramos esa categoría
+            </Text>
+
+
+            <Text
+              className="mt-1 font-nunito-medium"
+
+              style={{
+                maxWidth:
+                  420,
+
+                fontSize:
+                  13,
+
+                lineHeight:
+                  19,
+
+                textAlign:
+                  "center",
+
+                color:
+                  textMutedColor,
+              }}
+            >
+              Prueba con otra palabra o explora las categorías disponibles.
+            </Text>
+
+          </View>
+
+        )}
 
 
         {/* ==================================================
-            MENSAJE FINAL DE ORIENTACIÓN
+            MENSAJE FINAL
             ================================================== */}
 
         <View
-          className="mt-10 rounded-[22px] border p-5"
           style={{
+            width:
+              "100%",
+
+            marginTop:
+              esEscritorio
+                ? 36
+                : 28,
+
+            padding:
+              esTelefono
+                ? 16
+                : 24,
+
+            borderRadius:
+              20,
+
+            borderWidth:
+              1,
+
             borderColor,
-            backgroundColor: "#F0F9FF",
 
-            shadowColor: "#000000",
+            backgroundColor:
+              surfaceColor,
 
-            shadowOffset: {
-              width: 0,
-              height: 2,
-            },
+            ...Platform.select({
+              web: {
+                boxShadow:
+                  "0px 2px 8px rgba(0,0,0,0.04)",
+              } as any,
 
-            shadowOpacity: 0.06,
-            shadowRadius: 5,
-            elevation: 2,
+              ios: {
+                shadowColor:
+                  "#000000",
+
+                shadowOffset: {
+                  width: 0,
+                  height: 2,
+                },
+
+                shadowOpacity:
+                  0.05,
+
+                shadowRadius:
+                  5,
+              },
+
+              android: {
+                elevation:
+                  2,
+              },
+            }),
           }}
         >
 
-          <View className="flex-row items-start">
+          <View
+            style={{
+              flexDirection:
+                "row",
+
+              alignItems:
+                "flex-start",
+            }}
+          >
 
             {/* ICONO */}
 
             <View
-              className="h-11 w-11 items-center justify-center rounded-full"
               style={{
+                width:
+                  esTelefono
+                    ? 42
+                    : 48,
+
+                height:
+                  esTelefono
+                    ? 42
+                    : 48,
+
+                borderRadius:
+                  14,
+
+                flexShrink:
+                  0,
+
+                alignItems:
+                  "center",
+
+                justifyContent:
+                  "center",
+
                 backgroundColor:
                   primarySoftColor,
               }}
@@ -309,8 +776,10 @@ export default function EducacionScreen() {
 
               <Ionicons
                 name="leaf-outline"
-                size={22}
-                color={primaryColor}
+                size={23}
+                color={
+                  primaryColor
+                }
               />
 
             </View>
@@ -318,20 +787,44 @@ export default function EducacionScreen() {
 
             {/* TEXTO */}
 
-            <View className="ml-4 flex-1">
+            <View
+              style={{
+                flex:
+                  1,
+
+                minWidth:
+                  0,
+
+                marginLeft:
+                  14,
+              }}
+            >
 
               <Text
-                className="font-nunito-bold text-base"
+                className="font-nunito-bold"
+
                 style={{
-                  color: textColor,
+                  fontSize:
+                    16,
+
+                  color:
+                    textColor,
                 }}
               >
                 Explora a tu ritmo
               </Text>
 
+
               <Text
-                className="mt-1 text-justify font-nunito-semibold text-sm leading-5"
+                className="mt-1 font-nunito-semibold"
+
                 style={{
+                  fontSize:
+                    13,
+
+                  lineHeight:
+                    20,
+
                   color:
                     textSecondaryColor,
                 }}

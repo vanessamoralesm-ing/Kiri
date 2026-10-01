@@ -1,62 +1,49 @@
-import React, {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import {
   Alert,
   KeyboardAvoidingView,
+  LayoutChangeEvent,
   Platform,
   Pressable,
   ScrollView,
   Text,
-  useWindowDimensions,
   View,
 } from "react-native";
 
-import {
-  useLocalSearchParams,
-  useRouter,
-} from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
-import {
-  Ionicons,
-} from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
-import {
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Animated, {
-  FadeInDown,
-} from "react-native-reanimated";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
-import {
-  OpcionEmocion,
-} from "@/components/diario/OpcionEmocion";
+import { OpcionEmocion } from "@/components/diario/OpcionEmocion";
 
-import {
-  CampoPreguntaDiario,
-} from "@/components/diario/CampoPreguntaDiario";
+import { CampoPreguntaDiario } from "@/components/diario/CampoPreguntaDiario";
 
 import Button from "@/components/ui/Button";
 
-import {
-  useAuth,
-} from "@/services/authProvider";
+import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
+
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+
+import { useThemeColor } from "@/hooks/use-theme-color";
+
+import { useAuth } from "@/services/authProvider";
 
 import {
   guardarDiarioEmocionalService,
   obtenerEmocionesAutorregistro,
 } from "@/services/diario/autorregistro.service";
 
-import {
-  EmocionAutorregistro,
-} from "@/types/diario";
+import { EmocionAutorregistro } from "@/types/diario";
 
+// ==========================================================
+// EMOJIS
+// ==========================================================
 
-// Emojis usados solamente para la interfaz.
 const EMOJIS_EMOCIONES: Record<string, string> = {
   Alegría: "😊",
   Tristeza: "😢",
@@ -70,292 +57,361 @@ const EMOJIS_EMOCIONES: Record<string, string> = {
   Esperanza: "🌱",
 };
 
+// ==========================================================
+// COMPONENTE
+// ==========================================================
 
 export default function NuevoAutorregistro() {
-  const router =
-    useRouter();
+  const router = useRouter();
 
-  const insets =
-    useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
 
-  const {
-    width,
-  } =
-    useWindowDimensions();
+  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
-  const {
-    user,
-  } =
-    useAuth();
+  const { user } = useAuth();
 
-  const {
-    plantilla,
-    origen,
-  } =
-    useLocalSearchParams<{
-      plantilla?: string;
-      origen?: string;
-    }>();
+  const { plantilla, origen } = useLocalSearchParams<{
+    plantilla?: string;
+    origen?: string;
+  }>();
 
+  // ========================================================
+  // ESTADO
+  // ========================================================
 
-  const [
-    guardando,
-    setGuardando,
-  ] =
-    useState(false);
+  const [guardando, setGuardando] = useState(false);
 
-  const [
-    cargandoEmociones,
-    setCargandoEmociones,
-  ] =
-    useState(true);
+  const [cargandoEmociones, setCargandoEmociones] = useState(true);
 
-  const [
-    emociones,
-    setEmociones,
-  ] =
-    useState<EmocionAutorregistro[]>([]);
+  const [emociones, setEmociones] = useState<EmocionAutorregistro[]>([]);
 
-  const [
-    idEmocion,
-    setIdEmocion,
-  ] =
-    useState("");
+  const [idEmocion, setIdEmocion] = useState("");
 
-  const [
-    motivo,
-    setMotivo,
-  ] =
-    useState("");
+  const [motivo, setMotivo] = useState("");
 
-  const [
-    reaccion,
-    setReaccion,
-  ] =
-    useState("");
+  const [reaccion, setReaccion] = useState("");
 
-  const [
-    ideaUtil,
-    setIdeaUtil,
-  ] =
-    useState("");
+  const [ideaUtil, setIdeaUtil] = useState("");
 
+  /*
+   * Ancho real disponible para la cuadrícula.
+   *
+   * Se mide directamente del contenedor para que responda
+   * correctamente cuando la sidebar se expande o retrae.
+   */
+  const [anchoGridEmociones, setAnchoGridEmociones] = useState(0);
 
-  // Responsive.
-  const esTelefono =
-    width < 768;
+  // ========================================================
+  // TEMA
+  // ========================================================
 
-  const esTablet =
-    width >= 768 &&
-    width < 1100;
+  const backgroundColor = useThemeColor({}, "background");
 
-  const esWeb =
-    width >= 1100;
+  const surfaceColor = useThemeColor({}, "surface");
 
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
-  // Ancho máximo de toda la pantalla.
-  const maxWidthContenido =
-    esWeb
-      ? 980
-      : esTablet
-        ? 860
-        : undefined;
+  const borderColor = useThemeColor({}, "border");
 
+  const textColor = useThemeColor({}, "text");
 
-  // El card superior y las emociones no necesitan ocupar
-  // todo el ancho disponible en web.
-  const maxWidthSeccionPrincipal =
-    esWeb
-      ? 760
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
+
+  const textMutedColor = useThemeColor({}, "textMuted");
+
+  const primaryColor = useThemeColor({}, "primary");
+
+  const primarySoftColor = useThemeColor({}, "primarySoft");
+
+  const secondarySoftColor = useThemeColor({}, "secondarySoft");
+
+  const accentSoftColor = useThemeColor({}, "accentSoft");
+
+  const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
+
+  // ========================================================
+  // RESPONSIVE
+  // ========================================================
+
+  const paddingHorizontal = esEscritorio
+    ? PADDING_RESPONSIVE.escritorio
+    : esTablet
+      ? PADDING_RESPONSIVE.tablet
+      : PADDING_RESPONSIVE.telefono;
+
+  /*
+   * La pantalla puede ocupar el dashboard,
+   * pero el formulario interior se mantiene
+   * más estrecho para facilitar la lectura.
+   */
+  const maxWidthContenido = esEscritorio
+    ? MAX_WIDTHS.dashboard
+    : esTablet
+      ? MAX_WIDTHS.contenido
       : undefined;
 
+  const maxWidthFormulario = esEscritorio
+    ? 820
+    : esTablet
+      ? MAX_WIDTHS.formulario
+      : undefined;
 
-  const paddingHorizontal =
-    esTelefono
-      ? 16
-      : 24;
+  /*
+   * Emociones:
+   *
+   * móvil      -> 3 columnas
+   * tablet     -> 4 columnas
+   * escritorio -> 5 columnas
+   */
+  const columnasEmociones = esEscritorio ? 5 : esTablet ? 4 : 3;
 
+  const gapEmociones = esEscritorio ? 14 : 12;
 
-  // Cantidad de emociones por fila.
-  const columnasEmociones =
-    esTelefono
-      ? 3
-      : esTablet
-        ? 4
-        : 5;
+  const anchoTarjetaEmocion = useMemo(() => {
+    if (anchoGridEmociones <= 0) {
+      return 0;
+    }
 
+    const espacioTotal = gapEmociones * (columnasEmociones - 1);
 
-  const gapEmociones =
-    esTelefono
-      ? 12
-      : 14;
+    return (anchoGridEmociones - espacioTotal) / columnasEmociones;
+  }, [anchoGridEmociones, columnasEmociones, gapEmociones]);
 
+  const paddingBottom = esEscritorio ? 64 : Math.max(insets.bottom + 130, 150);
 
-  // En web el grid se limita a 760px.
-  const anchoGridEmociones =
-    Math.min(
-      width - paddingHorizontal * 2,
-      esWeb
-        ? 760
-        : esTablet
-          ? 760
-          : width - paddingHorizontal * 2
-    );
-
-
-  const anchoTarjetaEmocion =
-    useMemo(
-      () => {
-        const espacioTotal =
-          gapEmociones *
-          (
-            columnasEmociones - 1
-          );
-
-        return (
-          anchoGridEmociones -
-          espacioTotal
-        ) /
-        columnasEmociones;
-      },
-      [
-        anchoGridEmociones,
-        columnasEmociones,
-        gapEmociones,
-      ]
-    );
-
+  // ========================================================
+  // CARGAR EMOCIONES
+  // ========================================================
 
   useEffect(() => {
-    const cargarEmociones =
-      async () => {
-        try {
-          setCargandoEmociones(
-            true
-          );
+    const cargarEmociones = async () => {
+      try {
+        setCargandoEmociones(true);
 
-          const data =
-            await obtenerEmocionesAutorregistro();
+        const data = await obtenerEmocionesAutorregistro();
 
-          setEmociones(
-            data
-          );
-        } catch (error: any) {
-          Alert.alert(
-            "Error",
-            error.message ||
-              "No se pudieron cargar las emociones."
-          );
-        } finally {
-          setCargandoEmociones(
-            false
-          );
-        }
-      };
+        setEmociones(data);
+      } catch (error: any) {
+        Alert.alert(
+          "Error",
+          error.message || "No se pudieron cargar las emociones.",
+        );
+      } finally {
+        setCargandoEmociones(false);
+      }
+    };
 
     cargarEmociones();
   }, []);
 
+  // ========================================================
+  // NAVEGACIÓN
+  // ========================================================
 
-  const regresar =
-    () => {
-      router.replace({
-        pathname:
-          "/diario/nuevo" as never,
+  const regresar = () => {
+    router.replace({
+      pathname: "/diario/nuevo" as never,
 
-        params: {
-          origen,
-        },
+      params: {
+        origen,
+      },
+    });
+  };
+
+  // ========================================================
+  // GUARDAR REGISTRO
+  // ========================================================
+
+  const guardarRegistro = async () => {
+    if (!user?.id) {
+      Alert.alert("Error", "No se encontró una sesión de usuario activa.");
+
+      return;
+    }
+
+    if (!idEmocion) {
+      Alert.alert(
+        "Atención",
+        "Por favor selecciona una emoción antes de guardar.",
+      );
+
+      return;
+    }
+
+    try {
+      setGuardando(true);
+
+      await guardarDiarioEmocionalService({
+        idUsuario: user.id,
+
+        idEmocion,
+
+        motivo,
+
+        reaccion,
+
+        ideaUtil,
       });
-    };
 
+      Alert.alert("¡Éxito!", "Tu diario ha sido guardado correctamente.", [
+        {
+          text: "OK",
 
-  const guardarRegistro =
-    async () => {
-      if (
-        !user?.id
-      ) {
-        Alert.alert(
-          "Error",
-          "No se encontró una sesión de usuario activa."
-        );
+          onPress: regresar,
+        },
+      ]);
+    } catch (error: any) {
+      Alert.alert(
+        "Error al guardar",
+        error.message || "Ocurrió un error inesperado.",
+      );
+    } finally {
+      setGuardando(false);
+    }
+  };
 
-        return;
-      }
+  // ========================================================
+  // MEDIR GRID DE EMOCIONES
+  // ========================================================
 
-      if (
-        !idEmocion
-      ) {
-        Alert.alert(
-          "Atención",
-          "Por favor selecciona una emoción antes de guardar."
-        );
+  const medirGridEmociones = (event: LayoutChangeEvent) => {
+    const nuevoAncho = event.nativeEvent.layout.width;
 
-        return;
-      }
+    if (Math.abs(nuevoAncho - anchoGridEmociones) > 1) {
+      setAnchoGridEmociones(nuevoAncho);
+    }
+  };
 
-      try {
-        setGuardando(
-          true
-        );
+  // ========================================================
+  // PLANTILLA NO DISPONIBLE
+  // ========================================================
 
-        await guardarDiarioEmocionalService({
-          idUsuario:
-            user.id,
-
-          idEmocion,
-
-          motivo,
-
-          reaccion,
-
-          ideaUtil,
-        });
-
-        Alert.alert(
-          "¡Éxito!",
-          "Tu diario ha sido guardado correctamente.",
-          [
-            {
-              text:
-                "OK",
-
-              onPress:
-                regresar,
-            },
-          ]
-        );
-      } catch (error: any) {
-        Alert.alert(
-          "Error al guardar",
-          error.message ||
-            "Ocurrió un error inesperado."
-        );
-      } finally {
-        setGuardando(
-          false
-        );
-      }
-    };
-
-
-  if (
-    plantilla !==
-    "emocional"
-  ) {
+  if (plantilla !== "emocional") {
     return (
-      <View className="flex-1 items-center justify-center bg-[#F8FBFF] px-6">
-        <Text className="text-center font-nunito-bold text-xl text-gray-700">
+      <View
+        style={{
+          flex: 1,
+
+          paddingHorizontal: paddingHorizontal,
+
+          alignItems: "center",
+
+          justifyContent: "center",
+
+          backgroundColor,
+        }}
+      >
+        <View
+          style={{
+            width: 64,
+
+            height: 64,
+
+            borderRadius: 32,
+
+            alignItems: "center",
+
+            justifyContent: "center",
+
+            backgroundColor: primarySoftColor,
+
+            marginBottom: 18,
+          }}
+        >
+          <Ionicons
+            name="document-text-outline"
+            size={30}
+            color={primaryColor}
+          />
+        </View>
+
+        <Text
+          style={{
+            textAlign: "center",
+
+            fontFamily: "Nunito-Bold",
+
+            fontSize: 20,
+
+            color: textColor,
+          }}
+        >
           Plantilla no disponible
         </Text>
+
+        <Text
+          style={{
+            marginTop: 6,
+
+            maxWidth: 420,
+
+            textAlign: "center",
+
+            fontFamily: "Nunito-Medium",
+
+            fontSize: 14,
+
+            lineHeight: 20,
+
+            color: textSecondaryColor,
+          }}
+        >
+          Esta plantilla todavía no está disponible.
+        </Text>
+
+        <Pressable
+          onPress={regresar}
+          style={({ pressed }) => ({
+            marginTop: 22,
+
+            minHeight: 44,
+
+            paddingHorizontal: 18,
+
+            borderRadius: 12,
+
+            flexDirection: "row",
+
+            alignItems: "center",
+
+            justifyContent: "center",
+
+            gap: 7,
+
+            backgroundColor: primaryColor,
+
+            opacity: pressed ? 0.8 : 1,
+          })}
+        >
+          <Ionicons name="arrow-back" size={18} color={textOnPrimaryColor} />
+
+          <Text
+            style={{
+              fontFamily: "Nunito-SemiBold",
+
+              fontSize: 14,
+
+              color: textOnPrimaryColor,
+            }}
+          >
+            Volver a plantillas
+          </Text>
+        </Pressable>
       </View>
     );
   }
 
+  // ========================================================
+  // UI
+  // ========================================================
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-[#F8FBFF]"
+      style={{
+        flex: 1,
+
+        backgroundColor,
+      }}
       behavior={
         Platform.OS === "ios"
           ? "padding"
@@ -363,529 +419,466 @@ export default function NuevoAutorregistro() {
             ? "height"
             : undefined
       }
-      keyboardVerticalOffset={
-        Platform.OS === "ios"
-          ? insets.top
-          : 0
-      }
+      keyboardVerticalOffset={Platform.OS === "ios" ? insets.top : 0}
     >
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop:
-            esTelefono
-              ? 12
-              : 24,
+          paddingTop: esEscritorio ? 28 : esTablet ? 22 : 14,
 
-          paddingBottom:
-            Math.max(
-              insets.bottom + 130,
-              150
-            ),
+          paddingBottom,
         }}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
-        {/* Contenedor general */}
+        {/* ==================================================
+            CONTENEDOR PRINCIPAL
+        ================================================== */}
+
         <View
           style={{
-            width:
-              "100%",
+            width: "100%",
 
-            maxWidth:
-              maxWidthContenido,
+            maxWidth: maxWidthContenido,
 
-            alignSelf:
-              "center",
+            alignSelf: "center",
 
             paddingHorizontal,
           }}
         >
-          {/* Encabezado */}
+          {/* ==================================================
+              ENCABEZADO
+          ================================================== */}
+
           <Animated.View
-            entering={
-              FadeInDown.duration(
-                400
-              )
-            }
-            className="mb-6 flex-row items-center justify-between"
+            entering={FadeInDown.duration(400)}
+            style={{
+              width: "100%",
+
+              maxWidth: maxWidthFormulario,
+
+              alignSelf: "center",
+
+              marginBottom: 26,
+
+              flexDirection: "row",
+
+              alignItems: "center",
+            }}
           >
             <Pressable
-              onPress={
-                regresar
-              }
-              style={{
-                width:
-                  48,
+              onPress={regresar}
+              hitSlop={8}
+              style={({ pressed }) => ({
+                width: 46,
 
-                height:
-                  48,
+                height: 46,
 
-                borderRadius:
-                  17,
+                flexShrink: 0,
 
-                backgroundColor:
-                  "#FFFFFF",
+                borderRadius: 15,
 
-                borderWidth:
-                  1,
+                borderWidth: 1,
 
-                borderColor:
-                  "#E8EDF4",
+                borderColor,
 
-                alignItems:
-                  "center",
+                alignItems: "center",
 
-                justifyContent:
-                  "center",
-              }}
+                justifyContent: "center",
+
+                backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
+              })}
             >
-              <Ionicons
-                name="arrow-back"
-                size={22}
-                color="#1E3A5F"
-              />
+              <Ionicons name="arrow-back" size={21} color={textColor} />
             </Pressable>
 
+            <View
+              style={{
+                flex: 1,
 
-            <View className="flex-1 px-4">
+                minWidth: 0,
+
+                paddingHorizontal: 16,
+              }}
+            >
               <Text
-                className={`font-nunito-bold text-[#4F8EF7] ${
-                  esTelefono
-                    ? "text-[28px]"
-                    : "text-[30px]"
-                }`}
+                numberOfLines={1}
+                style={{
+                  fontFamily: "Nunito-Bold",
+
+                  fontSize: esEscritorio ? 30 : esTablet ? 29 : 26,
+
+                  color: primaryColor,
+                }}
               >
-                Diario Emocional
+                Diario emocional
               </Text>
 
-              <Text className="mt-1 font-nunito-medium text-[16px] text-[#9096A3]">
+              <Text
+                numberOfLines={esTelefono ? 2 : 1}
+                style={{
+                  marginTop: 3,
+
+                  fontFamily: "Nunito-Medium",
+
+                  fontSize: esEscritorio ? 15 : 14,
+
+                  lineHeight: 20,
+
+                  color: textMutedColor,
+                }}
+              >
                 Tu espacio seguro para expresar lo que sientes
               </Text>
             </View>
 
+            {/* CALENDARIO */}
 
-            <Pressable
-              style={{
-                width:
-                  48,
+            {!esTelefono && (
+              <View
+                style={{
+                  width: 46,
 
-                height:
-                  48,
+                  height: 46,
 
-                borderRadius:
-                  17,
+                  flexShrink: 0,
 
-                backgroundColor:
-                  "#FFFFFF",
+                  borderRadius: 15,
 
-                borderWidth:
-                  1,
+                  borderWidth: 1,
 
-                borderColor:
-                  "#E8EDF4",
+                  borderColor,
 
-                alignItems:
-                  "center",
+                  alignItems: "center",
 
-                justifyContent:
-                  "center",
-              }}
-            >
-              <Ionicons
-                name="calendar-outline"
-                size={23}
-                color="#243B63"
-              />
-            </Pressable>
+                  justifyContent: "center",
+
+                  backgroundColor: surfaceColor,
+                }}
+              >
+                <Ionicons name="calendar-outline" size={22} color={textColor} />
+              </View>
+            )}
           </Animated.View>
 
+          {/* ==================================================
+              CARD ¿CÓMO TE SIENTES?
+          ================================================== */}
 
-          {/* CARD: ¿Cómo te sientes hoy? */}
           <Animated.View
-            entering={
-              FadeInDown
-                .delay(100)
-                .duration(500)
-            }
+            entering={FadeInDown.delay(100).duration(500)}
             style={{
-              width:
-                "100%",
+              width: "100%",
 
-              maxWidth:
-                maxWidthSeccionPrincipal,
+              maxWidth: maxWidthFormulario,
 
-              minHeight:
-                esTelefono
-                  ? 185
-                  : 205,
+              minHeight: esTelefono ? 185 : 205,
 
-              alignSelf:
-                "center",
+              alignSelf: "center",
 
-              marginBottom:
-                32,
+              marginBottom: esEscritorio ? 34 : 28,
 
-              paddingHorizontal:
-                esTelefono
-                  ? 24
-                  : 30,
+              paddingHorizontal: esTelefono ? 22 : 30,
 
-              paddingVertical:
-                esTelefono
-                  ? 24
-                  : 28,
+              paddingVertical: esTelefono ? 22 : 28,
 
-              borderRadius:
-                28,
+              borderRadius: 26,
 
-              backgroundColor:
-                "#E9F1FF",
+              backgroundColor: primarySoftColor,
 
-              borderWidth:
-                1,
+              borderWidth: 1,
 
-              borderColor:
-                "#D5E3FA",
+              borderColor,
 
-              overflow:
-                "hidden",
+              overflow: "hidden",
 
-              shadowColor:
-                "#315B9A",
+              shadowColor: primaryColor,
 
               shadowOffset: {
-                width:
-                  0,
+                width: 0,
 
-                height:
-                  5,
+                height: 5,
               },
 
-              shadowOpacity:
-                0.08,
+              shadowOpacity: 0.08,
 
-              shadowRadius:
-                12,
+              shadowRadius: 12,
 
-              elevation:
-                2,
+              elevation: 2,
             }}
           >
-            {/* Decoraciones */}
+            {/* ==================================================
+                DECORACIONES
+            ================================================== */}
+
             <View
               style={{
-                position:
-                  "absolute",
+                position: "absolute",
 
-                width:
-                  150,
+                width: 150,
 
-                height:
-                  150,
+                height: 150,
 
-                borderRadius:
-                  75,
+                borderRadius: 75,
 
-                backgroundColor:
-                  "#D9E5FF",
+                backgroundColor: primarySoftColor,
 
-                right:
-                  -25,
+                right: -25,
 
-                top:
-                  -40,
+                top: -40,
+
+                opacity: 0.8,
               }}
             />
 
             <View
               style={{
-                position:
-                  "absolute",
+                position: "absolute",
 
-                width:
-                  140,
+                width: 140,
 
-                height:
-                  140,
+                height: 140,
 
-                borderRadius:
-                  70,
+                borderRadius: 70,
 
-                backgroundColor:
-                  "#E8DFFF",
+                backgroundColor: accentSoftColor,
 
-                right:
-                  90,
+                right: 90,
 
-                bottom:
-                  -55,
+                bottom: -55,
+
+                opacity: 0.8,
               }}
             />
 
             <View
               style={{
-                position:
-                  "absolute",
+                position: "absolute",
 
-                width:
-                  120,
+                width: 120,
 
-                height:
-                  120,
+                height: 120,
 
-                borderRadius:
-                  60,
+                borderRadius: 60,
 
-                backgroundColor:
-                  "#F7E0EF",
+                backgroundColor: secondarySoftColor,
 
-                left:
-                  -45,
+                left: -45,
 
-                bottom:
-                  -50,
+                bottom: -50,
+
+                opacity: 0.7,
               }}
             />
 
+            {/* ==================================================
+                TEXTO
+            ================================================== */}
 
-            {/* Texto */}
             <View
               style={{
-                width:
-                  esTelefono
-                    ? "58%"
-                    : "62%",
+                width: esTelefono ? "60%" : "64%",
               }}
             >
               <Text
-                className={`font-nunito-bold text-[#2D3748] ${
-                  esTelefono
-                    ? "text-[23px] leading-7"
-                    : "text-[25px] leading-8"
-                }`}
+                style={{
+                  fontFamily: "Nunito-Bold",
+
+                  fontSize: esEscritorio ? 26 : esTelefono ? 22 : 24,
+
+                  lineHeight: esEscritorio ? 33 : esTelefono ? 28 : 31,
+
+                  color: textColor,
+                }}
               >
                 ¿Cómo te{"\n"}sientes hoy?
               </Text>
 
               <Text
-                className={`mt-3 font-nunito-medium text-[#61718E] ${
-                  esTelefono
-                    ? "text-[16px] leading-5"
-                    : "text-[16px] leading-6"
-                }`}
+                style={{
+                  marginTop: 10,
+
+                  fontFamily: "Nunito-Medium",
+
+                  fontSize: esTelefono ? 14 : 15,
+
+                  lineHeight: esTelefono ? 20 : 22,
+
+                  color: textSecondaryColor,
+                }}
               >
-                Reconocer tus emociones es el primer paso para
-                entenderte mejor.
+                Reconocer tus emociones es el primer paso para entenderte mejor.
               </Text>
             </View>
 
+            {/* ==================================================
+                ILUSTRACIÓN
+            ================================================== */}
 
-            {/* Ilustración */}
             <View
               style={{
-                position:
-                  "absolute",
+                position: "absolute",
 
-                right:
-                  esTelefono
-                    ? 20
-                    : 30,
+                right: esTelefono ? 18 : 30,
 
-                bottom:
-                  24,
+                bottom: esTelefono ? 22 : 25,
 
-                width:
-                  esTelefono
-                    ? 115
-                    : 125,
+                width: esTelefono ? 100 : 120,
 
-                height:
-                  esTelefono
-                    ? 115
-                    : 125,
+                height: esTelefono ? 100 : 120,
 
-                borderRadius:
-                  30,
+                borderRadius: 28,
 
-                backgroundColor:
-                  "#7EA8EE",
+                backgroundColor: primaryColor,
 
-                alignItems:
-                  "center",
+                alignItems: "center",
 
-                justifyContent:
-                  "center",
+                justifyContent: "center",
 
                 transform: [
                   {
-                    rotate:
-                      "-5deg",
+                    rotate: "-5deg",
                   },
                 ],
               }}
             >
-              <View
-                style={{
-                  width:
-                    65,
-
-                  height:
-                    85,
-
-                  borderRadius:
-                    14,
-
-                  backgroundColor:
-                    "#5E8FE4",
-
-                  alignItems:
-                    "center",
-
-                  justifyContent:
-                    "center",
-                }}
-              >
-                <Ionicons
-                  name="heart"
-                  size={34}
-                  color="#FFFFFF"
-                />
-              </View>
-
-              <View
-                style={{
-                  position:
-                    "absolute",
-
-                  right:
-                    -8,
-
-                  bottom:
-                    18,
-
-                  width:
-                    16,
-
-                  height:
-                    32,
-
-                  borderRadius:
-                    10,
-
-                  backgroundColor:
-                    "#365FAD",
-                }}
+              <Ionicons
+                name="heart"
+                size={esTelefono ? 32 : 38}
+                color={textOnPrimaryColor}
               />
             </View>
           </Animated.View>
 
+          {/* ==================================================
+              SELECCIÓN DE EMOCIÓN
+          ================================================== */}
 
-          {/* Selección de emoción */}
           <Animated.View
-            entering={
-              FadeInDown
-                .delay(200)
-                .duration(500)
-            }
+            entering={FadeInDown.delay(200).duration(500)}
             style={{
-              width:
-                "100%",
+              width: "100%",
 
-              maxWidth:
-                esWeb
-                  ? 760
-                  : undefined,
+              maxWidth: maxWidthFormulario,
 
-              alignSelf:
-                "center",
+              alignSelf: "center",
 
-              marginBottom:
-                28,
+              marginBottom: 30,
             }}
           >
-            <Text className="mb-1 font-nunito-bold text-[20px] text-[#2D3748]">
+            <Text
+              style={{
+                marginBottom: 4,
+
+                fontFamily: "Nunito-Bold",
+
+                fontSize: esEscritorio ? 21 : 20,
+
+                color: textColor,
+              }}
+            >
               ¿Cómo me siento hoy?
             </Text>
 
-            <Text className="mb-5 font-nunito-medium text-[14px] leading-5 text-[#7A89A3]">
+            <Text
+              style={{
+                marginBottom: 20,
+
+                fontFamily: "Nunito-Medium",
+
+                fontSize: 14,
+
+                lineHeight: 20,
+
+                color: textSecondaryColor,
+              }}
+            >
               Elige la emoción que mejor representa cómo te sientes.
             </Text>
 
-
             {cargandoEmociones ? (
-              <Text className="font-nunito-medium text-[14px] text-[#7A89A3]">
-                Cargando emociones...
-              </Text>
-            ) : emociones.length === 0 ? (
-              <Text className="font-nunito-medium text-[14px] text-[#7A89A3]">
-                No hay emociones disponibles.
-              </Text>
-            ) : (
               <View
                 style={{
-                  flexDirection:
-                    "row",
+                  minHeight: 100,
 
-                  flexWrap:
-                    "wrap",
+                  alignItems: "center",
 
-                  gap:
-                    gapEmociones,
+                  justifyContent: "center",
                 }}
               >
-                {emociones.map(
-                  item => (
-                    <OpcionEmocion
-                      key={
-                        item.id_emocion
-                      }
-                      nombre={
-                        item.nombre
-                      }
-                      emoji={
-                        EMOJIS_EMOCIONES[
-                          item.nombre
-                        ] ?? "💭"
-                      }
-                      seleccionada={
-                        idEmocion ===
-                        item.id_emocion
-                      }
-                      ancho={
-                        anchoTarjetaEmocion
-                      }
-                      onPress={() =>
-                        setIdEmocion(
-                          item.id_emocion
-                        )
-                      }
-                    />
-                  )
-                )}
+                <Text
+                  style={{
+                    fontFamily: "Nunito-Medium",
+
+                    fontSize: 14,
+
+                    color: textMutedColor,
+                  }}
+                >
+                  Cargando emociones...
+                </Text>
+              </View>
+            ) : emociones.length === 0 ? (
+              <View
+                style={{
+                  minHeight: 100,
+
+                  alignItems: "center",
+
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: "Nunito-Medium",
+
+                    fontSize: 14,
+
+                    color: textMutedColor,
+                  }}
+                >
+                  No hay emociones disponibles.
+                </Text>
+              </View>
+            ) : (
+              <View
+                onLayout={medirGridEmociones}
+                style={{
+                  width: "100%",
+
+                  flexDirection: "row",
+
+                  flexWrap: "wrap",
+
+                  gap: gapEmociones,
+                }}
+              >
+                {emociones.map((item) => (
+                  <OpcionEmocion
+                    key={item.id_emocion}
+                    nombre={item.nombre}
+                    emoji={EMOJIS_EMOCIONES[item.nombre] ?? "💭"}
+                    seleccionada={idEmocion === item.id_emocion}
+                    ancho={anchoTarjetaEmocion}
+                    onPress={() => setIdEmocion(item.id_emocion)}
+                  />
+                ))}
               </View>
             )}
           </Animated.View>
 
+          {/* ==================================================
+              PREGUNTAS
+          ================================================== */}
 
-          {/* Preguntas */}
           <Animated.View
-            entering={
-              FadeInDown
-                .delay(300)
-                .duration(500)
-            }
+            entering={FadeInDown.delay(300).duration(500)}
             style={{
-              width:
-                "100%",
+              width: "100%",
 
-              maxWidth:
-                esWeb
-                  ? 760
-                  : undefined,
+              maxWidth: maxWidthFormulario,
 
-              alignSelf:
-                "center",
+              alignSelf: "center",
             }}
           >
             <CampoPreguntaDiario
@@ -910,41 +903,26 @@ export default function NuevoAutorregistro() {
             />
           </Animated.View>
 
+          {/* ==================================================
+              GUARDAR
+          ================================================== */}
 
-          {/* Guardar */}
           <Animated.View
-            entering={
-              FadeInDown
-                .delay(400)
-                .duration(500)
-            }
+            entering={FadeInDown.delay(400).duration(500)}
             style={{
-              width:
-                "100%",
+              width: "100%",
 
-              maxWidth:
-                esWeb
-                  ? 760
-                  : undefined,
+              maxWidth: maxWidthFormulario,
 
-              alignSelf:
-                "center",
+              alignSelf: "center",
+
+              marginTop: 12,
             }}
-            className="mt-3"
           >
             <Button
-              title={
-                guardando
-                  ? "Guardando..."
-                  : "Guardar registro"
-              }
-              onPress={
-                guardarRegistro
-              }
-              disabled={
-                guardando ||
-                cargandoEmociones
-              }
+              title={guardando ? "Guardando..." : "Guardar registro"}
+              onPress={guardarRegistro}
+              disabled={guardando || cargandoEmociones}
             />
           </Animated.View>
         </View>

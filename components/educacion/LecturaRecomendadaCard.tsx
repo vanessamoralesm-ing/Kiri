@@ -28,6 +28,7 @@ import {
 type LecturaRecomendadaCardProps = {
   titulo: string;
   index: number;
+  ancho?: number;
   onPress?: () => void;
   onFavoritoPress?: () => void;
 };
@@ -40,6 +41,7 @@ type LecturaRecomendadaCardProps = {
 export default function LecturaRecomendadaCard({
   titulo,
   index,
+  ancho = 150,
   onPress,
   onFavoritoPress,
 }: LecturaRecomendadaCardProps) {
@@ -48,7 +50,6 @@ export default function LecturaRecomendadaCard({
   // ANIMACIÓN
   // ========================================================
 
-  // Escala del card al presionarlo
   const escala =
     useSharedValue(1);
 
@@ -110,11 +111,55 @@ export default function LecturaRecomendadaCard({
     );
 
 
-  // Alterna morado y celeste
+  // ========================================================
+  // FONDO DE PORTADA
+  // ========================================================
+
+  // Alterna morado y celeste.
   const fondoPortada =
     index % 2 === 0
       ? accentSoftColor
       : primarySoftColor;
+
+
+  // ========================================================
+  // ESCALA VISUAL SEGÚN EL ANCHO
+  // ========================================================
+
+  // El card conserva su proporción en teléfono,
+  // pero aprovecha mejor el espacio disponible en web.
+  const esCardGrande =
+    ancho >= 190;
+
+  const alturaPortada =
+    esCardGrande
+      ? 220
+      : 175;
+
+  const tamanoCirculoLibro =
+    esCardGrande
+      ? 70
+      : 58;
+
+  const tamanoIconoLibro =
+    esCardGrande
+      ? 36
+      : 30;
+
+  const tamanoTitulo =
+    esCardGrande
+      ? 16
+      : 14;
+
+  const lineaTitulo =
+    esCardGrande
+      ? 21
+      : 18;
+
+  const alturaInformacion =
+    esCardGrande
+      ? 104
+      : 88;
 
 
   // ========================================================
@@ -126,26 +171,23 @@ export default function LecturaRecomendadaCard({
       style={[
         estiloAnimado,
         {
-          width: 150,
+          width:
+            ancho,
         },
       ]}
     >
-
       <Pressable
         onPress={
           onPress
         }
-
         onPressIn={() => {
           escala.value =
             withSpring(0.97);
         }}
-
         onPressOut={() => {
           escala.value =
             withSpring(1);
         }}
-
         style={({
           pressed,
         }) => ({
@@ -161,7 +203,7 @@ export default function LecturaRecomendadaCard({
             ================================================= */}
 
         <View
-          className="overflow-hidden rounded-[18px] border"
+          className="w-full overflow-hidden rounded-[18px] border"
           style={{
             borderColor,
 
@@ -192,8 +234,11 @@ export default function LecturaRecomendadaCard({
               ================================================= */}
 
           <View
-            className="relative h-[175px] w-full items-center"
+            className="relative w-full items-center"
             style={{
+              height:
+                alturaPortada,
+
               backgroundColor:
                 fondoPortada,
             }}
@@ -204,22 +249,29 @@ export default function LecturaRecomendadaCard({
                 ================================================= */}
 
             <Pressable
-              onPress={(event) => {
+              onPress={(
+                event
+              ) => {
                 event.stopPropagation();
 
                 onFavoritoPress?.();
               }}
-
               hitSlop={8}
-
               className="absolute right-2 top-2 z-20"
             >
-
-              {/* Círculo blanco del corazón */}
-
               <View
-                className="h-[28px] w-[28px] items-center justify-center rounded-full"
+                className="items-center justify-center rounded-full"
                 style={{
+                  width:
+                    esCardGrande
+                      ? 34
+                      : 28,
+
+                  height:
+                    esCardGrande
+                      ? 34
+                      : 28,
+
                   backgroundColor:
                     "#FFFFFF",
 
@@ -241,17 +293,18 @@ export default function LecturaRecomendadaCard({
                     3,
                 }}
               >
-
                 <Ionicons
                   name="heart-outline"
-                  size={17}
+                  size={
+                    esCardGrande
+                      ? 20
+                      : 17
+                  }
                   color={
                     accentColor
                   }
                 />
-
               </View>
-
             </Pressable>
 
 
@@ -260,21 +313,32 @@ export default function LecturaRecomendadaCard({
                 ================================================= */}
 
             <View
-              className="mt-[34px] h-[58px] w-[58px] items-center justify-center rounded-full"
+              className="items-center justify-center rounded-full"
               style={{
+                marginTop:
+                  esCardGrande
+                    ? 42
+                    : 34,
+
+                width:
+                  tamanoCirculoLibro,
+
+                height:
+                  tamanoCirculoLibro,
+
                 backgroundColor:
                   "#FFFFFF",
               }}
             >
-
               <Ionicons
                 name="book-outline"
-                size={30}
+                size={
+                  tamanoIconoLibro
+                }
                 color={
                   primaryColor
                 }
               />
-
             </View>
 
 
@@ -284,8 +348,19 @@ export default function LecturaRecomendadaCard({
 
             <Text
               numberOfLines={3}
-              className="mt-3 px-3 text-center font-nunito-bold text-[14px] leading-[18px]"
+              className="px-3 text-center font-nunito-bold"
               style={{
+                marginTop:
+                  esCardGrande
+                    ? 18
+                    : 12,
+
+                fontSize:
+                  tamanoTitulo,
+
+                lineHeight:
+                  lineaTitulo,
+
                 color:
                   textColor,
               }}
@@ -301,20 +376,31 @@ export default function LecturaRecomendadaCard({
               ================================================= */}
 
           <View
-            className="min-h-[88px] px-3 pb-3 pt-3"
+            className="px-3 pb-3 pt-3"
             style={{
+              minHeight:
+                alturaInformacion,
+
               backgroundColor:
                 surfaceColor,
             }}
           >
 
-            {/* Título inferior */}
+            {/* =================================================
+                TÍTULO INFERIOR
+                ================================================= */}
 
             <Text
               numberOfLines={2}
               ellipsizeMode="tail"
-              className="font-nunito-bold text-[14px] leading-[18px]"
+              className="font-nunito-bold"
               style={{
+                fontSize:
+                  tamanoTitulo,
+
+                lineHeight:
+                  lineaTitulo,
+
                 color:
                   textColor,
               }}
@@ -328,7 +414,6 @@ export default function LecturaRecomendadaCard({
                 ================================================= */}
 
             <View className="mt-2 flex-row">
-
               <View
                 className="flex-row items-center rounded-md px-1.5 py-1"
                 style={{
@@ -336,27 +421,33 @@ export default function LecturaRecomendadaCard({
                     primarySoftColor,
                 }}
               >
-
                 <Ionicons
                   name="book-outline"
-                  size={13}
+                  size={
+                    esCardGrande
+                      ? 15
+                      : 13
+                  }
                   color={
                     primaryColor
                   }
                 />
 
                 <Text
-                  className="ml-1 font-nunito-medium text-[11px]"
+                  className="ml-1 font-nunito-medium"
                   style={{
+                    fontSize:
+                      esCardGrande
+                        ? 12
+                        : 11,
+
                     color:
                       primaryColor,
                   }}
                 >
                   Libro
                 </Text>
-
               </View>
-
             </View>
 
           </View>
@@ -364,7 +455,6 @@ export default function LecturaRecomendadaCard({
         </View>
 
       </Pressable>
-
     </Animated.View>
   );
 }

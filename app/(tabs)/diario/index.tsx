@@ -1,416 +1,620 @@
-import React, {
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
+import React, { useCallback, useMemo, useState } from "react";
 
 import {
   ActivityIndicator,
+  LayoutChangeEvent,
   Pressable,
   ScrollView,
   Text,
-  useWindowDimensions,
   View,
 } from "react-native";
 
-import {
-  router,
-  useFocusEffect,
-} from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { router, useFocusEffect } from "expo-router";
 
-import {
-  Ionicons,
-} from "@expo/vector-icons";
-
-import TarjetaBienvenidaDiario from "@/components/diario/TarjetaBienvenidaDiario";
 import ResumenDiario from "@/components/diario/ResumenDiario";
+import TarjetaBienvenidaDiario from "@/components/diario/TarjetaBienvenidaDiario";
 import TarjetaEntradaDiario from "@/components/diario/TarjetaEntradaDiario";
 
-import {
-  useAuth,
-} from "@/services/authProvider";
+import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
 
-import {
-  obtenerHistorialDiario,
-} from "@/services/diario/autorregistro.service";
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
-import {
-  EntradaDiarioResumen,
-} from "@/types/diario";
+import { useAuth } from "@/services/authProvider";
+import { obtenerHistorialDiario } from "@/services/diario/autorregistro.service";
 
+import { EntradaDiarioResumen } from "@/types/diario";
 
 export default function DiarioScreen() {
-  const {
-    user,
-  } = useAuth();
+  const { user, profile } = useAuth();
 
-  const {
-    width,
-  } = useWindowDimensions();
+  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
-  const [
-    cargando,
-    setCargando,
-  ] = useState(true);
+  // ========================================================
+  // ESTADOS
+  // ========================================================
 
-  const [
-    entradas,
-    setEntradas,
-  ] = useState<EntradaDiarioResumen[]>([]);
+  const [cargando, setCargando] = useState(true);
 
+  const [entradas, setEntradas] = useState<EntradaDiarioResumen[]>([]);
 
-  // Define tamaños responsive.
-  const esTablet =
-    width >= 768;
+  const [anchoGrid, setAnchoGrid] = useState(0);
 
-  const esWebGrande =
-    width >= 1100;
+  // ========================================================
+  // TEMA
+  // ========================================================
 
+  const backgroundColor = useThemeColor({}, "background");
+  const surfaceColor = useThemeColor({}, "surface");
+  const borderColor = useThemeColor({}, "border");
 
-  // Obtiene únicamente el Nombre Preferido del usuario.
-  const nombreUsuario =
-    useMemo(
-      () => {
-        const nombrePreferido =
-          user?.user_metadata?.nombre_preferido;
+  const textColor = useThemeColor({}, "text");
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
+  const textMutedColor = useThemeColor({}, "textMuted");
 
-        if (
-          typeof nombrePreferido === "string" &&
-          nombrePreferido.trim()
-        ) {
-          return nombrePreferido.trim();
-        }
+  const primaryColor = useThemeColor({}, "primary");
+  const primarySoftColor = useThemeColor({}, "primarySoft");
+  const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
 
-        return "Usuario";
-      },
-      [
-        user,
-      ]
+  // ========================================================
+  // RESPONSIVE
+  // ========================================================
+
+  const paddingHorizontal = esEscritorio
+    ? PADDING_RESPONSIVE.escritorio
+    : esTablet
+      ? PADDING_RESPONSIVE.tablet
+      : PADDING_RESPONSIVE.telefono;
+
+  const maxWidthContenido = esEscritorio
+    ? MAX_WIDTHS.dashboard
+    : esTablet
+      ? MAX_WIDTHS.contenido
+      : undefined;
+
+  const numeroColumnas = esTelefono ? 1 : 2;
+
+  const gapEntradas = esEscritorio ? 18 : 16;
+
+  const anchoTarjeta =
+    anchoGrid > 0
+      ? Math.max(
+        0,
+        (anchoGrid - gapEntradas * (numeroColumnas - 1)) / numeroColumnas,
+      )
+      : undefined;
+
+  // Espacio para la barra inferior del layout compartido.
+  const paddingBottom = esEscritorio ? 64 : esTablet ? 100 : 116;
+
+  // ========================================================
+  // NOMBRE DEL USUARIO
+  // ========================================================
+
+  const nombreUsuario = useMemo(() => {
+    const nombrePreferidoPerfil =
+      typeof profile?.nombre_preferido === "string"
+        ? profile.nombre_preferido.trim()
+        : "";
+
+    const nombresPerfil =
+      typeof profile?.nombres === "string" ? profile.nombres.trim() : "";
+
+    const nombrePreferidoAuth =
+      typeof user?.user_metadata?.nombre_preferido === "string"
+        ? user.user_metadata.nombre_preferido.trim()
+        : "";
+
+    const nombresAuth =
+      typeof user?.user_metadata?.nombres === "string"
+        ? user.user_metadata.nombres.trim()
+        : "";
+
+    return (
+      nombrePreferidoPerfil ||
+      nombresPerfil ||
+      nombrePreferidoAuth ||
+      nombresAuth ||
+      "Usuario"
     );
+  }, [
+    profile?.nombre_preferido,
+    profile?.nombres,
+    user?.user_metadata?.nombre_preferido,
+    user?.user_metadata?.nombres,
+  ]);
 
+  // ========================================================
+  // CARGAR DATOS
+  // ========================================================
 
-  // Carga las entradas recientes del Diario.
-  const cargarDatos =
-    useCallback(
-      async () => {
-        try {
-          setCargando(true);
+  const cargarDatos = useCallback(async () => {
+    try {
+      setCargando(true);
 
-          const datos =
-            await obtenerHistorialDiario(
-              5
-            );
+      const datos = await obtenerHistorialDiario(5);
 
-          setEntradas(
-            datos
-          );
-        } catch (error) {
-          console.error(
-            "Error al cargar las entradas del diario:",
-            error
-          );
+      setEntradas(datos);
+    } catch (error) {
+      console.error("Error al cargar las entradas del diario:", error);
 
-          setEntradas(
-            []
-          );
-        } finally {
-          setCargando(
-            false
-          );
-        }
-      },
-      []
-    );
+      setEntradas([]);
+    } finally {
+      setCargando(false);
+    }
+  }, []);
 
-
-  // Recarga las entradas cuando la pantalla toma el foco.
   useFocusEffect(
-    useCallback(
-      () => {
-        cargarDatos();
-      },
-      [
-        cargarDatos,
-      ]
-    )
+    useCallback(() => {
+      cargarDatos();
+    }, [cargarDatos]),
   );
 
+  // ========================================================
+  // NAVEGACIÓN
+  // ========================================================
 
-  const irANuevoRegistro =
-    () => {
-      router.push({
-        pathname:
-          "/diario/nuevo" as never,
+  const irANuevoRegistro = () => {
+    router.push({
+      pathname: "/diario/nuevo" as never,
+      params: {
+        origen: "diario",
+      },
+    });
+  };
 
-        params: {
-          origen:
-            "diario",
-        },
-      });
-    };
+  const verTodasLasEntradas = () => {
+    router.push("/diario/historial" as never);
+  };
 
+  const abrirEntrada = (id: string) => {
+    router.push(`/diario/${id}` as never);
+  };
 
-  const verTodasLasEntradas =
-    () => {
-      router.push(
-        "/diario/historial" as never
-      );
-    };
+  // ========================================================
+  // FORMATEAR FECHA
+  // ========================================================
 
+  const formatearFecha = (fechaIso: string) => {
+    const fecha = new Date(fechaIso);
 
-  const abrirEntrada =
-    (
-      id: string
-    ) => {
-      router.push(
-        `/diario/${id}` as never
-      );
-    };
+    return fecha.toLocaleDateString("es-ES", {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
+  // ========================================================
+  // MEDIR GRID
+  // ========================================================
 
-  const formatearFecha =
-    (
-      fechaIso: string
-    ) => {
-      const fecha =
-        new Date(
-          fechaIso
-        );
+  const medirGrid = (event: LayoutChangeEvent) => {
+    const nuevoAncho = event.nativeEvent.layout.width;
 
-      return fecha.toLocaleDateString(
-        "es-ES",
-        {
-          day:
-            "numeric",
+    setAnchoGrid((anchoAnterior) =>
+      Math.abs(nuevoAncho - anchoAnterior) > 1 ? nuevoAncho : anchoAnterior,
+    );
+  };
 
-          month:
-            "short",
-
-          hour:
-            "2-digit",
-
-          minute:
-            "2-digit",
-        }
-      );
-    };
-
+  // ========================================================
+  // UI
+  // ========================================================
 
   return (
     <View
-      className="flex-1 bg-[#F8FAFC]"
+      style={{
+        flex: 1,
+        minWidth: 0,
+        backgroundColor,
+      }}
     >
       <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={
-          false
-        }
+        style={{
+          flex: 1,
+          width: "100%",
+        }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
-          paddingBottom:
-            110,
+          paddingTop: esEscritorio ? 28 : 20,
+          paddingBottom,
         }}
       >
-        {/* Contenedor principal responsive */}
         <View
           style={{
-            width:
-              "100%",
-
-            maxWidth:
-              esWebGrande
-                ? 1080
-                : 960,
-
-            alignSelf:
-              "center",
-
-            paddingHorizontal:
-              esTablet
-                ? 28
-                : 20,
-
-            paddingTop:
-              24,
-
-            paddingBottom:
-              20,
+            width: "100%",
+            maxWidth: maxWidthContenido,
+            alignSelf: "center",
+            paddingHorizontal,
           }}
         >
-          {/* Bienvenida */}
-          <TarjetaBienvenidaDiario
-            nombre={
-              nombreUsuario
-            }
-            onNuevoRegistro={
-              irANuevoRegistro
-            }
-          />
+          {/* ==============================================
+              BIENVENIDA / NUEVO REGISTRO
+          ============================================== */}
 
-
-          {/* Resumen */}
-          <ResumenDiario
-            diasRacha={
-              entradas.length >
-              0
-                ? 1
-                : 0
-            }
-            totalEntradas={
-              entradas.length
-            }
-          />
-
-
-          {/* Encabezado de Entradas Recientes */}
           <View
-            className="mb-5 mt-8 flex-row items-center justify-between"
+            style={{
+              width: "100%",
+              minWidth: 0,
+            }}
           >
-            <View
-              className="flex-1 pr-3"
-            >
-              <Text
-                className="font-nunito-bold text-[20px] text-[#1E293B]"
-              >
-                Entradas Recientes
-              </Text>
-
-              <Text
-                className="mt-1 font-nunito-medium text-[13px] text-[#94A3B8]"
-              >
-                Tus últimos momentos registrados
-              </Text>
-            </View>
-
-
-            <Pressable
-              onPress={
-                verTodasLasEntradas
-              }
-              hitSlop={
-                8
-              }
-              className="flex-row items-center rounded-xl px-2 py-2"
-            >
-              <Text
-                className="font-nunito-semibold text-[13px] text-[#3478F6]"
-              >
-                Ver todas
-              </Text>
-
-              <Ionicons
-                name="chevron-forward"
-                size={18}
-                color="#4F8EF7"
-              />
-            </Pressable>
+            <TarjetaBienvenidaDiario
+              nombre={nombreUsuario}
+              onNuevoRegistro={irANuevoRegistro}
+            />
           </View>
 
+          {/* ==============================================
+              RESUMEN DEL DIARIO
+          ============================================== */}
 
-          {/* Cargando */}
-          {cargando ? (
+          <View
+            style={{
+              width: "100%",
+              minWidth: 0,
+              marginTop: esEscritorio ? 24 : 20,
+            }}
+          >
+            <ResumenDiario
+              diasRacha={entradas.length > 0 ? 1 : 0}
+              totalEntradas={entradas.length}
+            />
+          </View>
+
+          {/* ==============================================
+              ENTRADAS RECIENTES
+          ============================================== */}
+
+          <View
+            style={{
+              width: "100%",
+              marginTop: esEscritorio ? 38 : esTablet ? 34 : 30,
+              marginBottom: esTelefono ? 18 : 20,
+            }}
+          >
             <View
-              className="items-center py-8"
+              style={{
+                width: "100%",
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 10,
+              }}
             >
-              <ActivityIndicator
-                size="small"
-                color="#4F8EF7"
-              />
+              <View
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: "Nunito-Bold",
+                    fontSize: esEscritorio ? 23 : esTelefono ? 19 : 21,
+                    lineHeight: esEscritorio ? 30 : 26,
+                    color: textColor,
+                  }}
+                >
+                  Entradas recientes
+                </Text>
+              </View>
+
+              <Pressable
+                onPress={verTodasLasEntradas}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="Ver todas las entradas"
+                style={({ pressed }) => ({
+                  flexShrink: 0,
+                  borderRadius: 12,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <View
+                  style={{
+                    minHeight: 40,
+                    paddingHorizontal: 12,
+                    borderRadius: 12,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: primarySoftColor,
+                  }}
+                >
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      fontFamily: "Nunito-SemiBold",
+                      fontSize: esTelefono ? 12 : 13,
+                      lineHeight: 18,
+                      color: primaryColor,
+                    }}
+                  >
+                    Ver todas
+                  </Text>
+
+                  <Ionicons
+                    name="chevron-forward"
+                    size={17}
+                    color={primaryColor}
+                    style={{
+                      marginLeft: 5,
+                    }}
+                  />
+                </View>
+              </Pressable>
+            </View>
+
+            <Text
+              style={{
+                marginTop: 6,
+                fontFamily: "Nunito-Medium",
+                fontSize: esTelefono ? 13 : 14,
+                lineHeight: 20,
+                color: textMutedColor,
+              }}
+            >
+              Tus últimos momentos registrados
+            </Text>
+          </View>
+
+          {/* ==============================================
+              CONTENIDO
+          ============================================== */}
+
+          {cargando ? (
+            // ==================================================
+            // CARGANDO
+            // ==================================================
+
+            <View
+              style={{
+                width: "100%",
+                minHeight: 160,
+                padding: 28,
+                borderRadius: 22,
+                borderWidth: 1,
+                borderColor,
+                backgroundColor: surfaceColor,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <ActivityIndicator size="small" color={primaryColor} />
 
               <Text
-                className="mt-3 font-nunito-medium text-sm text-slate-400"
+                style={{
+                  marginTop: 14,
+                  fontFamily: "Nunito-Medium",
+                  fontSize: 14,
+                  lineHeight: 20,
+                  color: textMutedColor,
+                  textAlign: "center",
+                }}
               >
                 Cargando tus entradas...
               </Text>
             </View>
-          ) : entradas.length ===
-            0 ? (
+          ) : entradas.length === 0 ? (
+            // ==================================================
+            // ESTADO VACÍO
+            // ==================================================
+
             <View
-              className="items-center rounded-[22px] border border-slate-100 bg-white p-6"
+              style={{
+                width: "100%",
+                maxWidth: esEscritorio ? 640 : undefined,
+                alignSelf: "center",
+
+                paddingHorizontal: esTelefono ? 20 : 30,
+                paddingTop: esTelefono ? 24 : 32,
+                paddingBottom: esTelefono ? 26 : 34,
+
+                borderRadius: 24,
+                borderWidth: 1,
+                borderColor,
+                backgroundColor: surfaceColor,
+
+                alignItems: "center",
+              }}
             >
-              <Ionicons
-                name="book-outline"
-                size={28}
-                color="#94A3B8"
-              />
+              {/* ICONO */}
 
-              <Text
-                className="mt-3 text-center font-nunito-medium text-sm text-slate-500"
-              >
-                Aún no has registrado ninguna entrada.
-              </Text>
+              <View
+                style={{
+                  width: esTelefono ? 64 : 72,
+                  height: esTelefono ? 64 : 72,
+                  borderRadius: 20,
 
-              <Text
-                className="mt-1 text-center font-nunito-medium text-xs text-slate-400"
+                  backgroundColor: primarySoftColor,
+
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
-                Tu próximo registro aparecerá aquí.
-              </Text>
+                <Ionicons
+                  name="book-outline"
+                  size={esTelefono ? 30 : 34}
+                  color={primaryColor}
+                />
+              </View>
+
+              {/* MENSAJES */}
+
+              <View
+                style={{
+                  width: "100%",
+                  marginTop: 18,
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    width: "100%",
+
+                    fontFamily: "Nunito-Bold",
+                    fontSize: esTelefono ? 16 : 18,
+                    lineHeight: esTelefono ? 23 : 25,
+
+                    textAlign: "center",
+                    color: textColor,
+                  }}
+                >
+                  Aún no has registrado ninguna entrada.
+                </Text>
+
+                <Text
+                  style={{
+                    width: "100%",
+                    marginTop: 8,
+
+                    fontFamily: "Nunito-Medium",
+                    fontSize: esTelefono ? 13 : 14,
+                    lineHeight: 20,
+
+                    textAlign: "center",
+                    color: textSecondaryColor,
+                  }}
+                >
+                  Tu próximo registro aparecerá aquí.
+                </Text>
+              </View>
+
+              {/* ==========================================
+                  BOTÓN CREAR PRIMER REGISTRO
+
+                  El texto se centra respecto al ancho
+                  TOTAL del botón. El icono no participa
+                  en la distribución del texto.
+              ========================================== */}
+
+              <View
+                style={{
+                  width: "100%",
+                  marginTop: esTelefono ? 28 : 32,
+                  alignItems: "center",
+                }}
+              >
+                <Pressable
+                  onPress={irANuevoRegistro}
+                  accessibilityRole="button"
+                  accessibilityLabel="Crear primer registro"
+                  style={({ pressed }) => ({
+                    width: "100%",
+                    maxWidth: 320,
+
+                    borderRadius: 14,
+                    overflow: "hidden",
+
+                    opacity: pressed ? 0.82 : 1,
+                  })}
+                >
+                  <View
+                    style={{
+                      width: "100%",
+                      minHeight: 54,
+
+                      paddingHorizontal: 16,
+                      paddingVertical: 12,
+
+                      borderRadius: 14,
+
+                      backgroundColor: primaryColor,
+
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+
+                      position: "relative",
+                    }}
+                  >
+                    {/* TEXTO CENTRADO */}
+
+                    <Text
+                      numberOfLines={2}
+                      style={{
+                        width: "100%",
+
+                        // Deja espacio para el icono
+                        // sin desplazar el centro del texto.
+                        paddingHorizontal: 24,
+
+                        fontFamily: "Nunito-Bold",
+                        fontSize: 14,
+                        lineHeight: 20,
+
+                        textAlign: "center",
+                        color: textOnPrimaryColor,
+                      }}
+                    >
+                      Crear primer registro
+                    </Text>
+
+                    {/* ICONO INDEPENDIENTE */}
+
+                    <View
+                      style={{
+                        position: "absolute",
+
+                        left: 16,
+                        top: 0,
+                        bottom: 0,
+
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Ionicons
+                        name="add"
+                        size={24}
+                        color={textOnPrimaryColor}
+                      />
+                    </View>
+                  </View>
+                </Pressable>
+              </View>
             </View>
           ) : (
+            // ==================================================
+            // ENTRADAS RECIENTES
+            // ==================================================
+
             <View
-              style={
-                esTablet
-                  ? {
-                      flexDirection:
-                        "row",
+              onLayout={medirGrid}
+              style={{
+                width: "100%",
+                minWidth: 0,
 
-                      flexWrap:
-                        "wrap",
+                flexDirection: numeroColumnas > 1 ? "row" : "column",
 
-                      gap:
-                        16,
-                    }
-                  : undefined
-              }
+                flexWrap: numeroColumnas > 1 ? "wrap" : "nowrap",
+
+                alignItems: "stretch",
+
+                gap: gapEntradas,
+              }}
             >
-              {entradas.map(
-                (
-                  item
-                ) => (
-                  <View
-                    key={
-                      item.id_registro
-                    }
-                    style={
-                      esTablet
-                        ? {
-                            width:
-                              esWebGrande
-                                ? "calc(50% - 8px)" as never
-                                : "48.5%",
-                          }
-                        : {
-                            width:
-                              "100%",
-
-                            marginBottom:
-                              18,
-                          }
-                    }
-                  >
-                    <TarjetaEntradaDiario
-                      fecha={
-                        formatearFecha(
-                          item.fecha_inicio
-                        )
-                      }
-                      titulo={
-                        item.plantilla_nombre
-                      }
-                      contenido={
-                        item.respuesta_corta
-                      }
-                      emociones={
-                        item.emociones
-                      }
-                      onPress={() =>
-                        abrirEntrada(
-                          item.id_registro
-                        )
-                      }
-                    />
-                  </View>
-                )
-              )}
+              {entradas.map((item) => (
+                <View
+                  key={item.id_registro}
+                  style={{
+                    width:
+                      numeroColumnas === 1 ? "100%" : (anchoTarjeta ?? "100%"),
+                    minWidth: 0,
+                  }}
+                >
+                  <TarjetaEntradaDiario
+                    fecha={formatearFecha(item.fecha_inicio)}
+                    titulo={item.plantilla_nombre}
+                    contenido={item.respuesta_corta}
+                    emociones={item.emociones}
+                    onPress={() => abrirEntrada(item.id_registro)}
+                  />
+                </View>
+              ))}
             </View>
           )}
         </View>

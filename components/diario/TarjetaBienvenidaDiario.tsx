@@ -2,15 +2,14 @@ import React from "react";
 
 import {
   Image,
+  Platform,
   Pressable,
   Text,
   useWindowDimensions,
   View,
 } from "react-native";
 
-import {
-  Ionicons,
-} from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
 import Animated, {
   FadeInDown,
@@ -18,6 +17,8 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
+
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 interface TarjetaBienvenidaDiarioProps {
   nombre: string;
@@ -28,34 +29,42 @@ export default function TarjetaBienvenidaDiario({
   nombre,
   onNuevoRegistro,
 }: TarjetaBienvenidaDiarioProps) {
-  const {
-    width,
-  } = useWindowDimensions();
+  const { width } = useWindowDimensions();
 
-  const esTelefonoPequeno =
-    width < 390;
+  // ========================================================
+  // TEMA
+  // ========================================================
 
-  const esTelefono =
-    width < 768;
+  const textColor = useThemeColor({}, "text");
+  const primaryColor = useThemeColor({}, "primary");
+  const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
 
-  const esTablet =
-    width >= 768 &&
-    width < 1100;
+  // ========================================================
+  // RESPONSIVE
+  // ========================================================
 
-  // Tamaño responsive del avatar.
-  const tamanoAvatar =
-    esTelefonoPequeno
-      ? 135
-      : esTelefono
-        ? 160
-        : esTablet
-          ? 185
-          : 200;
+  const esTelefonoPequeno = width < 390;
+  const esTelefono = width < 768;
+  const esTablet = width >= 768 && width < 1100;
 
-  // Controla el tamaño del boton cuando se presiona.
+  const tamanoAvatar = esTelefonoPequeno
+    ? 96
+    : esTelefono
+      ? 112
+      : esTablet
+        ? 150
+        : 170;
+
+  const tamanoIcono = esTelefonoPequeno ? 44 : esTelefono ? 52 : 64;
+
+  const tamanoFlecha = esTelefonoPequeno ? 34 : esTelefono ? 38 : 48;
+
+  // ========================================================
+  // ANIMACIÓN
+  // ========================================================
+
   const escala = useSharedValue(1);
 
-  // Aplica la escala animada.
   const estiloAnimado = useAnimatedStyle(() => ({
     transform: [
       {
@@ -64,115 +73,250 @@ export default function TarjetaBienvenidaDiario({
     ],
   }));
 
+  // ========================================================
+  // UI
+  // ========================================================
+
   return (
     <Animated.View
       entering={FadeInDown.duration(450)}
+      style={{
+        width: "100%",
+        minWidth: 0,
+      }}
     >
-      {/* Bienvenida con avatar */}
-      <View className="mb-5 flex-row items-center">
-        {/* Texto */}
+      {/* ==================================================
+          BIENVENIDA CON AVATAR
+      ================================================== */}
+
+      <View
+        style={{
+          width: "100%",
+
+          marginBottom: esTelefono ? 16 : 22,
+
+          flexDirection: "row",
+          alignItems: "center",
+
+          justifyContent: "space-between",
+
+          gap: esTelefonoPequeno ? 6 : 12,
+        }}
+      >
+        {/* TEXTO */}
+
         <View
-          className="flex-1"
           style={{
-            paddingRight: esTelefonoPequeno
-              ? 4
-              : 10,
+            flex: 1,
+            minWidth: 0,
           }}
         >
           <Text
-            className="font-nunito-bold leading-[32px] text-[#1E293B]"
             style={{
-              fontSize: esTelefonoPequeno
-                ? 22
-                : 24,
-              textAlign: "left",
+              fontFamily: "Nunito-Bold",
+
+              fontSize: esTelefonoPequeno ? 21 : esTelefono ? 24 : 29,
+
+              lineHeight: esTelefonoPequeno ? 28 : esTelefono ? 32 : 38,
+
+              color: textColor,
             }}
           >
-            ¿Qué agregarás hoy a tu{"\n"}
-            Diario,{" "}
-            <Text className="text-[#3478F6]">
-              {nombre}
+            ¿Qué agregarás hoy a tu{" "}
+            <Text
+              style={{
+                color: primaryColor,
+              }}
+            >
+              Diario, {nombre}
             </Text>
             ?
           </Text>
         </View>
 
-        {/* Avatar */}
+        {/* AVATAR */}
+
         <View
           style={{
             width: tamanoAvatar,
             height: tamanoAvatar,
+
             flexShrink: 0,
+
+            alignItems: "center",
+            justifyContent: "center",
           }}
-          className="items-center justify-center"
         >
           <Image
             source={require("@/assets/images_kids/avatar_pregunta.png")}
+            resizeMode="contain"
             style={{
               width: "100%",
               height: "100%",
-              transform: [
-                {
-                  scale: 1.28,
-                },
-              ],
             }}
-            resizeMode="contain"
           />
         </View>
       </View>
 
-      {/* Boton Nuevo Registro */}
+      {/* ==================================================
+          BOTÓN NUEVO REGISTRO
+      ================================================== */}
+
       <Animated.View
-        style={estiloAnimado}
+        style={[
+          {
+            width: "100%",
+          },
+          estiloAnimado,
+        ]}
       >
         <Pressable
           onPress={onNuevoRegistro}
           onPressIn={() => {
-            escala.value = withSpring(0.95);
+            escala.value = withSpring(0.97);
           }}
           onPressOut={() => {
             escala.value = withSpring(1);
           }}
-          className="flex-row items-center rounded-[24px] bg-[#3478F6] px-5 py-5"
+          accessibilityRole="button"
+          accessibilityLabel="Crear nuevo registro en el diario"
           style={{
-            elevation: 5,
-            shadowColor: "#4F8EF7",
-            shadowOffset: {
-              width: 0,
-              height: 5,
-            },
-            shadowOpacity: 0.2,
-            shadowRadius: 8,
+            width: "100%",
+            borderRadius: 22,
+
+            ...(Platform.OS === "web"
+              ? ({
+                boxShadow: "0px 5px 14px rgba(79,142,247,0.20)",
+              } as any)
+              : {}),
+
+            ...(Platform.OS === "android"
+              ? {
+                elevation: 4,
+              }
+              : {}),
+
+            ...(Platform.OS === "ios"
+              ? {
+                shadowColor: primaryColor,
+                shadowOffset: {
+                  width: 0,
+                  height: 5,
+                },
+                shadowOpacity: 0.2,
+                shadowRadius: 8,
+              }
+              : {}),
           }}
         >
-          {/* Icono lapiz */}
-          <View className="h-[64px] w-[64px] items-center justify-center rounded-full bg-white">
-            <Ionicons
-              name="create-outline"
-              size={31}
-              color="#4F8EF7"
-            />
-          </View>
+          <View
+            style={{
+              width: "100%",
 
-          {/* Texto */}
-          <View className="ml-4 flex-1">
-            <Text className="font-nunito-bold text-[19px] text-white">
-              Nuevo Registro
-            </Text>
+              minHeight: esTelefono ? 112 : 128,
 
-            <Text className="mt-1 font-nunito-medium text-[14px] leading-5 text-[#EAF2FF]">
-              Registra cómo te sientes y lo que pasó hoy.
-            </Text>
-          </View>
+              paddingHorizontal: esTelefonoPequeno ? 12 : esTelefono ? 16 : 22,
 
-          {/* Flecha */}
-          <View className="h-[48px] w-[48px] items-center justify-center rounded-full bg-white">
-            <Ionicons
-              name="arrow-forward"
-              size={27}
-              color="#4F8EF7"
-            />
+              paddingVertical: esTelefono ? 18 : 22,
+
+              borderRadius: 22,
+
+              backgroundColor: primaryColor,
+
+              flexDirection: "row",
+              alignItems: "center",
+
+              gap: esTelefonoPequeno ? 9 : esTelefono ? 12 : 18,
+            }}
+          >
+            {/* ICONO */}
+
+            <View
+              style={{
+                width: tamanoIcono,
+                height: tamanoIcono,
+
+                borderRadius: 999,
+
+                flexShrink: 0,
+
+                alignItems: "center",
+                justifyContent: "center",
+
+                backgroundColor: "#FFFFFF",
+              }}
+            >
+              <Ionicons
+                name="create-outline"
+                size={esTelefonoPequeno ? 24 : esTelefono ? 27 : 32}
+                color={primaryColor}
+              />
+            </View>
+
+            {/* TEXTOS */}
+
+            <View
+              style={{
+                flex: 1,
+                minWidth: 0,
+
+                justifyContent: "center",
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: "Nunito-Bold",
+
+                  fontSize: esTelefonoPequeno ? 16 : esTelefono ? 18 : 22,
+
+                  lineHeight: esTelefonoPequeno ? 21 : esTelefono ? 24 : 29,
+
+                  color: textOnPrimaryColor,
+                }}
+              >
+                Nuevo Registro
+              </Text>
+
+              <Text
+                style={{
+                  marginTop: 5,
+
+                  fontFamily: "Nunito-Medium",
+
+                  fontSize: esTelefonoPequeno ? 12 : esTelefono ? 13 : 15,
+
+                  lineHeight: esTelefonoPequeno ? 17 : esTelefono ? 19 : 22,
+
+                  color: "#EFF5FF",
+                }}
+              >
+                Registra cómo te sientes y lo que pasó hoy.
+              </Text>
+            </View>
+
+            {/* FLECHA */}
+
+            <View
+              style={{
+                width: tamanoFlecha,
+                height: tamanoFlecha,
+
+                borderRadius: 999,
+
+                flexShrink: 0,
+
+                alignItems: "center",
+                justifyContent: "center",
+
+                backgroundColor: "#FFFFFF",
+              }}
+            >
+              <Ionicons
+                name="arrow-forward"
+                size={esTelefonoPequeno ? 20 : esTelefono ? 23 : 28}
+                color={primaryColor}
+              />
+            </View>
           </View>
         </Pressable>
       </Animated.View>

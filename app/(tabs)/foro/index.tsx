@@ -3,10 +3,10 @@ import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
     ActivityIndicator,
     Platform,
+    Pressable,
     RefreshControl,
     ScrollView,
     Text,
-    TouchableOpacity,
     View,
 } from "react-native";
 
@@ -16,14 +16,21 @@ import {
 } from "react-native-safe-area-context";
 
 import { Ionicons } from "@expo/vector-icons";
+
 import { useFocusEffect, useRouter } from "expo-router";
 
 import FiltroEmociones from "@/components/foro/FiltroEmociones";
 import PreguntaSemana from "@/components/foro/PreguntaSemana";
 import PublicacionCard from "@/components/foro/PublicacionCard";
 
+import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
+
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+
 import { useThemeColor } from "@/hooks/use-theme-color";
+
 import { useAuth } from "@/services/authProvider";
+
 import { obtenerPublicaciones } from "@/services/foro/foroService";
 
 import type { PublicacionForo } from "@/types/foro";
@@ -34,45 +41,100 @@ import type { PublicacionForo } from "@/types/foro";
 
 export default function ForoScreen() {
     const router = useRouter();
+
     const insets = useSafeAreaInsets();
+
+    const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
     const { profile, loading: authLoading } = useAuth();
 
-    // ======================================================
+    // ========================================================
     // REFERENCIAS
-    // ======================================================
+    // ========================================================
 
     const primeraCargaRef = useRef(true);
+
     const cargaEnCursoRef = useRef(false);
 
-    // ======================================================
+    // ========================================================
     // ESTADOS
-    // ======================================================
+    // ========================================================
 
     const [publicaciones, setPublicaciones] = useState<PublicacionForo[]>([]);
 
     const [cargando, setCargando] = useState(true);
+
     const [refrescando, setRefrescando] = useState(false);
+
     const [error, setError] = useState<string | null>(null);
+
     const [filtroActivo, setFiltroActivo] = useState("Todo");
 
-    // ======================================================
+    // ========================================================
     // TEMA
-    // ======================================================
+    // ========================================================
 
     const backgroundColor = useThemeColor({}, "background");
+
     const surfaceColor = useThemeColor({}, "surface");
+
     const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+
     const borderColor = useThemeColor({}, "border");
+
     const textColor = useThemeColor({}, "text");
+
     const textSecondaryColor = useThemeColor({}, "textSecondary");
+
     const textMutedColor = useThemeColor({}, "textMuted");
+
     const primaryColor = useThemeColor({}, "primary");
+
+    const primarySoftColor = useThemeColor({}, "primarySoft");
+
     const accentColor = useThemeColor({}, "accent");
 
-    // ======================================================
+    const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
+
+    // ========================================================
+    // RESPONSIVE
+    // ========================================================
+
+    const paddingHorizontal = esEscritorio
+        ? PADDING_RESPONSIVE.escritorio
+        : esTablet
+            ? PADDING_RESPONSIVE.tablet
+            : PADDING_RESPONSIVE.telefono;
+
+    const maxWidthContenido = esEscritorio
+        ? MAX_WIDTHS.dashboard
+        : esTablet
+            ? MAX_WIDTHS.contenido
+            : undefined;
+
+    /*
+     * El feed no ocupa todo el dashboard en escritorio.
+     * Esto evita líneas de texto demasiado largas.
+     */
+    const maxWidthFeed = esEscritorio ? 900 : esTablet ? 760 : undefined;
+
+    const paddingTop = esEscritorio ? 28 : esTablet ? 24 : 20;
+
+    /*
+     * En escritorio no existe la barra inferior,
+     * así que el FAB puede quedar más cerca del borde.
+     */
+    const posicionBoton = esEscritorio ? 32 : Math.max(insets.bottom + 72, 92);
+
+    const espacioInferiorScroll = esEscritorio
+        ? 130
+        : Math.max(posicionBoton + 120, 220);
+
+    const tamanioFab = esEscritorio ? 64 : esTablet ? 70 : 68;
+
+    // ========================================================
     // CARGAR PUBLICACIONES
-    // ======================================================
+    // ========================================================
 
     const cargarPublicaciones = useCallback(
         async (mostrarCargaPrincipal = false) => {
@@ -111,9 +173,9 @@ export default function ForoScreen() {
         [profile?.id_usuario],
     );
 
-    // ======================================================
-    // RECARGAR AL ENTRAR / VOLVER AL FORO
-    // ======================================================
+    // ========================================================
+    // RECARGAR AL ENTRAR / VOLVER
+    // ========================================================
 
     useFocusEffect(
         useCallback(() => {
@@ -129,9 +191,9 @@ export default function ForoScreen() {
         }, [authLoading, cargarPublicaciones]),
     );
 
-    // ======================================================
+    // ========================================================
     // PULL TO REFRESH
-    // ======================================================
+    // ========================================================
 
     const refrescar = useCallback(async () => {
         if (authLoading || refrescando || cargaEnCursoRef.current) {
@@ -147,9 +209,9 @@ export default function ForoScreen() {
         }
     }, [authLoading, refrescando, cargarPublicaciones]);
 
-    // ======================================================
+    // ========================================================
     // FILTRADO
-    // ======================================================
+    // ========================================================
 
     const publicacionesFiltradas = useMemo(() => {
         if (filtroActivo === "Todo") {
@@ -161,44 +223,47 @@ export default function ForoScreen() {
         );
     }, [filtroActivo, publicaciones]);
 
-    // ======================================================
-    // ESPACIOS PARA NAVBAR Y FAB
-    // ======================================================
-
-    const posicionBoton = Math.max(insets.bottom + 72, 92);
-
-    const espacioInferiorScroll = Math.max(posicionBoton + 120, 220);
-
-    // ======================================================
+    // ========================================================
     // CARGANDO
-    // ======================================================
+    // ========================================================
 
     if (authLoading || cargando) {
         return (
             <SafeAreaView
-                edges={["top"]}
+                edges={[]}
                 style={{
                     flex: 1,
+
                     backgroundColor,
                 }}
             >
                 <View
                     style={{
                         flex: 1,
+
                         alignItems: "center",
+
                         justifyContent: "center",
-                        paddingHorizontal: 32,
+
+                        paddingHorizontal: paddingHorizontal,
                     }}
                 >
                     <View
                         style={{
                             width: 72,
+
                             height: 72,
+
                             borderRadius: 36,
+
                             alignItems: "center",
+
                             justifyContent: "center",
-                            backgroundColor: surfaceSecondaryColor,
+
+                            backgroundColor: surfaceColor,
+
                             borderWidth: 1,
+
                             borderColor,
                         }}
                     >
@@ -208,8 +273,11 @@ export default function ForoScreen() {
                     <Text
                         style={{
                             marginTop: 18,
+
                             fontFamily: "Nunito-Bold",
+
                             fontSize: 18,
+
                             color: textColor,
                         }}
                     >
@@ -219,11 +287,17 @@ export default function ForoScreen() {
                     <Text
                         style={{
                             marginTop: 7,
-                            maxWidth: 290,
+
+                            maxWidth: 320,
+
                             textAlign: "center",
+
                             fontFamily: "Nunito-Medium",
+
                             fontSize: 14,
+
                             lineHeight: 20,
+
                             color: textSecondaryColor,
                         }}
                     >
@@ -234,37 +308,41 @@ export default function ForoScreen() {
         );
     }
 
-    // ======================================================
+    // ========================================================
     // UI
-    // ======================================================
+    // ========================================================
 
     return (
         <SafeAreaView
-            edges={["top"]}
+            edges={[]}
             style={{
                 flex: 1,
+
                 backgroundColor,
             }}
         >
             <View
                 style={{
                     flex: 1,
+
                     backgroundColor,
                 }}
             >
                 {/* ==================================================
-                    CONTENIDO
-                ================================================== */}
+            CONTENIDO
+        ================================================== */}
 
                 <ScrollView
                     style={{
                         flex: 1,
+
                         backgroundColor,
                     }}
                     contentContainerStyle={{
-                        paddingHorizontal: 20,
-                        paddingTop: 24,
+                        paddingTop,
+
                         paddingBottom: espacioInferiorScroll,
+
                         flexGrow: 1,
                     }}
                     showsVerticalScrollIndicator={false}
@@ -278,246 +356,566 @@ export default function ForoScreen() {
                         />
                     }
                 >
-                    {/* PREGUNTA DE LA SEMANA */}
-
-                    <PreguntaSemana />
-
-                    {/* ENCABEZADO */}
-
-                    <Text
-                        style={{
-                            marginTop: 32,
-                            marginBottom: 20,
-                            fontFamily: "Nunito-Bold",
-                            fontSize: 24,
-                            color: textColor,
-                        }}
-                    >
-                        Lo que otros comparten
-                    </Text>
-
-                    {/* FILTROS */}
-
-                    <FiltroEmociones
-                        seleccionada={filtroActivo}
-                        onSeleccionar={setFiltroActivo}
-                    />
-
-                    {/* ERROR */}
-
-                    {error && (
-                        <View
-                            style={{
-                                marginTop: 22,
-                                paddingHorizontal: 16,
-                                paddingVertical: 14,
-                                borderRadius: 16,
-                                borderWidth: 1,
-                                borderColor,
-                                backgroundColor: surfaceColor,
-                                flexDirection: "row",
-                                alignItems: "center",
-                            }}
-                        >
-                            <Ionicons
-                                name="alert-circle-outline"
-                                size={22}
-                                color={accentColor}
-                            />
-
-                            <Text
-                                style={{
-                                    flex: 1,
-                                    marginLeft: 10,
-                                    fontFamily: "Nunito-Medium",
-                                    fontSize: 14,
-                                    lineHeight: 20,
-                                    color: textSecondaryColor,
-                                }}
-                            >
-                                {error}
-                            </Text>
-
-                            <TouchableOpacity
-                                activeOpacity={0.75}
-                                onPress={() => cargarPublicaciones(false)}
-                            >
-                                <Ionicons
-                                    name="refresh-outline"
-                                    size={23}
-                                    color={primaryColor}
-                                />
-                            </TouchableOpacity>
-                        </View>
-                    )}
-
-                    {/* CONTADOR */}
+                    {/* ==================================================
+              CONTENEDOR GENERAL
+          ================================================== */}
 
                     <View
                         style={{
-                            marginTop: 28,
-                            marginBottom: 24,
-                            flexDirection: "row",
-                            alignItems: "center",
+                            width: "100%",
+
+                            maxWidth: maxWidthContenido,
+
+                            alignSelf: "center",
+
+                            paddingHorizontal,
                         }}
                     >
+                        {/* ==================================================
+                CABECERA DESKTOP
+            ================================================== */}
+
+                        {esEscritorio && (
+                            <View
+                                style={{
+                                    width: "100%",
+
+                                    maxWidth: maxWidthFeed,
+
+                                    alignSelf: "center",
+
+                                    marginBottom: 22,
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        fontFamily: "Nunito-Bold",
+
+                                        fontSize: 30,
+
+                                        color: textColor,
+                                    }}
+                                >
+                                    Foro comunitario
+                                </Text>
+
+                                <Text
+                                    style={{
+                                        marginTop: 4,
+
+                                        fontFamily: "Nunito-Medium",
+
+                                        fontSize: 15,
+
+                                        lineHeight: 21,
+
+                                        color: textSecondaryColor,
+                                    }}
+                                >
+                                    Comparte experiencias y conecta con otras personas de la
+                                    comunidad.
+                                </Text>
+                            </View>
+                        )}
+
+                        {/* ==================================================
+                FEED
+            ================================================== */}
+
                         <View
                             style={{
-                                marginRight: 14,
-                                flexDirection: "row",
+                                width: "100%",
+
+                                maxWidth: maxWidthFeed,
+
+                                alignSelf: "center",
                             }}
                         >
-                            <View
-                                style={{
-                                    width: 34,
-                                    height: 34,
-                                    borderRadius: 17,
-                                    borderWidth: 1,
-                                    borderColor: primaryColor,
-                                    backgroundColor: surfaceSecondaryColor,
-                                }}
-                            />
+                            {/* ==============================================
+                  PREGUNTA DE LA SEMANA
+              ============================================== */}
 
-                            <View
-                                style={{
-                                    width: 34,
-                                    height: 34,
-                                    borderRadius: 17,
-                                    marginLeft: -8,
-                                    borderWidth: 1,
-                                    borderColor: primaryColor,
-                                    backgroundColor: surfaceSecondaryColor,
-                                }}
-                            />
+                            <PreguntaSemana />
 
-                            <View
-                                style={{
-                                    width: 34,
-                                    height: 34,
-                                    borderRadius: 17,
-                                    marginLeft: -8,
-                                    borderWidth: 1,
-                                    borderColor: primaryColor,
-                                    backgroundColor: surfaceSecondaryColor,
-                                }}
-                            />
-                        </View>
-
-                        <Text
-                            style={{
-                                fontFamily: "Nunito-Medium",
-                                fontSize: 15,
-                                color: textSecondaryColor,
-                            }}
-                        >
-                            {publicacionesFiltradas.length}{" "}
-                            {publicacionesFiltradas.length === 1
-                                ? "publicación"
-                                : "publicaciones"}
-                        </Text>
-                    </View>
-
-                    {/* PUBLICACIONES */}
-
-                    {publicacionesFiltradas.length > 0 ? (
-                        publicacionesFiltradas.map((publicacion) => (
-                            <PublicacionCard
-                                key={publicacion.id_publicacion}
-                                publicacion={publicacion}
-                            />
-                        ))
-                    ) : (
-                        <View
-                            style={{
-                                alignItems: "center",
-                                paddingVertical: 48,
-                            }}
-                        >
-                            <Ionicons
-                                name={
-                                    filtroActivo === "Todo"
-                                        ? "chatbubbles-outline"
-                                        : "filter-outline"
-                                }
-                                size={44}
-                                color={textMutedColor}
-                            />
+                            {/* ==============================================
+                  ENCABEZADO
+              ============================================== */}
 
                             <Text
                                 style={{
-                                    marginTop: 12,
-                                    maxWidth: 290,
-                                    textAlign: "center",
+                                    marginTop: esEscritorio ? 34 : 30,
+
+                                    marginBottom: 18,
+
                                     fontFamily: "Nunito-Bold",
-                                    fontSize: 17,
+
+                                    fontSize: esEscritorio ? 22 : 21,
+
                                     color: textColor,
                                 }}
                             >
-                                {filtroActivo === "Todo"
-                                    ? "Todavía no hay publicaciones"
-                                    : "No hay publicaciones con esta emoción"}
+                                Lo que otros comparten
                             </Text>
 
-                            <Text
+                            {/* ==============================================
+                  FILTROS
+              ============================================== */}
+
+                            <FiltroEmociones
+                                seleccionada={filtroActivo}
+                                onSeleccionar={setFiltroActivo}
+                            />
+
+                            {/* ==============================================
+                  ERROR
+              ============================================== */}
+
+                            {error && (
+                                <View
+                                    style={{
+                                        marginTop: 22,
+
+                                        paddingHorizontal: 16,
+
+                                        paddingVertical: 14,
+
+                                        borderRadius: 16,
+
+                                        borderWidth: 1,
+
+                                        borderColor,
+
+                                        backgroundColor: surfaceColor,
+
+                                        flexDirection: "row",
+
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <Ionicons
+                                        name="alert-circle-outline"
+                                        size={22}
+                                        color={accentColor}
+                                    />
+
+                                    <Text
+                                        style={{
+                                            flex: 1,
+
+                                            marginLeft: 10,
+
+                                            fontFamily: "Nunito-Medium",
+
+                                            fontSize: 14,
+
+                                            lineHeight: 20,
+
+                                            color: textSecondaryColor,
+                                        }}
+                                    >
+                                        {error}
+                                    </Text>
+
+                                    <Pressable
+                                        hitSlop={8}
+                                        onPress={() => cargarPublicaciones(false)}
+                                        style={({ pressed }) => ({
+                                            width: 38,
+
+                                            height: 38,
+
+                                            borderRadius: 12,
+
+                                            alignItems: "center",
+
+                                            justifyContent: "center",
+
+                                            backgroundColor: pressed
+                                                ? primarySoftColor
+                                                : "transparent",
+                                        })}
+                                    >
+                                        <Ionicons
+                                            name="refresh-outline"
+                                            size={22}
+                                            color={primaryColor}
+                                        />
+                                    </Pressable>
+                                </View>
+                            )}
+
+                            {/* ==============================================
+                  CONTADOR
+              ============================================== */}
+
+                            <View
                                 style={{
-                                    marginTop: 7,
-                                    maxWidth: 290,
-                                    textAlign: "center",
-                                    fontFamily: "Nunito-Medium",
-                                    fontSize: 14,
-                                    lineHeight: 21,
-                                    color: textSecondaryColor,
+                                    marginTop: 26,
+
+                                    marginBottom: 20,
+
+                                    flexDirection: "row",
+
+                                    alignItems: "center",
+
+                                    justifyContent: "space-between",
                                 }}
                             >
-                                {filtroActivo === "Todo"
-                                    ? "Puedes ser la primera persona en compartir algo con la comunidad."
-                                    : "Prueba seleccionando otra emoción o vuelve a mostrar todas las publicaciones."}
-                            </Text>
+                                <View
+                                    style={{
+                                        flexDirection: "row",
+
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    {/* AVATARES DECORATIVOS */}
+
+                                    <View
+                                        style={{
+                                            marginRight: 12,
+
+                                            flexDirection: "row",
+                                        }}
+                                    >
+                                        <View
+                                            style={{
+                                                width: 32,
+
+                                                height: 32,
+
+                                                borderRadius: 16,
+
+                                                borderWidth: 1,
+
+                                                borderColor: primaryColor,
+
+                                                alignItems: "center",
+
+                                                justifyContent: "center",
+
+                                                backgroundColor: primarySoftColor,
+                                            }}
+                                        >
+                                            <Ionicons
+                                                name="person-outline"
+                                                size={15}
+                                                color={primaryColor}
+                                            />
+                                        </View>
+
+                                        <View
+                                            style={{
+                                                width: 32,
+
+                                                height: 32,
+
+                                                borderRadius: 16,
+
+                                                marginLeft: -7,
+
+                                                borderWidth: 1,
+
+                                                borderColor: primaryColor,
+
+                                                alignItems: "center",
+
+                                                justifyContent: "center",
+
+                                                backgroundColor: surfaceColor,
+                                            }}
+                                        >
+                                            <Ionicons
+                                                name="person-outline"
+                                                size={15}
+                                                color={primaryColor}
+                                            />
+                                        </View>
+
+                                        <View
+                                            style={{
+                                                width: 32,
+
+                                                height: 32,
+
+                                                borderRadius: 16,
+
+                                                marginLeft: -7,
+
+                                                borderWidth: 1,
+
+                                                borderColor: primaryColor,
+
+                                                alignItems: "center",
+
+                                                justifyContent: "center",
+
+                                                backgroundColor: surfaceSecondaryColor,
+                                            }}
+                                        >
+                                            <Ionicons
+                                                name="person-outline"
+                                                size={15}
+                                                color={primaryColor}
+                                            />
+                                        </View>
+                                    </View>
+
+                                    <Text
+                                        style={{
+                                            fontFamily: "Nunito-Medium",
+
+                                            fontSize: 14,
+
+                                            color: textSecondaryColor,
+                                        }}
+                                    >
+                                        {publicacionesFiltradas.length}{" "}
+                                        {publicacionesFiltradas.length === 1
+                                            ? "publicación"
+                                            : "publicaciones"}
+                                    </Text>
+                                </View>
+
+                                {filtroActivo !== "Todo" && (
+                                    <Pressable
+                                        onPress={() => setFiltroActivo("Todo")}
+                                        style={({ pressed }) => ({
+                                            paddingHorizontal: 10,
+
+                                            paddingVertical: 7,
+
+                                            borderRadius: 10,
+
+                                            backgroundColor: pressed
+                                                ? primarySoftColor
+                                                : "transparent",
+                                        })}
+                                    >
+                                        <Text
+                                            style={{
+                                                fontFamily: "Nunito-SemiBold",
+
+                                                fontSize: 12,
+
+                                                color: primaryColor,
+                                            }}
+                                        >
+                                            Limpiar filtro
+                                        </Text>
+                                    </Pressable>
+                                )}
+                            </View>
+
+                            {/* ==============================================
+                  PUBLICACIONES
+              ============================================== */}
+
+                            {publicacionesFiltradas.length > 0 ? (
+                                <View
+                                    style={{
+                                        width: "100%",
+
+                                        gap: esEscritorio ? 16 : 14,
+                                    }}
+                                >
+                                    {publicacionesFiltradas.map((publicacion) => (
+                                        <PublicacionCard
+                                            key={publicacion.id_publicacion}
+                                            publicacion={publicacion}
+                                        />
+                                    ))}
+                                </View>
+                            ) : (
+                                <View
+                                    style={{
+                                        width: "100%",
+
+                                        minHeight: esEscritorio ? 260 : 220,
+
+                                        paddingVertical: 40,
+
+                                        paddingHorizontal: 24,
+
+                                        borderRadius: 22,
+
+                                        borderWidth: 1,
+
+                                        borderColor,
+
+                                        alignItems: "center",
+
+                                        justifyContent: "center",
+
+                                        backgroundColor: surfaceColor,
+                                    }}
+                                >
+                                    <View
+                                        style={{
+                                            width: 64,
+
+                                            height: 64,
+
+                                            borderRadius: 32,
+
+                                            alignItems: "center",
+
+                                            justifyContent: "center",
+
+                                            backgroundColor: primarySoftColor,
+                                        }}
+                                    >
+                                        <Ionicons
+                                            name={
+                                                filtroActivo === "Todo"
+                                                    ? "chatbubbles-outline"
+                                                    : "filter-outline"
+                                            }
+                                            size={30}
+                                            color={primaryColor}
+                                        />
+                                    </View>
+
+                                    <Text
+                                        style={{
+                                            marginTop: 15,
+
+                                            maxWidth: 360,
+
+                                            textAlign: "center",
+
+                                            fontFamily: "Nunito-Bold",
+
+                                            fontSize: 17,
+
+                                            color: textColor,
+                                        }}
+                                    >
+                                        {filtroActivo === "Todo"
+                                            ? "Todavía no hay publicaciones"
+                                            : "No hay publicaciones con esta emoción"}
+                                    </Text>
+
+                                    <Text
+                                        style={{
+                                            marginTop: 7,
+
+                                            maxWidth: 390,
+
+                                            textAlign: "center",
+
+                                            fontFamily: "Nunito-Medium",
+
+                                            fontSize: 14,
+
+                                            lineHeight: 21,
+
+                                            color: textSecondaryColor,
+                                        }}
+                                    >
+                                        {filtroActivo === "Todo"
+                                            ? "Puedes ser la primera persona en compartir algo con la comunidad."
+                                            : "Prueba seleccionando otra emoción o vuelve a mostrar todas las publicaciones."}
+                                    </Text>
+
+                                    {filtroActivo !== "Todo" && (
+                                        <Pressable
+                                            onPress={() => setFiltroActivo("Todo")}
+                                            style={({ pressed }) => ({
+                                                marginTop: 18,
+
+                                                minHeight: 42,
+
+                                                paddingHorizontal: 16,
+
+                                                borderRadius: 12,
+
+                                                alignItems: "center",
+
+                                                justifyContent: "center",
+
+                                                backgroundColor: primaryColor,
+
+                                                opacity: pressed ? 0.8 : 1,
+                                            })}
+                                        >
+                                            <Text
+                                                style={{
+                                                    fontFamily: "Nunito-SemiBold",
+
+                                                    fontSize: 13,
+
+                                                    color: textOnPrimaryColor,
+                                                }}
+                                            >
+                                                Mostrar todas
+                                            </Text>
+                                        </Pressable>
+                                    )}
+                                </View>
+                            )}
                         </View>
-                    )}
+                    </View>
                 </ScrollView>
 
                 {/* ==================================================
-                    BOTÓN FLOTANTE
-                ================================================== */}
+            BOTÓN FLOTANTE
+        ================================================== */}
 
-                <TouchableOpacity
-                    activeOpacity={0.78}
+                <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Crear nueva publicación"
                     accessibilityHint="Abre la pantalla para crear una nueva publicación en el foro"
                     onPress={() => router.push("/(tabs)/foro/crear")}
-                    style={{
+                    style={({ pressed }) => ({
                         position: "absolute",
-                        right: 24,
+
+                        right: esEscritorio ? 32 : esTablet ? 28 : 20,
+
                         bottom: posicionBoton,
-                        width: 78,
-                        height: 78,
-                        borderRadius: 39,
-                        backgroundColor: "#B8A8F8",
+
+                        width: tamanioFab,
+
+                        height: tamanioFab,
+
+                        borderRadius: tamanioFab / 2,
+
                         alignItems: "center",
+
                         justifyContent: "center",
+
+                        backgroundColor: accentColor,
+
+                        opacity: pressed ? 0.82 : 1,
 
                         ...(Platform.OS === "web"
                             ? {
-                                boxShadow: "0px 6px 9px rgba(0, 0, 0, 0.28)",
+                                boxShadow: "0px 6px 12px rgba(0,0,0,0.22)",
                             }
                             : {
                                 shadowColor: "#000000",
+
                                 shadowOffset: {
                                     width: 0,
+
                                     height: 6,
                                 },
-                                shadowOpacity: 0.28,
+
+                                shadowOpacity: 0.22,
+
                                 shadowRadius: 9,
-                                elevation: 18,
+
+                                elevation: 12,
                             }),
 
                         zIndex: 9999,
-                    }}
+                    })}
                 >
-                    <Ionicons name="add" size={42} color="#FFFFFF" />
-                </TouchableOpacity>
+                    <Ionicons
+                        name="add"
+                        size={esEscritorio ? 32 : 36}
+                        color={textOnPrimaryColor}
+                    />
+                </Pressable>
             </View>
         </SafeAreaView>
     );

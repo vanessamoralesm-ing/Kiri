@@ -1,24 +1,39 @@
 import { HistorialTecnicasInterface } from "@/components/tecnicas/TecnicasInterfaces";
+
 import {
-    obtenerHistorialTecnicas,
-    RegistroTecnica,
+  obtenerHistorialTecnicas,
+  RegistroTecnica,
 } from "@/services/tecnicas/tecnicasService";
+
 import { useFocusEffect, useRouter } from "expo-router";
+
 import React, { useCallback, useState } from "react";
 
 export default function HistorialTecnicas() {
   const router = useRouter();
 
+  // ========================================================
+  // ESTADOS
+  // ========================================================
+
   const [registros, setRegistros] = useState<RegistroTecnica[]>([]);
+
   const [cargando, setCargando] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
+
+  // ========================================================
+  // CARGAR HISTORIAL
+  // ========================================================
 
   const cargar = useCallback(async () => {
     try {
       setCargando(true);
+
       setError(null);
 
       const data = await obtenerHistorialTecnicas();
+
       setRegistros(data);
     } catch (e) {
       setError(
@@ -29,11 +44,19 @@ export default function HistorialTecnicas() {
     }
   }, []);
 
+  // ========================================================
+  // RECARGAR AL ENTRAR
+  // ========================================================
+
   useFocusEffect(
     useCallback(() => {
       cargar();
     }, [cargar]),
   );
+
+  // ========================================================
+  // UI
+  // ========================================================
 
   return (
     <HistorialTecnicasInterface

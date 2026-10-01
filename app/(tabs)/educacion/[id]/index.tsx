@@ -1,15 +1,9 @@
-import {
-  Ionicons,
-} from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useRef } from "react";
 
 import {
-  router,
-  useLocalSearchParams,
-} from "expo-router";
-
-import React from "react";
-
-import {
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -21,18 +15,21 @@ import Animated, {
 } from "react-native-reanimated";
 
 import EncabezadoCard from "@/components/educacion/EncabezadoCard";
-
 import LecturaRecomendadaCard from "@/components/educacion/LecturaRecomendadaCard";
-
 import MitoRealidadCard from "@/components/educacion/MitoRealidadCard";
 
 import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
+  MAX_WIDTHS,
+  PADDING_RESPONSIVE,
+} from "@/constants/responsive";
+
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 
 // ==========================================================
 // DATOS TEMPORALES
+// Más adelante estos datos vendrán de Supabase.
 // ==========================================================
 
 const contenidoCategorias = {
@@ -60,28 +57,17 @@ const contenidoCategorias = {
     lecturas: [
       {
         id: "que-es-la-ansiedad",
-
         categoria: "Ansiedad",
-
         tiempo: "5 min de lectura",
-
-        titulo:
-          "¿Qué es la ansiedad?",
-
+        titulo: "¿Qué es la ansiedad?",
         descripcion:
           "Conoce qué es la ansiedad, por qué aparece y cómo puede manifestarse en diferentes situaciones.",
       },
-
       {
         id: "reconocer-ansiedad",
-
         categoria: "Ansiedad",
-
         tiempo: "7 min de lectura",
-
-        titulo:
-          "Cómo reconocer la ansiedad",
-
+        titulo: "Cómo reconocer la ansiedad",
         descripcion:
           "Aprende a identificar algunas señales físicas, emocionales y conductuales relacionadas con la ansiedad.",
       },
@@ -112,28 +98,17 @@ const contenidoCategorias = {
     lecturas: [
       {
         id: "comprender-autoestima",
-
         categoria: "Autoestima",
-
         tiempo: "6 min de lectura",
-
-        titulo:
-          "Comprendiendo la autoestima",
-
+        titulo: "Comprendiendo la autoestima",
         descripcion:
           "Conoce qué es la autoestima y cómo puede influir en la manera en que pensamos y actuamos.",
       },
-
       {
         id: "fortalecer-autoestima",
-
         categoria: "Autoestima",
-
         tiempo: "7 min de lectura",
-
-        titulo:
-          "Cómo fortalecer tu autoestima",
-
+        titulo: "Cómo fortalecer tu autoestima",
         descripcion:
           "Descubre pequeñas acciones que pueden ayudarte a construir una relación más saludable contigo.",
       },
@@ -164,28 +139,17 @@ const contenidoCategorias = {
     lecturas: [
       {
         id: "comprender-estres",
-
         categoria: "Estrés",
-
         tiempo: "5 min de lectura",
-
-        titulo:
-          "Comprendiendo el estrés",
-
+        titulo: "Comprendiendo el estrés",
         descripcion:
           "Conoce por qué aparece el estrés y cuáles son algunas de las señales más comunes.",
       },
-
       {
         id: "manejar-estres",
-
         categoria: "Estrés",
-
         tiempo: "8 min de lectura",
-
-        titulo:
-          "Estrategias para manejar el estrés",
-
+        titulo: "Estrategias para manejar el estrés",
         descripcion:
           "Conoce algunas estrategias que pueden ayudarte a afrontar situaciones estresantes.",
       },
@@ -216,32 +180,17 @@ const contenidoCategorias = {
     lecturas: [
       {
         id: "entender-procrastinacion",
-
-        categoria:
-          "Procrastinación",
-
-        tiempo:
-          "6 min de lectura",
-
-        titulo:
-          "¿Por qué procrastinamos?",
-
+        categoria: "Procrastinación",
+        tiempo: "6 min de lectura",
+        titulo: "¿Por qué procrastinamos?",
         descripcion:
           "Comprende algunas de las razones que pueden llevarnos a posponer nuestras responsabilidades.",
       },
-
       {
         id: "evitar-procrastinacion",
-
-        categoria:
-          "Procrastinación",
-
-        tiempo:
-          "7 min de lectura",
-
-        titulo:
-          "Pequeños pasos para dejar de procrastinar",
-
+        categoria: "Procrastinación",
+        tiempo: "7 min de lectura",
+        titulo: "Pequeños pasos para dejar de procrastinar",
         descripcion:
           "Aprende estrategias sencillas para comenzar tus tareas y organizar mejor tu tiempo.",
       },
@@ -272,28 +221,17 @@ const contenidoCategorias = {
     lecturas: [
       {
         id: "comprender-soledad",
-
         categoria: "Soledad",
-
         tiempo: "5 min de lectura",
-
-        titulo:
-          "Comprendiendo la soledad",
-
+        titulo: "Comprendiendo la soledad",
         descripcion:
           "Conoce las diferencias entre estar solo y experimentar sentimientos de soledad.",
       },
-
       {
         id: "conexiones-saludables",
-
         categoria: "Soledad",
-
         tiempo: "7 min de lectura",
-
-        titulo:
-          "Construyendo conexiones saludables",
-
+        titulo: "Construyendo conexiones saludables",
         descripcion:
           "Descubre algunas formas de fortalecer nuestras relaciones y crear vínculos significativos.",
       },
@@ -324,28 +262,17 @@ const contenidoCategorias = {
     lecturas: [
       {
         id: "comprender-depresion",
-
         categoria: "Depresión",
-
         tiempo: "7 min de lectura",
-
-        titulo:
-          "Comprendiendo la depresión",
-
+        titulo: "Comprendiendo la depresión",
         descripcion:
           "Conoce qué es la depresión, algunas de sus manifestaciones más frecuentes y por qué no debe confundirse con una tristeza pasajera.",
       },
-
       {
         id: "apoyo-ante-depresion",
-
         categoria: "Depresión",
-
         tiempo: "8 min de lectura",
-
-        titulo:
-          "Cuándo y cómo buscar apoyo",
-
+        titulo: "Cuándo y cómo buscar apoyo",
         descripcion:
           "Aprende a reconocer cuándo el malestar emocional requiere atención y qué formas de apoyo profesional y social pueden acompañar el proceso de recuperación.",
       },
@@ -364,72 +291,121 @@ export default function CategoriaScreen() {
   // PARÁMETROS
   // ========================================================
 
-  // Obtiene la categoría desde la ruta
-  const {
-    id,
-  } = useLocalSearchParams<{
+  // Obtiene la categoría desde la ruta.
+  const { id } = useLocalSearchParams<{
     id: string;
   }>();
+
+
+  // ========================================================
+  // SCROLL
+  // ========================================================
+
+  const scrollViewRef =
+    useRef<ScrollView>(null);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      scrollViewRef.current?.scrollTo({
+        y: 0,
+        animated: false,
+      });
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [id]);
+
+
+  // ========================================================
+  // RESPONSIVE
+  // ========================================================
+
+  // Conserva la lógica responsive agregada en main.
+  const {
+    esTelefono,
+    esTablet,
+    esEscritorio,
+  } = useResponsiveLayout();
 
 
   // ========================================================
   // COLORES DEL TEMA
   // ========================================================
 
-  const backgroundColor =
-    useThemeColor(
-      {},
-      "background"
-    );
+  const backgroundColor = useThemeColor(
+    {},
+    "background"
+  );
 
-  const surfaceColor =
-    useThemeColor(
-      {},
-      "surface"
-    );
+  const surfaceColor = useThemeColor(
+    {},
+    "surface"
+  );
 
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
+  const textColor = useThemeColor(
+    {},
+    "text"
+  );
 
-  const primaryColor =
-    useThemeColor(
-      {},
-      "primary"
-    );
+  const textMutedColor = useThemeColor(
+    {},
+    "textMuted"
+  );
 
-  const primarySoftColor =
-    useThemeColor(
-      {},
-      "primarySoft"
-    );
+  const primaryColor = useThemeColor(
+    {},
+    "primary"
+  );
 
-  const textOnPrimaryColor =
-    useThemeColor(
-      {},
-      "textOnPrimary"
-    );
+  const primarySoftColor = useThemeColor(
+    {},
+    "primarySoft"
+  );
 
-  const iconColor =
-    useThemeColor(
-      {},
-      "icon"
-    );
+  const textOnPrimaryColor = useThemeColor(
+    {},
+    "textOnPrimary"
+  );
 
-  const borderColor =
-    useThemeColor(
-      {},
-      "border"
-    );
+  const borderColor = useThemeColor(
+    {},
+    "border"
+  );
+
+
+  // ========================================================
+  // CONFIGURACIÓN RESPONSIVE
+  // ========================================================
+
+  const paddingHorizontal = esEscritorio
+    ? PADDING_RESPONSIVE.escritorio
+    : esTablet
+      ? PADDING_RESPONSIVE.tablet
+      : PADDING_RESPONSIVE.telefono;
+
+  const maxWidthContenido = esEscritorio
+    ? MAX_WIDTHS.dashboard
+    : esTablet
+      ? MAX_WIDTHS.contenido
+      : undefined;
+
+  const paddingTop = esEscritorio
+    ? 28
+    : esTablet
+      ? 24
+      : 20;
+
+  const paddingBottom = esEscritorio
+    ? 64
+    : 140;
 
 
   // ========================================================
   // CATEGORÍA ACTUAL
   // ========================================================
 
-  // Selecciona la información usando el id
   const categoria =
     contenidoCategorias[
       id as keyof typeof contenidoCategorias
@@ -441,65 +417,137 @@ export default function CategoriaScreen() {
   // ========================================================
 
   if (!categoria) {
-
     return (
-
       <View
-        className="flex-1 items-center justify-center px-6"
+        className="flex-1 items-center justify-center"
         style={{
+          paddingHorizontal,
           backgroundColor,
         }}
       >
-
-        <Text
-          className="text-center font-nunito-semibold text-lg"
+        <View
+          className="items-center"
           style={{
-            color:
-              textColor,
+            width: "100%",
+            maxWidth: 440,
+
+            padding: esTelefono
+              ? 22
+              : 28,
+
+            borderRadius: 24,
+
+            borderWidth: 1,
+
+            borderColor,
+
+            backgroundColor:
+              surfaceColor,
+
+            ...Platform.select({
+              web: {
+                boxShadow:
+                  "0px 3px 10px rgba(0,0,0,0.05)",
+              } as any,
+
+              ios: {
+                shadowColor:
+                  "#000000",
+
+                shadowOffset: {
+                  width: 0,
+                  height: 2,
+                },
+
+                shadowOpacity: 0.06,
+                shadowRadius: 6,
+              },
+
+              android: {
+                elevation: 2,
+              },
+            }),
           }}
         >
-          No encontramos esta categoría.
-        </Text>
+          {/* Icono */}
 
-
-        <Pressable
-          onPress={() =>
-            router.replace(
-              "/(tabs)/educacion" as any
-            )
-          }
-
-          className="mt-5 rounded-xl px-5 py-3"
-
-          style={({
-            pressed,
-          }) => ({
-            backgroundColor:
-              primaryColor,
-
-            opacity:
-              pressed
-                ? 0.8
-                : 1,
-          })}
-        >
-
-          <Text
-            className="font-nunito-semibold"
+          <View
+            className="h-[62px] w-[62px] items-center justify-center rounded-full"
             style={{
-              color:
-                textOnPrimaryColor,
+              backgroundColor:
+                primarySoftColor,
             }}
           >
-            Volver a Educación
+            <Ionicons
+              name="library-outline"
+              size={28}
+              color={primaryColor}
+            />
+          </View>
+
+
+          <Text
+            className="mt-4 text-center font-nunito-bold text-[19px]"
+            style={{
+              color: textColor,
+            }}
+          >
+            No encontramos esta categoría
           </Text>
 
-        </Pressable>
 
+          <Text
+            className="mt-1.5 text-center font-nunito-medium text-sm leading-5"
+            style={{
+              color: textMutedColor,
+            }}
+          >
+            Es posible que el contenido solicitado ya no esté disponible.
+          </Text>
+
+
+          <Pressable
+            onPress={() =>
+              router.replace(
+                "/(tabs)/educacion" as any
+              )
+            }
+            className="mt-5 min-h-11 flex-row items-center justify-center rounded-[13px] px-5"
+            style={({
+              pressed,
+            }) => ({
+              gap: 7,
+
+              backgroundColor:
+                primaryColor,
+
+              opacity:
+                pressed
+                  ? 0.8
+                  : 1,
+            })}
+          >
+            <Ionicons
+              name="arrow-back"
+              size={17}
+              color={
+                textOnPrimaryColor
+              }
+            />
+
+            <Text
+              className="font-nunito-semibold text-[13px]"
+              style={{
+                color:
+                  textOnPrimaryColor,
+              }}
+            >
+              Volver a Educación
+            </Text>
+          </Pressable>
+        </View>
       </View>
-
     );
-
   }
 
 
@@ -508,114 +556,108 @@ export default function CategoriaScreen() {
   // ========================================================
 
   return (
-
     <ScrollView
+      ref={scrollViewRef}
       className="flex-1"
-
       style={{
         backgroundColor,
       }}
-
-      showsVerticalScrollIndicator={
-        false
-      }
-
+      showsVerticalScrollIndicator={false}
       contentContainerStyle={{
-        paddingBottom:
-          130,
+        paddingTop,
+        paddingBottom,
       }}
     >
 
       {/* ==================================================
-          BOTÓN VOLVER
+          CONTENIDO RESPONSIVE
           ================================================== */}
 
-      <View className="px-6 pt-6">
+      <View
+        style={{
+          width: "100%",
+          maxWidth: maxWidthContenido,
+          alignSelf: "center",
+          paddingHorizontal,
+        }}
+      >
+
+        {/* ==================================================
+            BOTÓN VOLVER
+            ================================================== */}
 
         <Pressable
           onPress={() =>
-            router.replace(
-              "/(tabs)/educacion" as any
-            )
+            router.back()
           }
+          hitSlop={10}
+          style={({ pressed }) => ({
+            width: 40,
+            height: 40,
 
-          className="h-11 w-11 items-center justify-center rounded-full border"
+            marginBottom: 12,
 
-          style={({
-            pressed,
-          }) => ({
-            borderColor,
+            borderRadius: 20,
+
+            alignItems: "center",
+            justifyContent: "center",
 
             backgroundColor:
-              surfaceColor,
+              primarySoftColor,
 
             opacity:
               pressed
                 ? 0.7
                 : 1,
 
-            shadowColor:
-              "#000000",
+            transform: [
+              {
+                scale:
+                  pressed
+                    ? 0.96
+                    : 1,
+              },
+            ],
 
-            shadowOffset: {
-              width: 0,
-              height: 2,
-            },
-
-            shadowOpacity:
-              0.06,
-
-            shadowRadius:
-              4,
-
-            elevation:
-              2,
+            ...Platform.select({
+              web: {
+                cursor: "pointer",
+              } as any,
+            }),
           })}
         >
-
           <Ionicons
-            name="arrow-back"
+            name="chevron-back"
             size={23}
-            color={
-              iconColor
-            }
+            color={primaryColor}
           />
-
         </Pressable>
 
-      </View>
 
+        {/* ==================================================
+            ENCABEZADO DE LA CATEGORÍA
+            ================================================== */}
 
-      {/* ==================================================
-          ENCABEZADO DE LA CATEGORÍA
-          ================================================== */}
-
-      <Animated.View
-        entering={
-          FadeInDown.duration(
-            450
-          )
-        }
-      >
-
-        <EncabezadoCard
-          imagen={
-            categoria.imagen
+        <Animated.View
+          entering={
+            FadeInDown.duration(
+              450
+            )
           }
+        >
+          <EncabezadoCard
+            imagen={
+              categoria.imagen
+            }
+            titulo={
+              categoria.titulo
+            }
+            subtitulo={
+              categoria.descripcion
+            }
+          />
+        </Animated.View>
 
-          titulo={
-            categoria.titulo
-          }
-
-          subtitulo={
-            categoria.descripcion
-          }
-        />
-
-      </Animated.View>
-
-
-      <View className="px-6">
 
         {/* ==================================================
             LECTURAS SUGERIDAS
@@ -627,30 +669,61 @@ export default function CategoriaScreen() {
               .delay(100)
               .duration(450)
           }
-
-          className="mt-9"
+          style={{
+            marginTop:
+              esEscritorio
+                ? 40
+                : 36,
+          }}
         >
 
           {/* Encabezado de lecturas */}
 
           <View className="mb-5 flex-row items-center justify-between">
 
-            <Text
-              className="font-nunito-bold text-xl"
+            <View
               style={{
-                color:
-                  textColor,
+                flex: 1,
+                minWidth: 0,
+                paddingRight: 12,
               }}
             >
-              Lecturas sugeridas
-            </Text>
+              <Text
+                className="font-nunito-bold"
+                style={{
+                  fontSize:
+                    esEscritorio
+                      ? 22
+                      : 20,
+
+                  color:
+                    textColor,
+                }}
+              >
+                Lecturas sugeridas
+              </Text>
+
+
+              {/* Texto adicional solo en pantallas mayores */}
+
+              {!esTelefono && (
+                <Text
+                  className="mt-1 font-nunito-medium text-[13px]"
+                  style={{
+                    color:
+                      textMutedColor,
+                  }}
+                >
+                  Continúa explorando contenidos relacionados con este tema.
+                </Text>
+              )}
+            </View>
 
 
             {/* Botón Ver todas */}
 
             <Pressable
               hitSlop={8}
-
               onPress={() =>
                 router.push({
                   pathname:
@@ -663,14 +736,11 @@ export default function CategoriaScreen() {
                 } as any)
               }
             >
-
               {({
                 pressed,
               }) => (
-
                 <View
                   className="flex-row items-center rounded-full px-3 py-2"
-
                   style={{
                     backgroundColor:
                       primarySoftColor,
@@ -681,7 +751,6 @@ export default function CategoriaScreen() {
                         : 1,
                   }}
                 >
-
                   <Text
                     className="font-nunito-semibold text-sm"
                     style={{
@@ -699,11 +768,8 @@ export default function CategoriaScreen() {
                       primaryColor
                     }
                   />
-
                 </View>
-
               )}
-
             </Pressable>
 
           </View>
@@ -715,48 +781,35 @@ export default function CategoriaScreen() {
 
           <ScrollView
             horizontal
-
-            showsHorizontalScrollIndicator={
-              false
-            }
-
+            showsHorizontalScrollIndicator={false}
             contentContainerStyle={{
-              paddingRight:
-                24,
+              paddingRight: 24,
             }}
           >
-
             {categoria.lecturas.map(
               (
                 lectura,
                 index
               ) => (
-
                 <View
                   key={
                     lectura.id
                   }
-
                   className="mr-4"
                 >
-
                   {/* Card reutilizable */}
 
                   <LecturaRecomendadaCard
                     titulo={
                       lectura.titulo
                     }
-
                     index={
                       index
                     }
                   />
-
                 </View>
-
               )
             )}
-
           </ScrollView>
 
         </Animated.View>
@@ -772,13 +825,21 @@ export default function CategoriaScreen() {
               .delay(200)
               .duration(450)
           }
-
-          className="mt-10"
+          style={{
+            marginTop:
+              esEscritorio
+                ? 44
+                : 40,
+          }}
         >
-
           <Text
-            className="mb-5 font-nunito-bold text-xl"
+            className="mb-5 font-nunito-bold"
             style={{
+              fontSize:
+                esEscritorio
+                  ? 22
+                  : 20,
+
               color:
                 textColor,
             }}
@@ -793,7 +854,6 @@ export default function CategoriaScreen() {
             mito={
               categoria.mito
             }
-
             realidad={
               categoria.realidad
             }
@@ -804,7 +864,5 @@ export default function CategoriaScreen() {
       </View>
 
     </ScrollView>
-
   );
-
 }
