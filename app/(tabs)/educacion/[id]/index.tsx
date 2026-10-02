@@ -1,8 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-
-import { router, useLocalSearchParams } from "expo-router";
-
-import React, { useState } from "react";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useRef, useState } from "react";
 
 import {
   LayoutChangeEvent,
@@ -15,66 +13,80 @@ import {
 
 import Animated, { FadeInDown } from "react-native-reanimated";
 
-import LecturaRecomendadaCard from "../../../../components/educacion/LecturaRecomendadaCard";
+import EncabezadoCard from "@/components/educacion/EncabezadoCard";
+import LecturaRecomendadaCard from "@/components/educacion/LecturaRecomendadaCard";
+import MitoRealidadCard from "@/components/educacion/MitoRealidadCard";
 
-import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
-
-import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+import {
+  MAX_WIDTHS,
+  PADDING_RESPONSIVE,
+} from "@/constants/responsive";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 // ==========================================================
 // DATOS TEMPORALES
+// Más adelante estos datos vendrán de Supabase.
 // ==========================================================
 
 const contenidoCategorias = {
+  // ========================================================
+  // ANSIEDAD
+  // ========================================================
+
   Ansiedad: {
     titulo: "Ansiedad",
 
-    descripcion:
-      "Conoce más sobre la ansiedad, aprende a identificarla y descubre herramientas que pueden ayudarte a comprender mejor lo que sientes.",
+    imagen: require(
+      "../../../../assets/images_educacion/kiri_ansiedad_horiz.png"
+    ),
 
-    mito: "“Sentir ansiedad significa que algo está mal conmigo.”",
+    descripcion:
+      "Identifica la ansiedad y descubre herramientas para comprender lo que sientes.",
+
+    mito:
+      "“Sentir ansiedad significa que algo está mal conmigo.”",
 
     realidad:
-      "La ansiedad puede ser una respuesta normal ante situaciones de preocupación, incertidumbre o peligro. Puede convertirse en un problema cuando aparece de manera intensa, frecuente o comienza a afectar las actividades de la vida diaria.",
+      "La ansiedad es una respuesta normal ante el peligro o la incertidumbre, pero se convierte en un problema cuando es muy intensa, frecuente y afecta tu vida diaria.",
 
     lecturas: [
       {
         id: "que-es-la-ansiedad",
-
         categoria: "Ansiedad",
-
         tiempo: "5 min de lectura",
-
         titulo: "¿Qué es la ansiedad?",
-
         descripcion:
           "Conoce qué es la ansiedad, por qué aparece y cómo puede manifestarse en diferentes situaciones.",
       },
-
       {
         id: "reconocer-ansiedad",
-
         categoria: "Ansiedad",
-
         tiempo: "7 min de lectura",
-
         titulo: "Cómo reconocer la ansiedad",
-
         descripcion:
           "Aprende a identificar algunas señales físicas, emocionales y conductuales relacionadas con la ansiedad.",
       },
     ],
   },
 
+  // ========================================================
+  // AUTOESTIMA
+  // ========================================================
+
   Autoestima: {
     titulo: "Autoestima",
+
+    imagen: require(
+      "../../../../assets/images_educacion/kiri_autoest_horiz.png"
+    ),
 
     descripcion:
       "Descubre cómo la manera en que te percibes puede influir en tus emociones, decisiones y relaciones.",
 
-    mito: "“Tener buena autoestima significa sentirse seguro todo el tiempo.”",
+    mito:
+      "“Tener buena autoestima significa sentirse seguro todo el tiempo.”",
 
     realidad:
       "Tener una autoestima saludable no significa sentirse bien en todo momento. También implica reconocer nuestras fortalezas y dificultades, aceptar que podemos equivocarnos y aprender a tratarnos con respeto.",
@@ -82,39 +94,39 @@ const contenidoCategorias = {
     lecturas: [
       {
         id: "comprender-autoestima",
-
         categoria: "Autoestima",
-
         tiempo: "6 min de lectura",
-
         titulo: "Comprendiendo la autoestima",
-
         descripcion:
           "Conoce qué es la autoestima y cómo puede influir en la manera en que pensamos y actuamos.",
       },
-
       {
         id: "fortalecer-autoestima",
-
         categoria: "Autoestima",
-
         tiempo: "7 min de lectura",
-
         titulo: "Cómo fortalecer tu autoestima",
-
         descripcion:
           "Descubre pequeñas acciones que pueden ayudarte a construir una relación más saludable contigo.",
       },
     ],
   },
 
+  // ========================================================
+  // ESTRÉS
+  // ========================================================
+
   Estres: {
     titulo: "Estrés",
+
+    imagen: require(
+      "../../../../assets/images_educacion/kiri_estres_horiz.png"
+    ),
 
     descripcion:
       "Aprende qué es el estrés, cómo puede manifestarse y qué podemos hacer para manejarlo de una manera más saludable.",
 
-    mito: "“Todo el estrés es malo y debemos evitarlo por completo.”",
+    mito:
+      "“Todo el estrés es malo y debemos evitarlo por completo.”",
 
     realidad:
       "El estrés es una respuesta natural del organismo ante determinadas situaciones. En algunos momentos puede ayudarnos a reaccionar y adaptarnos, pero cuando se mantiene durante mucho tiempo puede afectar nuestro bienestar.",
@@ -122,39 +134,39 @@ const contenidoCategorias = {
     lecturas: [
       {
         id: "comprender-estres",
-
         categoria: "Estrés",
-
         tiempo: "5 min de lectura",
-
         titulo: "Comprendiendo el estrés",
-
         descripcion:
           "Conoce por qué aparece el estrés y cuáles son algunas de las señales más comunes.",
       },
-
       {
         id: "manejar-estres",
-
         categoria: "Estrés",
-
         tiempo: "8 min de lectura",
-
         titulo: "Estrategias para manejar el estrés",
-
         descripcion:
           "Conoce algunas estrategias que pueden ayudarte a afrontar situaciones estresantes.",
       },
     ],
   },
 
+  // ========================================================
+  // PROCRASTINACIÓN
+  // ========================================================
+
   Procrastinacion: {
     titulo: "Procrastinación",
+
+    imagen: require(
+      "../../../../assets/images_educacion/kiri_procras_horiz.png"
+    ),
 
     descripcion:
       "Comprende por qué algunas veces dejamos nuestras responsabilidades para después y cómo podemos empezar a cambiar este hábito.",
 
-    mito: "“Las personas procrastinan simplemente porque son perezosas.”",
+    mito:
+      "“Las personas procrastinan simplemente porque son perezosas.”",
 
     realidad:
       "La procrastinación puede estar relacionada con diferentes factores, como el miedo a equivocarse, sentirse abrumado, la falta de motivación o la dificultad para organizar una tarea.",
@@ -162,39 +174,39 @@ const contenidoCategorias = {
     lecturas: [
       {
         id: "entender-procrastinacion",
-
         categoria: "Procrastinación",
-
         tiempo: "6 min de lectura",
-
         titulo: "¿Por qué procrastinamos?",
-
         descripcion:
           "Comprende algunas de las razones que pueden llevarnos a posponer nuestras responsabilidades.",
       },
-
       {
         id: "evitar-procrastinacion",
-
         categoria: "Procrastinación",
-
         tiempo: "7 min de lectura",
-
         titulo: "Pequeños pasos para dejar de procrastinar",
-
         descripcion:
           "Aprende estrategias sencillas para comenzar tus tareas y organizar mejor tu tiempo.",
       },
     ],
   },
 
+  // ========================================================
+  // SOLEDAD
+  // ========================================================
+
   Soledad: {
     titulo: "Soledad",
+
+    imagen: require(
+      "../../../../assets/images_educacion/kiri_soledad_horiz.png"
+    ),
 
     descripcion:
       "Conoce mejor qué significa sentirse solo y cómo podemos fortalecer nuestros vínculos y nuestro bienestar emocional.",
 
-    mito: "“Estar solo y sentirse solo significan exactamente lo mismo.”",
+    mito:
+      "“Estar solo y sentirse solo significan exactamente lo mismo.”",
 
     realidad:
       "Una persona puede disfrutar de momentos a solas sin sentirse sola. La soledad emocional aparece cuando sentimos que nuestras necesidades de conexión o compañía no están siendo satisfechas.",
@@ -202,66 +214,57 @@ const contenidoCategorias = {
     lecturas: [
       {
         id: "comprender-soledad",
-
         categoria: "Soledad",
-
         tiempo: "5 min de lectura",
-
         titulo: "Comprendiendo la soledad",
-
         descripcion:
           "Conoce las diferencias entre estar solo y experimentar sentimientos de soledad.",
       },
-
       {
         id: "conexiones-saludables",
-
         categoria: "Soledad",
-
         tiempo: "7 min de lectura",
-
         titulo: "Construyendo conexiones saludables",
-
         descripcion:
           "Descubre algunas formas de fortalecer nuestras relaciones y crear vínculos significativos.",
       },
     ],
   },
 
+  // ========================================================
+  // DEPRESIÓN
+  // ========================================================
+
   Depresion: {
     titulo: "Depresión",
 
-    descripcion:
-      "La depresión es una condición de salud mental que puede afectar de manera persistente el estado de ánimo, los pensamientos, la energía y la forma en que una persona realiza sus actividades cotidianas. Comprender sus señales y hablar de ellas con claridad puede facilitar la búsqueda de apoyo adecuado.",
+    imagen: require(
+      "../../../../assets/images_educacion/kiri_depre_horiz.png"
+    ),
 
-    mito: "“La depresión es solo tristeza y se supera con fuerza de voluntad.”",
+    descripcion:
+      "La depresión afecta el ánimo, la energía y la vida diaria. Identificar sus señales facilita buscar ayuda.",
+
+    mito:
+      "“La depresión es solo tristeza y se supera con fuerza de voluntad.”",
 
     realidad:
-      "La depresión no es simplemente un momento de tristeza ni una falta de voluntad. Puede incluir pérdida de interés o placer, cambios en el sueño o el apetito, cansancio, dificultad para concentrarse y sentimientos de desesperanza. Su intensidad y duración varían entre personas, y cuando estos síntomas interfieren con la vida diaria es importante buscar orientación de un profesional de la salud mental.",
+      "La depresión es una enfermedad médica real, no simple tristeza ni falta de voluntad. Es un apagón físico y mental que causa cansancio, desesperanza y pérdida de interés; si afecta tu vida diaria, busca ayuda profesional.",
 
     lecturas: [
       {
         id: "comprender-depresion",
-
         categoria: "Depresión",
-
         tiempo: "7 min de lectura",
-
         titulo: "Comprendiendo la depresión",
-
         descripcion:
           "Conoce qué es la depresión, algunas de sus manifestaciones más frecuentes y por qué no debe confundirse con una tristeza pasajera.",
       },
-
       {
         id: "apoyo-ante-depresion",
-
         categoria: "Depresión",
-
         tiempo: "8 min de lectura",
-
         titulo: "Cuándo y cómo buscar apoyo",
-
         descripcion:
           "Aprende a reconocer cuándo el malestar emocional requiere atención y qué formas de apoyo profesional y social pueden acompañar el proceso de recuperación.",
       },
@@ -274,62 +277,56 @@ const contenidoCategorias = {
 // ==========================================================
 
 export default function CategoriaScreen() {
-  // ========================================================
-  // PARÁMETROS
-  // ========================================================
-
   const { id } = useLocalSearchParams<{
     id: string;
   }>();
 
   // ========================================================
+  // SCROLL
+  // ========================================================
+
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      const frame = requestAnimationFrame(() => {
+        scrollViewRef.current?.scrollTo({
+          y: 0,
+          animated: false,
+        });
+      });
+
+      return () => {
+        cancelAnimationFrame(frame);
+      };
+    }, [id])
+  );
+
+  // ========================================================
   // RESPONSIVE
   // ========================================================
 
-  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
+  const {
+    esTelefono,
+    esTablet,
+    esEscritorio,
+  } = useResponsiveLayout();
 
   // ========================================================
-  // ESTADO
-  // ========================================================
-
-  const [anchoGridLecturas, setAnchoGridLecturas] = useState(0);
-
-  // ========================================================
-  // COLORES DEL TEMA
+  // COLORES
   // ========================================================
 
   const backgroundColor = useThemeColor({}, "background");
-
   const surfaceColor = useThemeColor({}, "surface");
-
-  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
-
   const textColor = useThemeColor({}, "text");
-
-  const textSecondaryColor = useThemeColor({}, "textSecondary");
-
   const textMutedColor = useThemeColor({}, "textMuted");
-
   const primaryColor = useThemeColor({}, "primary");
-
   const primarySoftColor = useThemeColor({}, "primarySoft");
-
   const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
-
-  const iconColor = useThemeColor({}, "icon");
-
   const borderColor = useThemeColor({}, "border");
 
-  const accentColor = useThemeColor({}, "accent");
-
-  const accentSoftColor = useThemeColor({}, "accentSoft");
-
-  const secondaryColor = useThemeColor({}, "secondary");
-
-  const secondarySoftColor = useThemeColor({}, "secondarySoft");
-
   // ========================================================
-  // RESPONSIVE
+  // CONFIGURACIÓN RESPONSIVE
   // ========================================================
 
   const paddingHorizontal = esEscritorio
@@ -344,39 +341,72 @@ export default function CategoriaScreen() {
       ? MAX_WIDTHS.contenido
       : undefined;
 
-  const maxWidthTexto = esEscritorio ? 860 : undefined;
+  const paddingTop = esEscritorio
+    ? 28
+    : esTablet
+      ? 24
+      : 20;
 
-  const numeroColumnasLecturas = esEscritorio ? 2 : 1;
-
-  const gapLecturas = esEscritorio ? 18 : 16;
-
-  const anchoTarjetaLectura =
-    anchoGridLecturas > 0 && numeroColumnasLecturas > 1
-      ? (anchoGridLecturas - gapLecturas * (numeroColumnasLecturas - 1)) /
-      numeroColumnasLecturas
-      : undefined;
-
-  const paddingTop = esEscritorio ? 28 : esTablet ? 24 : 20;
-
-  const paddingBottom = esEscritorio ? 64 : 140;
+  const paddingBottom = esEscritorio
+    ? 64
+    : 140;
 
   // ========================================================
-  // CATEGORÍA
+  // ANCHO DE LECTURAS
   // ========================================================
 
-  const categoria = contenidoCategorias[id as keyof typeof contenidoCategorias];
+  const [anchoLecturas, setAnchoLecturas] = useState(0);
 
-  // ========================================================
-  // MEDIR GRID
-  // ========================================================
+  const numeroColumnas = esEscritorio
+    ? 4
+    : esTablet
+      ? 3
+      : 2;
 
-  function medirGridLecturas(event: LayoutChangeEvent) {
+  const gapLecturas = esEscritorio
+    ? 26
+    : esTablet
+      ? 18
+      : 12;
+
+  const anchoDisponible =
+    anchoLecturas > 0
+      ? (anchoLecturas -
+          gapLecturas * (numeroColumnas - 1)) /
+        numeroColumnas
+      : 0;
+
+  const anchoTarjeta =
+    anchoDisponible > 0
+      ? esEscritorio
+        ? Math.min(anchoDisponible, 230)
+        : esTablet
+          ? Math.min(anchoDisponible, 190)
+          : anchoDisponible
+      : esEscritorio
+        ? 230
+        : esTablet
+          ? 190
+          : 150;
+
+  function medirLecturas(event: LayoutChangeEvent) {
     const nuevoAncho = event.nativeEvent.layout.width;
 
-    if (Math.abs(nuevoAncho - anchoGridLecturas) > 1) {
-      setAnchoGridLecturas(nuevoAncho);
-    }
+    setAnchoLecturas((anterior) =>
+      Math.abs(nuevoAncho - anterior) > 1
+        ? nuevoAncho
+        : anterior
+    );
   }
+
+  // ========================================================
+  // CATEGORÍA ACTUAL
+  // ========================================================
+
+  const categoria =
+    contenidoCategorias[
+      id as keyof typeof contenidoCategorias
+    ];
 
   // ========================================================
   // CATEGORÍA NO ENCONTRADA
@@ -385,65 +415,61 @@ export default function CategoriaScreen() {
   if (!categoria) {
     return (
       <View
+        className="flex-1 items-center justify-center"
         style={{
-          flex: 1,
-
           paddingHorizontal,
-
-          alignItems: "center",
-
-          justifyContent: "center",
-
           backgroundColor,
         }}
       >
         <View
+          className="items-center"
           style={{
             width: "100%",
-
             maxWidth: 440,
-
             padding: esTelefono ? 22 : 28,
-
             borderRadius: 24,
-
             borderWidth: 1,
-
             borderColor,
-
-            alignItems: "center",
-
             backgroundColor: surfaceColor,
+
+            ...Platform.select({
+              web: {
+                boxShadow:
+                  "0px 3px 10px rgba(0,0,0,0.05)",
+              } as any,
+
+              ios: {
+                shadowColor: "#000000",
+                shadowOffset: {
+                  width: 0,
+                  height: 2,
+                },
+                shadowOpacity: 0.06,
+                shadowRadius: 6,
+              },
+
+              android: {
+                elevation: 2,
+              },
+            }),
           }}
         >
           <View
+            className="h-[62px] w-[62px] items-center justify-center rounded-full"
             style={{
-              width: 62,
-
-              height: 62,
-
-              borderRadius: 31,
-
-              alignItems: "center",
-
-              justifyContent: "center",
-
               backgroundColor: primarySoftColor,
             }}
           >
-            <Ionicons name="library-outline" size={28} color={primaryColor} />
+            <Ionicons
+              name="library-outline"
+              size={28}
+              color={primaryColor}
+            />
           </View>
 
           <Text
+            className="mt-4 text-center font-nunito-bold text-[19px]"
             style={{
-              marginTop: 16,
-
-              fontFamily: "Nunito-Bold",
-
-              fontSize: 19,
-
-              textAlign: "center",
-
               color: textColor,
             }}
           >
@@ -451,17 +477,8 @@ export default function CategoriaScreen() {
           </Text>
 
           <Text
+            className="mt-1.5 text-center font-nunito-medium text-sm leading-5"
             style={{
-              marginTop: 6,
-
-              fontFamily: "Nunito-Medium",
-
-              fontSize: 14,
-
-              lineHeight: 20,
-
-              textAlign: "center",
-
               color: textMutedColor,
             }}
           >
@@ -469,37 +486,27 @@ export default function CategoriaScreen() {
           </Text>
 
           <Pressable
-            onPress={() => router.replace("/(tabs)/educacion" as any)}
+            onPress={() =>
+              router.replace(
+                "/(tabs)/educacion" as any
+              )
+            }
+            className="mt-5 min-h-11 flex-row items-center justify-center rounded-[13px] px-5"
             style={({ pressed }) => ({
-              marginTop: 20,
-
-              minHeight: 44,
-
-              paddingHorizontal: 20,
-
-              borderRadius: 13,
-
-              flexDirection: "row",
-
-              alignItems: "center",
-
-              justifyContent: "center",
-
               gap: 7,
-
               backgroundColor: primaryColor,
-
               opacity: pressed ? 0.8 : 1,
             })}
           >
-            <Ionicons name="arrow-back" size={17} color={textOnPrimaryColor} />
+            <Ionicons
+              name="arrow-back"
+              size={17}
+              color={textOnPrimaryColor}
+            />
 
             <Text
+              className="font-nunito-semibold text-[13px]"
               style={{
-                fontFamily: "Nunito-SemiBold",
-
-                fontSize: 13,
-
                 color: textOnPrimaryColor,
               }}
             >
@@ -517,412 +524,118 @@ export default function CategoriaScreen() {
 
   return (
     <ScrollView
+      ref={scrollViewRef}
+      className="flex-1"
       style={{
-        flex: 1,
-
         backgroundColor,
       }}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
         paddingTop,
-
         paddingBottom,
       }}
     >
       <View
         style={{
           width: "100%",
-
           maxWidth: maxWidthContenido,
-
           alignSelf: "center",
-
           paddingHorizontal,
         }}
       >
         {/* ==================================================
-            VOLVER
-        ================================================== */}
+            BOTÓN VOLVER
+            ================================================== */}
 
         <Pressable
-          onPress={() => router.replace("/(tabs)/educacion" as any)}
-          hitSlop={8}
+          onPress={() =>
+            router.replace(
+              "/(tabs)/educacion" as any
+            )
+          }
+          hitSlop={10}
           style={({ pressed }) => ({
-            width: 46,
-
-            height: 46,
-
-            marginBottom: esEscritorio ? 22 : 18,
-
-            borderRadius: 15,
-
+            width: 40,
+            height: 40,
+            marginBottom: 12,
+            borderRadius: 20,
             alignItems: "center",
-
             justifyContent: "center",
+            backgroundColor: primarySoftColor,
+            opacity: pressed ? 0.7 : 1,
 
-            borderWidth: 1,
-
-            borderColor,
-
-            backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
-
-            opacity: pressed ? 0.8 : 1,
+            transform: [
+              {
+                scale: pressed ? 0.96 : 1,
+              },
+            ],
 
             ...Platform.select({
               web: {
-                boxShadow: "0px 2px 8px rgba(0,0,0,0.04)",
-              },
-
-              ios: {
-                shadowColor: "#000000",
-
-                shadowOffset: {
-                  width: 0,
-
-                  height: 2,
-                },
-
-                shadowOpacity: 0.05,
-
-                shadowRadius: 5,
-              },
-
-              android: {
-                elevation: 2,
-              },
+                cursor: "pointer",
+              } as any,
             }),
           })}
         >
-          <Ionicons name="arrow-back" size={22} color={iconColor} />
+          <Ionicons
+            name="chevron-back"
+            size={23}
+            color={primaryColor}
+          />
         </Pressable>
 
         {/* ==================================================
-            INFORMACIÓN DE LA CATEGORÍA
-        ================================================== */}
+            ENCABEZADO
+            ================================================== */}
 
         <Animated.View
           entering={FadeInDown.duration(450)}
-          style={{
-            width: "100%",
-
-            maxWidth: maxWidthTexto,
-          }}
         >
-          <Text
-            style={{
-              fontFamily: "Nunito-Bold",
-
-              fontSize: esEscritorio ? 34 : esTablet ? 30 : 26,
-
-              lineHeight: esEscritorio ? 42 : 34,
-
-              color: primaryColor,
-            }}
-          >
-            {categoria.titulo}
-          </Text>
-
-          <Text
-            style={{
-              marginTop: 8,
-
-              fontFamily: "Nunito-SemiBold",
-
-              fontSize: esEscritorio ? 16 : 15,
-
-              lineHeight: esEscritorio ? 25 : 23,
-
-              color: textSecondaryColor,
-            }}
-          >
-            {categoria.descripcion}
-          </Text>
+          <EncabezadoCard
+            imagen={categoria.imagen}
+            titulo={categoria.titulo}
+            subtitulo={categoria.descripcion}
+          />
         </Animated.View>
 
         {/* ==================================================
-            MITOS Y REALIDADES
-        ================================================== */}
-
-        <Animated.View
-          entering={FadeInDown.delay(100).duration(450)}
-          style={{
-            marginTop: esEscritorio ? 36 : 32,
-          }}
-        >
-          <Text
-            style={{
-              marginBottom: 18,
-
-              fontFamily: "Nunito-Bold",
-
-              fontSize: esEscritorio ? 22 : 20,
-
-              color: textColor,
-            }}
-          >
-            Mitos y Realidades
-          </Text>
-
-          {/* ==================================================
-              CONTENEDOR
-          ================================================== */}
-
-          <View
-            style={{
-              width: "100%",
-
-              padding: esEscritorio ? 20 : 16,
-
-              borderRadius: 22,
-
-              borderWidth: 1,
-
-              borderColor,
-
-              backgroundColor: surfaceColor,
-
-              flexDirection: esEscritorio ? "row" : "column",
-
-              alignItems: "stretch",
-
-              gap: 16,
-
-              ...Platform.select({
-                web: {
-                  boxShadow: "0px 3px 10px rgba(0,0,0,0.05)",
-                },
-
-                ios: {
-                  shadowColor: "#000000",
-
-                  shadowOffset: {
-                    width: 0,
-
-                    height: 2,
-                  },
-
-                  shadowOpacity: 0.06,
-
-                  shadowRadius: 6,
-                },
-
-                android: {
-                  elevation: 3,
-                },
-              }),
-            }}
-          >
-            {/* ==================================================
-                MITO
+            LECTURAS SUGERIDAS
             ================================================== */}
 
-            <View
-              style={{
-                flex: esEscritorio ? 1 : undefined,
-
-                minWidth: 0,
-
-                padding: esEscritorio ? 20 : 16,
-
-                borderRadius: 18,
-
-                backgroundColor: accentSoftColor,
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-
-                  alignItems: "center",
-                }}
-              >
-                <View
-                  style={{
-                    width: 42,
-
-                    height: 42,
-
-                    borderRadius: 21,
-
-                    alignItems: "center",
-
-                    justifyContent: "center",
-
-                    backgroundColor: surfaceColor,
-                  }}
-                >
-                  <Ionicons name="bulb-outline" size={22} color={accentColor} />
-                </View>
-
-                <Text
-                  style={{
-                    marginLeft: 12,
-
-                    fontFamily: "Nunito-Bold",
-
-                    fontSize: 13,
-
-                    textTransform: "uppercase",
-
-                    letterSpacing: 0.7,
-
-                    color: accentColor,
-                  }}
-                >
-                  Mito
-                </Text>
-              </View>
-
-              <Text
-                style={{
-                  marginTop: 18,
-
-                  fontFamily: "Nunito-SemiBold",
-
-                  fontSize: esEscritorio ? 17 : 16,
-
-                  lineHeight: esEscritorio ? 26 : 24,
-
-                  color: textColor,
-                }}
-              >
-                {categoria.mito}
-              </Text>
-            </View>
-
-            {/* ==================================================
-                REALIDAD
-            ================================================== */}
-
-            <View
-              style={{
-                flex: esEscritorio ? 1 : undefined,
-
-                minWidth: 0,
-
-                padding: esEscritorio ? 20 : 16,
-
-                borderRadius: 18,
-
-                backgroundColor: secondarySoftColor,
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-
-                  alignItems: "center",
-                }}
-              >
-                <View
-                  style={{
-                    width: 42,
-
-                    height: 42,
-
-                    borderRadius: 21,
-
-                    alignItems: "center",
-
-                    justifyContent: "center",
-
-                    backgroundColor: surfaceColor,
-                  }}
-                >
-                  <Ionicons
-                    name="checkmark-circle-outline"
-                    size={23}
-                    color={secondaryColor}
-                  />
-                </View>
-
-                <Text
-                  style={{
-                    marginLeft: 12,
-
-                    fontFamily: "Nunito-Bold",
-
-                    fontSize: 13,
-
-                    textTransform: "uppercase",
-
-                    letterSpacing: 0.7,
-
-                    color: secondaryColor,
-                  }}
-                >
-                  Realidad
-                </Text>
-              </View>
-
-              <Text
-                style={{
-                  marginTop: 18,
-
-                  fontFamily: "Nunito-SemiBold",
-
-                  fontSize: esEscritorio ? 15 : 14,
-
-                  lineHeight: esEscritorio ? 24 : 22,
-
-                  color: textSecondaryColor,
-                }}
-              >
-                {categoria.realidad}
-              </Text>
-            </View>
-          </View>
-        </Animated.View>
-
-        {/* ==================================================
-            LECTURAS RECOMENDADAS
-        ================================================== */}
-
         <Animated.View
-          entering={FadeInDown.delay(200).duration(450)}
+          entering={FadeInDown
+            .delay(100)
+            .duration(450)}
           style={{
-            marginTop: esEscritorio ? 40 : 34,
+            marginTop: esEscritorio
+              ? 40
+              : 36,
           }}
         >
-          <View
-            style={{
-              marginBottom: 18,
-
-              flexDirection: "row",
-
-              alignItems: "center",
-
-              justifyContent: "space-between",
-            }}
-          >
+          <View className="mb-5 flex-row items-center justify-between">
             <View
               style={{
                 flex: 1,
-
+                minWidth: 0,
                 paddingRight: 12,
               }}
             >
               <Text
+                className="font-nunito-bold"
                 style={{
-                  fontFamily: "Nunito-Bold",
-
-                  fontSize: esEscritorio ? 22 : 20,
-
+                  fontSize: esEscritorio
+                    ? 22
+                    : 20,
                   color: textColor,
                 }}
               >
-                Lecturas recomendadas
+                Lecturas sugeridas
               </Text>
 
               {!esTelefono && (
                 <Text
+                  className="mt-1 font-nunito-medium text-[13px]"
                   style={{
-                    marginTop: 3,
-
-                    fontFamily: "Nunito-Medium",
-
-                    fontSize: 13,
-
                     color: textMutedColor,
                   }}
                 >
@@ -931,86 +644,119 @@ export default function CategoriaScreen() {
               )}
             </View>
 
+            {/* VER TODAS */}
+
             <Pressable
               hitSlop={8}
               onPress={() =>
                 router.push({
-                  pathname: "/(tabs)/educacion/lecturas",
+                  pathname:
+                    "/(tabs)/educacion/lecturas",
 
                   params: {
-                    categoria: categoria.titulo,
+                    categoria:
+                      categoria.titulo,
                   },
                 } as any)
               }
-              style={({ pressed }) => ({
-                minHeight: 38,
-
-                paddingHorizontal: 10,
-
-                borderRadius: 10,
-
-                flexDirection: "row",
-
-                alignItems: "center",
-
-                justifyContent: "center",
-
-                backgroundColor: pressed ? primarySoftColor : "transparent",
-              })}
             >
-              <Text
-                style={{
-                  fontFamily: "Nunito-SemiBold",
+              {({ pressed }) => (
+                <View
+                  className="flex-row items-center rounded-full px-3 py-2"
+                  style={{
+                    backgroundColor:
+                      primarySoftColor,
 
-                  fontSize: 13,
+                    opacity: pressed
+                      ? 0.65
+                      : 1,
+                  }}
+                >
+                  <Text
+                    className="font-nunito-semibold text-sm"
+                    style={{
+                      color: primaryColor,
+                    }}
+                  >
+                    Ver todas
+                  </Text>
 
-                  color: primaryColor,
-                }}
-              >
-                Ver todas
-              </Text>
-
-              <Ionicons name="chevron-forward" size={17} color={primaryColor} />
+                  <Ionicons
+                    name="chevron-forward"
+                    size={17}
+                    color={primaryColor}
+                  />
+                </View>
+              )}
             </Pressable>
           </View>
 
           {/* ==================================================
-              GRID DE LECTURAS
-          ================================================== */}
+              LECTURAS
+              ================================================== */}
 
           <View
-            onLayout={medirGridLecturas}
+            onLayout={medirLecturas}
             style={{
               width: "100%",
-
-              flexDirection: numeroColumnasLecturas > 1 ? "row" : "column",
-
-              flexWrap: numeroColumnasLecturas > 1 ? "wrap" : "nowrap",
-
-              gap: gapLecturas,
-
-              alignItems: "stretch",
+              flexDirection: "row",
+              alignItems: "flex-start",
+              columnGap: gapLecturas,
             }}
           >
-            {categoria.lecturas.map((lectura) => (
-              <View
-                key={lectura.id}
-                style={{
-                  width:
-                    numeroColumnasLecturas === 1 ? "100%" : anchoTarjetaLectura,
-
-                  minWidth: 0,
-                }}
-              >
-                <LecturaRecomendadaCard
-                  categoria={lectura.categoria}
-                  tiempo={lectura.tiempo}
-                  titulo={lectura.titulo}
-                  descripcion={lectura.descripcion}
-                />
-              </View>
-            ))}
+            {categoria.lecturas.map(
+              (lectura, index) => (
+                <Animated.View
+                  key={lectura.id}
+                  entering={FadeInDown
+                    .delay(150 + index * 50)
+                    .duration(400)}
+                  style={{
+                    width: anchoTarjeta,
+                    minWidth: 0,
+                  }}
+                >
+                  <LecturaRecomendadaCard
+                    titulo={lectura.titulo}
+                    index={index}
+                    ancho={anchoTarjeta}
+                  />
+                </Animated.View>
+              )
+            )}
           </View>
+        </Animated.View>
+
+        {/* ==================================================
+            MITOS Y REALIDADES
+            ================================================== */}
+
+        <Animated.View
+          entering={FadeInDown
+            .delay(200)
+            .duration(450)}
+          style={{
+            marginTop: esEscritorio
+              ? 44
+              : 40,
+          }}
+        >
+          <Text
+            className="mb-5 font-nunito-bold"
+            style={{
+              fontSize: esEscritorio
+                ? 22
+                : 20,
+              color: textColor,
+            }}
+          >
+            Mitos y Realidades
+          </Text>
+
+          <MitoRealidadCard
+            mito={categoria.mito}
+            realidad={categoria.realidad}
+          />
         </Animated.View>
       </View>
     </ScrollView>

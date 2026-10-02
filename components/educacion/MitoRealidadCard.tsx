@@ -2,9 +2,13 @@ import {
   Ionicons,
 } from "@expo/vector-icons";
 
-import React from "react";
+import React, {
+  useState,
+} from "react";
 
 import {
+  Pressable,
+  ScrollView,
   Text,
   View,
 } from "react-native";
@@ -19,10 +23,36 @@ import {
 
 
 // ==========================================================
+// PROPS
+// ==========================================================
+
+type MitoRealidadCardProps = {
+  mito: string;
+  realidad: string;
+};
+
+
+// ==========================================================
 // COMPONENTE
 // ==========================================================
 
-export default function MitoRealidadCard() {
+export default function MitoRealidadCard({
+  mito,
+  realidad,
+}: MitoRealidadCardProps) {
+
+  // ========================================================
+  // ESTADO
+  // ========================================================
+
+  // Controla cuál card está abierto
+  const [
+    tarjetaAbierta,
+    setTarjetaAbierta,
+  ] = useState<"mito" | "realidad" | null>(
+    null
+  );
+
 
   // ========================================================
   // COLORES DEL TEMA
@@ -34,13 +64,11 @@ export default function MitoRealidadCard() {
       "surface"
     );
 
-
   const textColor =
     useThemeColor(
       {},
       "text"
     );
-
 
   const textSecondaryColor =
     useThemeColor(
@@ -48,13 +76,11 @@ export default function MitoRealidadCard() {
       "textSecondary"
     );
 
-
   const borderColor =
     useThemeColor(
       {},
       "border"
     );
-
 
   const accentColor =
     useThemeColor(
@@ -62,13 +88,11 @@ export default function MitoRealidadCard() {
       "accent"
     );
 
-
   const accentSoftColor =
     useThemeColor(
       {},
       "accentSoft"
     );
-
 
   const secondaryColor =
     useThemeColor(
@@ -76,12 +100,49 @@ export default function MitoRealidadCard() {
       "secondary"
     );
 
-
   const secondarySoftColor =
     useThemeColor(
       {},
       "secondarySoft"
     );
+
+
+  // ========================================================
+  // DATOS DEL CARD ABIERTO
+  // ========================================================
+
+  const esMito =
+    tarjetaAbierta === "mito";
+
+  // Cambia el título según el card
+  const tituloTarjeta =
+    esMito
+      ? "Mito"
+      : "Realidad";
+
+  // Cambia la información
+  const contenidoTarjeta =
+    esMito
+      ? mito
+      : realidad;
+
+  // Cambia el color
+  const colorTarjeta =
+    esMito
+      ? accentColor
+      : secondaryColor;
+
+  // Cambia el fondo
+  const fondoTarjeta =
+    esMito
+      ? accentSoftColor
+      : secondarySoftColor;
+
+  // Cambia el icono
+  const iconoTarjeta =
+    esMito
+      ? "bulb-outline"
+      : "checkmark-circle-outline";
 
 
   // ========================================================
@@ -92,281 +153,482 @@ export default function MitoRealidadCard() {
 
     <Animated.View
       entering={
-        FadeInDown.duration(
-          500
-        )
+        FadeInDown
+          .delay(200)
+          .duration(450)
       }
-
-      style={{
-        overflow:
-          "hidden",
-
-        padding:
-          20,
-
-        borderRadius:
-          22,
-
-        borderWidth:
-          1,
-
-        borderColor,
-
-        backgroundColor:
-          surfaceColor,
-
-        shadowColor:
-          "#000000",
-
-        shadowOffset: {
-          width:
-            0,
-
-          height:
-            2,
-        },
-
-        shadowOpacity:
-          0.08,
-
-        shadowRadius:
-          6,
-
-        elevation:
-          3,
-      }}
     >
 
-      {/* =================================================
-          MITO
-      ================================================= */}
+      {/* ==================================================
+          DOS CARDS PEQUEÑOS
+          ================================================== */}
 
-      <View
-        style={{
-          padding:
-            16,
+      {tarjetaAbierta === null && (
 
-          borderRadius:
-            18,
+        <View className="flex-row">
 
-          backgroundColor:
-            accentSoftColor,
-        }}
-      >
+          {/* MITO */}
 
-        <View
+          <Pressable
+            onPress={() =>
+              setTarjetaAbierta(
+                "mito"
+              )
+            }
+            className="mr-2 flex-1"
+            style={({
+              pressed,
+            }) => ({
+              opacity:
+                pressed
+                  ? 0.78
+                  : 1,
+            })}
+          >
+
+            <View
+              className="items-center justify-center rounded-[22px] border px-3 py-6"
+              style={{
+                minHeight:
+                  135,
+
+                borderColor:
+                  accentColor,
+
+                backgroundColor:
+                  accentSoftColor,
+
+                shadowColor:
+                  "#000000",
+
+                shadowOffset: {
+                  width: 0,
+                  height: 2,
+                },
+
+                shadowOpacity:
+                  0.06,
+
+                shadowRadius:
+                  5,
+
+                elevation:
+                  2,
+              }}
+            >
+
+              {/* Icono */}
+
+              <View
+                className="h-12 w-12 items-center justify-center rounded-full"
+                style={{
+                  backgroundColor:
+                    surfaceColor,
+                }}
+              >
+                <Ionicons
+                  name="bulb-outline"
+                  size={25}
+                  color={
+                    accentColor
+                  }
+                />
+              </View>
+
+
+              {/* Título */}
+
+              <Text
+                className="mt-3 font-nunito-bold text-base"
+                style={{
+                  color:
+                    accentColor,
+                }}
+              >
+                Mito
+              </Text>
+
+
+              {/* Acción */}
+
+              <View className="mt-2 flex-row items-center">
+
+                <Text
+                  className="font-nunito-semibold text-xs"
+                  style={{
+                    color:
+                      textSecondaryColor,
+                  }}
+                >
+                  Toca para leer
+                </Text>
+
+                <Ionicons
+                  name="chevron-forward"
+                  size={14}
+                  color={
+                    accentColor
+                  }
+                  style={{
+                    marginLeft: 2,
+                  }}
+                />
+
+              </View>
+
+            </View>
+
+          </Pressable>
+
+
+          {/* REALIDAD */}
+
+          <Pressable
+            onPress={() =>
+              setTarjetaAbierta(
+                "realidad"
+              )
+            }
+            className="ml-2 flex-1"
+            style={({
+              pressed,
+            }) => ({
+              opacity:
+                pressed
+                  ? 0.78
+                  : 1,
+            })}
+          >
+
+            <View
+              className="items-center justify-center rounded-[22px] border px-3 py-6"
+              style={{
+                minHeight:
+                  135,
+
+                borderColor:
+                  secondaryColor,
+
+                backgroundColor:
+                  secondarySoftColor,
+
+                shadowColor:
+                  "#000000",
+
+                shadowOffset: {
+                  width: 0,
+                  height: 2,
+                },
+
+                shadowOpacity:
+                  0.06,
+
+                shadowRadius:
+                  5,
+
+                elevation:
+                  2,
+              }}
+            >
+
+              {/* Icono */}
+
+              <View
+                className="h-12 w-12 items-center justify-center rounded-full"
+                style={{
+                  backgroundColor:
+                    surfaceColor,
+                }}
+              >
+                <Ionicons
+                  name="checkmark-circle-outline"
+                  size={27}
+                  color={
+                    secondaryColor
+                  }
+                />
+              </View>
+
+
+              {/* Título */}
+
+              <Text
+                className="mt-3 font-nunito-bold text-base"
+                style={{
+                  color:
+                    secondaryColor,
+                }}
+              >
+                Realidad
+              </Text>
+
+
+              {/* Acción */}
+
+              <View className="mt-2 flex-row items-center">
+
+                <Text
+                  className="font-nunito-semibold text-xs"
+                  style={{
+                    color:
+                      textSecondaryColor,
+                  }}
+                >
+                  Toca para leer
+                </Text>
+
+                <Ionicons
+                  name="chevron-forward"
+                  size={14}
+                  color={
+                    secondaryColor
+                  }
+                  style={{
+                    marginLeft: 2,
+                  }}
+                />
+
+              </View>
+
+            </View>
+
+          </Pressable>
+
+        </View>
+
+      )}
+
+
+      {/* ==================================================
+          CARD GRANDE
+          ================================================== */}
+
+      {tarjetaAbierta !== null && (
+
+        <Animated.View
+          entering={
+            FadeInDown.duration(
+              300
+            )
+          }
+          className="overflow-hidden rounded-[24px] border"
           style={{
-            flexDirection:
-              "row",
+            borderColor:
+              colorTarjeta,
 
-            alignItems:
-              "center",
+            backgroundColor:
+              surfaceColor,
+
+            shadowColor:
+              "#000000",
+
+            shadowOffset: {
+              width: 0,
+              height: 3,
+            },
+
+            shadowOpacity:
+              0.09,
+
+            shadowRadius:
+              8,
+
+            elevation:
+              4,
           }}
         >
 
+          {/* PARTE SUPERIOR */}
+
           <View
+            className="p-5"
             style={{
-              width:
-                40,
-
-              height:
-                40,
-
-              borderRadius:
-                20,
-
-              alignItems:
-                "center",
-
-              justifyContent:
-                "center",
-
               backgroundColor:
-                surfaceColor,
+                fondoTarjeta,
             }}
           >
 
-            <Ionicons
-              name="bulb-outline"
-              size={22}
-              color={
-                accentColor
-              }
-            />
+            <View className="flex-row items-center">
+
+              {/* Icono */}
+
+              <View
+                className="h-12 w-12 items-center justify-center rounded-[14px]"
+                style={{
+                  backgroundColor:
+                    surfaceColor,
+                }}
+              >
+                <Ionicons
+                  name={
+                    iconoTarjeta
+                  }
+                  size={26}
+                  color={
+                    colorTarjeta
+                  }
+                />
+              </View>
+
+
+              {/* Título */}
+
+              <View className="ml-3 flex-1">
+
+                <Text
+                  className="font-nunito-bold text-lg"
+                  style={{
+                    color:
+                      textColor,
+                  }}
+                >
+                  {tituloTarjeta}
+                </Text>
+
+                {/* Línea de color */}
+
+                <View
+                  className="mt-2 h-[5px] rounded-full"
+                  style={{
+                    width:
+                      80,
+
+                    backgroundColor:
+                      colorTarjeta,
+                  }}
+                />
+
+              </View>
+
+
+              {/* BOTÓN X */}
+
+              <Pressable
+                onPress={() =>
+                  setTarjetaAbierta(
+                    null
+                  )
+                }
+                hitSlop={10}
+                className="h-10 w-10 items-center justify-center rounded-full"
+                style={({
+                  pressed,
+                }) => ({
+                  backgroundColor:
+                    surfaceColor,
+
+                  opacity:
+                    pressed
+                      ? 0.65
+                      : 1,
+                })}
+              >
+                <Ionicons
+                  name="close"
+                  size={24}
+                  color={
+                    colorTarjeta
+                  }
+                />
+              </Pressable>
+
+            </View>
 
           </View>
 
 
-          <Text
-            style={{
-              marginLeft:
-                12,
+          {/* ==================================================
+              CONTENIDO CON SCROLL
+              ================================================== */}
 
-              fontFamily:
-                "Nunito-Bold",
+          <View className="p-5">
 
-              fontSize:
-                13,
+            {/* Información completa */}
 
-              textTransform:
-                "uppercase",
-
-              letterSpacing:
-                0.7,
-
-              color:
-                accentColor,
-            }}
-          >
-            Mito
-          </Text>
-
-        </View>
-
-
-        <Text
-          style={{
-            marginTop:
-              16,
-
-            fontFamily:
-              "Nunito-SemiBold",
-
-            fontSize:
-              17,
-
-            lineHeight:
-              24,
-
-            color:
-              textColor,
-          }}
-        >
-          “Hablar de salud mental significa que algo está mal conmigo.”
-        </Text>
-
-      </View>
+            <ScrollView
+              style={{
+                maxHeight:
+                  86,
+              }}
+              nestedScrollEnabled
+              showsVerticalScrollIndicator
+              contentContainerStyle={{
+                paddingRight:
+                  8,
+              }}
+            >
+              <Text
+                className="font-nunito-semibold text-[15px] leading-7"
+                style={{
+                  color:
+                    textSecondaryColor,
+                }}
+              >
+                {contenidoTarjeta}
+              </Text>
+            </ScrollView>
 
 
-      {/* =================================================
-          REALIDAD
-      ================================================= */}
+            {/* LÍNEA DECORATIVA */}
 
-      <View
-        style={{
-          marginTop:
-            16,
-
-          padding:
-            16,
-
-          borderRadius:
-            18,
-
-          backgroundColor:
-            secondarySoftColor,
-        }}
-      >
-
-        <View
-          style={{
-            flexDirection:
-              "row",
-
-            alignItems:
-              "center",
-          }}
-        >
-
-          <View
-            style={{
-              width:
-                40,
-
-              height:
-                40,
-
-              borderRadius:
-                20,
-
-              alignItems:
-                "center",
-
-              justifyContent:
-                "center",
-
-              backgroundColor:
-                surfaceColor,
-            }}
-          >
-
-            <Ionicons
-              name="checkmark-circle-outline"
-              size={23}
-              color={
-                secondaryColor
-              }
+            <View
+              className="mt-5 h-px"
+              style={{
+                backgroundColor:
+                  borderColor,
+              }}
             />
+
+
+            {/* BOTÓN TERMINAR */}
+
+            <Pressable
+              onPress={() =>
+                setTarjetaAbierta(
+                  null
+                )
+              }
+              className="mt-5 flex-row items-center justify-center rounded-[14px] py-3"
+              style={({
+                pressed,
+              }) => ({
+                backgroundColor:
+                  fondoTarjeta,
+
+                opacity:
+                  pressed
+                    ? 0.7
+                    : 1,
+              })}
+            >
+
+              <Ionicons
+                name="checkmark-circle-outline"
+                size={20}
+                color={
+                  colorTarjeta
+                }
+              />
+
+              <Text
+                className="ml-2 font-nunito-bold text-sm"
+                style={{
+                  color:
+                    colorTarjeta,
+                }}
+              >
+                Terminar
+              </Text>
+
+            </Pressable>
 
           </View>
 
+        </Animated.View>
 
-          <Text
-            style={{
-              marginLeft:
-                12,
-
-              fontFamily:
-                "Nunito-Bold",
-
-              fontSize:
-                13,
-
-              textTransform:
-                "uppercase",
-
-              letterSpacing:
-                0.7,
-
-              color:
-                secondaryColor,
-            }}
-          >
-            Realidad
-          </Text>
-
-        </View>
-
-
-        <Text
-          style={{
-            marginTop:
-              16,
-
-            fontFamily:
-              "Nunito-Medium",
-
-            fontSize:
-              14,
-
-            lineHeight:
-              24,
-
-            textAlign:
-              "justify",
-
-            color:
-              textSecondaryColor,
-          }}
-        >
-          Cuidar nuestra salud mental también forma parte del bienestar. Conocer
-          nuestras emociones puede ayudarnos a comprender mejor lo que sentimos.
-        </Text>
-
-      </View>
+      )}
 
     </Animated.View>
 
   );
-
 }

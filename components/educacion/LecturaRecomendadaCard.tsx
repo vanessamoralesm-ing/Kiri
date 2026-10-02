@@ -5,8 +5,6 @@ import {
 import React from "react";
 
 import {
-  Image,
-  ImageSourcePropType,
   Pressable,
   Text,
   View,
@@ -29,14 +27,11 @@ import {
 
 type LecturaRecomendadaCardProps = {
   titulo: string;
-  descripcion: string;
-  categoria: string;
-  tiempo: string;
-  autor?: string;
-  imagen?: ImageSourcePropType;
+  index: number;
+  ancho?: number;
   onPress?: () => void;
+  onFavoritoPress?: () => void;
 };
-
 
 // ==========================================================
 // COMPONENTE
@@ -44,12 +39,10 @@ type LecturaRecomendadaCardProps = {
 
 export default function LecturaRecomendadaCard({
   titulo,
-  descripcion,
-  categoria,
-  tiempo,
-  autor = "Equipo Kiri",
-  imagen,
+  index,
+  ancho = 150,
   onPress,
+  onFavoritoPress,
 }: LecturaRecomendadaCardProps) {
 
   // ========================================================
@@ -57,22 +50,17 @@ export default function LecturaRecomendadaCard({
   // ========================================================
 
   const escala =
-    useSharedValue(
-      1
-    );
-
+    useSharedValue(1);
 
   const estiloAnimado =
-    useAnimatedStyle(
-      () => ({
-        transform: [
-          {
-            scale:
-              escala.value,
-          },
-        ],
-      })
-    );
+    useAnimatedStyle(() => ({
+      transform: [
+        {
+          scale:
+            escala.value,
+        },
+      ],
+    }));
 
 
   // ========================================================
@@ -85,34 +73,11 @@ export default function LecturaRecomendadaCard({
       "surface"
     );
 
-
-  const surfaceSecondaryColor =
-    useThemeColor(
-      {},
-      "surfaceSecondary"
-    );
-
-
   const textColor =
     useThemeColor(
       {},
       "text"
     );
-
-
-  const textSecondaryColor =
-    useThemeColor(
-      {},
-      "textSecondary"
-    );
-
-
-  const textMutedColor =
-    useThemeColor(
-      {},
-      "textMuted"
-    );
-
 
   const primaryColor =
     useThemeColor(
@@ -120,20 +85,23 @@ export default function LecturaRecomendadaCard({
       "primary"
     );
 
-
   const primarySoftColor =
     useThemeColor(
       {},
       "primarySoft"
     );
 
-
-  const iconColor =
+  const accentColor =
     useThemeColor(
       {},
-      "icon"
+      "accent"
     );
 
+  const accentSoftColor =
+    useThemeColor(
+      {},
+      "accentSoft"
+    );
 
   const borderColor =
     useThemeColor(
@@ -143,383 +111,342 @@ export default function LecturaRecomendadaCard({
 
 
   // ========================================================
+  // FONDO DE PORTADA
+  // ========================================================
+
+  // Alterna morado y celeste.
+  const fondoPortada =
+    index % 2 === 0
+      ? accentSoftColor
+      : primarySoftColor;
+
+
+  // ========================================================
+  // ESCALA VISUAL SEGÚN EL ANCHO
+  // ========================================================
+
+  // El card conserva su proporción en teléfono,
+  // pero aprovecha mejor el espacio disponible en web.
+  const esCardGrande =
+    ancho >= 190;
+
+  const alturaPortada =
+    esCardGrande
+      ? 220
+      : 175;
+
+  const tamanoCirculoLibro =
+    esCardGrande
+      ? 70
+      : 58;
+
+  const tamanoIconoLibro =
+    esCardGrande
+      ? 36
+      : 30;
+
+  const tamanoTitulo =
+    esCardGrande
+      ? 16
+      : 14;
+
+  const lineaTitulo =
+    esCardGrande
+      ? 21
+      : 18;
+
+  const alturaInformacion =
+    esCardGrande
+      ? 104
+      : 88;
+
+
+  // ========================================================
   // UI
   // ========================================================
 
   return (
-
     <Animated.View
       style={[
         estiloAnimado,
         {
-          marginBottom:
-            20,
-
-          overflow:
-            "hidden",
-
-          borderRadius:
-            22,
-
-          borderWidth:
-            1,
-
-          borderColor,
-
-          backgroundColor:
-            surfaceColor,
-
-          shadowColor:
-            "#000000",
-
-          shadowOffset: {
-            width: 0,
-            height: 2,
-          },
-
-          shadowOpacity:
-            0.08,
-
-          shadowRadius:
-            6,
-
-          elevation:
-            3,
+          width:
+            ancho,
         },
       ]}
     >
-
       <Pressable
         onPress={
           onPress
         }
-
         onPressIn={() => {
-
           escala.value =
-            withSpring(
-              0.98
-            );
-
+            withSpring(0.97);
         }}
-
         onPressOut={() => {
-
           escala.value =
-            withSpring(
-              1
-            );
-
+            withSpring(1);
         }}
-
         style={({
           pressed,
         }) => ({
           opacity:
             pressed
-              ? 0.95
+              ? 0.92
               : 1,
         })}
       >
 
         {/* =================================================
-            IMAGEN PRINCIPAL
-        ================================================= */}
+            CARD
+            ================================================= */}
 
         <View
+          className="w-full overflow-hidden rounded-[18px] border"
           style={{
-            width:
-              "100%",
-
-            height:
-              155,
-
-            alignItems:
-              "center",
-
-            justifyContent:
-              "center",
+            borderColor,
 
             backgroundColor:
-              surfaceSecondaryColor,
-          }}
-        >
+              surfaceColor,
 
-          {
-            imagen
+            shadowColor:
+              "#000000",
 
-              ? (
+            shadowOffset: {
+              width: 0,
+              height: 2,
+            },
 
-                <Image
-                  source={
-                    imagen
-                  }
+            shadowOpacity:
+              0.07,
 
-                  style={{
-                    width:
-                      "100%",
+            shadowRadius:
+              5,
 
-                    height:
-                      "100%",
-                  }}
-
-                  resizeMode="cover"
-                />
-
-              )
-
-              : (
-
-                <Ionicons
-                  name="image-outline"
-                  size={35}
-                  color={
-                    iconColor
-                  }
-                />
-
-              )
-          }
-
-        </View>
-
-
-        {/* =================================================
-            CONTENIDO
-        ================================================= */}
-
-        <View
-          style={{
-            padding:
-              20,
+            elevation:
+              2,
           }}
         >
 
           {/* =================================================
-              CATEGORÍA + TIEMPO
-          ================================================= */}
+              PORTADA
+              ================================================= */}
 
           <View
+            className="relative w-full items-center"
             style={{
-              flexDirection:
-                "row",
+              height:
+                alturaPortada,
 
-              alignItems:
-                "center",
-
-              flexWrap:
-                "wrap",
-
-              gap:
-                12,
+              backgroundColor:
+                fondoPortada,
             }}
           >
 
-            {/* CATEGORÍA */}
+            {/* =================================================
+                FAVORITO
+                ================================================= */}
+
+            <Pressable
+              onPress={(
+                event
+              ) => {
+                event.stopPropagation();
+
+                onFavoritoPress?.();
+              }}
+              hitSlop={8}
+              className="absolute right-2 top-2 z-20"
+            >
+              <View
+                className="items-center justify-center rounded-full"
+                style={{
+                  width:
+                    esCardGrande
+                      ? 34
+                      : 28,
+
+                  height:
+                    esCardGrande
+                      ? 34
+                      : 28,
+
+                  backgroundColor:
+                    "#FFFFFF",
+
+                  shadowColor:
+                    "#000000",
+
+                  shadowOffset: {
+                    width: 0,
+                    height: 1,
+                  },
+
+                  shadowOpacity:
+                    0.08,
+
+                  shadowRadius:
+                    2,
+
+                  elevation:
+                    3,
+                }}
+              >
+                <Ionicons
+                  name="heart-outline"
+                  size={
+                    esCardGrande
+                      ? 20
+                      : 17
+                  }
+                  color={
+                    accentColor
+                  }
+                />
+              </View>
+            </Pressable>
+
+
+            {/* =================================================
+                ICONO DEL LIBRO
+                ================================================= */}
 
             <View
+              className="items-center justify-center rounded-full"
               style={{
-                paddingHorizontal:
-                  12,
+                marginTop:
+                  esCardGrande
+                    ? 42
+                    : 34,
 
-                paddingVertical:
-                  4,
+                width:
+                  tamanoCirculoLibro,
 
-                borderRadius:
-                  999,
+                height:
+                  tamanoCirculoLibro,
 
                 backgroundColor:
-                  primarySoftColor,
+                  "#FFFFFF",
               }}
             >
-
-              <Text
-                style={{
-                  fontFamily:
-                    "Nunito-Bold",
-
-                  fontSize:
-                    11,
-
-                  textTransform:
-                    "uppercase",
-
-                  color:
-                    primaryColor,
-                }}
-              >
-                {categoria}
-              </Text>
-
-            </View>
-
-
-            {/* TIEMPO */}
-
-            <View
-              style={{
-                flexDirection:
-                  "row",
-
-                alignItems:
-                  "center",
-              }}
-            >
-
               <Ionicons
-                name="time-outline"
-                size={14}
+                name="book-outline"
+                size={
+                  tamanoIconoLibro
+                }
                 color={
-                  textMutedColor
+                  primaryColor
                 }
               />
-
-
-              <Text
-                style={{
-                  marginLeft:
-                    4,
-
-                  fontFamily:
-                    "Nunito-Medium",
-
-                  fontSize:
-                    12,
-
-                  color:
-                    textMutedColor,
-                }}
-              >
-                {tiempo}
-              </Text>
-
             </View>
+
+
+            {/* =================================================
+                TÍTULO DE PORTADA
+                ================================================= */}
+
+            <Text
+              numberOfLines={3}
+              className="px-3 text-center font-nunito-bold"
+              style={{
+                marginTop:
+                  esCardGrande
+                    ? 18
+                    : 12,
+
+                fontSize:
+                  tamanoTitulo,
+
+                lineHeight:
+                  lineaTitulo,
+
+                color:
+                  textColor,
+              }}
+            >
+              {titulo}
+            </Text>
 
           </View>
 
 
           {/* =================================================
-              TÍTULO
-          ================================================= */}
-
-          <Text
-            style={{
-              marginTop:
-                12,
-
-              fontFamily:
-                "Nunito-Bold",
-
-              fontSize:
-                19,
-
-              lineHeight:
-                24,
-
-              color:
-                textColor,
-            }}
-          >
-            {titulo}
-          </Text>
-
-
-          {/* =================================================
-              DESCRIPCIÓN
-          ================================================= */}
-
-          <Text
-            numberOfLines={
-              3
-            }
-
-            style={{
-              marginTop:
-                8,
-
-              fontFamily:
-                "Nunito-Medium",
-
-              fontSize:
-                14,
-
-              lineHeight:
-                20,
-
-              color:
-                textSecondaryColor,
-            }}
-          >
-            {descripcion}
-          </Text>
-
-
-          {/* =================================================
-              AUTOR + FLECHA
-          ================================================= */}
+              INFORMACIÓN INFERIOR
+              ================================================= */}
 
           <View
+            className="px-3 pb-3 pt-3"
             style={{
-              marginTop:
-                20,
+              minHeight:
+                alturaInformacion,
 
-              flexDirection:
-                "row",
-
-              alignItems:
-                "center",
-
-              justifyContent:
-                "space-between",
+              backgroundColor:
+                surfaceColor,
             }}
           >
 
-            <Text
-              style={{
-                fontFamily:
-                  "Nunito-Medium",
+            {/* =================================================
+                TÍTULO INFERIOR
+                ================================================= */}
 
+            <Text
+              numberOfLines={2}
+              ellipsizeMode="tail"
+              className="font-nunito-bold"
+              style={{
                 fontSize:
-                  12,
+                  tamanoTitulo,
+
+                lineHeight:
+                  lineaTitulo,
 
                 color:
-                  textMutedColor,
+                  textColor,
               }}
             >
-              Por {autor}
+              {titulo}
             </Text>
 
 
-            <View
-              style={{
-                width:
-                  36,
+            {/* =================================================
+                ETIQUETA LIBRO
+                ================================================= */}
 
-                height:
-                  36,
+            <View className="mt-2 flex-row">
+              <View
+                className="flex-row items-center rounded-md px-1.5 py-1"
+                style={{
+                  backgroundColor:
+                    primarySoftColor,
+                }}
+              >
+                <Ionicons
+                  name="book-outline"
+                  size={
+                    esCardGrande
+                      ? 15
+                      : 13
+                  }
+                  color={
+                    primaryColor
+                  }
+                />
 
-                borderRadius:
-                  18,
+                <Text
+                  className="ml-1 font-nunito-medium"
+                  style={{
+                    fontSize:
+                      esCardGrande
+                        ? 12
+                        : 11,
 
-                alignItems:
-                  "center",
-
-                justifyContent:
-                  "center",
-
-                backgroundColor:
-                  primarySoftColor,
-              }}
-            >
-
-              <Ionicons
-                name="arrow-forward"
-                size={18}
-                color={
-                  primaryColor
-                }
-              />
-
+                    color:
+                      primaryColor,
+                  }}
+                >
+                  Libro
+                </Text>
+              </View>
             </View>
 
           </View>
@@ -527,9 +454,6 @@ export default function LecturaRecomendadaCard({
         </View>
 
       </Pressable>
-
     </Animated.View>
-
   );
-
 }

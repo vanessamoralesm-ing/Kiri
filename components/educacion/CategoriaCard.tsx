@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 
 import {
@@ -9,11 +10,9 @@ import {
   View,
 } from "react-native";
 
-import { Ionicons } from "@expo/vector-icons";
-
 import { useThemeColor } from "@/hooks/use-theme-color";
-
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+
 
 // ==========================================================
 // PROPS
@@ -21,11 +20,10 @@ import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 type CategoriaCardProps = {
   titulo: string;
-
   imagen: ImageSourcePropType;
-
   onPress: () => void;
 };
+
 
 // ==========================================================
 // COMPONENTE
@@ -36,38 +34,245 @@ export default function CategoriaCard({
   imagen,
   onPress,
 }: CategoriaCardProps) {
-  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
-
-  // ========================================================
-  // TEMA
-  // ========================================================
-
-  const surfaceColor = useThemeColor({}, "surface");
-
-  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
-
-  const borderColor = useThemeColor({}, "border");
-
-  const textColor = useThemeColor({}, "text");
-
-  const textSecondaryColor = useThemeColor({}, "textSecondary");
-
-  const primaryColor = useThemeColor({}, "primary");
-
-  const primarySoftColor = useThemeColor({}, "primarySoft");
 
   // ========================================================
   // RESPONSIVE
   // ========================================================
 
-  const alturaImagen = esEscritorio ? 126 : esTablet ? 118 : 105;
+  const {
+    esTelefono,
+    esTablet,
+    esEscritorio,
+  } = useResponsiveLayout();
 
-  const anchoImagen = esEscritorio ? 126 : esTablet ? 118 : 105;
-
-  const alturaTarjeta = esEscritorio ? 215 : esTablet ? 205 : 175;
 
   // ========================================================
-  // UI
+  // COLORES DEL TEMA
+  // ========================================================
+
+  const surfaceColor = useThemeColor(
+    {},
+    "surface"
+  );
+
+  const surfaceSecondaryColor = useThemeColor(
+    {},
+    "surfaceSecondary"
+  );
+
+  const borderColor = useThemeColor(
+    {},
+    "border"
+  );
+
+  const textColor = useThemeColor(
+    {},
+    "text"
+  );
+
+  const textSecondaryColor = useThemeColor(
+    {},
+    "textSecondary"
+  );
+
+  const primaryColor = useThemeColor(
+    {},
+    "primary"
+  );
+
+  const primarySoftColor = useThemeColor(
+    {},
+    "primarySoft"
+  );
+
+
+  // ========================================================
+  // DISEÑO PARA TELÉFONO
+  // Mantiene las dos columnas y recupera el estilo visual
+  // del card usado en tablet y escritorio.
+  // ========================================================
+
+  if (esTelefono) {
+    return (
+      <Pressable
+        onPress={onPress}
+        style={({ pressed }) => ({
+          width: "100%",
+
+          minHeight: 190,
+
+          borderRadius: 20,
+
+          borderWidth: 1,
+
+          borderColor:
+            pressed
+              ? primaryColor
+              : borderColor,
+
+          backgroundColor:
+            pressed
+              ? surfaceSecondaryColor
+              : surfaceColor,
+
+          overflow: "hidden",
+
+          padding: 14,
+
+          justifyContent: "space-between",
+
+          opacity:
+            pressed
+              ? 0.92
+              : 1,
+
+          ...Platform.select({
+            web: {
+              cursor: "pointer",
+
+              boxShadow:
+                pressed
+                  ? "0px 5px 14px rgba(0,0,0,0.09)"
+                  : "0px 2px 8px rgba(0,0,0,0.04)",
+            } as any,
+
+            ios: {
+              shadowColor: "#000000",
+
+              shadowOffset: {
+                width: 0,
+                height: 3,
+              },
+
+              shadowOpacity:
+                pressed
+                  ? 0.1
+                  : 0.05,
+
+              shadowRadius: 7,
+            },
+
+            android: {
+              elevation:
+                pressed
+                  ? 4
+                  : 2,
+            },
+          }),
+        })}
+      >
+
+        {/* ==================================================
+            IMAGEN
+            ================================================== */}
+
+        <View
+          style={{
+            width: "100%",
+
+            alignItems: "center",
+
+            justifyContent: "center",
+
+            flex: 1,
+          }}
+        >
+          <View
+            style={{
+              width: 138,
+
+              height: 138,
+
+              borderRadius: 22,
+
+              alignItems: "center",
+
+              justifyContent: "center",
+
+              backgroundColor:
+                primarySoftColor,
+            }}
+          >
+            <Image
+              source={imagen}
+              resizeMode="cover"
+              style={{
+                width: 122,
+
+                height: 122,
+
+                borderRadius: 16,
+              }}
+            />
+          </View>
+        </View>
+
+
+        {/* ==================================================
+            TÍTULO
+            ================================================== */}
+
+        <View
+          style={{
+            width: "100%",
+
+            marginTop: 12,
+
+            alignItems: "center",
+          }}
+        >
+          <Text
+            numberOfLines={2}
+            style={{
+              fontFamily: "Nunito-Bold",
+
+              fontSize: 16,
+
+              lineHeight: 21,
+
+              textAlign: "center",
+
+              color: textColor,
+            }}
+          >
+            {titulo}
+          </Text>
+        </View>
+
+      </Pressable>
+    );
+  }
+
+
+  // ========================================================
+  // TABLET Y ESCRITORIO
+  // Conserva el diseño responsive de tu compañero.
+  // ========================================================
+
+  const alturaImagen =
+    esEscritorio
+      ? 126
+      : esTablet
+        ? 118
+        : 105;
+
+  const anchoImagen =
+    esEscritorio
+      ? 126
+      : esTablet
+        ? 118
+        : 105;
+
+  const alturaTarjeta =
+    esEscritorio
+      ? 215
+      : esTablet
+        ? 205
+        : 175;
+
+
+  // ========================================================
+  // UI TABLET / ESCRITORIO
   // ========================================================
 
   return (
@@ -78,54 +283,76 @@ export default function CategoriaCard({
 
         minHeight: alturaTarjeta,
 
-        borderRadius: esEscritorio ? 22 : 20,
+        borderRadius:
+          esEscritorio
+            ? 22
+            : 20,
 
         borderWidth: 1,
 
-        borderColor: pressed ? primaryColor : borderColor,
+        borderColor:
+          pressed
+            ? primaryColor
+            : borderColor,
 
-        backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
+        backgroundColor:
+          pressed
+            ? surfaceSecondaryColor
+            : surfaceColor,
 
         overflow: "hidden",
 
-        padding: esEscritorio ? 18 : 16,
+        padding:
+          esEscritorio
+            ? 18
+            : 16,
 
         justifyContent: "space-between",
 
-        opacity: pressed ? 0.92 : 1,
+        opacity:
+          pressed
+            ? 0.92
+            : 1,
 
         ...Platform.select({
           web: {
             cursor: "pointer",
 
-            boxShadow: pressed
-              ? "0px 5px 14px rgba(0,0,0,0.09)"
-              : "0px 2px 8px rgba(0,0,0,0.04)",
-          },
+            boxShadow:
+              pressed
+                ? "0px 5px 14px rgba(0,0,0,0.09)"
+                : "0px 2px 8px rgba(0,0,0,0.04)",
+          } as any,
 
           ios: {
             shadowColor: "#000000",
 
             shadowOffset: {
               width: 0,
-
               height: 3,
             },
 
-            shadowOpacity: pressed ? 0.1 : 0.05,
+            shadowOpacity:
+              pressed
+                ? 0.1
+                : 0.05,
 
             shadowRadius: 7,
           },
 
           android: {
-            elevation: pressed ? 4 : 2,
+            elevation:
+              pressed
+                ? 4
+                : 2,
           },
         }),
       })}
     >
+
       {/* ==================================================
           IMAGEN
-      ================================================== */}
+          ================================================== */}
 
       <View
         style={{
@@ -140,9 +367,11 @@ export default function CategoriaCard({
       >
         <View
           style={{
-            width: anchoImagen + 16,
+            width:
+              anchoImagen + 16,
 
-            height: alturaImagen + 16,
+            height:
+              alturaImagen + 16,
 
             borderRadius: 22,
 
@@ -150,7 +379,8 @@ export default function CategoriaCard({
 
             justifyContent: "center",
 
-            backgroundColor: primarySoftColor,
+            backgroundColor:
+              primarySoftColor,
           }}
         >
           <Image
@@ -167,9 +397,10 @@ export default function CategoriaCard({
         </View>
       </View>
 
+
       {/* ==================================================
           PIE
-      ================================================== */}
+          ================================================== */}
 
       <View
         style={{
@@ -194,7 +425,10 @@ export default function CategoriaCard({
             style={{
               fontFamily: "Nunito-Bold",
 
-              fontSize: esEscritorio ? 17 : 16,
+              fontSize:
+                esEscritorio
+                  ? 17
+                  : 16,
 
               color: textColor,
             }}
@@ -202,22 +436,26 @@ export default function CategoriaCard({
             {titulo}
           </Text>
 
-          {!esTelefono && (
-            <Text
-              style={{
-                marginTop: 2,
 
-                fontFamily: "Nunito-Medium",
+          <Text
+            style={{
+              marginTop: 2,
 
-                fontSize: 11,
+              fontFamily: "Nunito-Medium",
 
-                color: textSecondaryColor,
-              }}
-            >
-              Explorar contenido
-            </Text>
-          )}
+              fontSize: 11,
+
+              color: textSecondaryColor,
+            }}
+          >
+            Explorar contenido
+          </Text>
         </View>
+
+
+        {/* ==================================================
+            FLECHA
+            ================================================== */}
 
         <View
           style={{
@@ -233,12 +471,19 @@ export default function CategoriaCard({
 
             justifyContent: "center",
 
-            backgroundColor: primarySoftColor,
+            backgroundColor:
+              primarySoftColor,
           }}
         >
-          <Ionicons name="arrow-forward" size={17} color={primaryColor} />
+          <Ionicons
+            name="arrow-forward"
+            size={17}
+            color={primaryColor}
+          />
         </View>
+
       </View>
+
     </Pressable>
   );
 }
