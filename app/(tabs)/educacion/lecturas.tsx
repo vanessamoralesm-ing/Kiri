@@ -133,7 +133,6 @@ const idsCategorias: Record<string, string> = {
   Depresión: "Depresion",
 };
 
-
 // ==========================================================
 // NORMALIZAR TEXTO
 // ==========================================================
@@ -193,7 +192,6 @@ export default function LecturasScreen() {
         },
       ],
     }));
-
 
   // ========================================================
   // COLORES DEL TEMA
@@ -446,7 +444,6 @@ export default function LecturasScreen() {
       "/(tabs)/educacion"
     );
   }
-
   // ========================================================
   // UI
   // ========================================================

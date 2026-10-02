@@ -11,7 +11,6 @@ import {
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
-
 // ==========================================================
 // PROPS
 // ==========================================================
@@ -22,7 +21,6 @@ type EncabezadoCardProps = {
   subtitulo: string;
 };
 
-
 // ==========================================================
 // COMPONENTE
 // ==========================================================
@@ -32,7 +30,6 @@ export default function EncabezadoCard({
   titulo,
   subtitulo,
 }: EncabezadoCardProps) {
-
   // ========================================================
   // RESPONSIVE
   // ========================================================
@@ -42,7 +39,6 @@ export default function EncabezadoCard({
     esTablet,
     esEscritorio,
   } = useResponsiveLayout();
-
 
   // ========================================================
   // COLORES DEL TEMA
@@ -68,10 +64,8 @@ export default function EncabezadoCard({
     "accent"
   );
 
-
   // ========================================================
   // TELÉFONO
-  // Se mantiene exactamente el diseño aprobado.
   // ========================================================
 
   if (esTelefono) {
@@ -82,7 +76,6 @@ export default function EncabezadoCard({
           paddingTop: 14,
         }}
       >
-
         {/* CARD */}
 
         <View
@@ -103,47 +96,35 @@ export default function EncabezadoCard({
 
             shadowRadius: 6,
 
-            elevation: 3,
+            elevation: 6,
           }}
         >
-
           {/* IMAGEN */}
 
           <View
-            className="items-center justify-center"
             style={{
-              width: 255,
+              width: "100%",
               height: 180,
+
+              borderRadius: 18,
+              overflow: "hidden",
             }}
           >
-            <View
+            <Image
+              source={imagen}
+              resizeMode="cover"
               style={{
-                width: "135%",
-                height: "150%",
-
-                borderRadius: 80,
-
-                overflow: "hidden",
+                width: "100%",
+                height: "100%",
               }}
-            >
-              <Image
-                source={imagen}
-                resizeMode="contain"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                }}
-              />
-            </View>
+            />
           </View>
-
 
           {/* TEXTO */}
 
           <View className="items-center px-2">
-
             <Text
-              className="text-center font-nunito-bold text-[23px]"
+              className="mt-3 text-center font-nunito-bold text-[23px]"
               style={{
                 color: textColor,
               }}
@@ -159,15 +140,11 @@ export default function EncabezadoCard({
             >
               {subtitulo}
             </Text>
-
           </View>
-
         </View>
-
       </View>
     );
   }
-
 
   // ========================================================
   // TABLET Y ESCRITORIO
@@ -180,7 +157,6 @@ export default function EncabezadoCard({
   const alturaImagen = esEscritorio
     ? 320
     : 260;
-
 
   // ========================================================
   // UI TABLET / ESCRITORIO
@@ -204,14 +180,13 @@ export default function EncabezadoCard({
             : 14,
       }}
     >
-
       {/* ==================================================
           CARD
           ================================================== */}
 
       <View
         style={{
-          width: "100%",
+          width: "90%", //ancho del card en WEB
 
           maxWidth: maxWidthCard,
 
@@ -265,19 +240,14 @@ export default function EncabezadoCard({
           }),
         }}
       >
-
         {/* ==================================================
             IMAGEN WEB
-            MISMO ANCHO.
-            MISMA ALTURA.
-            MISMOS BORDES.
-            SOLO SE ALEJA UN POQUITO EN ESCRITORIO.
             ================================================== */}
 
         <View
           style={{
             width: esEscritorio
-              ? "96%"
+              ? "96%" //ancho
               : "100%",
 
             height: alturaImagen,
@@ -301,9 +271,9 @@ export default function EncabezadoCard({
             }
 
             style={{
-              width: "100%",
+              width: "90%",//ancho de la imagen
 
-              height: "100%",
+              height: "100%",//altura de la imagen
 
               borderRadius: 22,
 
@@ -313,7 +283,6 @@ export default function EncabezadoCard({
             }}
           />
         </View>
-
 
         {/* ==================================================
             TEXTO
@@ -335,7 +304,6 @@ export default function EncabezadoCard({
             paddingHorizontal: 16,
           }}
         >
-
           {/* TÍTULO */}
 
           <Text
@@ -359,7 +327,6 @@ export default function EncabezadoCard({
           >
             {titulo}
           </Text>
-
 
           {/* SUBTÍTULO */}
 
@@ -386,11 +353,8 @@ export default function EncabezadoCard({
           >
             {subtitulo}
           </Text>
-
         </View>
-
       </View>
-
     </View>
   );
 }

@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useRef } from "react";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useRef, useState } from "react";
 
 import {
+  LayoutChangeEvent,
   Platform,
   Pressable,
   ScrollView,
@@ -10,9 +11,7 @@ import {
   View,
 } from "react-native";
 
-import Animated, {
-  FadeInDown,
-} from "react-native-reanimated";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 import EncabezadoCard from "@/components/educacion/EncabezadoCard";
 import LecturaRecomendadaCard from "@/components/educacion/LecturaRecomendadaCard";
@@ -26,14 +25,12 @@ import {
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
-
 // ==========================================================
 // DATOS TEMPORALES
 // Más adelante estos datos vendrán de Supabase.
 // ==========================================================
 
 const contenidoCategorias = {
-
   // ========================================================
   // ANSIEDAD
   // ========================================================
@@ -73,7 +70,6 @@ const contenidoCategorias = {
       },
     ],
   },
-
 
   // ========================================================
   // AUTOESTIMA
@@ -115,7 +111,6 @@ const contenidoCategorias = {
     ],
   },
 
-
   // ========================================================
   // ESTRÉS
   // ========================================================
@@ -155,7 +150,6 @@ const contenidoCategorias = {
       },
     ],
   },
-
 
   // ========================================================
   // PROCRASTINACIÓN
@@ -197,7 +191,6 @@ const contenidoCategorias = {
     ],
   },
 
-
   // ========================================================
   // SOLEDAD
   // ========================================================
@@ -237,7 +230,6 @@ const contenidoCategorias = {
       },
     ],
   },
-
 
   // ========================================================
   // DEPRESIÓN
@@ -280,100 +272,58 @@ const contenidoCategorias = {
   },
 };
 
-
 // ==========================================================
 // COMPONENTE
 // ==========================================================
 
 export default function CategoriaScreen() {
-
-  // ========================================================
-  // PARÁMETROS
-  // ========================================================
-
-  // Obtiene la categoría desde la ruta.
   const { id } = useLocalSearchParams<{
     id: string;
   }>();
-
 
   // ========================================================
   // SCROLL
   // ========================================================
 
-  const scrollViewRef =
-    useRef<ScrollView>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => {
-      scrollViewRef.current?.scrollTo({
-        y: 0,
-        animated: false,
+  useFocusEffect(
+    useCallback(() => {
+      const frame = requestAnimationFrame(() => {
+        scrollViewRef.current?.scrollTo({
+          y: 0,
+          animated: false,
+        });
       });
-    });
 
-    return () => {
-      cancelAnimationFrame(frame);
-    };
-  }, [id]);
-
+      return () => {
+        cancelAnimationFrame(frame);
+      };
+    }, [id])
+  );
 
   // ========================================================
   // RESPONSIVE
   // ========================================================
 
-  // Conserva la lógica responsive agregada en main.
   const {
     esTelefono,
     esTablet,
     esEscritorio,
   } = useResponsiveLayout();
 
-
   // ========================================================
-  // COLORES DEL TEMA
+  // COLORES
   // ========================================================
 
-  const backgroundColor = useThemeColor(
-    {},
-    "background"
-  );
-
-  const surfaceColor = useThemeColor(
-    {},
-    "surface"
-  );
-
-  const textColor = useThemeColor(
-    {},
-    "text"
-  );
-
-  const textMutedColor = useThemeColor(
-    {},
-    "textMuted"
-  );
-
-  const primaryColor = useThemeColor(
-    {},
-    "primary"
-  );
-
-  const primarySoftColor = useThemeColor(
-    {},
-    "primarySoft"
-  );
-
-  const textOnPrimaryColor = useThemeColor(
-    {},
-    "textOnPrimary"
-  );
-
-  const borderColor = useThemeColor(
-    {},
-    "border"
-  );
-
+  const backgroundColor = useThemeColor({}, "background");
+  const surfaceColor = useThemeColor({}, "surface");
+  const textColor = useThemeColor({}, "text");
+  const textMutedColor = useThemeColor({}, "textMuted");
+  const primaryColor = useThemeColor({}, "primary");
+  const primarySoftColor = useThemeColor({}, "primarySoft");
+  const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
+  const borderColor = useThemeColor({}, "border");
 
   // ========================================================
   // CONFIGURACIÓN RESPONSIVE
@@ -401,6 +351,53 @@ export default function CategoriaScreen() {
     ? 64
     : 140;
 
+  // ========================================================
+  // ANCHO DE LECTURAS
+  // ========================================================
+
+  const [anchoLecturas, setAnchoLecturas] = useState(0);
+
+  const numeroColumnas = esEscritorio
+    ? 4
+    : esTablet
+      ? 3
+      : 2;
+
+  const gapLecturas = esEscritorio
+    ? 26
+    : esTablet
+      ? 18
+      : 12;
+
+  const anchoDisponible =
+    anchoLecturas > 0
+      ? (anchoLecturas -
+          gapLecturas * (numeroColumnas - 1)) /
+        numeroColumnas
+      : 0;
+
+  const anchoTarjeta =
+    anchoDisponible > 0
+      ? esEscritorio
+        ? Math.min(anchoDisponible, 230)
+        : esTablet
+          ? Math.min(anchoDisponible, 190)
+          : anchoDisponible
+      : esEscritorio
+        ? 230
+        : esTablet
+          ? 190
+          : 150;
+
+  function medirLecturas(event: LayoutChangeEvent) {
+    const nuevoAncho = event.nativeEvent.layout.width;
+
+    setAnchoLecturas((anterior) =>
+      Math.abs(nuevoAncho - anterior) > 1
+        ? nuevoAncho
+        : anterior
+    );
+  }
 
   // ========================================================
   // CATEGORÍA ACTUAL
@@ -410,7 +407,6 @@ export default function CategoriaScreen() {
     contenidoCategorias[
       id as keyof typeof contenidoCategorias
     ];
-
 
   // ========================================================
   // CATEGORÍA NO ENCONTRADA
@@ -430,19 +426,11 @@ export default function CategoriaScreen() {
           style={{
             width: "100%",
             maxWidth: 440,
-
-            padding: esTelefono
-              ? 22
-              : 28,
-
+            padding: esTelefono ? 22 : 28,
             borderRadius: 24,
-
             borderWidth: 1,
-
             borderColor,
-
-            backgroundColor:
-              surfaceColor,
+            backgroundColor: surfaceColor,
 
             ...Platform.select({
               web: {
@@ -451,14 +439,11 @@ export default function CategoriaScreen() {
               } as any,
 
               ios: {
-                shadowColor:
-                  "#000000",
-
+                shadowColor: "#000000",
                 shadowOffset: {
                   width: 0,
                   height: 2,
                 },
-
                 shadowOpacity: 0.06,
                 shadowRadius: 6,
               },
@@ -469,13 +454,10 @@ export default function CategoriaScreen() {
             }),
           }}
         >
-          {/* Icono */}
-
           <View
             className="h-[62px] w-[62px] items-center justify-center rounded-full"
             style={{
-              backgroundColor:
-                primarySoftColor,
+              backgroundColor: primarySoftColor,
             }}
           >
             <Ionicons
@@ -484,7 +466,6 @@ export default function CategoriaScreen() {
               color={primaryColor}
             />
           </View>
-
 
           <Text
             className="mt-4 text-center font-nunito-bold text-[19px]"
@@ -495,7 +476,6 @@ export default function CategoriaScreen() {
             No encontramos esta categoría
           </Text>
 
-
           <Text
             className="mt-1.5 text-center font-nunito-medium text-sm leading-5"
             style={{
@@ -505,7 +485,6 @@ export default function CategoriaScreen() {
             Es posible que el contenido solicitado ya no esté disponible.
           </Text>
 
-
           <Pressable
             onPress={() =>
               router.replace(
@@ -513,33 +492,22 @@ export default function CategoriaScreen() {
               )
             }
             className="mt-5 min-h-11 flex-row items-center justify-center rounded-[13px] px-5"
-            style={({
-              pressed,
-            }) => ({
+            style={({ pressed }) => ({
               gap: 7,
-
-              backgroundColor:
-                primaryColor,
-
-              opacity:
-                pressed
-                  ? 0.8
-                  : 1,
+              backgroundColor: primaryColor,
+              opacity: pressed ? 0.8 : 1,
             })}
           >
             <Ionicons
               name="arrow-back"
               size={17}
-              color={
-                textOnPrimaryColor
-              }
+              color={textOnPrimaryColor}
             />
 
             <Text
               className="font-nunito-semibold text-[13px]"
               style={{
-                color:
-                  textOnPrimaryColor,
+                color: textOnPrimaryColor,
               }}
             >
               Volver a Educación
@@ -549,7 +517,6 @@ export default function CategoriaScreen() {
       </View>
     );
   }
-
 
   // ========================================================
   // UI
@@ -568,11 +535,6 @@ export default function CategoriaScreen() {
         paddingBottom,
       }}
     >
-
-      {/* ==================================================
-          CONTENIDO RESPONSIVE
-          ================================================== */}
-
       <View
         style={{
           width: "100%",
@@ -581,41 +543,30 @@ export default function CategoriaScreen() {
           paddingHorizontal,
         }}
       >
-
         {/* ==================================================
             BOTÓN VOLVER
             ================================================== */}
 
         <Pressable
           onPress={() =>
-            router.back()
+            router.replace(
+              "/(tabs)/educacion" as any
+            )
           }
           hitSlop={10}
           style={({ pressed }) => ({
             width: 40,
             height: 40,
-
             marginBottom: 12,
-
             borderRadius: 20,
-
             alignItems: "center",
             justifyContent: "center",
-
-            backgroundColor:
-              primarySoftColor,
-
-            opacity:
-              pressed
-                ? 0.7
-                : 1,
+            backgroundColor: primarySoftColor,
+            opacity: pressed ? 0.7 : 1,
 
             transform: [
               {
-                scale:
-                  pressed
-                    ? 0.96
-                    : 1,
+                scale: pressed ? 0.96 : 1,
               },
             ],
 
@@ -633,54 +584,35 @@ export default function CategoriaScreen() {
           />
         </Pressable>
 
-
         {/* ==================================================
-            ENCABEZADO DE LA CATEGORÍA
+            ENCABEZADO
             ================================================== */}
 
         <Animated.View
-          entering={
-            FadeInDown.duration(
-              450
-            )
-          }
+          entering={FadeInDown.duration(450)}
         >
           <EncabezadoCard
-            imagen={
-              categoria.imagen
-            }
-            titulo={
-              categoria.titulo
-            }
-            subtitulo={
-              categoria.descripcion
-            }
+            imagen={categoria.imagen}
+            titulo={categoria.titulo}
+            subtitulo={categoria.descripcion}
           />
         </Animated.View>
-
 
         {/* ==================================================
             LECTURAS SUGERIDAS
             ================================================== */}
 
         <Animated.View
-          entering={
-            FadeInDown
-              .delay(100)
-              .duration(450)
-          }
+          entering={FadeInDown
+            .delay(100)
+            .duration(450)}
           style={{
-            marginTop:
-              esEscritorio
-                ? 40
-                : 36,
+            marginTop: esEscritorio
+              ? 40
+              : 36,
           }}
         >
-
-          {/* Encabezado de lecturas */}
-
           <View className="mb-5 flex-row items-center justify-between">
-
             <View
               style={{
                 flex: 1,
@@ -691,27 +623,20 @@ export default function CategoriaScreen() {
               <Text
                 className="font-nunito-bold"
                 style={{
-                  fontSize:
-                    esEscritorio
-                      ? 22
-                      : 20,
-
-                  color:
-                    textColor,
+                  fontSize: esEscritorio
+                    ? 22
+                    : 20,
+                  color: textColor,
                 }}
               >
                 Lecturas sugeridas
               </Text>
 
-
-              {/* Texto adicional solo en pantallas mayores */}
-
               {!esTelefono && (
                 <Text
                   className="mt-1 font-nunito-medium text-[13px]"
                   style={{
-                    color:
-                      textMutedColor,
+                    color: textMutedColor,
                   }}
                 >
                   Continúa explorando contenidos relacionados con este tema.
@@ -719,8 +644,7 @@ export default function CategoriaScreen() {
               )}
             </View>
 
-
-            {/* Botón Ver todas */}
+            {/* VER TODAS */}
 
             <Pressable
               hitSlop={8}
@@ -736,26 +660,22 @@ export default function CategoriaScreen() {
                 } as any)
               }
             >
-              {({
-                pressed,
-              }) => (
+              {({ pressed }) => (
                 <View
                   className="flex-row items-center rounded-full px-3 py-2"
                   style={{
                     backgroundColor:
                       primarySoftColor,
 
-                    opacity:
-                      pressed
-                        ? 0.65
-                        : 1,
+                    opacity: pressed
+                      ? 0.65
+                      : 1,
                   }}
                 >
                   <Text
                     className="font-nunito-semibold text-sm"
                     style={{
-                      color:
-                        primaryColor,
+                      color: primaryColor,
                     }}
                   >
                     Ver todas
@@ -764,105 +684,81 @@ export default function CategoriaScreen() {
                   <Ionicons
                     name="chevron-forward"
                     size={17}
-                    color={
-                      primaryColor
-                    }
+                    color={primaryColor}
                   />
                 </View>
               )}
             </Pressable>
-
           </View>
 
-
           {/* ==================================================
-              CARRUSEL DE LECTURAS
+              LECTURAS
               ================================================== */}
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingRight: 24,
+          <View
+            onLayout={medirLecturas}
+            style={{
+              width: "100%",
+              flexDirection: "row",
+              alignItems: "flex-start",
+              columnGap: gapLecturas,
             }}
           >
             {categoria.lecturas.map(
-              (
-                lectura,
-                index
-              ) => (
-                <View
-                  key={
-                    lectura.id
-                  }
-                  className="mr-4"
+              (lectura, index) => (
+                <Animated.View
+                  key={lectura.id}
+                  entering={FadeInDown
+                    .delay(150 + index * 50)
+                    .duration(400)}
+                  style={{
+                    width: anchoTarjeta,
+                    minWidth: 0,
+                  }}
                 >
-                  {/* Card reutilizable */}
-
                   <LecturaRecomendadaCard
-                    titulo={
-                      lectura.titulo
-                    }
-                    index={
-                      index
-                    }
+                    titulo={lectura.titulo}
+                    index={index}
+                    ancho={anchoTarjeta}
                   />
-                </View>
+                </Animated.View>
               )
             )}
-          </ScrollView>
-
+          </View>
         </Animated.View>
-
 
         {/* ==================================================
             MITOS Y REALIDADES
             ================================================== */}
 
         <Animated.View
-          entering={
-            FadeInDown
-              .delay(200)
-              .duration(450)
-          }
+          entering={FadeInDown
+            .delay(200)
+            .duration(450)}
           style={{
-            marginTop:
-              esEscritorio
-                ? 44
-                : 40,
+            marginTop: esEscritorio
+              ? 44
+              : 40,
           }}
         >
           <Text
             className="mb-5 font-nunito-bold"
             style={{
-              fontSize:
-                esEscritorio
-                  ? 22
-                  : 20,
-
-              color:
-                textColor,
+              fontSize: esEscritorio
+                ? 22
+                : 20,
+              color: textColor,
             }}
           >
             Mitos y Realidades
           </Text>
 
-
-          {/* Componente interactivo */}
-
           <MitoRealidadCard
-            mito={
-              categoria.mito
-            }
-            realidad={
-              categoria.realidad
-            }
+            mito={categoria.mito}
+            realidad={categoria.realidad}
           />
-
         </Animated.View>
-
       </View>
-
     </ScrollView>
   );
 }
