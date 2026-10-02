@@ -258,6 +258,7 @@ export default function LoginScreen() {
                 <Input
                   label="Correo Electrónico"
                   placeholder="ejemplo@correo.com"
+                  forceLight
                   value={email}
                   onChangeText={(value) => {
                     setEmail(value);
@@ -274,6 +275,7 @@ export default function LoginScreen() {
                 <Input
                   label="Contraseña"
                   placeholder="********"
+                  forceLight
                   value={password}
                   onChangeText={(value) => {
                     setPassword(value);

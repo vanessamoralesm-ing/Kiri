@@ -10,6 +10,7 @@ import {
   ViewStyle,
 } from "react-native";
 
+import { Colors } from "@/constants/theme";
 import { useThemeColor } from "@/hooks/use-theme-color";
 
 // ==========================================================
@@ -18,12 +19,10 @@ import { useThemeColor } from "@/hooks/use-theme-color";
 
 interface InputProps extends TextInputProps {
   label: string;
-
   rightLabel?: React.ReactNode;
-
   rightIcon?: React.ReactNode;
-
   estiloContenedor?: StyleProp<ViewStyle>;
+  forceLight?: boolean;
 }
 
 // ==========================================================
@@ -39,6 +38,7 @@ export default function Input({
   placeholderTextColor,
   onFocus,
   onBlur,
+  forceLight = false,
   ...props
 }: InputProps) {
   // ========================================================
@@ -51,17 +51,40 @@ export default function Input({
   // TEMA
   // ========================================================
 
-  const textColor = useThemeColor({}, "text");
+  const themeTextColor = useThemeColor({}, "text");
+  const themeTextSecondaryColor = useThemeColor({}, "textSecondary");
+  const themeInputBackgroundColor = useThemeColor({}, "inputBackground");
+  const themeInputBorderColor = useThemeColor({}, "inputBorder");
+  const themePlaceholderColor = useThemeColor({}, "placeholder");
+  const themePrimaryColor = useThemeColor({}, "primary");
 
-  const textSecondaryColor = useThemeColor({}, "textSecondary");
+  // ========================================================
+  // COLORES
+  // ========================================================
 
-  const inputBackgroundColor = useThemeColor({}, "inputBackground");
+  const textColor = forceLight
+    ? Colors.light.text
+    : themeTextColor;
 
-  const inputBorderColor = useThemeColor({}, "inputBorder");
+  const textSecondaryColor = forceLight
+    ? Colors.light.textSecondary
+    : themeTextSecondaryColor;
 
-  const placeholderColor = useThemeColor({}, "placeholder");
+  const inputBackgroundColor = forceLight
+    ? Colors.light.inputBackground
+    : themeInputBackgroundColor;
 
-  const primaryColor = useThemeColor({}, "primary");
+  const inputBorderColor = forceLight
+    ? Colors.light.inputBorder
+    : themeInputBorderColor;
+
+  const placeholderColor = forceLight
+    ? Colors.light.placeholder
+    : themePlaceholderColor;
+
+  const primaryColor = forceLight
+    ? Colors.light.primary
+    : themePrimaryColor;
 
   // ========================================================
   // UI
@@ -97,9 +120,7 @@ export default function Input({
           styles.inputContainer,
           {
             backgroundColor: inputBackgroundColor,
-
             borderColor: enfocado ? primaryColor : inputBorderColor,
-
             borderWidth: enfocado ? 2 : 1,
           },
         ]}
@@ -110,21 +131,20 @@ export default function Input({
             styles.input,
             {
               color: textColor,
-
               paddingRight: rightIcon ? 52 : 16,
             },
             style,
           ]}
-          placeholderTextColor={placeholderTextColor ?? placeholderColor}
+          placeholderTextColor={
+            placeholderTextColor ?? placeholderColor
+          }
           selectionColor={primaryColor}
           onFocus={(event) => {
             setEnfocado(true);
-
             onFocus?.(event);
           }}
           onBlur={(event) => {
             setEnfocado(false);
-
             onBlur?.(event);
           }}
         />
@@ -133,7 +153,11 @@ export default function Input({
             ICONO DERECHO
         ================================================== */}
 
-        {rightIcon && <View style={styles.rightIcon}>{rightIcon}</View>}
+        {rightIcon && (
+          <View style={styles.rightIcon}>
+            {rightIcon}
+          </View>
+        )}
       </View>
     </View>
   );
@@ -146,79 +170,52 @@ export default function Input({
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-
     marginBottom: 20,
   },
 
   labelContainer: {
     width: "100%",
-
     flexDirection: "row",
-
     alignItems: "center",
-
     justifyContent: "space-between",
-
     gap: 10,
-
     marginBottom: 9,
   },
 
   label: {
     flexShrink: 1,
-
     fontSize: 15,
-
     lineHeight: 21,
-
     fontFamily: "Nunito-SemiBold",
   },
 
   inputContainer: {
     width: "100%",
-
     minHeight: 54,
-
     position: "relative",
-
     borderRadius: 14,
-
     flexDirection: "row",
-
     alignItems: "center",
-
     overflow: "hidden",
   },
 
   input: {
     flex: 1,
-
     minWidth: 0,
-
     height: 54,
-
     paddingHorizontal: 16,
-
     paddingVertical: 10,
-
     fontSize: 15,
-
     fontFamily: "Nunito-Medium",
   },
 
   rightIcon: {
     position: "absolute",
-
     right: 14,
-
     top: 0,
-
     bottom: 0,
-
     width: 28,
-
     alignItems: "center",
-
     justifyContent: "center",
   },
 });
