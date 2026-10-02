@@ -1,40 +1,25 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  Theme,
-} from "@react-navigation/native";
-
-import {
-  Platform,
-} from "react-native";
-
+import { DarkTheme, DefaultTheme, Theme } from "@react-navigation/native";
+import { Platform } from "react-native";
 
 // ==========================================================
 // COLORES OFICIALES DE KIRI
 // ==========================================================
-
 export const BrandColors = {
   primary: "#4F8EF7",
   secondary: "#7BBF9A",
   accent: "#B8A8F8",
-
   mistWhite: "#F8FAFC",
   darkGray: "#2D3748",
 };
 
-
 // ==========================================================
 // PALETA GENERAL
 // ==========================================================
-
 export const Colors = {
-
   // ========================================================
   // MODO CLARO
   // ========================================================
-
   light: {
-
     // Marca
     primary: "#4F8EF7",
     secondary: "#7BBF9A",
@@ -56,7 +41,7 @@ export const Colors = {
     border: "#E2E8F0",
     divider: "#E5E7EB",
 
-    // Inputs
+    // Inputs (forzados a blanco)
     inputBackground: "#FFFFFF",
     inputBorder: "#CBD5E1",
     placeholder: "#94A3B8",
@@ -90,15 +75,11 @@ export const Colors = {
     overlay: "rgba(45, 55, 72, 0.40)",
   },
 
-
   // ========================================================
   // MODO OSCURO
   // ========================================================
-
   dark: {
-
     // Marca
-    // Se mantienen los colores oficiales de Kiri
     primary: "#4F8EF7",
     secondary: "#7BBF9A",
     accent: "#B8A8F8",
@@ -119,9 +100,9 @@ export const Colors = {
     border: "#334155",
     divider: "#334155",
 
-    // Inputs
-    inputBackground: "#1E293B",
-    inputBorder: "#475569",
+    // Inputs (forzados a blanco)
+    inputBackground: "#FFFFFF",
+    inputBorder: "#CBD5E1",
     placeholder: "#94A3B8",
 
     // Iconos
@@ -154,103 +135,60 @@ export const Colors = {
   },
 };
 
-
 // ==========================================================
 // TEMA CLARO PARA REACT NAVIGATION
 // ==========================================================
-
 export const KiriLightTheme: Theme = {
   ...DefaultTheme,
-
   dark: false,
-
   colors: {
     ...DefaultTheme.colors,
-
-    primary:
-      Colors.light.primary,
-
-    background:
-      Colors.light.background,
-
-    card:
-      Colors.light.surface,
-
-    text:
-      Colors.light.text,
-
-    border:
-      Colors.light.border,
-
-    notification:
-      Colors.light.accent,
+    primary: Colors.light.primary,
+    background: Colors.light.background,
+    card: Colors.light.surface,
+    text: Colors.light.text,
+    border: Colors.light.border,
+    notification: Colors.light.accent,
   },
 };
-
 
 // ==========================================================
 // TEMA OSCURO PARA REACT NAVIGATION
 // ==========================================================
-
 export const KiriDarkTheme: Theme = {
   ...DarkTheme,
-
   dark: true,
-
   colors: {
     ...DarkTheme.colors,
-
-    primary:
-      Colors.dark.primary,
-
-    background:
-      Colors.dark.background,
-
-    card:
-      Colors.dark.surface,
-
-    text:
-      Colors.dark.text,
-
-    border:
-      Colors.dark.border,
-
-    notification:
-      Colors.dark.accent,
+    primary: Colors.dark.primary,
+    background: Colors.dark.background,
+    card: Colors.dark.surface,
+    text: Colors.dark.text,
+    border: Colors.dark.border,
+    notification: Colors.dark.accent,
   },
 };
 
-
 // ==========================================================
-// FUENTES
+// FUENTES PRINCIPALES (Inter y Poppins)
 // ==========================================================
-
 export const Fonts = Platform.select({
   ios: {
-    sans: "system-ui",
-    serif: "ui-serif",
-    rounded: "ui-rounded",
-    mono: "ui-monospace",
+    sans: "Inter",
+    serif: "Poppins",
+    rounded: "Poppins",
+    mono: "Menlo",
   },
-
   default: {
-    sans: "normal",
-    serif: "serif",
-    rounded: "normal",
+    sans: "Inter",
+    serif: "Poppins",
+    rounded: "Poppins",
     mono: "monospace",
   },
-
   web: {
-    sans:
-      "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-
-    serif:
-      "Georgia, 'Times New Roman', serif",
-
-    rounded:
-      "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-
-    mono:
-      "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+    sans: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+    serif: "Poppins, Georgia, 'Times New Roman', serif",
+    rounded: "Poppins, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
+    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });
