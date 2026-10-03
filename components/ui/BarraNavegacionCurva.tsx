@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 
-import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { BottomTabBarProps } from "expo-router/js-tabs";
 
 import { usePathname, useRouter } from "expo-router";
 
