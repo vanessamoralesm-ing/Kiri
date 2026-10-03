@@ -1,28 +1,12 @@
-import React, {
-  useState,
-} from "react";
-
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-
-import {
-  Ionicons,
-} from "@expo/vector-icons";
-
-import {
-  useRouter,
-} from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import { Platform, Pressable, Text, View } from "react-native";
 
 import LogoutModal from "@/components/ui/LogoutModal";
 
-import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
-
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 // ==========================================================
 // PROPS
@@ -32,731 +16,460 @@ type Props = {
   onBack: () => void;
 };
 
-
 // ==========================================================
 // COMPONENTE
 // ==========================================================
 
-export default function EntrevistaHeader({
-  onBack,
-}: Props) {
+export default function EntrevistaHeader({ onBack }: Props) {
+  const router = useRouter();
 
-  const router =
-    useRouter();
+  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
+  // ========================================================
+  // ESTADOS
+  // ========================================================
 
-  const [
-    menuAbierto,
-    setMenuAbierto,
-  ] =
-    useState(
-      false
-    );
+  const [menuAbierto, setMenuAbierto] = useState(false);
 
-
-  const [
-    mostrarLogout,
-    setMostrarLogout,
-  ] =
-    useState(
-      false
-    );
-
+  const [mostrarLogout, setMostrarLogout] = useState(false);
 
   // ========================================================
   // COLORES DEL TEMA
   // ========================================================
 
-  const surfaceColor =
-    useThemeColor(
-      {},
-      "surface"
-    );
+  const surfaceColor = useThemeColor({}, "surface");
 
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
-  const surfaceSecondaryColor =
-    useThemeColor(
-      {},
-      "surfaceSecondary"
-    );
+  const borderColor = useThemeColor({}, "border");
 
+  const dividerColor = useThemeColor({}, "divider");
 
-  const borderColor =
-    useThemeColor(
-      {},
-      "border"
-    );
+  const textColor = useThemeColor({}, "text");
 
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
 
-  const dividerColor =
-    useThemeColor(
-      {},
-      "divider"
-    );
+  const iconColor = useThemeColor({}, "icon");
 
+  const primaryColor = useThemeColor({}, "primary");
 
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
+  const primarySoftColor = useThemeColor({}, "primarySoft");
 
+  // ========================================================
+  // RESPONSIVE
+  // ========================================================
 
-  const textSecondaryColor =
-    useThemeColor(
-      {},
-      "textSecondary"
-    );
+  const alturaHeader = esEscritorio ? 68 : esTablet ? 64 : 60;
 
+  const tamañoBoton = esEscritorio ? 46 : 44;
 
-  const iconColor =
-    useThemeColor(
-      {},
-      "icon"
-    );
+  const tamañoIcono = esEscritorio ? 26 : 25;
 
-
-  const primaryColor =
-    useThemeColor(
-      {},
-      "primary"
-    );
-
-
-  const primarySoftColor =
-    useThemeColor(
-      {},
-      "primarySoft"
-    );
-
+  const anchoMenu = esEscritorio ? 250 : esTablet ? 240 : 230;
 
   // ========================================================
   // ACCIONES
   // ========================================================
 
   function irPerfil() {
+    setMenuAbierto(false);
 
-    setMenuAbierto(
-      false
-    );
-
-
-    router.push(
-      "/(tabs)/perfil"
-    );
-
+    router.push("/(tabs)/perfil");
   }
-
 
   function cerrarSesion() {
+    setMenuAbierto(false);
 
-    setMenuAbierto(
-      false
-    );
-
-
-    setMostrarLogout(
-      true
-    );
-
+    setMostrarLogout(true);
   }
-
 
   // ========================================================
   // UI
   // ========================================================
 
   return (
-
     <View
-      style={
-        styles.header
-      }
-    >
+      style={{
+        width: "100%",
 
+        minHeight: alturaHeader,
+
+        flexDirection: "row",
+
+        alignItems: "center",
+
+        justifyContent: "space-between",
+
+        zIndex: 1000,
+
+        overflow: "visible",
+      }}
+    >
       {/* =================================================
           VOLVER
       ================================================= */}
 
       <Pressable
-        onPress={
-          onBack
-        }
+        onPress={onBack}
+        hitSlop={10}
+        style={({ pressed }) => ({
+          width: tamañoBoton,
 
-        hitSlop={
-          10
-        }
+          height: tamañoBoton,
 
-        style={({
-          pressed,
-        }) => [
-          styles.botonHeader,
+          borderRadius: 14,
 
-          pressed &&
-            styles.presionado,
-        ]}
+          alignItems: "center",
+
+          justifyContent: "center",
+
+          backgroundColor: pressed ? surfaceSecondaryColor : "transparent",
+
+          opacity: pressed ? 0.82 : 1,
+        })}
       >
-
-        <Ionicons
-          name="arrow-back"
-          size={28}
-
-          color={
-            iconColor
-          }
-        />
-
+        <Ionicons name="arrow-back" size={tamañoIcono} color={iconColor} />
       </Pressable>
-
 
       {/* =================================================
           PERFIL
       ================================================= */}
 
       <View
-        style={
-          styles.perfilContenedor
-        }
+        style={{
+          position: "relative",
+
+          zIndex: 2000,
+
+          ...(Platform.OS === "android"
+            ? {
+                elevation: 20,
+              }
+            : {}),
+        }}
       >
-
         <Pressable
-          onPress={() =>
-            setMenuAbierto(
-              actual =>
-                !actual
-            )
-          }
+          onPress={() => setMenuAbierto((actual) => !actual)}
+          hitSlop={10}
+          style={({ pressed }) => ({
+            width: tamañoBoton,
 
-          hitSlop={
-            10
-          }
+            height: tamañoBoton,
 
-          style={({
-            pressed,
-          }) => [
-            styles.botonHeader,
+            borderRadius: 14,
 
-            pressed &&
-              styles.presionado,
-          ]}
+            alignItems: "center",
+
+            justifyContent: "center",
+
+            backgroundColor: menuAbierto
+              ? primarySoftColor
+              : pressed
+                ? surfaceSecondaryColor
+                : "transparent",
+
+            opacity: pressed ? 0.82 : 1,
+          })}
         >
-
           <Ionicons
             name="person-outline"
-            size={27}
-
-            color={
-              iconColor
-            }
+            size={tamañoIcono}
+            color={menuAbierto ? primaryColor : iconColor}
           />
-
         </Pressable>
-
 
         {/* =================================================
             MENÚ DESPLEGABLE
         ================================================= */}
 
-        {
-          menuAbierto && (
+        {menuAbierto && (
+          <View
+            style={{
+              position: "absolute",
+
+              top: tamañoBoton + 6,
+
+              right: 0,
+
+              width: anchoMenu,
+
+              borderWidth: 1,
+
+              borderRadius: 18,
+
+              borderColor,
+
+              paddingVertical: 7,
+
+              paddingHorizontal: 6,
+
+              zIndex: 3000,
+
+              backgroundColor: surfaceColor,
+
+              ...(Platform.OS === "web"
+                ? ({
+                    boxShadow: "0px 8px 24px rgba(0,0,0,0.12)",
+                  } as any)
+                : {}),
+
+              ...(Platform.OS === "ios"
+                ? {
+                    shadowColor: "#000000",
+
+                    shadowOffset: {
+                      width: 0,
+                      height: 6,
+                    },
+
+                    shadowOpacity: 0.14,
+
+                    shadowRadius: 12,
+                  }
+                : {}),
+
+              ...(Platform.OS === "android"
+                ? {
+                    elevation: 20,
+                  }
+                : {}),
+            }}
+          >
+            {/* =============================================
+                MI PERFIL
+            ============================================= */}
+
+            <Pressable
+              onPress={irPerfil}
+              style={({ pressed }) => ({
+                width: "100%",
+
+                borderRadius: 13,
+
+                overflow: "hidden",
+
+                backgroundColor: pressed ? primarySoftColor : "transparent",
+              })}
+            >
+              <View
+                style={{
+                  width: "100%",
+
+                  minHeight: 58,
+
+                  flexDirection: "row",
+
+                  alignItems: "center",
+
+                  paddingHorizontal: 10,
+
+                  paddingVertical: 8,
+                }}
+              >
+                <View
+                  style={{
+                    width: 38,
+
+                    height: 38,
+
+                    borderRadius: 19,
+
+                    flexShrink: 0,
+
+                    alignItems: "center",
+
+                    justifyContent: "center",
+
+                    marginRight: 12,
+
+                    backgroundColor: primarySoftColor,
+                  }}
+                >
+                  <Ionicons
+                    name="person-outline"
+                    size={20}
+                    color={primaryColor}
+                  />
+                </View>
+
+                <View
+                  style={{
+                    flex: 1,
+
+                    justifyContent: "center",
+
+                    minWidth: 0,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 15,
+
+                      lineHeight: 20,
+
+                      fontFamily: "Nunito-Bold",
+
+                      includeFontPadding: false,
+
+                      color: textColor,
+                    }}
+                  >
+                    Mi perfil
+                  </Text>
+
+                  <Text
+                    style={{
+                      marginTop: 2,
+
+                      fontSize: 12,
+
+                      lineHeight: 16,
+
+                      fontFamily: "Nunito-Medium",
+
+                      includeFontPadding: false,
+
+                      color: textSecondaryColor,
+                    }}
+                  >
+                    Ver mi información
+                  </Text>
+                </View>
+              </View>
+            </Pressable>
+
+            {/* =============================================
+                SEPARADOR
+            ============================================= */}
 
             <View
-              style={[
-                styles.menu,
+              style={{
+                height: 1,
 
-                {
-                  backgroundColor:
-                    surfaceColor,
+                marginHorizontal: 10,
 
-                  borderColor,
-                },
-              ]}
+                marginVertical: 4,
+
+                backgroundColor: dividerColor,
+              }}
+            />
+
+            {/* =============================================
+                CERRAR SESIÓN
+            ============================================= */}
+
+            <Pressable
+              onPress={cerrarSesion}
+              style={({ pressed }) => ({
+                width: "100%",
+
+                borderRadius: 13,
+
+                overflow: "hidden",
+
+                backgroundColor: pressed
+                  ? surfaceSecondaryColor
+                  : "transparent",
+              })}
             >
-
-              {/* =============================================
-                  MI PERFIL
-              ============================================= */}
-
-              <Pressable
-                onPress={
-                  irPerfil
-                }
-
-                style={({
-                  pressed,
-                }) => [
-                  styles.opcionMenu,
-
-                  pressed && {
-                    backgroundColor:
-                      primarySoftColor,
-                  },
-                ]}
-              >
-
-                <View
-                  style={
-                    styles.contenidoOpcion
-                  }
-                >
-
-                  <View
-                    style={[
-                      styles.iconoMenu,
-
-                      {
-                        backgroundColor:
-                          primarySoftColor,
-                      },
-                    ]}
-                  >
-
-                    <Ionicons
-                      name="person-outline"
-                      size={20}
-
-                      color={
-                        primaryColor
-                      }
-                    />
-
-                  </View>
-
-
-                  <View
-                    style={
-                      styles.textoOpcion
-                    }
-                  >
-
-                    <Text
-                      style={[
-                        styles.tituloOpcion,
-
-                        {
-                          color:
-                            textColor,
-                        },
-                      ]}
-                    >
-                      Mi perfil
-                    </Text>
-
-
-                    <Text
-                      style={[
-                        styles.descripcionOpcion,
-
-                        {
-                          color:
-                            textSecondaryColor,
-                        },
-                      ]}
-                    >
-                      Ver mi información
-                    </Text>
-
-                  </View>
-
-                </View>
-
-              </Pressable>
-
-
-              {/* =============================================
-                  SEPARADOR
-              ============================================= */}
-
               <View
-                style={[
-                  styles.separador,
+                style={{
+                  width: "100%",
 
-                  {
-                    backgroundColor:
-                      dividerColor,
-                  },
-                ]}
-              />
+                  minHeight: 58,
 
+                  flexDirection: "row",
 
-              {/* =============================================
-                  CERRAR SESIÓN
-              ============================================= */}
+                  alignItems: "center",
 
-              <Pressable
-                onPress={
-                  cerrarSesion
-                }
+                  paddingHorizontal: 10,
 
-                style={({
-                  pressed,
-                }) => [
-                  styles.opcionMenu,
-
-                  pressed && {
-                    backgroundColor:
-                      surfaceSecondaryColor,
-                  },
-                ]}
+                  paddingVertical: 8,
+                }}
               >
-
                 <View
-                  style={
-                    styles.contenidoOpcion
-                  }
+                  style={{
+                    width: 38,
+
+                    height: 38,
+
+                    borderRadius: 19,
+
+                    flexShrink: 0,
+
+                    alignItems: "center",
+
+                    justifyContent: "center",
+
+                    marginRight: 12,
+
+                    backgroundColor: surfaceSecondaryColor,
+                  }}
                 >
-
-                  <View
-                    style={[
-                      styles.iconoMenu,
-
-                      {
-                        backgroundColor:
-                          surfaceSecondaryColor,
-                      },
-                    ]}
-                  >
-
-                    <Ionicons
-                      name="log-out-outline"
-                      size={20}
-
-                      color={
-                        iconColor
-                      }
-                    />
-
-                  </View>
-
-
-                  <View
-                    style={
-                      styles.textoOpcion
-                    }
-                  >
-
-                    <Text
-                      style={[
-                        styles.tituloOpcion,
-
-                        {
-                          color:
-                            textColor,
-                        },
-                      ]}
-                    >
-                      Cerrar sesión
-                    </Text>
-
-
-                    <Text
-                      style={[
-                        styles.descripcionOpcion,
-
-                        {
-                          color:
-                            textSecondaryColor,
-                        },
-                      ]}
-                    >
-                      Salir de tu cuenta
-                    </Text>
-
-                  </View>
-
+                  <Ionicons
+                    name="log-out-outline"
+                    size={20}
+                    color={iconColor}
+                  />
                 </View>
 
-              </Pressable>
+                <View
+                  style={{
+                    flex: 1,
 
-            </View>
+                    justifyContent: "center",
 
-          )
-        }
+                    minWidth: 0,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 15,
 
+                      lineHeight: 20,
+
+                      fontFamily: "Nunito-Bold",
+
+                      includeFontPadding: false,
+
+                      color: textColor,
+                    }}
+                  >
+                    Cerrar sesión
+                  </Text>
+
+                  <Text
+                    style={{
+                      marginTop: 2,
+
+                      fontSize: 12,
+
+                      lineHeight: 16,
+
+                      fontFamily: "Nunito-Medium",
+
+                      includeFontPadding: false,
+
+                      color: textSecondaryColor,
+                    }}
+                  >
+                    Salir de tu cuenta
+                  </Text>
+                </View>
+              </View>
+            </Pressable>
+          </View>
+        )}
       </View>
 
-
       {/* =================================================
-          MODAL DE CIERRE DE SESIÓN
+          MODAL
       ================================================= */}
 
       <LogoutModal
-        visible={
-          mostrarLogout
-        }
-
-        onClose={() =>
-          setMostrarLogout(
-            false
-          )
-        }
+        visible={mostrarLogout}
+        onClose={() => setMostrarLogout(false)}
       />
-
     </View>
-
   );
-
 }
-
-
-// ==========================================================
-// ESTILOS
-// ==========================================================
-
-const styles =
-  StyleSheet.create({
-
-    // ======================================================
-    // HEADER
-    // ======================================================
-
-    header: {
-      height:
-        60,
-
-      flexDirection:
-        "row",
-
-      alignItems:
-        "center",
-
-      justifyContent:
-        "space-between",
-
-      paddingHorizontal:
-        18,
-
-      zIndex:
-        1000,
-
-      overflow:
-        "visible",
-    },
-
-
-    // ======================================================
-    // BOTONES DEL HEADER
-    // ======================================================
-
-    botonHeader: {
-      width:
-        44,
-
-      height:
-        44,
-
-      alignItems:
-        "center",
-
-      justifyContent:
-        "center",
-    },
-
-
-    // ======================================================
-    // CONTENEDOR PERFIL
-    // ======================================================
-
-    perfilContenedor: {
-      position:
-        "relative",
-
-      zIndex:
-        2000,
-
-      elevation:
-        20,
-    },
-
-
-    // ======================================================
-    // MENÚ
-    // ======================================================
-
-    menu: {
-      position:
-        "absolute",
-
-      top:
-        50,
-
-      right:
-        0,
-
-      width:
-        230,
-
-      borderRadius:
-        18,
-
-      borderWidth:
-        1,
-
-      paddingVertical:
-        7,
-
-      paddingHorizontal:
-        6,
-
-      zIndex:
-        3000,
-
-      elevation:
-        20,
-
-      shadowColor:
-        "#000000",
-
-      shadowOffset: {
-        width:
-          0,
-
-        height:
-          6,
-      },
-
-      shadowOpacity:
-        0.18,
-
-      shadowRadius:
-        12,
-    },
-
-
-    // ======================================================
-    // OPCIÓN
-    // ======================================================
-
-    opcionMenu: {
-      width:
-        "100%",
-
-      borderRadius:
-        13,
-
-      overflow:
-        "hidden",
-    },
-
-
-    contenidoOpcion: {
-      width:
-        "100%",
-
-      minHeight:
-        58,
-
-      flexDirection:
-        "row",
-
-      alignItems:
-        "center",
-
-      paddingHorizontal:
-        10,
-
-      paddingVertical:
-        8,
-    },
-
-
-    // ======================================================
-    // ICONO DE OPCIÓN
-    // ======================================================
-
-    iconoMenu: {
-      width:
-        38,
-
-      height:
-        38,
-
-      borderRadius:
-        19,
-
-      alignItems:
-        "center",
-
-      justifyContent:
-        "center",
-
-      marginRight:
-        12,
-
-      flexShrink:
-        0,
-    },
-
-
-    // ======================================================
-    // TEXTO DE OPCIÓN
-    // ======================================================
-
-    textoOpcion: {
-      flex:
-        1,
-
-      justifyContent:
-        "center",
-    },
-
-
-    tituloOpcion: {
-      fontSize:
-        15,
-
-      lineHeight:
-        20,
-
-      fontFamily:
-        "Nunito-Bold",
-
-      includeFontPadding:
-        false,
-    },
-
-
-    descripcionOpcion: {
-      marginTop:
-        2,
-
-      fontSize:
-        12,
-
-      lineHeight:
-        16,
-
-      fontFamily:
-        "Nunito-Medium",
-
-      includeFontPadding:
-        false,
-    },
-
-
-    // ======================================================
-    // SEPARADOR
-    // ======================================================
-
-    separador: {
-      height:
-        1,
-
-      marginHorizontal:
-        10,
-
-      marginVertical:
-        4,
-    },
-
-
-    // ======================================================
-    // ESTADO PRESIONADO
-    // ======================================================
-
-    presionado: {
-      opacity:
-        0.6,
-    },
-
-  });

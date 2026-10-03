@@ -1,153 +1,250 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "@react-navigation/native";
 import React from "react";
+import { Platform, Text, TouchableOpacity, View } from "react-native";
 
-import {
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
-import {
-  Ionicons,
-} from "@expo/vector-icons";
-
-import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
-
-interface TarjetaModuloProps {
+type TarjetaModuloProps = {
   titulo: string;
-
-  nombreIcono:
-    keyof typeof Ionicons.glyphMap;
-
+  descripcion?: string;
+  nombreIcono: keyof typeof Ionicons.glyphMap;
+  colorAcento?: string;
+  fondoIconoClaro?: string;
+  fondoIconoOscuro?: string;
   onPress: () => void;
-}
+};
 
-export const TarjetaModulo = ({
+export function TarjetaModulo({
   titulo,
+  descripcion,
   nombreIcono,
+  colorAcento,
+  fondoIconoClaro,
+  fondoIconoOscuro,
   onPress,
-}: TarjetaModuloProps) => {
+}: TarjetaModuloProps) {
+  const { dark: isDarkMode } = useTheme();
 
-  const surfaceColor =
-    useThemeColor(
-      {},
-      "surface"
-    );
+  const { esTelefono, esTablet } = useResponsiveLayout();
 
-  const borderColor =
-    useThemeColor(
-      {},
-      "border"
-    );
+  // ==========================================================
+  // TEMA
+  // ==========================================================
 
-  const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
+  const surfaceColor = useThemeColor({}, "surface");
+  const textColor = useThemeColor({}, "text");
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
+  const borderColor = useThemeColor({}, "border");
+  const primaryColor = useThemeColor({}, "primary");
+  const primarySoftColor = useThemeColor({}, "primarySoft");
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
-  const primaryColor =
-    useThemeColor(
-      {},
-      "primary"
-    );
+  // ==========================================================
+  // COLORES DEL MÓDULO
+  // ==========================================================
 
-  const primarySoftColor =
-    useThemeColor(
-      {},
-      "primarySoft"
-    );
+  const colorIcono = colorAcento ?? primaryColor;
+
+  const fondoIcono = isDarkMode
+    ? (fondoIconoOscuro ?? primarySoftColor)
+    : (fondoIconoClaro ?? primarySoftColor);
+
+  // ==========================================================
+  // UI
+  // ==========================================================
 
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
+      activeOpacity={0.82}
       onPress={onPress}
-
-      className="
-        w-[48%]
-        p-4
-        rounded-3xl
-        items-center
-        justify-center
-        my-2
-      "
-
       style={{
-        backgroundColor:
-          surfaceColor,
+        width: "100%",
+
+        /*
+         * Altura de la tarjeta.
+         *
+         * En móvil usamos una altura suficiente para que:
+         * - el icono tenga espacio
+         * - el texto respire
+         * - la flecha quede abajo
+         */
+        minHeight: esTelefono ? 178 : esTablet ? 180 : 175,
+
+        borderRadius: 20,
 
         borderWidth: 1,
 
-        borderColor:
-          borderColor,
+        borderColor,
 
-        shadowColor:
-          "#000000",
+        paddingHorizontal: esTelefono ? 14 : 18,
 
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
+        paddingVertical: esTelefono ? 14 : 18,
 
-        shadowOpacity:
-          0.12,
+        backgroundColor: surfaceColor,
 
-        shadowRadius:
-          5,
+        flexDirection: "column",
 
-        elevation:
-          3,
+        alignItems: "stretch",
+
+        justifyContent: "flex-start",
+
+        ...(Platform.OS === "web"
+          ? ({
+            boxShadow: "0px 3px 8px rgba(0,0,0,0.05)",
+          } as any)
+          : Platform.OS === "ios"
+            ? {
+              shadowColor: "#000000",
+
+              shadowOffset: {
+                width: 0,
+                height: 3,
+              },
+
+              shadowOpacity: 0.05,
+
+              shadowRadius: 8,
+            }
+            : Platform.OS === "android"
+              ? {
+                elevation: 3,
+              }
+              : {}),
       }}
     >
-
-      {/* Fondo del icono */}
+      {/* ======================================================
+          ICONO
+          ====================================================== */}
 
       <View
-        className="
-          p-4
-          rounded-2xl
-          mb-3
-        "
-
         style={{
-          backgroundColor:
-            primarySoftColor,
+          width: esTelefono ? 54 : 56,
+
+          height: esTelefono ? 54 : 56,
+
+          borderRadius: esTelefono ? 17 : 16,
+
+          alignSelf: "center",
+
+          alignItems: "center",
+
+          justifyContent: "center",
+
+          backgroundColor: fondoIcono,
+
+          marginBottom: esTelefono ? 10 : 12,
         }}
       >
-
         <Ionicons
           name={nombreIcono}
-          size={30}
-          color={primaryColor}
+          size={esTelefono ? 27 : 27}
+          color={colorIcono}
         />
-
       </View>
 
+      {/* ======================================================
+          TÍTULO + DESCRIPCIÓN
+          ====================================================== */}
 
-      {/* Título */}
-
-      <Text
+      <View
         style={{
-          fontFamily:
-            "Nunito-SemiBold",
+          width: "100%",
 
-          fontSize:
-            13,
+          flex: 1,
 
-          lineHeight:
-            17,
+          minWidth: 0,
 
-          textAlign:
-            "center",
+          alignItems: "center",
 
-          color:
-            textColor,
+          justifyContent: "flex-start",
+
+          /*
+           * Dejamos un pequeño margen para que el contenido
+           * no choque visualmente con los bordes.
+           */
+          paddingHorizontal: esTelefono ? 2 : 0,
         }}
       >
-        {titulo}
-      </Text>
+        {/* ====================================================
+            TÍTULO
+            ==================================================== */}
 
+        <Text
+          numberOfLines={esTelefono ? 2 : 2}
+          ellipsizeMode="tail"
+          style={{
+            width: "100%",
+
+            fontFamily: "Nunito-Bold",
+
+            fontSize: esTelefono ? 15 : 15,
+
+            lineHeight: esTelefono ? 20 : 20,
+
+            color: textColor,
+
+            textAlign: "center",
+          }}
+        >
+          {titulo}
+        </Text>
+
+        {/* ====================================================
+            DESCRIPCIÓN
+            ==================================================== */}
+
+        {!!descripcion && (
+          <Text
+            numberOfLines={esTelefono ? 3 : 3}
+            ellipsizeMode="tail"
+            style={{
+              width: "100%",
+
+              marginTop: 4,
+
+              fontFamily: "Nunito-Medium",
+
+              fontSize: esTelefono ? 11.5 : 12,
+
+              lineHeight: esTelefono ? 16 : 17,
+
+              color: textSecondaryColor,
+
+              textAlign: "center",
+            }}
+          >
+            {descripcion}
+          </Text>
+        )}
+      </View>
+
+      {/* ======================================================
+          FLECHA
+          ====================================================== */}
+
+      <View
+        style={{
+          width: esTelefono ? 30 : 30,
+
+          height: esTelefono ? 30 : 30,
+
+          borderRadius: 15,
+
+          alignSelf: "center",
+
+          alignItems: "center",
+
+          justifyContent: "center",
+
+          backgroundColor: surfaceSecondaryColor,
+
+          marginTop: esTelefono ? 10 : 12,
+        }}
+      >
+        <Ionicons name="arrow-forward" size={16} color={colorIcono} />
+      </View>
     </TouchableOpacity>
   );
-};
+}

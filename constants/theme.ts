@@ -45,6 +45,7 @@ export const Colors = {
     surface: "#FFFFFF",
     surfaceSecondary: "#F1F5F9",
     card: "#FFFFFF",
+    cardBorder: "#CBD5E1",
 
     // Textos
     text: "#2D3748",
@@ -108,6 +109,7 @@ export const Colors = {
     surface: "#1E293B",
     surfaceSecondary: "#263449",
     card: "#1E293B",
+    cardBorder: "#475569",
 
     // Textos
     text: "#F8FAFC",
@@ -227,28 +229,28 @@ export const KiriDarkTheme: Theme = {
 
 export const Fonts = Platform.select({
   ios: {
-    sans: "system-ui",
-    serif: "ui-serif",
-    rounded: "ui-rounded",
-    mono: "ui-monospace",
+    sans: "Inter",
+    serif: "Poppins",
+    rounded: "Poppins",
+    mono: "Menlo",
   },
 
   default: {
-    sans: "normal",
-    serif: "serif",
-    rounded: "normal",
+    sans: "Inter",
+    serif: "Poppins",
+    rounded: "Poppins",
     mono: "monospace",
   },
 
   web: {
     sans:
-      "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+      "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
 
     serif:
-      "Georgia, 'Times New Roman', serif",
+      "Poppins, Georgia, 'Times New Roman', serif",
 
     rounded:
-      "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
+      "Poppins, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
 
     mono:
       "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",

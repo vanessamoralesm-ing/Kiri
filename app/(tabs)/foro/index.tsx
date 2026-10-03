@@ -1,524 +1,743 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "expo-router";
+
+import React, { useCallback, useMemo, useState } from "react";
 
 import {
     ActivityIndicator,
-    Platform,
+    Pressable,
     RefreshControl,
     ScrollView,
+    StyleSheet,
     Text,
-    TouchableOpacity,
     View,
 } from "react-native";
 
-import {
-    SafeAreaView,
-    useSafeAreaInsets,
-} from "react-native-safe-area-context";
-
-import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect, useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import FiltroEmociones from "@/components/foro/FiltroEmociones";
 import PreguntaSemana from "@/components/foro/PreguntaSemana";
 import PublicacionCard from "@/components/foro/PublicacionCard";
 
+import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
+
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+
 import { useAuth } from "@/services/authProvider";
 import { obtenerPublicaciones } from "@/services/foro/foroService";
 
 import type { PublicacionForo } from "@/types/foro";
 
 // ==========================================================
+// UTILIDADES
+// ==========================================================
+
+function normalizarTexto(valor: unknown): string {
+    if (valor === null || valor === undefined) {
+        return "";
+    }
+
+    return String(valor)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
+        .toLowerCase();
+}
+
+// ==========================================================
+// OBTENER NOMBRE DE EMOCIÓN
+// ==========================================================
+
+function obtenerNombreEmocion(valor: unknown): string {
+    if (valor === null || valor === undefined) {
+        return "";
+    }
+
+    if (typeof valor === "string" || typeof valor === "number") {
+        return String(valor);
+    }
+
+    if (typeof valor === "object") {
+        const objeto = valor as Record<string, unknown>;
+
+        const nombre =
+            objeto.nombre ??
+            objeto.name ??
+            objeto.label ??
+            objeto.emocion ??
+            objeto.emotion ??
+            objeto.nombre_emocion ??
+            objeto.emotion_name;
+
+        if (nombre !== null && nombre !== undefined) {
+            return String(nombre);
+        }
+    }
+
+    return "";
+}
+
+// ==========================================================
+// OBTENER EMOCIONES
+// ==========================================================
+
+function obtenerEmocionesPublicacion(publicacion: PublicacionForo): string[] {
+    const resultado: string[] = [];
+
+    const agregarEmocion = (valor: unknown) => {
+        const nombre = obtenerNombreEmocion(valor);
+
+        if (!nombre) {
+            return;
+        }
+
+        const yaExiste = resultado.some(
+            (existente) => normalizarTexto(existente) === normalizarTexto(nombre),
+        );
+
+        if (!yaExiste) {
+            resultado.push(nombre);
+        }
+    };
+
+    const emociones = (publicacion as any)?.emociones;
+
+    if (Array.isArray(emociones)) {
+        emociones.forEach(agregarEmocion);
+    } else if (emociones !== null && emociones !== undefined) {
+        agregarEmocion(emociones);
+    }
+
+    const posiblesValores = [
+        (publicacion as any)?.emocion,
+        (publicacion as any)?.emotion,
+        (publicacion as any)?.emocion_nombre,
+        (publicacion as any)?.emotion_name,
+        (publicacion as any)?.nombre_emocion,
+        (publicacion as any)?.nombreEmocion,
+        (publicacion as any)?.emocionNombre,
+    ];
+
+    posiblesValores.forEach(agregarEmocion);
+
+    return resultado;
+}
+
+// ==========================================================
 // COMPONENTE
 // ==========================================================
 
 export default function ForoScreen() {
-    const router = useRouter();
-    const insets = useSafeAreaInsets();
+    useAuth();
 
-    const { profile, loading: authLoading } = useAuth();
+    const { width, esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
-    // ======================================================
-    // REFERENCIAS
-    // ======================================================
+    // ========================================================
+    // COLORES
+    // ========================================================
 
-    const primeraCargaRef = useRef(true);
-    const cargaEnCursoRef = useRef(false);
+    const backgroundColor = useThemeColor({}, "background");
 
-    // ======================================================
-    // ESTADOS
-    // ======================================================
+    const cardColor = useThemeColor({}, "card");
+
+    const borderColor = useThemeColor({}, "border");
+
+    const textColor = useThemeColor({}, "text");
+
+    const textSecondaryColor = useThemeColor({}, "textSecondary");
+
+    const textMutedColor = useThemeColor({}, "textMuted");
+
+    const primaryColor = useThemeColor({}, "primary");
+
+    const accentColor = useThemeColor({}, "accent");
+
+    const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
+
+    const dividerColor = useThemeColor({}, "divider");
+
+    // ========================================================
+    // ESTADO
+    // ========================================================
 
     const [publicaciones, setPublicaciones] = useState<PublicacionForo[]>([]);
 
-    const [cargando, setCargando] = useState(true);
     const [refrescando, setRefrescando] = useState(false);
+
+    const [cargando, setCargando] = useState(true);
+
     const [error, setError] = useState<string | null>(null);
-    const [filtroActivo, setFiltroActivo] = useState("Todo");
 
-    // ======================================================
-    // TEMA
-    // ======================================================
-
-    const backgroundColor = useThemeColor({}, "background");
-    const surfaceColor = useThemeColor({}, "surface");
-    const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
-    const borderColor = useThemeColor({}, "border");
-    const textColor = useThemeColor({}, "text");
-    const textSecondaryColor = useThemeColor({}, "textSecondary");
-    const textMutedColor = useThemeColor({}, "textMuted");
-    const primaryColor = useThemeColor({}, "primary");
-    const accentColor = useThemeColor({}, "accent");
-
-    // ======================================================
-    // CARGAR PUBLICACIONES
-    // ======================================================
-
-    const cargarPublicaciones = useCallback(
-        async (mostrarCargaPrincipal = false) => {
-            if (cargaEnCursoRef.current) {
-                return;
-            }
-
-            cargaEnCursoRef.current = true;
-
-            try {
-                if (mostrarCargaPrincipal) {
-                    setCargando(true);
-                }
-
-                setError(null);
-
-                const data = await obtenerPublicaciones(profile?.id_usuario);
-
-                setPublicaciones(data);
-            } catch (e) {
-                console.error("Error cargando publicaciones del foro:", e);
-
-                setError(
-                    e instanceof Error
-                        ? e.message
-                        : "No se pudieron cargar las publicaciones.",
-                );
-            } finally {
-                cargaEnCursoRef.current = false;
-
-                if (mostrarCargaPrincipal) {
-                    setCargando(false);
-                }
-            }
-        },
-        [profile?.id_usuario],
+    const [emocionSeleccionada, setEmocionSeleccionada] = useState<string | null>(
+        null,
     );
 
-    // ======================================================
-    // RECARGAR AL ENTRAR / VOLVER AL FORO
-    // ======================================================
+    // ========================================================
+    // CARGAR PUBLICACIONES
+    // ========================================================
+
+    const cargarPublicaciones = useCallback(async () => {
+        try {
+            setError(null);
+
+            const resultado = await obtenerPublicaciones();
+
+            if (Array.isArray(resultado)) {
+                setPublicaciones(resultado as PublicacionForo[]);
+            } else {
+                setPublicaciones([]);
+            }
+        } catch (err) {
+            console.error("Error cargando publicaciones:", err);
+
+            setError("No pudimos cargar las publicaciones. Intenta nuevamente.");
+        } finally {
+            setCargando(false);
+            setRefrescando(false);
+        }
+    }, []);
+
+    // ========================================================
+    // CARGAR AL ENTRAR
+    // ========================================================
 
     useFocusEffect(
         useCallback(() => {
-            if (authLoading) {
-                return;
-            }
-
-            const mostrarCargaPrincipal = primeraCargaRef.current;
-
-            primeraCargaRef.current = false;
-
-            cargarPublicaciones(mostrarCargaPrincipal);
-        }, [authLoading, cargarPublicaciones]),
+            void cargarPublicaciones();
+        }, [cargarPublicaciones]),
     );
 
-    // ======================================================
-    // PULL TO REFRESH
-    // ======================================================
+    // ========================================================
+    // REFRESH
+    // ========================================================
 
-    const refrescar = useCallback(async () => {
-        if (authLoading || refrescando || cargaEnCursoRef.current) {
+    const handleRefresh = useCallback(async () => {
+        setRefrescando(true);
+
+        await cargarPublicaciones();
+    }, [cargarPublicaciones]);
+
+    // ========================================================
+    // FILTRO
+    // ========================================================
+
+    const handleSeleccionarEmocion = useCallback((valor: string) => {
+        const normalizado = normalizarTexto(valor);
+
+        if (!normalizado || normalizado === "todo" || normalizado === "todos") {
+            setEmocionSeleccionada(null);
             return;
         }
 
-        try {
-            setRefrescando(true);
+        setEmocionSeleccionada(valor.trim());
+    }, []);
 
-            await cargarPublicaciones(false);
-        } finally {
-            setRefrescando(false);
-        }
-    }, [authLoading, refrescando, cargarPublicaciones]);
-
-    // ======================================================
-    // FILTRADO
-    // ======================================================
+    // ========================================================
+    // PUBLICACIONES FILTRADAS
+    // ========================================================
 
     const publicacionesFiltradas = useMemo(() => {
-        if (filtroActivo === "Todo") {
+        if (!emocionSeleccionada) {
             return publicaciones;
         }
 
-        return publicaciones.filter((publicacion) =>
-            publicacion.emociones?.some((emocion) => emocion.nombre === filtroActivo),
-        );
-    }, [filtroActivo, publicaciones]);
+        const emocionBuscada = normalizarTexto(emocionSeleccionada);
 
-    // ======================================================
-    // ESPACIOS PARA NAVBAR Y FAB
-    // ======================================================
+        if (
+            !emocionBuscada ||
+            emocionBuscada === "todo" ||
+            emocionBuscada === "todos"
+        ) {
+            return publicaciones;
+        }
 
-    const posicionBoton = Math.max(insets.bottom + 72, 92);
+        return publicaciones.filter((publicacion) => {
+            const emociones = obtenerEmocionesPublicacion(publicacion);
 
-    const espacioInferiorScroll = Math.max(posicionBoton + 120, 220);
+            return emociones.some(
+                (emocion) => normalizarTexto(emocion) === emocionBuscada,
+            );
+        });
+    }, [publicaciones, emocionSeleccionada]);
 
-    // ======================================================
-    // CARGANDO
-    // ======================================================
+    // ========================================================
+    // RESPONSIVE
+    // ========================================================
 
-    if (authLoading || cargando) {
-        return (
-            <SafeAreaView
-                edges={["top"]}
-                style={{
-                    flex: 1,
-                    backgroundColor,
-                }}
-            >
-                <View
-                    style={{
-                        flex: 1,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        paddingHorizontal: 32,
-                    }}
-                >
-                    <View
-                        style={{
-                            width: 72,
-                            height: 72,
-                            borderRadius: 36,
-                            alignItems: "center",
-                            justifyContent: "center",
-                            backgroundColor: surfaceSecondaryColor,
-                            borderWidth: 1,
-                            borderColor,
-                        }}
-                    >
-                        <ActivityIndicator size="large" color={primaryColor} />
-                    </View>
+    const paddingHorizontal = esTelefono
+        ? PADDING_RESPONSIVE.telefono
+        : esTablet
+            ? PADDING_RESPONSIVE.tablet
+            : PADDING_RESPONSIVE.escritorio;
 
-                    <Text
-                        style={{
-                            marginTop: 18,
-                            fontFamily: "Nunito-Bold",
-                            fontSize: 18,
-                            color: textColor,
-                        }}
-                    >
-                        Cargando comunidad
-                    </Text>
+    const anchoContenido = Math.min(
+        width - paddingHorizontal * 2,
+        esEscritorio ? MAX_WIDTHS.contenido : 760,
+    );
 
-                    <Text
-                        style={{
-                            marginTop: 7,
-                            maxWidth: 290,
-                            textAlign: "center",
-                            fontFamily: "Nunito-Medium",
-                            fontSize: 14,
-                            lineHeight: 20,
-                            color: textSecondaryColor,
-                        }}
-                    >
-                        Estamos preparando las publicaciones del foro.
-                    </Text>
-                </View>
-            </SafeAreaView>
-        );
-    }
+    /*
+     * La tab bar ya forma parte del layout de React Navigation.
+     *
+     * No necesitamos calcular su altura aquí porque
+     * este ScrollView vive dentro del área de contenido
+     * reservada por Tabs.
+     *
+     * Dejamos espacio adicional al final para que la
+     * última publicación no quede pegada al FAB.
+     */
+    const espacioInferiorScroll = esTelefono ? 150 : esTablet ? 140 : 100;
 
-    // ======================================================
-    // UI
-    // ======================================================
+    // ========================================================
+    // RENDER
+    // ========================================================
 
     return (
         <SafeAreaView
-            edges={["top"]}
-            style={{
-                flex: 1,
-                backgroundColor,
-            }}
-        >
-            <View
-                style={{
-                    flex: 1,
+            edges={[]}
+            style={[
+                styles.safeArea,
+                {
                     backgroundColor,
-                }}
-            >
-                {/* ==================================================
-                    CONTENIDO
-                ================================================== */}
-
-                <ScrollView
-                    style={{
-                        flex: 1,
-                        backgroundColor,
-                    }}
-                    contentContainerStyle={{
-                        paddingHorizontal: 20,
-                        paddingTop: 24,
+                },
+            ]}
+        >
+            <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={[
+                    styles.scrollContent,
+                    {
+                        paddingHorizontal,
                         paddingBottom: espacioInferiorScroll,
-                        flexGrow: 1,
-                    }}
-                    showsVerticalScrollIndicator={false}
-                    keyboardShouldPersistTaps="handled"
-                    refreshControl={
-                        <RefreshControl
-                            refreshing={refrescando}
-                            onRefresh={refrescar}
-                            tintColor={primaryColor}
-                            colors={[primaryColor]}
-                        />
-                    }
+                    },
+                ]}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refrescando}
+                        onRefresh={handleRefresh}
+                        tintColor={primaryColor}
+                        colors={[primaryColor]}
+                    />
+                }
+                showsVerticalScrollIndicator={false}
+            >
+                <View
+                    style={[
+                        styles.contenido,
+                        {
+                            width: anchoContenido,
+                        },
+                    ]}
                 >
-                    {/* PREGUNTA DE LA SEMANA */}
+                    {/* =================================================
+                        HEADER DESKTOP
+                    ================================================= */}
+
+                    {esEscritorio && (
+                        <View
+                            style={[
+                                styles.headerDesktop,
+                                {
+                                    borderBottomColor: dividerColor,
+                                },
+                            ]}
+                        >
+                            <View style={styles.headerDesktopTexto}>
+                                <Text
+                                    style={[
+                                        styles.titulo,
+                                        {
+                                            color: textColor,
+                                        },
+                                    ]}
+                                >
+                                    Foro
+                                </Text>
+
+                                <Text
+                                    style={[
+                                        styles.subtitulo,
+                                        {
+                                            color: textSecondaryColor,
+                                        },
+                                    ]}
+                                >
+                                    Comparte, pregunta y conversa con la comunidad.
+                                </Text>
+                            </View>
+
+                            <Ionicons
+                                name="chatbubbles-outline"
+                                size={34}
+                                color={primaryColor}
+                            />
+                        </View>
+                    )}
+
+                    {/* =================================================
+                        PREGUNTA DE LA SEMANA
+                    ================================================= */}
 
                     <PreguntaSemana />
 
-                    {/* ENCABEZADO */}
+                    {/* =================================================
+                        FILTROS
+                    ================================================= */}
 
-                    <Text
-                        style={{
-                            marginTop: 32,
-                            marginBottom: 20,
-                            fontFamily: "Nunito-Bold",
-                            fontSize: 24,
-                            color: textColor,
-                        }}
-                    >
-                        Lo que otros comparten
-                    </Text>
+                    <View style={styles.filtrosContainer}>
+                        <FiltroEmociones
+                            seleccionada={emocionSeleccionada ?? "Todo"}
+                            onSeleccionar={handleSeleccionarEmocion}
+                        />
+                    </View>
 
-                    {/* FILTROS */}
+                    {/* =================================================
+                        CARGANDO
+                    ================================================= */}
 
-                    <FiltroEmociones
-                        seleccionada={filtroActivo}
-                        onSeleccionar={setFiltroActivo}
-                    />
+                    {cargando ? (
+                        <View style={styles.estadoContainer}>
+                            <ActivityIndicator size="large" color={primaryColor} />
 
-                    {/* ERROR */}
+                            <Text
+                                style={[
+                                    styles.estadoTexto,
+                                    {
+                                        color: textSecondaryColor,
+                                    },
+                                ]}
+                            >
+                                Cargando publicaciones...
+                            </Text>
+                        </View>
+                    ) : error ? (
+                        /* =================================================
+                                        ERROR
+                                    ================================================= */
 
-                    {error && (
                         <View
-                            style={{
-                                marginTop: 22,
-                                paddingHorizontal: 16,
-                                paddingVertical: 14,
-                                borderRadius: 16,
-                                borderWidth: 1,
-                                borderColor,
-                                backgroundColor: surfaceColor,
-                                flexDirection: "row",
-                                alignItems: "center",
-                            }}
+                            style={[
+                                styles.estadoCard,
+                                {
+                                    backgroundColor: cardColor,
+                                    borderColor,
+                                },
+                            ]}
                         >
                             <Ionicons
                                 name="alert-circle-outline"
-                                size={22}
+                                size={42}
                                 color={accentColor}
                             />
 
                             <Text
-                                style={{
-                                    flex: 1,
-                                    marginLeft: 10,
-                                    fontFamily: "Nunito-Medium",
-                                    fontSize: 14,
-                                    lineHeight: 20,
-                                    color: textSecondaryColor,
-                                }}
+                                style={[
+                                    styles.estadoTitulo,
+                                    {
+                                        color: textColor,
+                                    },
+                                ]}
+                            >
+                                Ocurrió un problema
+                            </Text>
+
+                            <Text
+                                style={[
+                                    styles.estadoTexto,
+                                    {
+                                        color: textSecondaryColor,
+                                    },
+                                ]}
                             >
                                 {error}
                             </Text>
 
-                            <TouchableOpacity
-                                activeOpacity={0.75}
-                                onPress={() => cargarPublicaciones(false)}
+                            <Pressable
+                                onPress={cargarPublicaciones}
+                                style={({ pressed }) => [
+                                    styles.reintentarButton,
+                                    {
+                                        backgroundColor: primaryColor,
+                                        opacity: pressed ? 0.8 : 1,
+                                    },
+                                ]}
                             >
-                                <Ionicons
-                                    name="refresh-outline"
-                                    size={23}
-                                    color={primaryColor}
-                                />
-                            </TouchableOpacity>
+                                <Text
+                                    style={[
+                                        styles.reintentarTexto,
+                                        {
+                                            color: textOnPrimaryColor,
+                                        },
+                                    ]}
+                                >
+                                    Reintentar
+                                </Text>
+                            </Pressable>
                         </View>
-                    )}
+                    ) : publicacionesFiltradas.length === 0 ? (
+                        /* =================================================
+                                        SIN RESULTADOS
+                                    ================================================= */
 
-                    {/* CONTADOR */}
-
-                    <View
-                        style={{
-                            marginTop: 28,
-                            marginBottom: 24,
-                            flexDirection: "row",
-                            alignItems: "center",
-                        }}
-                    >
                         <View
-                            style={{
-                                marginRight: 14,
-                                flexDirection: "row",
-                            }}
-                        >
-                            <View
-                                style={{
-                                    width: 34,
-                                    height: 34,
-                                    borderRadius: 17,
-                                    borderWidth: 1,
-                                    borderColor: primaryColor,
-                                    backgroundColor: surfaceSecondaryColor,
-                                }}
-                            />
-
-                            <View
-                                style={{
-                                    width: 34,
-                                    height: 34,
-                                    borderRadius: 17,
-                                    marginLeft: -8,
-                                    borderWidth: 1,
-                                    borderColor: primaryColor,
-                                    backgroundColor: surfaceSecondaryColor,
-                                }}
-                            />
-
-                            <View
-                                style={{
-                                    width: 34,
-                                    height: 34,
-                                    borderRadius: 17,
-                                    marginLeft: -8,
-                                    borderWidth: 1,
-                                    borderColor: primaryColor,
-                                    backgroundColor: surfaceSecondaryColor,
-                                }}
-                            />
-                        </View>
-
-                        <Text
-                            style={{
-                                fontFamily: "Nunito-Medium",
-                                fontSize: 15,
-                                color: textSecondaryColor,
-                            }}
-                        >
-                            {publicacionesFiltradas.length}{" "}
-                            {publicacionesFiltradas.length === 1
-                                ? "publicación"
-                                : "publicaciones"}
-                        </Text>
-                    </View>
-
-                    {/* PUBLICACIONES */}
-
-                    {publicacionesFiltradas.length > 0 ? (
-                        publicacionesFiltradas.map((publicacion) => (
-                            <PublicacionCard
-                                key={publicacion.id_publicacion}
-                                publicacion={publicacion}
-                            />
-                        ))
-                    ) : (
-                        <View
-                            style={{
-                                alignItems: "center",
-                                paddingVertical: 48,
-                            }}
+                            style={[
+                                styles.estadoCard,
+                                {
+                                    backgroundColor: cardColor,
+                                    borderColor,
+                                },
+                            ]}
                         >
                             <Ionicons
-                                name={
-                                    filtroActivo === "Todo"
-                                        ? "chatbubbles-outline"
-                                        : "filter-outline"
-                                }
-                                size={44}
+                                name="chatbubble-ellipses-outline"
+                                size={46}
                                 color={textMutedColor}
                             />
 
                             <Text
-                                style={{
-                                    marginTop: 12,
-                                    maxWidth: 290,
-                                    textAlign: "center",
-                                    fontFamily: "Nunito-Bold",
-                                    fontSize: 17,
-                                    color: textColor,
-                                }}
+                                style={[
+                                    styles.estadoTitulo,
+                                    {
+                                        color: textColor,
+                                    },
+                                ]}
                             >
-                                {filtroActivo === "Todo"
-                                    ? "Todavía no hay publicaciones"
-                                    : "No hay publicaciones con esta emoción"}
+                                No hay publicaciones
                             </Text>
 
                             <Text
-                                style={{
-                                    marginTop: 7,
-                                    maxWidth: 290,
-                                    textAlign: "center",
-                                    fontFamily: "Nunito-Medium",
-                                    fontSize: 14,
-                                    lineHeight: 21,
-                                    color: textSecondaryColor,
-                                }}
+                                style={[
+                                    styles.estadoTexto,
+                                    {
+                                        color: textSecondaryColor,
+                                    },
+                                ]}
                             >
-                                {filtroActivo === "Todo"
-                                    ? "Puedes ser la primera persona en compartir algo con la comunidad."
-                                    : "Prueba seleccionando otra emoción o vuelve a mostrar todas las publicaciones."}
+                                {emocionSeleccionada
+                                    ? "No encontramos publicaciones con este filtro."
+                                    : "Sé la primera persona en compartir algo con la comunidad."}
                             </Text>
+
+                            {emocionSeleccionada && (
+                                <Pressable
+                                    onPress={() => setEmocionSeleccionada(null)}
+                                    style={({ pressed }) => [
+                                        styles.quitarFiltroButton,
+                                        {
+                                            backgroundColor: primaryColor,
+                                            opacity: pressed ? 0.8 : 1,
+                                        },
+                                    ]}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.quitarFiltroTexto,
+                                            {
+                                                color: textOnPrimaryColor,
+                                            },
+                                        ]}
+                                    >
+                                        Ver todas
+                                    </Text>
+                                </Pressable>
+                            )}
+                        </View>
+                    ) : (
+                        /* =================================================
+                                        PUBLICACIONES
+                                    ================================================= */
+
+                        <View style={styles.listaPublicaciones}>
+                            {publicacionesFiltradas.map((publicacion, index) => (
+                                <PublicacionCard
+                                    key={publicacion.id_publicacion ?? `publicacion-${index}`}
+                                    publicacion={publicacion}
+                                />
+                            ))}
                         </View>
                     )}
-                </ScrollView>
-
-                {/* ==================================================
-                    BOTÓN FLOTANTE
-                ================================================== */}
-
-                <TouchableOpacity
-                    activeOpacity={0.78}
-                    accessibilityRole="button"
-                    accessibilityLabel="Crear nueva publicación"
-                    accessibilityHint="Abre la pantalla para crear una nueva publicación en el foro"
-                    onPress={() => router.push("/(tabs)/foro/crear")}
-                    style={{
-                        position: "absolute",
-                        right: 24,
-                        bottom: posicionBoton,
-                        width: 78,
-                        height: 78,
-                        borderRadius: 39,
-                        backgroundColor: "#B8A8F8",
-                        alignItems: "center",
-                        justifyContent: "center",
-
-                        ...(Platform.OS === "web"
-                            ? {
-                                boxShadow: "0px 6px 9px rgba(0, 0, 0, 0.28)",
-                            }
-                            : {
-                                shadowColor: "#000000",
-                                shadowOffset: {
-                                    width: 0,
-                                    height: 6,
-                                },
-                                shadowOpacity: 0.28,
-                                shadowRadius: 9,
-                                elevation: 18,
-                            }),
-
-                        zIndex: 9999,
-                    }}
-                >
-                    <Ionicons name="add" size={42} color="#FFFFFF" />
-                </TouchableOpacity>
-            </View>
+                </View>
+            </ScrollView>
         </SafeAreaView>
     );
 }
+
+// ==========================================================
+// ESTILOS
+// ==========================================================
+
+const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1,
+    },
+
+    scrollView: {
+        flex: 1,
+    },
+
+    scrollContent: {
+        flexGrow: 1,
+    },
+
+    contenido: {
+        alignSelf: "center",
+
+        maxWidth: MAX_WIDTHS.contenido,
+    },
+
+    // ========================================================
+    // HEADER
+    // ========================================================
+
+    headerDesktop: {
+        minHeight: 82,
+
+        flexDirection: "row",
+
+        alignItems: "center",
+
+        justifyContent: "space-between",
+
+        paddingBottom: 20,
+
+        marginBottom: 22,
+
+        borderBottomWidth: 1,
+    },
+
+    headerDesktopTexto: {
+        flex: 1,
+    },
+
+    titulo: {
+        fontSize: 30,
+
+        fontWeight: "800",
+
+        marginBottom: 5,
+    },
+
+    subtitulo: {
+        fontSize: 15,
+
+        lineHeight: 22,
+    },
+
+    // ========================================================
+    // FILTROS
+    // ========================================================
+
+    filtrosContainer: {
+        marginTop: 18,
+
+        marginBottom: 18,
+    },
+
+    // ========================================================
+    // PUBLICACIONES
+    // ========================================================
+
+    listaPublicaciones: {
+        width: "100%",
+
+        gap: 16,
+    },
+
+    // ========================================================
+    // ESTADOS
+    // ========================================================
+
+    estadoContainer: {
+        minHeight: 260,
+
+        alignItems: "center",
+
+        justifyContent: "center",
+
+        paddingVertical: 40,
+    },
+
+    estadoCard: {
+        width: "100%",
+
+        minHeight: 240,
+
+        borderWidth: 1,
+
+        borderRadius: 18,
+
+        alignItems: "center",
+
+        justifyContent: "center",
+
+        paddingHorizontal: 28,
+
+        paddingVertical: 32,
+    },
+
+    estadoTitulo: {
+        fontSize: 19,
+
+        fontWeight: "700",
+
+        textAlign: "center",
+
+        marginTop: 14,
+
+        marginBottom: 8,
+    },
+
+    estadoTexto: {
+        fontSize: 14,
+
+        lineHeight: 21,
+
+        textAlign: "center",
+
+        maxWidth: 460,
+    },
+
+    // ========================================================
+    // BOTONES
+    // ========================================================
+
+    reintentarButton: {
+        minHeight: 44,
+
+        paddingHorizontal: 24,
+
+        borderRadius: 12,
+
+        alignItems: "center",
+
+        justifyContent: "center",
+
+        marginTop: 20,
+    },
+
+    reintentarTexto: {
+        fontSize: 14,
+
+        fontWeight: "700",
+    },
+
+    quitarFiltroButton: {
+        minHeight: 44,
+
+        paddingHorizontal: 24,
+
+        borderRadius: 12,
+
+        alignItems: "center",
+
+        justifyContent: "center",
+
+        marginTop: 20,
+    },
+
+    quitarFiltroTexto: {
+        fontSize: 14,
+
+        fontWeight: "700",
+    },
+});

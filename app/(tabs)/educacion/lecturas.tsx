@@ -1,207 +1,118 @@
-import {
-  Ionicons,
-} from "@expo/vector-icons";
-
-import {
-  router,
-  useLocalSearchParams,
-} from "expo-router";
-
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+import { router, useLocalSearchParams } from "expo-router";
 import React, {
+  useCallback,
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
 import {
+  LayoutChangeEvent,
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 
 import Animated, {
   FadeInDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
 } from "react-native-reanimated";
 
-import LecturaRecomendadaCard from "../../../components/educacion/LecturaRecomendadaCard";
+import EncabezadoCard from "@/components/educacion/EncabezadoCard";
+import LecturaRecomendadaCard from "@/components/educacion/LecturaRecomendadaCard";
+import SearchBar from "@/components/ui/SearchBar";
 
 import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
+  MAX_WIDTHS,
+  PADDING_RESPONSIVE,
+} from "@/constants/responsive";
+
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 
-// =========
-// LECTURAS
-// =========
+// ==========================================================
+// DATOS
+// ==========================================================
 
 const lecturas = [
   {
-    id:
-      "que-es-la-ansiedad",
-
-    categoria:
-      "Ansiedad",
-
-    tiempo:
-      "5 min de lectura",
-
-    titulo:
-      "¿Qué es la ansiedad?",
-
+    id: "que-es-la-ansiedad",
+    categoria: "Ansiedad",
+    titulo: "¿Qué es la ansiedad?",
     descripcion:
       "Conoce qué es la ansiedad, por qué aparece y cómo puede manifestarse en diferentes situaciones.",
   },
   {
-    id:
-      "reconocer-ansiedad",
-
-    categoria:
-      "Ansiedad",
-
-    tiempo:
-      "7 min de lectura",
-
-    titulo:
-      "Cómo reconocer la ansiedad",
-
+    id: "reconocer-ansiedad",
+    categoria: "Ansiedad",
+    titulo: "Cómo reconocer la ansiedad",
     descripcion:
       "Aprende a identificar algunas señales físicas, emocionales y conductuales relacionadas con la ansiedad.",
   },
   {
-    id:
-      "comprender-autoestima",
-
-    categoria:
-      "Autoestima",
-
-    tiempo:
-      "6 min de lectura",
-
-    titulo:
-      "Comprendiendo la autoestima",
-
+    id: "comprender-autoestima",
+    categoria: "Autoestima",
+    titulo: "Comprendiendo la autoestima",
     descripcion:
       "Conoce qué es la autoestima y cómo puede influir en la manera en que pensamos y actuamos.",
   },
   {
-    id:
-      "fortalecer-autoestima",
-
-    categoria:
-      "Autoestima",
-
-    tiempo:
-      "7 min de lectura",
-
-    titulo:
-      "Cómo fortalecer tu autoestima",
-
+    id: "fortalecer-autoestima",
+    categoria: "Autoestima",
+    titulo: "Cómo fortalecer tu autoestima",
     descripcion:
       "Descubre pequeñas acciones que pueden ayudarte a construir una relación más saludable contigo.",
   },
   {
-    id:
-      "comprender-estres",
-
-    categoria:
-      "Estrés",
-
-    tiempo:
-      "5 min de lectura",
-
-    titulo:
-      "Comprendiendo el estrés",
-
+    id: "comprender-estres",
+    categoria: "Estrés",
+    titulo: "Comprendiendo el estrés",
     descripcion:
       "Conoce por qué aparece el estrés y cuáles son algunas de las señales más comunes.",
   },
   {
-    id:
-      "manejar-estres",
-
-    categoria:
-      "Estrés",
-
-    tiempo:
-      "8 min de lectura",
-
-    titulo:
-      "Estrategias para manejar el estrés",
-
+    id: "manejar-estres",
+    categoria: "Estrés",
+    titulo: "Estrategias para manejar el estrés",
     descripcion:
       "Conoce algunas estrategias que pueden ayudarte a afrontar situaciones estresantes.",
   },
   {
-    id:
-      "entender-procrastinacion",
-
-    categoria:
-      "Procrastinación",
-
-    tiempo:
-      "6 min de lectura",
-
-    titulo:
-      "¿Por qué procrastinamos?",
-
+    id: "entender-procrastinacion",
+    categoria: "Procrastinación",
+    titulo: "¿Por qué procrastinamos?",
     descripcion:
       "Comprende algunas de las razones que pueden llevarnos a posponer nuestras responsabilidades.",
   },
   {
-    id:
-      "evitar-procrastinacion",
-
-    categoria:
-      "Procrastinación",
-
-    tiempo:
-      "7 min de lectura",
-
-    titulo:
-      "Pequeños pasos para dejar de procrastinar",
-
+    id: "evitar-procrastinacion",
+    categoria: "Procrastinación",
+    titulo: "Pequeños pasos para dejar de procrastinar",
     descripcion:
       "Aprende estrategias sencillas para comenzar tus tareas y organizar mejor tu tiempo.",
   },
   {
-    id:
-      "comprender-soledad",
-
-    categoria:
-      "Soledad",
-
-    tiempo:
-      "5 min de lectura",
-
-    titulo:
-      "Comprendiendo la soledad",
-
+    id: "comprender-soledad",
+    categoria: "Soledad",
+    titulo: "Comprendiendo la soledad",
     descripcion:
       "Conoce las diferencias entre estar solo y experimentar sentimientos de soledad.",
   },
   {
-    id:
-      "conexiones-saludables",
-
-    categoria:
-      "Soledad",
-
-    tiempo:
-      "7 min de lectura",
-
-    titulo:
-      "Construyendo conexiones saludables",
-
+    id: "conexiones-saludables",
+    categoria: "Soledad",
+    titulo: "Construyendo conexiones saludables",
     descripcion:
       "Descubre algunas formas de fortalecer nuestras relaciones y crear vínculos significativos.",
   },
 ];
-
-
-// =========
-// CATEGORÍAS
-// =========
 
 const categorias = [
   "Todas",
@@ -213,47 +124,78 @@ const categorias = [
   "Depresión",
 ];
 
+const idsCategorias: Record<string, string> = {
+  Ansiedad: "Ansiedad",
+  Autoestima: "Autoestima",
+  Estrés: "Estres",
+  Procrastinación: "Procrastinacion",
+  Soledad: "Soledad",
+  Depresión: "Depresion",
+};
 
-// =========
+// ==========================================================
+// NORMALIZAR TEXTO
+// ==========================================================
+
+function normalizarTexto(texto: string) {
+  return texto
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+// ==========================================================
 // COMPONENTE
-// =========
+// ==========================================================
 
 export default function LecturasScreen() {
+  const { categoria } =
+    useLocalSearchParams<{ categoria?: string }>();
 
   const {
-    categoria,
-  } =
-    useLocalSearchParams<{
-      categoria?: string;
-    }>();
+    esTelefono,
+    esTablet,
+    esEscritorio,
+  } = useResponsiveLayout();
 
+  const scrollViewRef =
+    useRef<ScrollView>(null);
 
-  // =======
-  // ESTADOS
-  // =======
-
-  const [
-    busqueda,
-    setBusqueda,
-  ] =
-    useState(
-      ""
-    );
-
+  const [busqueda, setBusqueda] =
+    useState("");
 
   const [
     categoriaSeleccionada,
     setCategoriaSeleccionada,
-  ] =
-    useState(
-      categoria ||
-      "Todas"
-    );
+  ] = useState(
+    categoria || "Todas"
+  );
+
+  const [anchoGrid, setAnchoGrid] =
+    useState(0);
 
 
-  // =======
+  // ========================================================
+  // ANIMACIÓN BOTÓN VOLVER
+  // ========================================================
+
+  const escalaVolver =
+    useSharedValue(1);
+
+  const estiloVolver =
+    useAnimatedStyle(() => ({
+      transform: [
+        {
+          scale:
+            escalaVolver.value,
+        },
+      ],
+    }));
+
+  // ========================================================
   // COLORES DEL TEMA
-  // =======
+  // ========================================================
 
   const backgroundColor =
     useThemeColor(
@@ -261,13 +203,11 @@ export default function LecturasScreen() {
       "background"
     );
 
-
   const surfaceColor =
     useThemeColor(
       {},
       "surface"
     );
-
 
   const surfaceSecondaryColor =
     useThemeColor(
@@ -275,13 +215,11 @@ export default function LecturasScreen() {
       "surfaceSecondary"
     );
 
-
   const textColor =
     useThemeColor(
       {},
       "text"
     );
-
 
   const textSecondaryColor =
     useThemeColor(
@@ -289,13 +227,11 @@ export default function LecturasScreen() {
       "textSecondary"
     );
 
-
   const textMutedColor =
     useThemeColor(
       {},
       "textMuted"
     );
-
 
   const primaryColor =
     useThemeColor(
@@ -303,41 +239,11 @@ export default function LecturasScreen() {
       "primary"
     );
 
-
   const primarySoftColor =
     useThemeColor(
       {},
       "primarySoft"
     );
-
-
-  const inputBackgroundColor =
-    useThemeColor(
-      {},
-      "inputBackground"
-    );
-
-
-  const inputBorderColor =
-    useThemeColor(
-      {},
-      "inputBorder"
-    );
-
-
-  const placeholderColor =
-    useThemeColor(
-      {},
-      "placeholder"
-    );
-
-
-  const iconColor =
-    useThemeColor(
-      {},
-      "icon"
-    );
-
 
   const borderColor =
     useThemeColor(
@@ -346,417 +252,403 @@ export default function LecturasScreen() {
     );
 
 
-  const textOnPrimaryColor =
-    useThemeColor(
-      {},
-      "textOnPrimary"
+  // ========================================================
+  // ACTUALIZAR CATEGORÍA
+  // ========================================================
+
+  useEffect(() => {
+    setCategoriaSeleccionada(
+      categoria || "Todas"
     );
 
+    setBusqueda("");
+  }, [categoria]);
 
-  // =======
+  // ========================================================
+  // VOLVER SIEMPRE AL INICIO AL ENTRAR
+  // ========================================================
+  useFocusEffect(
+    useCallback(() => {
+      const frame =
+        requestAnimationFrame(() => {
+          scrollViewRef.current?.scrollTo({
+            y: 0,
+            animated: false,
+          });
+        });
+
+      return () => {
+        cancelAnimationFrame(frame);
+      };
+    }, [])
+  );
+
+  // ========================================================
+  // RESPONSIVE DEL PROYECTO
+  // ========================================================
+
+  const paddingHorizontal =
+    esEscritorio
+      ? PADDING_RESPONSIVE.escritorio
+      : esTablet
+        ? PADDING_RESPONSIVE.tablet
+        : PADDING_RESPONSIVE.telefono;
+
+  const maxWidthContenido =
+    esEscritorio
+      ? MAX_WIDTHS.dashboard
+      : esTablet
+        ? MAX_WIDTHS.contenido
+        : undefined;
+
+  const numeroColumnas =
+    esEscritorio
+      ? 4
+      : esTablet
+        ? 3
+        : 2;
+
+  const gapLecturas =
+    esEscritorio
+      ? 26
+      : esTablet
+        ? 18
+        : 12;
+
+
+  // ========================================================
+  // ANCHO DE LOS CARDS
+  // ========================================================
+
+  const anchoDisponible =
+    anchoGrid > 0
+      ? (
+          anchoGrid -
+          gapLecturas *
+            (numeroColumnas - 1)
+        ) /
+        numeroColumnas
+      : 0;
+
+  const anchoTarjeta =
+    anchoDisponible > 0
+      ? esEscritorio
+        ? Math.min(
+            anchoDisponible,
+            230
+          )
+        : esTablet
+          ? Math.min(
+              anchoDisponible,
+              190
+            )
+          : anchoDisponible
+      : esEscritorio
+        ? 230
+        : esTablet
+          ? 190
+          : 150;
+
+  // ========================================================
   // FILTRAR LECTURAS
-  // =======
+  // ========================================================
 
   const lecturasFiltradas =
-    useMemo(
-      () => {
+    useMemo(() => {
+      const texto =
+        normalizarTexto(busqueda);
 
-        return lecturas.filter(
-          lectura => {
+      return lecturas.filter(
+        (lectura) => {
+          const coincideCategoria =
+            categoriaSeleccionada ===
+              "Todas" ||
+            lectura.categoria ===
+              categoriaSeleccionada;
 
-            const coincideCategoria =
-              categoriaSeleccionada ===
-                "Todas" ||
-              lectura.categoria ===
-                categoriaSeleccionada;
-
-
-            const textoBusqueda =
-              busqueda
-                .toLowerCase()
-                .trim();
-
-
-            const coincideBusqueda =
-              textoBusqueda.length ===
-                0 ||
-
+          const coincideBusqueda =
+            !texto ||
+            normalizarTexto(
               lectura.titulo
-                .toLowerCase()
-                .includes(
-                  textoBusqueda
-                ) ||
-
+            ).includes(texto) ||
+            normalizarTexto(
               lectura.descripcion
-                .toLowerCase()
-                .includes(
-                  textoBusqueda
-                ) ||
-
+            ).includes(texto) ||
+            normalizarTexto(
               lectura.categoria
-                .toLowerCase()
-                .includes(
-                  textoBusqueda
-                );
+            ).includes(texto);
+
+          return (
+            coincideCategoria &&
+            coincideBusqueda
+          );
+        }
+      );
+    }, [
+      busqueda,
+      categoriaSeleccionada,
+    ]);
 
 
-            return (
-              coincideCategoria &&
-              coincideBusqueda
-            );
+  // ========================================================
+  // MEDIR GRID
+  // ========================================================
 
-          }
-        );
+  function medirGrid(
+    event: LayoutChangeEvent
+  ) {
+    const nuevoAncho =
+      event.nativeEvent.layout.width;
 
-      },
-      [
-        busqueda,
-        categoriaSeleccionada,
-      ]
+    setAnchoGrid((anterior) =>
+      Math.abs(
+        nuevoAncho - anterior
+      ) > 1
+        ? nuevoAncho
+        : anterior
     );
+  }
 
+  // ========================================================
+  // VOLVER A LA CATEGORÍA
+  // ========================================================
 
-  // =======
+  function volverACategoria() {
+    const destino =
+      categoria &&
+      categoria !== "Todas"
+        ? categoria
+        : categoriaSeleccionada !==
+            "Todas"
+          ? categoriaSeleccionada
+          : null;
+
+    const id =
+      destino
+        ? idsCategorias[destino]
+        : undefined;
+
+    if (id) {
+      router.replace({
+        pathname:
+          "/(tabs)/educacion/[id]",
+        params: {
+          id,
+        },
+      });
+
+      return;
+    }
+
+    router.replace(
+      "/(tabs)/educacion"
+    );
+  }
+  // ========================================================
   // UI
-  // =======
+  // ========================================================
 
   return (
-
     <ScrollView
+      ref={scrollViewRef}
+      className="flex-1"
       style={{
-        flex:
-          1,
-
         backgroundColor,
       }}
-
       showsVerticalScrollIndicator={
         false
       }
-
+      keyboardShouldPersistTaps="handled"
       contentContainerStyle={{
+        paddingTop:
+          esEscritorio
+            ? 28
+            : esTablet
+              ? 24
+              : 20,
+
         paddingBottom:
-          130,
+          esEscritorio
+            ? 64
+            : 140,
       }}
     >
-
       <View
         style={{
-          paddingHorizontal:
-            24,
+          width: "100%",
 
-          paddingTop:
-            48,
+          maxWidth:
+            maxWidthContenido,
+
+          alignSelf:
+            "center",
+
+          paddingHorizontal,
         }}
       >
 
-        {/* 
+        {/* =================================================
             BOTÓN VOLVER
-         */}
-
-        <Pressable
-          onPress={() =>
-            router.back()
-          }
-
-          style={({
-            pressed,
-          }) => ({
-            width:
-              44,
-
-            height:
-              44,
-
-            marginBottom:
-              20,
-
-            borderRadius:
-              22,
-
-            alignItems:
-              "center",
-
-            justifyContent:
-              "center",
-
-            borderWidth:
-              1,
-
-            borderColor,
-
-            backgroundColor:
-              surfaceColor,
-
-            opacity:
-              pressed
-                ? 0.7
-                : 1,
-
-            shadowColor:
-              "#000000",
-
-            shadowOffset: {
-              width:
-                0,
-
-              height:
-                2,
-            },
-
-            shadowOpacity:
-              0.06,
-
-            shadowRadius:
-              4,
-
-            elevation:
-              2,
-          })}
-        >
-
-          <Ionicons
-            name="arrow-back"
-            size={23}
-            color={
-              iconColor
-            }
-          />
-
-        </Pressable>
-
-
-        {/*ENCABEZADO*/}
+            ================================================= */}
 
         <Animated.View
-          entering={
-            FadeInDown
-              .duration(
-                450
-              )
-          }
+          style={[
+            estiloVolver,
+            {
+              alignSelf:
+                "flex-start",
+
+              marginBottom:
+                esEscritorio
+                  ? 22
+                  : 18,
+            },
+          ]}
         >
+          <Pressable
+            onPress={
+              volverACategoria
+            }
 
-          <Text
-            style={{
-              fontFamily:
-                "Nunito-Bold",
-
-              fontSize:
-                27,
-
-              color:
-                textColor,
+            onPressIn={() => {
+              escalaVolver.value =
+                withSpring(0.9);
             }}
-          >
-            Biblioteca
-          </Text>
 
-
-          <Text
-            style={{
-              marginTop:
-                8,
-
-              fontFamily:
-                "Nunito-Medium",
-
-              fontSize:
-                15,
-
-              lineHeight:
-                24,
-              textAlign:
-                "justify",
-              color:
-                textSecondaryColor,
+            onPressOut={() => {
+              escalaVolver.value =
+                withSpring(1);
             }}
-          >
-            Explora contenidos sobre bienestar emocional y encuentra lecturas
-            relacionadas con los temas que más te interesan.
-          </Text>
 
+            hitSlop={10}
+
+            style={({
+              pressed,
+            }) => ({
+              width: 48,
+
+              height: 48,
+
+              borderRadius: 24,
+
+              alignItems:
+                "center",
+
+              justifyContent:
+                "center",
+
+              backgroundColor:
+                surfaceSecondaryColor,
+
+              opacity:
+                pressed
+                  ? 0.72
+                  : 1,
+            })}
+          >
+            <Ionicons
+              name="chevron-back"
+              size={27}
+              color={
+                textSecondaryColor
+              }
+            />
+          </Pressable>
         </Animated.View>
 
+        {/* =================================================
+            ENCABEZADO
+            ================================================= */}
 
-        {/* 
+        <Animated.View
+          entering={
+            FadeInDown.duration(
+              450
+            )
+          }
+          style={{
+            width: "100%",
+
+            maxWidth:
+              esEscritorio
+                ? 1100
+                : undefined,
+
+            alignSelf:
+              "center",
+          }}
+        >
+          <EncabezadoCard
+            imagen={require(
+              "../../../assets/images_educacion/kiri_lee_bibliot_horiz.png"
+            )}
+            titulo="Biblioteca"
+            subtitulo="Explora contenidos sobre bienestar emocional."
+          />
+        </Animated.View>
+
+        {/* =================================================
             BUSCADOR
-         */}
+            ================================================= */}
 
         <Animated.View
           entering={
             FadeInDown
-              .delay(
-                80
-              )
-              .duration(
-                450
-              )
+              .delay(80)
+              .duration(450)
           }
-
           style={{
-            minHeight:
-              56,
+            width: "100%",
 
-            marginTop:
-              24,
+            maxWidth:
+              esEscritorio
+                ? 760
+                : undefined,
 
-            paddingHorizontal:
-              16,
-
-            flexDirection:
-              "row",
-
-            alignItems:
+            alignSelf:
               "center",
 
-            borderRadius:
-              16,
-
-            borderWidth:
-              1,
-
-            borderColor:
-              inputBorderColor,
-
-            backgroundColor:
-              inputBackgroundColor,
-
-            shadowColor:
-              "#000000",
-
-            shadowOffset: {
-              width:
-                0,
-
-              height:
-                2,
-            },
-
-            shadowOpacity:
-              0.05,
-
-            shadowRadius:
-              4,
-
-            elevation:
-              2,
+            marginTop:
+              esTelefono
+                ? 20
+                : 24,
           }}
         >
-
-          <Ionicons
-            name="search-outline"
-            size={21}
-            color={
-              iconColor
-            }
-          />
-
-
-          <TextInput
-            value={
-              busqueda
-            }
-
+          <SearchBar
+            value={busqueda}
             onChangeText={
               setBusqueda
             }
-
             placeholder="Buscar una lectura..."
-
-            placeholderTextColor={
-              placeholderColor
-            }
-
-            selectionColor={
-              primaryColor
-            }
-
-            style={{
-              flex:
-                1,
-
-              marginLeft:
-                12,
-
-              paddingVertical:
-                16,
-
-              fontFamily:
-                "Nunito-Medium",
-
-              fontSize:
-                15,
-
-              color:
-                textColor,
-            }}
           />
-
-
-          {
-            busqueda.length >
-              0 && (
-
-              <Pressable
-                hitSlop={
-                  8
-                }
-
-                onPress={() =>
-                  setBusqueda(
-                    ""
-                  )
-                }
-              >
-
-                <Ionicons
-                  name="close-circle"
-                  size={20}
-                  color={
-                    textMutedColor
-                  }
-                />
-
-              </Pressable>
-
-            )
-          }
-
         </Animated.View>
 
-
-        {/* 
-            FILTROS
-         */}
+        {/* =================================================
+            CATEGORÍAS
+            ================================================= */}
 
         <Animated.View
           entering={
             FadeInDown
-              .delay(
-                140
-              )
-              .duration(
-                450
-              )
+              .delay(140)
+              .duration(450)
           }
-
           style={{
             marginTop:
-              24,
+              esEscritorio
+                ? 30
+                : 26,
           }}
         >
-
           <Text
+            className="font-nunito-bold"
             style={{
-              marginBottom:
-                12,
-
-              fontFamily:
-                "Nunito-SemiBold",
+              marginBottom: 12,
 
               fontSize:
-                17,
+                esEscritorio
+                  ? 20
+                  : 18,
 
               color:
                 textColor,
@@ -765,373 +657,412 @@ export default function LecturasScreen() {
             Categorías
           </Text>
 
-
           <ScrollView
             horizontal
-
             showsHorizontalScrollIndicator={
               false
             }
-          >
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{
+              paddingTop: 4,
 
+              paddingBottom: 8,
+
+              paddingRight: 24,
+            }}
+          >
             <View
               style={{
                 flexDirection:
                   "row",
 
-                gap:
-                  12,
+                alignItems:
+                  "center",
 
-                paddingRight:
-                  24,
+                gap:
+                  esEscritorio
+                    ? 12
+                    : 9,
               }}
             >
+              {categorias.map(
+                (item) => {
+                  const seleccionada =
+                    categoriaSeleccionada ===
+                    item;
 
-              {
-                categorias.map(
-                  item => {
+                  return (
+                    <Pressable
+                      key={item}
 
-                    const estaSeleccionada =
-                      categoriaSeleccionada ===
-                      item;
-
-
-                    return (
-
-                      <Pressable
-                        key={
+                      onPress={() =>
+                        setCategoriaSeleccionada(
                           item
-                        }
+                        )
+                      }
 
-                        onPress={() =>
-                          setCategoriaSeleccionada(
-                            item
-                          )
-                        }
+                      style={({
+                        pressed,
+                      }) => ({
+                        opacity:
+                          pressed
+                            ? 0.78
+                            : 1,
+                      })}
+                    >
+                      <View
+                        style={{
+                          minHeight:
+                            esEscritorio
+                              ? 44
+                              : 40,
 
-                        style={({
-                          pressed,
-                        }) => ({
+                          minWidth:
+                            item ===
+                            "Todas"
+                              ? 78
+                              : undefined,
+
                           paddingHorizontal:
-                            16,
+                            esEscritorio
+                              ? 20
+                              : 17,
 
                           paddingVertical:
-                            10,
+                            esEscritorio
+                              ? 10
+                              : 8,
 
                           borderRadius:
                             999,
 
                           borderWidth:
-                            estaSeleccionada
-                              ? 0
-                              : 1,
+                            1,
 
                           borderColor:
-                            borderColor,
+                            seleccionada
+                              ? primaryColor
+                              : borderColor,
 
                           backgroundColor:
-                            estaSeleccionada
+                            seleccionada
                               ? primaryColor
-                              : surfaceColor,
+                              : surfaceSecondaryColor,
 
-                          opacity:
-                            pressed
-                              ? 0.75
-                              : 1,
-                        })}
+                          alignItems:
+                            "center",
+
+                          justifyContent:
+                            "center",
+                        }}
                       >
-
                         <Text
+                          numberOfLines={
+                            1
+                          }
                           style={{
                             fontFamily:
-                              "Nunito-SemiBold",
+                              seleccionada
+                                ? "Nunito-Bold"
+                                : "Nunito-SemiBold",
 
                             fontSize:
-                              13,
+                              esEscritorio
+                                ? 15
+                                : 13,
 
                             color:
-                              estaSeleccionada
-                                ? textOnPrimaryColor
+                              seleccionada
+                                ? "#FFFFFF"
                                 : textSecondaryColor,
                           }}
                         >
                           {item}
                         </Text>
-
-                      </Pressable>
-
-                    );
-
-                  }
-                )
-              }
-
+                      </View>
+                    </Pressable>
+                  );
+                }
+              )}
             </View>
-
           </ScrollView>
-
         </Animated.View>
 
-
-        {/* 
-            ENCABEZADO DE RESULTADOS
-         */}
+        {/* =================================================
+            TÍTULO DE RESULTADOS
+            ================================================= */}
 
         <Animated.View
           entering={
             FadeInDown
-              .delay(
-                200
-              )
-              .duration(
-                450
-              )
+              .delay(200)
+              .duration(450)
           }
-
           style={{
             marginTop:
-              32,
+              esEscritorio
+                ? 30
+                : 24,
 
             marginBottom:
-              20,
-
-            flexDirection:
-              "row",
-
-            alignItems:
-              "flex-end",
-
-            justifyContent:
-              "space-between",
+              esEscritorio
+                ? 24
+                : 18,
           }}
         >
-
-          <View
+          <Text
+            className="font-nunito-bold"
             style={{
-              flex:
-                1,
+              fontSize:
+                esEscritorio
+                  ? 24
+                  : 21,
 
-              paddingRight:
-                12,
+              color:
+                textColor,
             }}
           >
+            {categoriaSeleccionada ===
+            "Todas"
+              ? "Todas las lecturas"
+              : categoriaSeleccionada}
+          </Text>
+
+          <Text
+            className="font-nunito-medium"
+            style={{
+              marginTop: 4,
+
+              fontSize:
+                esEscritorio
+                  ? 14
+                  : 13,
+
+              color:
+                textMutedColor,
+            }}
+          >
+            {
+              lecturasFiltradas.length
+            }{" "}
+            {lecturasFiltradas.length ===
+            1
+              ? "lectura encontrada"
+              : "lecturas encontradas"}
+          </Text>
+        </Animated.View>
+
+        {/* =================================================
+            GRID DE LECTURAS
+            ================================================= */}
+
+        {lecturasFiltradas.length >
+        0 ? (
+          <View
+            onLayout={
+              medirGrid
+            }
+            style={{
+              width: "100%",
+
+              flexDirection:
+                "row",
+
+              flexWrap:
+                "wrap",
+
+              justifyContent:
+                "flex-start",
+
+              alignItems:
+                "flex-start",
+
+              columnGap:
+                gapLecturas,
+
+              rowGap:
+                esEscritorio
+                  ? 30
+                  : 20,
+            }}
+          >
+            {lecturasFiltradas.map(
+              (
+                lectura,
+                index
+              ) => (
+                <Animated.View
+                  key={
+                    lectura.id
+                  }
+                  entering={
+                    FadeInDown
+                      .delay(
+                        240 +
+                          index *
+                            50
+                      )
+                      .duration(
+                        400
+                      )
+                  }
+                  style={{
+                    width:
+                      anchoTarjeta,
+
+                    minWidth: 0,
+                  }}
+                >
+                  <LecturaRecomendadaCard
+                    titulo={
+                      lectura.titulo
+                    }
+                    index={
+                      index
+                    }
+                    ancho={
+                      anchoTarjeta
+                    }
+                    onPress={() => {
+                      console.log(
+                        "Lectura seleccionada:",
+                        lectura.id
+                      );
+                    }}
+                  />
+                </Animated.View>
+              )
+            )}
+          </View>
+        ) : (
+
+          /* =================================================
+             ESTADO VACÍO
+             ================================================= */
+
+          <Animated.View
+            entering={
+              FadeInDown.duration(
+                350
+              )
+            }
+            style={{
+              width: "100%",
+
+              maxWidth:
+                esEscritorio
+                  ? 620
+                  : undefined,
+
+              alignSelf:
+                "center",
+
+              alignItems:
+                "center",
+
+              marginTop:
+                esEscritorio
+                  ? 12
+                  : 16,
+
+              paddingHorizontal:
+                esEscritorio
+                  ? 40
+                  : 24,
+
+              paddingVertical:
+                esEscritorio
+                  ? 38
+                  : 34,
+
+              borderRadius:
+                22,
+
+              borderWidth: 1,
+
+              borderColor,
+
+              backgroundColor:
+                surfaceColor,
+            }}
+          >
+            <View
+              style={{
+                width: 64,
+
+                height: 64,
+
+                borderRadius:
+                  32,
+
+                alignItems:
+                  "center",
+
+                justifyContent:
+                  "center",
+
+                backgroundColor:
+                  primarySoftColor,
+              }}
+            >
+              <Ionicons
+                name="search-outline"
+                size={28}
+                color={
+                  primaryColor
+                }
+              />
+            </View>
 
             <Text
+              className="font-nunito-bold"
               style={{
-                fontFamily:
-                  "Nunito-SemiBold",
+                marginTop: 16,
+
+                textAlign:
+                  "center",
 
                 fontSize:
-                  20,
+                  esEscritorio
+                    ? 18
+                    : 17,
 
                 color:
                   textColor,
               }}
             >
-              {
-                categoriaSeleccionada ===
-                  "Todas"
-                  ? "Todas las lecturas"
-                  : categoriaSeleccionada
-              }
+              No encontramos esa categoría
             </Text>
-
 
             <Text
+              className="font-nunito-medium"
               style={{
-                marginTop:
-                  4,
+                maxWidth: 420,
 
-                fontFamily:
-                  "Nunito-Medium",
+                marginTop: 8,
+
+                textAlign:
+                  "center",
 
                 fontSize:
-                  13,
+                  esEscritorio
+                    ? 14
+                    : 13,
+
+                lineHeight:
+                  esEscritorio
+                    ? 21
+                    : 20,
 
                 color:
-                  textMutedColor,
+                  textSecondaryColor,
               }}
             >
-              {lecturasFiltradas.length}{" "}
-              {
-                lecturasFiltradas.length ===
-                  1
-                  ? "lectura encontrada"
-                  : "lecturas encontradas"
-              }
+              Prueba con otra palabra o explora las categorías disponibles.
             </Text>
-
-          </View>
-
-        </Animated.View>
-
-
-        {/* 
-            RESULTADOS
-         */}
-
-        {
-          lecturasFiltradas.length >
-            0
-
-            ? (
-
-              lecturasFiltradas.map(
-                lectura => (
-
-                  <LecturaRecomendadaCard
-                    key={
-                      lectura.id
-                    }
-
-                    categoria={
-                      lectura.categoria
-                    }
-
-                    tiempo={
-                      lectura.tiempo
-                    }
-
-                    titulo={
-                      lectura.titulo
-                    }
-
-                    descripcion={
-                      lectura.descripcion
-                    }
-
-                    onPress={() => {
-
-                      console.log(
-                        "Lectura seleccionada:",
-                        lectura.id
-                      );
-
-                    }}
-                  />
-
-                )
-              )
-
-            )
-
-            : (
-
-              <View
-                style={{
-                  marginTop:
-                    32,
-
-                  paddingHorizontal:
-                    24,
-
-                  paddingVertical:
-                    40,
-
-                  alignItems:
-                    "center",
-
-                  borderRadius:
-                    22,
-
-                  borderWidth:
-                    1,
-
-                  borderColor,
-
-                  backgroundColor:
-                    surfaceColor,
-                }}
-              >
-
-                <View
-                  style={{
-                    width:
-                      64,
-
-                    height:
-                      64,
-
-                    borderRadius:
-                      32,
-
-                    alignItems:
-                      "center",
-
-                    justifyContent:
-                      "center",
-
-                    backgroundColor:
-                      surfaceSecondaryColor,
-                  }}
-                >
-
-                  <Ionicons
-                    name="book-outline"
-                    size={29}
-                    color={
-                      textMutedColor
-                    }
-                  />
-
-                </View>
-
-
-                <Text
-                  style={{
-                    marginTop:
-                      16,
-
-                    fontFamily:
-                      "Nunito-SemiBold",
-
-                    fontSize:
-                      17,
-
-                    textAlign:
-                      "center",
-
-                    color:
-                      textColor,
-                  }}
-                >
-                  No encontramos lecturas
-                </Text>
-
-
-                <Text
-                  style={{
-                    marginTop:
-                      8,
-
-                    fontFamily:
-                      "Nunito-Medium",
-
-                    fontSize:
-                      14,
-
-                    lineHeight:
-                      20,
-
-                    textAlign:
-                      "center",
-
-                    color:
-                      textMutedColor,
-                  }}
-                >
-                  Intenta buscar otro tema o selecciona una categoría diferente.
-                </Text>
-
-              </View>
-
-            )
-        }
-
+          </Animated.View>
+        )}
       </View>
-
     </ScrollView>
-
   );
-
 }

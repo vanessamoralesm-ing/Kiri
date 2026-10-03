@@ -1,15 +1,10 @@
 import React from "react";
 
-import {
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
-import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 // ==========================================================
 // PROPS
@@ -23,7 +18,6 @@ interface Props {
   tituloModulo?: string;
 }
 
-
 // ==========================================================
 // COMPONENTE
 // ==========================================================
@@ -33,126 +27,139 @@ export default function ProgresoEntrevista({
   total,
   tituloModulo,
 }: Props) {
+  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
   // ========================================================
   // COLORES DEL TEMA
   // ========================================================
 
-  const textSecondaryColor =
-    useThemeColor(
-      {},
-      "textSecondary"
-    );
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
 
+  const textMutedColor = useThemeColor({}, "textMuted");
 
-  const primaryColor =
-    useThemeColor(
-      {},
-      "primary"
-    );
+  const primaryColor = useThemeColor({}, "primary");
 
+  const borderColor = useThemeColor({}, "border");
 
-  const borderColor =
-    useThemeColor(
-      {},
-      "border"
-    );
-
+  const primarySoftColor = useThemeColor({}, "primarySoft");
 
   // ========================================================
   // PORCENTAJE
   // ========================================================
 
-  const porcentaje =
-    total > 0
-      ? Math.round(
-          (actual / total) * 100
-        )
-      : 0;
+  const porcentaje = total > 0 ? Math.round((actual / total) * 100) : 0;
 
+  const porcentajeLimitado = Math.min(Math.max(porcentaje, 0), 100);
 
-  const porcentajeLimitado =
-    Math.min(
-      porcentaje,
-      100
-    );
+  // ========================================================
+  // RESPONSIVE
+  // ========================================================
 
+  const marginBottom = esEscritorio ? 18 : 20;
+
+  const fontSizeModulo = esEscritorio ? 14 : 13;
+
+  const fontSizeInfo = esEscritorio ? 13 : 12;
+
+  const alturaBarra = esEscritorio ? 7 : 6;
 
   // ========================================================
   // UI
   // ========================================================
 
   return (
-
     <View
-      style={
-        styles.contenedor
-      }
-    >
+      style={[
+        styles.contenedor,
 
+        {
+          marginBottom,
+        },
+      ]}
+    >
       {/* =================================================
           INFORMACIÓN
       ================================================= */}
 
       <View
-        style={
-          styles.informacion
-        }
+        style={[
+          styles.informacion,
+
+          esTelefono && {
+            alignItems: "flex-start",
+          },
+        ]}
       >
+        <View
+          style={{
+            flex: 1,
+            minWidth: 0,
+          }}
+        >
+          {tituloModulo && (
+            <View
+              style={{
+                alignSelf: "flex-start",
 
-        <View>
+                paddingHorizontal: esEscritorio ? 10 : 9,
 
-          {
-            tituloModulo && (
+                paddingVertical: 5,
 
+                borderRadius: 999,
+
+                backgroundColor: primarySoftColor,
+
+                marginBottom: 6,
+              }}
+            >
               <Text
+                numberOfLines={esTelefono ? 2 : 1}
                 style={[
                   styles.modulo,
 
                   {
-                    color:
-                      primaryColor,
+                    color: primaryColor,
+
+                    fontSize: fontSizeModulo,
                   },
                 ]}
               >
                 {tituloModulo}
               </Text>
-
-            )
-          }
-
+            </View>
+          )}
 
           <Text
             style={[
               styles.pregunta,
 
               {
-                color:
-                  textSecondaryColor,
+                color: textSecondaryColor,
+
+                fontSize: fontSizeInfo,
               },
             ]}
           >
             Pregunta {actual} de {total}
           </Text>
-
         </View>
-
 
         <Text
           style={[
             styles.porcentaje,
 
             {
-              color:
-                primaryColor,
+              color: primaryColor,
+
+              fontSize: fontSizeInfo,
+
+              marginLeft: 12,
             },
           ]}
         >
-          {porcentaje}% completado
+          {porcentajeLimitado}% completado
         </Text>
-
       </View>
-
 
       {/* =================================================
           BARRA DE PROGRESO
@@ -163,114 +170,103 @@ export default function ProgresoEntrevista({
           styles.barra,
 
           {
-            backgroundColor:
-              borderColor,
+            height: alturaBarra,
+
+            backgroundColor: borderColor,
           },
         ]}
       >
-
         <View
           style={[
             styles.barraActiva,
 
             {
-              width:
-                `${porcentajeLimitado}%`,
+              width: `${porcentajeLimitado}%`,
 
-              backgroundColor:
-                primaryColor,
+              backgroundColor: primaryColor,
             },
           ]}
         />
-
       </View>
 
+      {/* =================================================
+          INDICADOR ADICIONAL EN MÓVIL
+      ================================================= */}
+
+      {esTelefono && total > 0 && (
+        <Text
+          style={{
+            marginTop: 7,
+
+            fontFamily: "Nunito-Medium",
+
+            fontSize: 11,
+
+            color: textMutedColor,
+          }}
+        >
+          {actual >= total
+            ? "Última pregunta de esta sección"
+            : `Faltan ${Math.max(total - actual, 0)} ${total - actual === 1 ? "pregunta" : "preguntas"
+            }`}
+        </Text>
+      )}
     </View>
-
   );
-
 }
-
 
 // ==========================================================
 // ESTILOS
 // ==========================================================
 
-const styles =
-  StyleSheet.create({
+const styles = StyleSheet.create({
+  contenedor: {
+    width: "100%",
+  },
 
-    contenedor: {
-      marginBottom:
-        20,
-    },
+  informacion: {
+    width: "100%",
 
+    flexDirection: "row",
 
-    informacion: {
-      flexDirection:
-        "row",
+    justifyContent: "space-between",
 
-      justifyContent:
-        "space-between",
+    alignItems: "flex-end",
 
-      alignItems:
-        "flex-end",
+    marginBottom: 10,
+  },
 
-      marginBottom:
-        10,
-    },
+  modulo: {
+    fontFamily: "Nunito-Bold",
 
+    includeFontPadding: false,
+  },
 
-    modulo: {
-      fontSize:
-        14,
+  pregunta: {
+    fontFamily: "Nunito-SemiBold",
 
-      fontFamily:
-        "Nunito-Bold",
+    includeFontPadding: false,
+  },
 
-      marginBottom:
-        3,
-    },
+  porcentaje: {
+    fontFamily: "Nunito-Bold",
 
+    includeFontPadding: false,
 
-    pregunta: {
-      fontSize:
-        13,
+    textAlign: "right",
+  },
 
-      fontFamily:
-        "Nunito-SemiBold",
-    },
+  barra: {
+    width: "100%",
 
+    borderRadius: 999,
 
-    porcentaje: {
-      fontSize:
-        13,
+    overflow: "hidden",
+  },
 
-      fontFamily:
-        "Nunito-Bold",
-    },
+  barraActiva: {
+    height: "100%",
 
-
-    barra: {
-      width:
-        "100%",
-
-      height:
-        7,
-
-      borderRadius:
-        20,
-
-      overflow:
-        "hidden",
-    },
-
-
-    barraActiva: {
-      height:
-        "100%",
-
-      borderRadius:
-        20,
-    },
-
-  });
+    borderRadius: 999,
+  },
+});

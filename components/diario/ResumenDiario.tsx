@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
-import { Text, useWindowDimensions, View } from "react-native";
+import { LayoutChangeEvent, Text, View } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -24,11 +24,15 @@ export default function ResumenDiario({
   diasRacha,
   totalEntradas,
 }: ResumenDiarioProps) {
-  const { width } = useWindowDimensions();
+  // ========================================================
+  // ESTADO
+  // ========================================================
 
-  // ======================================================
+  const [anchoDisponible, setAnchoDisponible] = useState(0);
+
+  // ========================================================
   // TEMA
-  // ======================================================
+  // ========================================================
 
   const textColor = useThemeColor({}, "text");
 
@@ -42,29 +46,49 @@ export default function ResumenDiario({
 
   const accentSoftColor = useThemeColor({}, "accentSoft");
 
-  // ======================================================
+  // ========================================================
   // RESPONSIVE
-  // ======================================================
+  // ========================================================
 
-  const esTelefonoPequeno = width < 390;
+  /*
+   * Mantenemos siempre las dos tarjetas en una fila.
+   * Adaptamos su contenido según el ancho REAL del padre.
+   */
 
-  // ======================================================
-  // COLORES SEMÁNTICOS DE RACHA
-  // ======================================================
+  const esMuyCompacto = anchoDisponible > 0 && anchoDisponible < 350;
+
+  const esCompacto = anchoDisponible > 0 && anchoDisponible < 430;
+
+  const gapTarjetas = esMuyCompacto ? 10 : 12;
+
+  const anchoTarjeta =
+    anchoDisponible > 0
+      ? Math.max(0, (anchoDisponible - gapTarjetas) / 2)
+      : undefined;
+
+  const paddingTarjeta = esMuyCompacto ? 11 : esCompacto ? 14 : 18;
+
+  const tamanoIcono = esMuyCompacto ? 36 : esCompacto ? 42 : 48;
+
+  const tamanoTextoTitulo = esMuyCompacto ? 14 : esCompacto ? 16 : 19;
+
+  // ========================================================
+  // COLORES DE RACHA
+  // ========================================================
 
   const colorRacha = "#F59E0B";
 
-  const fondoRacha = "rgba(245, 158, 11, 0.10)";
+  const fondoRacha = "rgba(245,158,11,0.10)";
 
-  const fondoIconoRacha = "rgba(245, 158, 11, 0.16)";
+  const fondoIconoRacha = "rgba(245,158,11,0.16)";
 
-  const bordeRacha = "rgba(245, 158, 11, 0.28)";
+  const bordeRacha = "rgba(245,158,11,0.28)";
 
-  const decoracionRacha = "rgba(245, 158, 11, 0.35)";
+  const decoracionRacha = "rgba(245,158,11,0.35)";
 
-  // ======================================================
+  // ========================================================
   // ANIMACIÓN
-  // ======================================================
+  // ========================================================
 
   const movimientoLlama = useSharedValue(0);
 
@@ -112,259 +136,329 @@ export default function ResumenDiario({
     ],
   }));
 
-  // ======================================================
+  // ========================================================
+  // MEDIR ANCHO REAL
+  // ========================================================
+
+  const medirContenedor = (event: LayoutChangeEvent) => {
+    const nuevoAncho = event.nativeEvent.layout.width;
+
+    setAnchoDisponible((anchoAnterior) =>
+      Math.abs(nuevoAncho - anchoAnterior) > 1 ? nuevoAncho : anchoAnterior,
+    );
+  };
+
+  // ========================================================
   // UI
-  // ======================================================
+  // ========================================================
 
   return (
-    <Animated.View
-      entering={FadeInDown.delay(100).duration(450)}
+    <View
+      onLayout={medirContenedor}
       style={{
-        flexDirection: "row",
-
         width: "100%",
-
-        gap: 12,
-
-        marginTop: 20,
+        minWidth: 0,
       }}
     >
-      {/* ==================================================
-          RACHA
-      ================================================== */}
-
-      <View
+      <Animated.View
+        entering={FadeInDown.delay(100).duration(450)}
         style={{
-          flex: 1,
+          width: "100%",
 
-          minWidth: 0,
+          flexDirection: "row",
 
-          overflow: "hidden",
+          alignItems: "stretch",
 
-          borderRadius: 22,
-
-          borderWidth: 1,
-
-          borderColor: bordeRacha,
-
-          backgroundColor: fondoRacha,
-
-          padding: 16,
+          gap: gapTarjetas,
         }}
       >
+        {/* ================================================
+            TARJETA RACHA
+        ================================================ */}
+
         <View
           style={{
-            flexDirection: "row",
+            flex: 1,
 
-            alignItems: "center",
+            width: anchoTarjeta,
+
+            minWidth: 0,
+
+            minHeight: esCompacto ? 165 : 190,
+
+            padding: paddingTarjeta,
+
+            borderRadius: 22,
+
+            borderWidth: 1,
+            borderColor: bordeRacha,
+
+            backgroundColor: fondoRacha,
+
+            justifyContent: "space-between",
+
+            overflow: "hidden",
           }}
         >
+          {/* HEADER */}
+
           <View
             style={{
-              width: esTelefonoPequeno ? 44 : 48,
+              width: "100%",
 
-              height: esTelefonoPequeno ? 44 : 48,
+              flexDirection: esMuyCompacto ? "column" : "row",
 
-              borderRadius: 999,
+              alignItems: esMuyCompacto ? "flex-start" : "center",
 
-              alignItems: "center",
-
-              justifyContent: "center",
-
-              backgroundColor: fondoIconoRacha,
+              gap: esMuyCompacto ? 6 : 9,
             }}
           >
-            <Animated.View style={estiloLlama}>
+            <View
+              style={{
+                width: tamanoIcono,
+                height: tamanoIcono,
+
+                borderRadius: 999,
+
+                flexShrink: 0,
+
+                alignItems: "center",
+                justifyContent: "center",
+
+                backgroundColor: fondoIconoRacha,
+              }}
+            >
+              <Animated.View style={estiloLlama}>
+                <Ionicons
+                  name="flame"
+                  size={esMuyCompacto ? 23 : esCompacto ? 27 : 32}
+                  color={colorRacha}
+                />
+              </Animated.View>
+            </View>
+
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+              style={{
+                flexShrink: 1,
+
+                fontFamily: "Nunito-Bold",
+
+                fontSize: tamanoTextoTitulo,
+
+                lineHeight: tamanoTextoTitulo + 5,
+
+                color: textColor,
+              }}
+            >
+              Racha
+            </Text>
+          </View>
+
+          {/* VALOR */}
+
+          <View
+            style={{
+              marginTop: 16,
+            }}
+          >
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.7}
+              style={{
+                fontFamily: "Nunito-Bold",
+
+                fontSize: esMuyCompacto ? 24 : esCompacto ? 27 : 31,
+
+                lineHeight: esMuyCompacto ? 31 : esCompacto ? 35 : 40,
+
+                color: colorRacha,
+              }}
+            >
+              {diasRacha} {diasRacha === 1 ? "día" : "días"}
+            </Text>
+
+            <Text
+              style={{
+                marginTop: 5,
+
+                fontFamily: "Nunito-Medium",
+
+                fontSize: esMuyCompacto ? 11 : 13,
+
+                lineHeight: 17,
+
+                color: textSecondaryColor,
+              }}
+            >
+              ¡Sigue así!
+            </Text>
+          </View>
+
+          {/* DECORACIÓN */}
+
+          <Ionicons
+            name="flame-outline"
+            size={esMuyCompacto ? 50 : 65}
+            color={decoracionRacha}
+            style={{
+              position: "absolute",
+
+              right: -8,
+
+              bottom: -12,
+
+              opacity: 0.7,
+            }}
+          />
+        </View>
+
+        {/* ================================================
+            TARJETA ENTRADAS
+        ================================================ */}
+
+        <View
+          style={{
+            flex: 1,
+
+            width: anchoTarjeta,
+
+            minWidth: 0,
+
+            minHeight: esCompacto ? 165 : 190,
+
+            padding: paddingTarjeta,
+
+            borderRadius: 22,
+
+            borderWidth: 1,
+            borderColor,
+
+            backgroundColor: accentSoftColor,
+
+            justifyContent: "space-between",
+
+            overflow: "hidden",
+          }}
+        >
+          {/* HEADER */}
+
+          <View
+            style={{
+              width: "100%",
+
+              flexDirection: esMuyCompacto ? "column" : "row",
+
+              alignItems: esMuyCompacto ? "flex-start" : "center",
+
+              gap: esMuyCompacto ? 6 : 9,
+            }}
+          >
+            <View
+              style={{
+                width: tamanoIcono,
+                height: tamanoIcono,
+
+                borderRadius: 999,
+
+                flexShrink: 0,
+
+                alignItems: "center",
+                justifyContent: "center",
+
+                borderWidth: 1,
+                borderColor,
+
+                backgroundColor: accentSoftColor,
+              }}
+            >
               <Ionicons
-                name="flame"
-                size={esTelefonoPequeno ? 31 : 35}
-                color={colorRacha}
+                name="book-outline"
+                size={esMuyCompacto ? 22 : esCompacto ? 25 : 29}
+                color={primaryColor}
               />
-            </Animated.View>
+            </View>
+
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+              style={{
+                flexShrink: 1,
+
+                fontFamily: "Nunito-Bold",
+
+                fontSize: tamanoTextoTitulo,
+
+                lineHeight: tamanoTextoTitulo + 5,
+
+                color: textColor,
+              }}
+            >
+              Entradas
+            </Text>
           </View>
 
-          <Text
-            numberOfLines={1}
-            style={{
-              flex: 1,
+          {/* VALOR */}
 
-              marginLeft: 12,
-
-              fontFamily: "Nunito-Bold",
-
-              fontSize: esTelefonoPequeno ? 17 : 20,
-
-              color: textColor,
-            }}
-          >
-            Racha
-          </Text>
-        </View>
-
-        <Text
-          style={{
-            marginTop: 16,
-
-            fontFamily: "Nunito-Bold",
-
-            fontSize: 28,
-
-            color: colorRacha,
-          }}
-        >
-          {diasRacha} días
-        </Text>
-
-        <Text
-          style={{
-            marginTop: 4,
-
-            fontFamily: "Nunito-Medium",
-
-            fontSize: 13,
-
-            color: textSecondaryColor,
-          }}
-        >
-          ¡Sigue así!
-        </Text>
-
-        <Ionicons
-          name="flame-outline"
-          size={65}
-          color={decoracionRacha}
-          style={{
-            position: "absolute",
-
-            right: -8,
-
-            bottom: -10,
-          }}
-        />
-      </View>
-
-      {/* ==================================================
-          ENTRADAS
-      ================================================== */}
-
-      <View
-        style={{
-          flex: 1,
-
-          minWidth: 0,
-
-          overflow: "hidden",
-
-          borderRadius: 22,
-
-          borderWidth: 1,
-
-          borderColor: borderColor,
-
-          backgroundColor: accentSoftColor,
-
-          padding: 16,
-        }}
-      >
-        <View
-          style={{
-            flexDirection: "row",
-
-            alignItems: "center",
-          }}
-        >
           <View
             style={{
-              width: esTelefonoPequeno ? 44 : 48,
-
-              height: esTelefonoPequeno ? 44 : 48,
-
-              borderRadius: 999,
-
-              alignItems: "center",
-
-              justifyContent: "center",
-
-              backgroundColor: accentSoftColor,
-
-              borderWidth: 1,
-
-              borderColor: borderColor,
+              marginTop: 16,
             }}
           >
-            <Ionicons
-              name="book-outline"
-              size={esTelefonoPequeno ? 27 : 30}
-              color={primaryColor}
-            />
+            <Text
+              style={{
+                fontFamily: "Nunito-Bold",
+
+                fontSize: esMuyCompacto ? 26 : esCompacto ? 29 : 34,
+
+                lineHeight: esMuyCompacto ? 33 : esCompacto ? 37 : 43,
+
+                color: accentColor,
+              }}
+            >
+              {totalEntradas}
+            </Text>
+
+            <Text
+              numberOfLines={2}
+              style={{
+                marginTop: 5,
+
+                fontFamily: "Nunito-Medium",
+
+                fontSize: esMuyCompacto ? 11 : 13,
+
+                lineHeight: 17,
+
+                color: textSecondaryColor,
+              }}
+            >
+              Registros guardados
+            </Text>
           </View>
 
-          <Text
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.8}
+          {/* DECORACIÓN */}
+
+          <Ionicons
+            name="sparkles-outline"
+            size={esMuyCompacto ? 43 : 56}
+            color={accentColor}
             style={{
-              flex: 1,
+              position: "absolute",
 
-              marginLeft: 12,
+              right: -3,
 
-              fontFamily: "Nunito-Bold",
+              bottom: -8,
 
-              fontSize: esTelefonoPequeno ? 17 : 20,
-
-              color: textColor,
+              opacity: 0.24,
             }}
-          >
-            Entradas
-          </Text>
+          />
         </View>
-
-        <Text
-          style={{
-            marginTop: 16,
-
-            fontFamily: "Nunito-Bold",
-
-            fontSize: 28,
-
-            color: accentColor,
-          }}
-        >
-          {totalEntradas}
-        </Text>
-
-        <Text
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.82}
-          style={{
-            marginTop: 4,
-
-            fontFamily: "Nunito-Medium",
-
-            fontSize: 13,
-
-            color: textSecondaryColor,
-          }}
-        >
-          Registros guardados
-        </Text>
-
-        <Ionicons
-          name="sparkles-outline"
-          size={55}
-          color={accentColor}
-          style={{
-            position: "absolute",
-
-            right: -2,
-
-            bottom: -5,
-
-            opacity: 0.28,
-          }}
-        />
-      </View>
-    </Animated.View>
+      </Animated.View>
+    </View>
   );
 }

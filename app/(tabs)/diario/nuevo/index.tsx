@@ -1,12 +1,6 @@
 import React from "react";
 
-import {
-  Pressable,
-  ScrollView,
-  Text,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { useLocalSearchParams, useRouter } from "expo-router";
 
@@ -18,22 +12,30 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 
 import TarjetaPlantillaAutorregistro from "@/components/diario/TarjetaPlantillaAutorregistro";
 
+import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
+
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+
 import { useThemeColor } from "@/hooks/use-theme-color";
+
+// ==========================================================
+// COMPONENTE
+// ==========================================================
 
 export default function NuevoRegistro() {
   const router = useRouter();
 
   const insets = useSafeAreaInsets();
 
-  const { width } = useWindowDimensions();
+  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
   const { origen } = useLocalSearchParams<{
     origen?: string;
   }>();
 
-  // ======================================================
+  // ========================================================
   // TEMA
-  // ======================================================
+  // ========================================================
 
   const backgroundColor = useThemeColor({}, "background");
 
@@ -59,21 +61,31 @@ export default function NuevoRegistro() {
 
   const accentSoftColor = useThemeColor({}, "accentSoft");
 
-  // ======================================================
+  // ========================================================
   // RESPONSIVE
-  // ======================================================
+  // ========================================================
 
-  const esTelefono = width < 768;
+  const paddingHorizontal = esEscritorio
+    ? PADDING_RESPONSIVE.escritorio
+    : esTablet
+      ? PADDING_RESPONSIVE.tablet
+      : PADDING_RESPONSIVE.telefono;
 
-  const esTablet = width >= 768 && width < 1100;
+  const maxWidthContenido = esEscritorio
+    ? MAX_WIDTHS.dashboard
+    : esTablet
+      ? MAX_WIDTHS.contenido
+      : undefined;
 
-  const esWeb = width >= 1100;
+  const numeroColumnas = esEscritorio ? 3 : esTablet ? 2 : 1;
 
-  const maxWidthContenido = esWeb ? 820 : esTablet ? 760 : undefined;
+  const gapTarjetas = esEscritorio ? 18 : 16;
 
-  // ======================================================
+  const paddingBottom = esEscritorio ? 56 : Math.max(insets.bottom + 70, 90);
+
+  // ========================================================
   // NAVEGACIÓN
-  // ======================================================
+  // ========================================================
 
   const regresar = () => {
     if (origen === "home") {
@@ -95,14 +107,15 @@ export default function NuevoRegistro() {
     });
   };
 
-  // ======================================================
+  // ========================================================
   // UI
-  // ======================================================
+  // ========================================================
 
   return (
     <View
       style={{
         flex: 1,
+
         backgroundColor,
       }}
     >
@@ -112,9 +125,13 @@ export default function NuevoRegistro() {
         }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: Math.max(insets.bottom + 70, 90),
+          paddingBottom,
         }}
       >
+        {/* ==================================================
+            CONTENEDOR PRINCIPAL
+        ================================================== */}
+
         <View
           style={{
             width: "100%",
@@ -123,9 +140,9 @@ export default function NuevoRegistro() {
 
             alignSelf: "center",
 
-            paddingHorizontal: esTelefono ? 20 : 28,
+            paddingHorizontal,
 
-            paddingTop: esTelefono ? 18 : 26,
+            paddingTop: esEscritorio ? 28 : esTablet ? 24 : 18,
           }}
         >
           {/* ==================================================
@@ -140,9 +157,9 @@ export default function NuevoRegistro() {
 
               height: 48,
 
-              marginBottom: 28,
+              marginBottom: esEscritorio ? 26 : 22,
 
-              borderRadius: 18,
+              borderRadius: 16,
 
               borderWidth: 1,
 
@@ -181,16 +198,18 @@ export default function NuevoRegistro() {
             style={{
               width: "100%",
 
-              marginBottom: 32,
+              maxWidth: esEscritorio ? 760 : undefined,
+
+              marginBottom: esEscritorio ? 30 : 26,
             }}
           >
             <Text
               style={{
                 fontFamily: "Nunito-Bold",
 
-                fontSize: esTelefono ? 30 : 34,
+                fontSize: esEscritorio ? 36 : esTablet ? 32 : 30,
 
-                lineHeight: esTelefono ? 38 : 42,
+                lineHeight: esEscritorio ? 44 : esTablet ? 40 : 38,
 
                 color: textColor,
               }}
@@ -204,9 +223,9 @@ export default function NuevoRegistro() {
 
                 fontFamily: "Nunito-Medium",
 
-                fontSize: esTelefono ? 15 : 16,
+                fontSize: esEscritorio ? 16 : 15,
 
-                lineHeight: esTelefono ? 22 : 24,
+                lineHeight: esEscritorio ? 24 : 22,
 
                 color: textSecondaryColor,
               }}
@@ -224,7 +243,13 @@ export default function NuevoRegistro() {
             style={{
               width: "100%",
 
-              alignSelf: "stretch",
+              flexDirection: numeroColumnas > 1 ? "row" : "column",
+
+              flexWrap: numeroColumnas > 1 ? "wrap" : "nowrap",
+
+              gap: gapTarjetas,
+
+              alignItems: "stretch",
             }}
           >
             {/* ==============================================
@@ -234,11 +259,11 @@ export default function NuevoRegistro() {
             <Animated.View
               entering={FadeInDown.delay(100).duration(400)}
               style={{
-                width: "100%",
+                flex: numeroColumnas > 1 ? 1 : undefined,
 
-                alignSelf: "stretch",
+                minWidth: 0,
 
-                marginBottom: esTelefono ? 16 : 20,
+                width: numeroColumnas === 1 ? "100%" : undefined,
               }}
             >
               <TarjetaPlantillaAutorregistro
@@ -258,11 +283,11 @@ export default function NuevoRegistro() {
             <Animated.View
               entering={FadeInDown.delay(180).duration(400)}
               style={{
-                width: "100%",
+                flex: numeroColumnas > 1 ? 1 : undefined,
 
-                alignSelf: "stretch",
+                minWidth: 0,
 
-                marginBottom: esTelefono ? 16 : 20,
+                width: numeroColumnas === 1 ? "100%" : undefined,
               }}
             >
               <TarjetaPlantillaAutorregistro
@@ -282,9 +307,11 @@ export default function NuevoRegistro() {
             <Animated.View
               entering={FadeInDown.delay(260).duration(400)}
               style={{
-                width: "100%",
+                flex: numeroColumnas > 1 ? 1 : undefined,
 
-                alignSelf: "stretch",
+                minWidth: 0,
+
+                width: numeroColumnas === 1 ? "100%" : undefined,
               }}
             >
               <TarjetaPlantillaAutorregistro

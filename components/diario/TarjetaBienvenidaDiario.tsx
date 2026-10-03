@@ -2,15 +2,14 @@ import React from "react";
 
 import {
   Image,
+  Platform,
   Pressable,
   Text,
   useWindowDimensions,
   View,
 } from "react-native";
 
-import {
-  Ionicons,
-} from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
 import Animated, {
   FadeInDown,
@@ -19,389 +18,308 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 
-import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
-
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 interface TarjetaBienvenidaDiarioProps {
   nombre: string;
-
   onNuevoRegistro: () => void;
 }
-
 
 export default function TarjetaBienvenidaDiario({
   nombre,
   onNuevoRegistro,
 }: TarjetaBienvenidaDiarioProps) {
+  const { width } = useWindowDimensions();
 
-  const {
-    width,
-  } = useWindowDimensions();
-
-
-  // ======================================================
+  // ========================================================
   // TEMA
-  // ======================================================
+  // ========================================================
 
-  const textColor =
-    useThemeColor({}, "text");
+  const textColor = useThemeColor({}, "text");
+  const primaryColor = useThemeColor({}, "primary");
+  const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
 
-  const primaryColor =
-    useThemeColor({}, "primary");
-
-  const textOnPrimaryColor =
-    useThemeColor({}, "textOnPrimary");
-
-  const primarySoftColor =
-    useThemeColor({}, "primarySoft");
-
-
-  // ======================================================
+  // ========================================================
   // RESPONSIVE
-  // ======================================================
+  // ========================================================
 
-  const esTelefonoPequeno =
-    width < 390;
+  const esTelefonoPequeno = width < 390;
+  const esTelefono = width < 768;
+  const esTablet = width >= 768 && width < 1100;
 
-  const esTelefono =
-    width < 768;
+  const tamanoAvatar = esTelefonoPequeno
+    ? 96
+    : esTelefono
+      ? 112
+      : esTablet
+        ? 150
+        : 170;
 
-  const esTablet =
-    width >= 768 &&
-    width < 1100;
+  const tamanoIcono = esTelefonoPequeno ? 44 : esTelefono ? 52 : 64;
 
+  const tamanoFlecha = esTelefonoPequeno ? 34 : esTelefono ? 38 : 48;
 
-  // Tamaño responsive del avatar.
-  const tamanoAvatar =
-    esTelefonoPequeno
-      ? 135
-      : esTelefono
-        ? 160
-        : esTablet
-          ? 185
-          : 200;
-
-
-  // ======================================================
+  // ========================================================
   // ANIMACIÓN
-  // ======================================================
+  // ========================================================
 
-  const escala =
-    useSharedValue(1);
+  const escala = useSharedValue(1);
 
-  const estiloAnimado =
-    useAnimatedStyle(() => ({
-      transform: [
-        {
-          scale:
-            escala.value,
-        },
-      ],
-    }));
+  const estiloAnimado = useAnimatedStyle(() => ({
+    transform: [
+      {
+        scale: escala.value,
+      },
+    ],
+  }));
 
-
-  // ======================================================
+  // ========================================================
   // UI
-  // ======================================================
+  // ========================================================
 
   return (
     <Animated.View
-      entering={
-        FadeInDown.duration(450)
-      }
+      entering={FadeInDown.duration(450)}
+      style={{
+        width: "100%",
+        minWidth: 0,
+      }}
     >
-
       {/* ==================================================
           BIENVENIDA CON AVATAR
       ================================================== */}
 
       <View
         style={{
-          marginBottom: 20,
+          width: "100%",
+
+          marginBottom: esTelefono ? 16 : 22,
+
           flexDirection: "row",
           alignItems: "center",
+
+          justifyContent: "space-between",
+
+          gap: esTelefonoPequeno ? 6 : 12,
         }}
       >
-
         {/* TEXTO */}
 
         <View
           style={{
             flex: 1,
-
-            paddingRight:
-              esTelefonoPequeno
-                ? 4
-                : 10,
+            minWidth: 0,
           }}
         >
           <Text
             style={{
-              fontFamily:
-                "Nunito-Bold",
+              fontFamily: "Nunito-Bold",
 
-              fontSize:
-                esTelefonoPequeno
-                  ? 22
-                  : 24,
+              fontSize: esTelefonoPequeno ? 21 : esTelefono ? 24 : 29,
 
-              lineHeight:
-                32,
+              lineHeight: esTelefonoPequeno ? 28 : esTelefono ? 32 : 38,
 
-              textAlign:
-                "left",
-
-              color:
-                textColor,
+              color: textColor,
             }}
           >
-            ¿Qué agregarás hoy a tu{"\n"}
-            Diario,{" "}
-
+            ¿Qué agregarás hoy a tu{" "}
             <Text
               style={{
-                color:
-                  primaryColor,
+                color: primaryColor,
               }}
             >
-              {nombre}
+              Diario, {nombre}
             </Text>
-
             ?
           </Text>
         </View>
-
 
         {/* AVATAR */}
 
         <View
           style={{
-            width:
-              tamanoAvatar,
+            width: tamanoAvatar,
+            height: tamanoAvatar,
 
-            height:
-              tamanoAvatar,
+            flexShrink: 0,
 
-            flexShrink:
-              0,
-
-            alignItems:
-              "center",
-
-            justifyContent:
-              "center",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <Image
-            source={
-              require(
-                "@/assets/images_kids/avatar_pregunta.png"
-              )
-            }
-            style={{
-              width:
-                "100%",
-
-              height:
-                "100%",
-
-              transform: [
-                {
-                  scale:
-                    1.28,
-                },
-              ],
-            }}
+            source={require("@/assets/images_kids/avatar_pregunta.png")}
             resizeMode="contain"
+            style={{
+              width: "100%",
+              height: "100%",
+            }}
           />
         </View>
-
       </View>
-
 
       {/* ==================================================
           BOTÓN NUEVO REGISTRO
       ================================================== */}
 
       <Animated.View
-        style={
-          estiloAnimado
-        }
+        style={[
+          {
+            width: "100%",
+          },
+          estiloAnimado,
+        ]}
       >
         <Pressable
-          onPress={
-            onNuevoRegistro
-          }
+          onPress={onNuevoRegistro}
           onPressIn={() => {
-            escala.value =
-              withSpring(0.95);
+            escala.value = withSpring(0.97);
           }}
           onPressOut={() => {
-            escala.value =
-              withSpring(1);
+            escala.value = withSpring(1);
           }}
+          accessibilityRole="button"
+          accessibilityLabel="Crear nuevo registro en el diario"
           style={{
-            flexDirection:
-              "row",
+            width: "100%",
+            borderRadius: 22,
 
-            alignItems:
-              "center",
+            ...(Platform.OS === "web"
+              ? ({
+                boxShadow: "0px 5px 14px rgba(79,142,247,0.20)",
+              } as any)
+              : {}),
 
-            paddingHorizontal:
-              20,
+            ...(Platform.OS === "android"
+              ? {
+                elevation: 4,
+              }
+              : {}),
 
-            paddingVertical:
-              20,
-
-            borderRadius:
-              24,
-
-            backgroundColor:
-              primaryColor,
-
-            elevation:
-              5,
-
-            shadowColor:
-              primaryColor,
-
-            shadowOffset: {
-              width:
-                0,
-
-              height:
-                5,
-            },
-
-            shadowOpacity:
-              0.2,
-
-            shadowRadius:
-              8,
+            ...(Platform.OS === "ios"
+              ? {
+                shadowColor: primaryColor,
+                shadowOffset: {
+                  width: 0,
+                  height: 5,
+                },
+                shadowOpacity: 0.2,
+                shadowRadius: 8,
+              }
+              : {}),
           }}
         >
-
-          {/* ==================================================
-              ICONO LÁPIZ
-          ================================================== */}
-
           <View
             style={{
-              width:
-                64,
+              width: "100%",
 
-              height:
-                64,
+              minHeight: esTelefono ? 112 : 128,
 
-              borderRadius:
-                32,
+              paddingHorizontal: esTelefonoPequeno ? 12 : esTelefono ? 16 : 22,
 
-              alignItems:
-                "center",
+              paddingVertical: esTelefono ? 18 : 22,
 
-              justifyContent:
-                "center",
+              borderRadius: 22,
 
-              backgroundColor:
-                textOnPrimaryColor,
+              backgroundColor: primaryColor,
+
+              flexDirection: "row",
+              alignItems: "center",
+
+              gap: esTelefonoPequeno ? 9 : esTelefono ? 12 : 18,
             }}
           >
-            <Ionicons
-              name="create-outline"
-              size={31}
-              color={primaryColor}
-            />
-          </View>
+            {/* ICONO */}
 
-
-          {/* ==================================================
-              TEXTO
-          ================================================== */}
-
-          <View
-            style={{
-              flex:
-                1,
-
-              marginLeft:
-                16,
-            }}
-          >
-            <Text
+            <View
               style={{
-                fontFamily:
-                  "Nunito-Bold",
+                width: tamanoIcono,
+                height: tamanoIcono,
 
-                fontSize:
-                  19,
+                borderRadius: 999,
 
-                color:
-                  textOnPrimaryColor,
+                flexShrink: 0,
+
+                alignItems: "center",
+                justifyContent: "center",
+
+                backgroundColor: "#FFFFFF",
               }}
             >
-              Nuevo Registro
-            </Text>
+              <Ionicons
+                name="create-outline"
+                size={esTelefonoPequeno ? 24 : esTelefono ? 27 : 32}
+                color={primaryColor}
+              />
+            </View>
 
-            <Text
+            {/* TEXTOS */}
+
+            <View
               style={{
-                marginTop:
-                  4,
+                flex: 1,
+                minWidth: 0,
 
-                fontFamily:
-                  "Nunito-Medium",
-
-                fontSize:
-                  14,
-
-                lineHeight:
-                  20,
-
-                color:
-                  primarySoftColor,
+                justifyContent: "center",
               }}
             >
-              Registra cómo te sientes y lo que pasó hoy.
-            </Text>
+              <Text
+                style={{
+                  fontFamily: "Nunito-Bold",
+
+                  fontSize: esTelefonoPequeno ? 16 : esTelefono ? 18 : 22,
+
+                  lineHeight: esTelefonoPequeno ? 21 : esTelefono ? 24 : 29,
+
+                  color: textOnPrimaryColor,
+                }}
+              >
+                Nuevo Registro
+              </Text>
+
+              <Text
+                style={{
+                  marginTop: 5,
+
+                  fontFamily: "Nunito-Medium",
+
+                  fontSize: esTelefonoPequeno ? 12 : esTelefono ? 13 : 15,
+
+                  lineHeight: esTelefonoPequeno ? 17 : esTelefono ? 19 : 22,
+
+                  color: "#EFF5FF",
+                }}
+              >
+                Registra cómo te sientes y lo que pasó hoy.
+              </Text>
+            </View>
+
+            {/* FLECHA */}
+
+            <View
+              style={{
+                width: tamanoFlecha,
+                height: tamanoFlecha,
+
+                borderRadius: 999,
+
+                flexShrink: 0,
+
+                alignItems: "center",
+                justifyContent: "center",
+
+                backgroundColor: "#FFFFFF",
+              }}
+            >
+              <Ionicons
+                name="arrow-forward"
+                size={esTelefonoPequeno ? 20 : esTelefono ? 23 : 28}
+                color={primaryColor}
+              />
+            </View>
           </View>
-
-
-          {/* ==================================================
-              FLECHA
-          ================================================== */}
-
-          <View
-            style={{
-              width:
-                48,
-
-              height:
-                48,
-
-              borderRadius:
-                24,
-
-              alignItems:
-                "center",
-
-              justifyContent:
-                "center",
-
-              backgroundColor:
-                textOnPrimaryColor,
-            }}
-          >
-            <Ionicons
-              name="arrow-forward"
-              size={27}
-              color={primaryColor}
-            />
-          </View>
-
         </Pressable>
       </Animated.View>
-
     </Animated.View>
   );
 }

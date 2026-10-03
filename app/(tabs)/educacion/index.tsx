@@ -1,17 +1,27 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React from "react";
+import React, { useMemo, useState } from "react";
 
 import {
+  LayoutChangeEvent,
+  Platform,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 
 import CategoriaCard from "@/components/educacion/CategoriaCard";
+import EncabezadoCard from "@/components/educacion/EncabezadoCard";
+import SearchBar from "@/components/ui/SearchBar";
+
+import {
+  MAX_WIDTHS,
+  PADDING_RESPONSIVE,
+} from "@/constants/responsive";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+
 
 // ==========================================================
 // CATEGORÍAS
@@ -62,11 +72,35 @@ const categorias = [
   },
 ];
 
+
 // ==========================================================
 // EDUCACIÓN
 // ==========================================================
 
 export default function EducacionScreen() {
+
+  // ========================================================
+  // RESPONSIVE
+  // ========================================================
+
+  const {
+    esTelefono,
+    esTablet,
+    esEscritorio,
+  } = useResponsiveLayout();
+
+
+  // ========================================================
+  // ESTADOS
+  // ========================================================
+
+  const [busqueda, setBusqueda] =
+    useState("");
+
+  const [anchoGrid, setAnchoGrid] =
+    useState(0);
+
+
   // ========================================================
   // COLORES DEL TEMA
   // ========================================================
@@ -106,40 +140,173 @@ export default function EducacionScreen() {
     "primarySoft"
   );
 
-  const inputBackgroundColor = useThemeColor(
-    {},
-    "inputBackground"
-  );
-
-  const inputBorderColor = useThemeColor(
-    {},
-    "inputBorder"
-  );
-
-  const placeholderColor = useThemeColor(
-    {},
-    "placeholder"
-  );
-
-  const iconColor = useThemeColor(
-    {},
-    "icon"
-  );
-
   const borderColor = useThemeColor(
     {},
     "border"
   );
 
+
+  // ========================================================
+  // CONFIGURACIÓN RESPONSIVE
+  // ========================================================
+
+  const paddingHorizontal =
+    esEscritorio
+      ? PADDING_RESPONSIVE.escritorio
+      : esTablet
+        ? PADDING_RESPONSIVE.tablet
+        : PADDING_RESPONSIVE.telefono;
+
+
+  const maxWidthContenido =
+    esEscritorio
+      ? MAX_WIDTHS.dashboard
+      : esTablet
+        ? MAX_WIDTHS.contenido
+        : undefined;
+
+
+  // Tablet usa 2 columnas.
+  // Escritorio usa 3 columnas.
+  // Teléfono usa el 48% original.
+
+  const numeroColumnas =
+    esEscritorio
+      ? 3
+      : 2;
+
+
+  const gapHorizontal =
+    esTelefono
+      ? 0
+      : 18;
+
+
+  const gapVertical =
+    esTelefono
+      ? 28
+      : 20;
+
+
+  // Solo se usa para tablet y escritorio.
+
+  const anchoTarjetaResponsive =
+    anchoGrid > 0
+      ? (
+          anchoGrid -
+          gapHorizontal *
+            (numeroColumnas - 1)
+        ) /
+        numeroColumnas
+      : undefined;
+
+
+  const paddingTop =
+    esEscritorio
+      ? 30
+      : esTablet
+        ? 26
+        : 20;
+
+
+  const paddingBottom =
+    esEscritorio
+      ? 64
+      : 145;
+
+
+  // ========================================================
+  // NORMALIZAR TEXTO
+  // ========================================================
+
+  function normalizarTexto(
+    texto: string
+  ) {
+    return texto
+      .normalize("NFD")
+      .replace(
+        /[\u0300-\u036f]/g,
+        ""
+      )
+      .toLowerCase()
+      .trim();
+  }
+
+
+  // ========================================================
+  // FILTRO DE CATEGORÍAS
+  // ========================================================
+
+  const categoriasFiltradas =
+    useMemo(() => {
+
+      const termino =
+        normalizarTexto(
+          busqueda
+        );
+
+
+      if (!termino) {
+        return categorias;
+      }
+
+
+      return categorias.filter(
+        (categoria) =>
+          normalizarTexto(
+            categoria.titulo
+          ).includes(
+            termino
+          )
+      );
+
+    }, [busqueda]);
+
+
   // ========================================================
   // NAVEGACIÓN
   // ========================================================
 
-  function abrirCategoria(id: string) {
+  function abrirCategoria(
+    id: string
+  ) {
     router.push(
       `/educacion/${id}` as any
     );
   }
+
+
+  // ========================================================
+  // MEDIR GRID
+  // ========================================================
+
+  function medirGrid(
+    event: LayoutChangeEvent
+  ) {
+
+    // En teléfono usamos 48%.
+    // No necesitamos calcular el ancho.
+
+    if (esTelefono) {
+      return;
+    }
+
+
+    const nuevoAncho =
+      event.nativeEvent.layout.width;
+
+
+    setAnchoGrid(
+      (anterior) =>
+        Math.abs(
+          nuevoAncho -
+            anterior
+        ) > 1
+          ? nuevoAncho
+          : anterior
+    );
+  }
+
 
   // ========================================================
   // UI
@@ -147,19 +314,40 @@ export default function EducacionScreen() {
 
   return (
     <ScrollView
+      className="flex-1"
+
       style={{
-        flex: 1,
         backgroundColor,
       }}
-      showsVerticalScrollIndicator={false}
+
+      showsVerticalScrollIndicator={
+        false
+      }
+
+      keyboardShouldPersistTaps="handled"
+
       contentContainerStyle={{
-        paddingBottom: 130,
+        paddingTop,
+        paddingBottom,
       }}
     >
+
+      {/* ==================================================
+          CONTENIDO PRINCIPAL
+          ================================================== */}
+
       <View
         style={{
-          paddingHorizontal: 24,
-          paddingTop: 48,
+          width:
+            "100%",
+
+          maxWidth:
+            maxWidthContenido,
+
+          alignSelf:
+            "center",
+
+          paddingHorizontal,
         }}
       >
 
@@ -167,30 +355,16 @@ export default function EducacionScreen() {
             ENCABEZADO
             ================================================== */}
 
-        <View>
-          <Text
-            style={{
-              fontFamily: "Nunito-Bold",
-              fontSize: 24,
-              color: primaryColor,
-            }}
-          >
-            Biblioteca de Bienestar
-          </Text>
+        <EncabezadoCard
+          imagen={require(
+            "../../../assets/images_educacion/kiri_lee_edu_horiz.png"
+          )}
 
-          <Text
-            style={{
-              marginTop: 8,
-              fontFamily: "Nunito-Medium",
-              fontSize: 15,
-              lineHeight: 20,
-              color: textSecondaryColor,
-            }}
-          >
-            Explora herramientas y conocimientos diseñados para acompañarte en
-            tu camino hacia una mejor salud mental.
-          </Text>
-        </View>
+          titulo="Biblioteca de Bienestar"
+
+          subtitulo="Conoce, aprende y descubre herramientas para tu bienestar emocional."
+        />
+
 
         {/* ==================================================
             BUSCADOR
@@ -198,45 +372,45 @@ export default function EducacionScreen() {
 
         <View
           style={{
-            marginTop: 28,
-            minHeight: 56,
-            flexDirection: "row",
-            alignItems: "center",
-            paddingHorizontal: 16,
-            borderRadius: 16,
-            borderWidth: 1,
-            borderColor: inputBorderColor,
-            backgroundColor: inputBackgroundColor,
-            shadowColor: "#000000",
-            shadowOffset: {
-              width: 0,
-              height: 2,
-            },
-            shadowOpacity: 0.08,
-            shadowRadius: 6,
-            elevation: 2,
+            width:
+              "100%",
+
+            maxWidth:
+              esEscritorio
+                ? 760
+                : undefined,
+
+            alignSelf:
+              esEscritorio
+                ? "center"
+                : undefined,
+
+            marginTop:
+              esTelefono
+                ? 20
+                : 24,
+
+            marginBottom:
+              esTelefono
+                ? 26
+                : 32,
           }}
         >
-          <Ionicons
-            name="search-outline"
-            size={27}
-            color={iconColor}
+
+          <SearchBar
+            value={
+              busqueda
+            }
+
+            onChangeText={
+              setBusqueda
+            }
+
+            placeholder="¿Qué te gustaría explorar hoy?"
           />
 
-          <TextInput
-            placeholder="¿Qué tema te gustaría explorar hoy?"
-            placeholderTextColor={placeholderColor}
-            selectionColor={primaryColor}
-            style={{
-              flex: 1,
-              marginLeft: 12,
-              paddingVertical: 16,
-              fontFamily: "Nunito-Medium",
-              fontSize: 14,
-              color: textColor,
-            }}
-          />
         </View>
+
 
         {/* ==================================================
             TÍTULO DE CATEGORÍAS
@@ -244,95 +418,328 @@ export default function EducacionScreen() {
 
         <View
           style={{
-            marginTop: 32,
-            marginBottom: 20,
+            width:
+              "100%",
+
+            marginBottom:
+              esTelefono
+                ? 16
+                : 22,
           }}
         >
+
           <Text
+            className="font-nunito-bold"
+
             style={{
-              fontFamily: "Nunito-Bold",
-              fontSize: 20,
-              color: textColor,
+              fontSize:
+                esEscritorio
+                  ? 22
+                  : 20,
+
+              lineHeight:
+                27,
+
+              color:
+                textColor,
             }}
           >
             Explora por categoría
           </Text>
 
+
           <Text
+            className="mt-1 font-nunito-semibold"
+
             style={{
-              marginTop: 4,
-              fontFamily: "Nunito-SemiBold",
-              fontSize: 15,
-              color: textMutedColor,
+              fontSize:
+                14,
+
+              lineHeight:
+                20,
+
+              color:
+                textMutedColor,
             }}
           >
             Selecciona el tema sobre el que quieras aprender.
           </Text>
+
         </View>
+
 
         {/* ==================================================
             TARJETAS DE CATEGORÍAS
             ================================================== */}
 
-        <View
-          style={{
-            flexDirection: "row",
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-            rowGap: 28,
-          }}
-        >
-          {categorias.map((categoria) => (
+        {categoriasFiltradas.length > 0 ? (
+
+          <View
+            onLayout={
+              medirGrid
+            }
+
+            style={{
+              width:
+                "100%",
+
+              flexDirection:
+                "row",
+
+              flexWrap:
+                "wrap",
+
+              justifyContent:
+                esTelefono
+                  ? "space-between"
+                  : "flex-start",
+
+              columnGap:
+                gapHorizontal,
+
+              rowGap:
+                gapVertical,
+
+              alignItems:
+                "stretch",
+            }}
+          >
+
+            {categoriasFiltradas.map(
+              (categoria) => (
+
+                <View
+                  key={
+                    categoria.id
+                  }
+
+                  style={{
+                    // En teléfono recuperamos exactamente
+                    // la distribución de dos cards por fila.
+
+                    width:
+                      esTelefono
+                        ? "48%"
+                        : anchoTarjetaResponsive !==
+                            undefined
+                          ? anchoTarjetaResponsive
+                          : esEscritorio
+                            ? "31%"
+                            : "48%",
+
+                    minWidth:
+                      0,
+
+                    alignItems:
+                      "stretch",
+                  }}
+                >
+
+                  <CategoriaCard
+                    titulo={
+                      categoria.titulo
+                    }
+
+                    imagen={
+                      categoria.imagen
+                    }
+
+                    onPress={() =>
+                      abrirCategoria(
+                        categoria.id
+                      )
+                    }
+                  />
+
+                </View>
+
+              )
+            )}
+
+          </View>
+
+        ) : (
+
+          // ==================================================
+          // SIN RESULTADOS
+          // ==================================================
+
+          <View
+            style={{
+              width:
+                "100%",
+
+              minHeight:
+                210,
+
+              borderRadius:
+                22,
+
+              borderWidth:
+                1,
+
+              borderColor,
+
+              backgroundColor:
+                surfaceColor,
+
+              alignItems:
+                "center",
+
+              justifyContent:
+                "center",
+
+              padding:
+                24,
+            }}
+          >
+
             <View
-              key={categoria.id}
               style={{
-                width: "48%",
-                alignItems: "center",
-                justifyContent: "center",
+                width:
+                  58,
+
+                height:
+                  58,
+
+                borderRadius:
+                  29,
+
+                alignItems:
+                  "center",
+
+                justifyContent:
+                  "center",
+
+                backgroundColor:
+                  primarySoftColor,
               }}
             >
-              <CategoriaCard
-                titulo={categoria.titulo}
-                imagen={categoria.imagen}
-                onPress={() =>
-                  abrirCategoria(categoria.id)
+
+              <Ionicons
+                name="search-outline"
+                size={26}
+                color={
+                  primaryColor
                 }
               />
+
             </View>
-          ))}
-        </View>
+
+
+            <Text
+              className="mt-3 font-nunito-bold"
+
+              style={{
+                fontSize:
+                  16,
+
+                textAlign:
+                  "center",
+
+                color:
+                  textColor,
+              }}
+            >
+              No encontramos esa categoría
+            </Text>
+
+
+            <Text
+              className="mt-1 font-nunito-medium"
+
+              style={{
+                maxWidth:
+                  420,
+
+                fontSize:
+                  13,
+
+                lineHeight:
+                  19,
+
+                textAlign:
+                  "center",
+
+                color:
+                  textMutedColor,
+              }}
+            >
+              Prueba con otra palabra o explora las categorías disponibles.
+            </Text>
+
+          </View>
+
+        )}
+
 
         {/* ==================================================
-            MENSAJE FINAL DE ORIENTACIÓN
+            MENSAJE FINAL
             ================================================== */}
 
         <View
           style={{
-            marginTop: 40,
-            padding: 20,
+            width:
+              "100%",
 
-            borderRadius: 22,
-            borderWidth: 1,
+            marginTop:
+              esEscritorio
+                ? 36
+                : 28,
+
+            padding:
+              esTelefono
+                ? 16
+                : 24,
+
+            borderRadius:
+              20,
+
+            borderWidth:
+              1,
+
             borderColor,
 
-            backgroundColor: "#F0F9FF",
+            backgroundColor:
+              surfaceColor,
 
-            shadowColor: "#000000",
+            ...Platform.select({
+              web: {
+                boxShadow:
+                  "0px 2px 8px rgba(0,0,0,0.04)",
+              } as any,
 
-            shadowOffset: {
-              width: 0,
-              height: 2,
-            },
+              ios: {
+                shadowColor:
+                  "#000000",
 
-            shadowOpacity: 0.06,
-            shadowRadius: 5,
-            elevation: 2,
+                shadowOffset: {
+                  width: 0,
+                  height: 2,
+                },
+
+                shadowOpacity:
+                  0.05,
+
+                shadowRadius:
+                  5,
+              },
+
+              android: {
+                elevation:
+                  2,
+              },
+            }),
           }}
         >
+
           <View
             style={{
-              flexDirection: "row",
-              alignItems: "flex-start",
+              flexDirection:
+                "row",
+
+              alignItems:
+                "flex-start",
             }}
           >
 
@@ -340,59 +747,101 @@ export default function EducacionScreen() {
 
             <View
               style={{
-                width: 44,
-                height: 44,
-                borderRadius: 22,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: primarySoftColor,
+                width:
+                  esTelefono
+                    ? 42
+                    : 48,
+
+                height:
+                  esTelefono
+                    ? 42
+                    : 48,
+
+                borderRadius:
+                  14,
+
+                flexShrink:
+                  0,
+
+                alignItems:
+                  "center",
+
+                justifyContent:
+                  "center",
+
+                backgroundColor:
+                  primarySoftColor,
               }}
             >
+
               <Ionicons
                 name="leaf-outline"
-                size={22}
-                color={primaryColor}
+                size={23}
+                color={
+                  primaryColor
+                }
               />
+
             </View>
+
 
             {/* TEXTO */}
 
             <View
               style={{
-                flex: 1,
-                marginLeft: 16,
+                flex:
+                  1,
+
+                minWidth:
+                  0,
+
+                marginLeft:
+                  14,
               }}
             >
+
               <Text
+                className="font-nunito-bold"
+
                 style={{
-                  fontFamily: "Nunito-Bold",
-                  fontSize: 16,
-                  color: textColor,
+                  fontSize:
+                    16,
+
+                  color:
+                    textColor,
                 }}
               >
                 Explora a tu ritmo
               </Text>
 
+
               <Text
+                className="mt-1 font-nunito-semibold"
+
                 style={{
-                  marginTop: 4,
-                  textAlign: "justify",
-                  fontFamily: "Nunito-SemiBold",
-                  fontSize: 14,
-                  lineHeight: 20,
-                  color: textSecondaryColor,
+                  fontSize:
+                    13,
+
+                  lineHeight:
+                    20,
+
+                  color:
+                    textSecondaryColor,
                 }}
               >
                 Cada categoría contiene información, mitos, realidades y
                 lecturas relacionadas para ayudarte a comprender mejor cada
                 tema.
               </Text>
+
             </View>
 
           </View>
+
         </View>
 
       </View>
+
     </ScrollView>
   );
 }

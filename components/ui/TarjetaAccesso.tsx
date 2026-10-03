@@ -139,7 +139,7 @@ export function TarjetaAcceso({
           flex-row
           items-center
           rounded-[24px]
-          px-4
+          px-3
           py-4
         "
         style={{
@@ -166,12 +166,12 @@ export function TarjetaAcceso({
         {/* ICONO */}
         <View
           className="
-            h-16
-            w-16
+            h-14
+            w-14
             shrink-0
             items-center
             justify-center
-            rounded-[18px]
+            rounded-[16px]
           "
           style={{
             backgroundColor: colorTarjeta.suave,
@@ -187,10 +187,11 @@ export function TarjetaAcceso({
         {/* TEXTOS */}
         <View
           className="
-            ml-4
+            ml-3
+            min-w-0
             flex-1
             justify-center
-            pr-3
+            pr-2
           "
         >
           <Text
@@ -224,8 +225,8 @@ export function TarjetaAcceso({
         {/* FLECHA */}
         <View
           className="
-            h-10
-            w-10
+            h-9
+            w-9
             shrink-0
             items-center
             justify-center
@@ -237,7 +238,7 @@ export function TarjetaAcceso({
         >
           <Ionicons
             name="chevron-forward"
-            size={22}
+            size={20}
             color={colorTarjeta.principal}
           />
         </View>
