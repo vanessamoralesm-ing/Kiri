@@ -10,9 +10,9 @@ import {
   View,
 } from "react-native";
 
-import { useFocusEffect, useRouter } from "expo-router";
-
 import { Ionicons } from "@expo/vector-icons";
+
+import { useFocusEffect, useRouter } from "expo-router";
 
 import {
   SafeAreaView,
@@ -28,13 +28,9 @@ import { EntradaDiarioResumen } from "@/types/diario";
 
 import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
 
-import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
-
 import { useThemeColor } from "@/hooks/use-theme-color";
 
-// ==========================================================
-// FILTROS
-// ==========================================================
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 const FILTROS = [
   {
@@ -47,10 +43,6 @@ const FILTROS = [
   },
 ];
 
-// ==========================================================
-// COMPONENTE
-// ==========================================================
-
 export default function HistorialDiarioScreen() {
   const router = useRouter();
 
@@ -58,19 +50,17 @@ export default function HistorialDiarioScreen() {
 
   const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
-  // ========================================================
-  // ESTADOS
-  // ========================================================
-
   const [cargando, setCargando] = useState(true);
 
   const [registros, setRegistros] = useState<EntradaDiarioResumen[]>([]);
 
   const [filtroSeleccionado, setFiltroSeleccionado] = useState("todas");
 
-  // ========================================================
-  // TEMA
-  // ========================================================
+  /*
+   * ==================================================
+   * COLORES
+   * ==================================================
+   */
 
   const backgroundColor = useThemeColor({}, "background");
 
@@ -94,9 +84,11 @@ export default function HistorialDiarioScreen() {
 
   const dangerColor = useThemeColor({}, "danger");
 
-  // ========================================================
-  // RESPONSIVE
-  // ========================================================
+  /*
+   * ==================================================
+   * RESPONSIVE
+   * ==================================================
+   */
 
   const paddingHorizontal = esEscritorio
     ? PADDING_RESPONSIVE.escritorio
@@ -112,13 +104,17 @@ export default function HistorialDiarioScreen() {
 
   const numeroColumnas = esEscritorio ? 3 : esTablet ? 2 : 1;
 
-  const gapColumnas = esEscritorio ? 18 : 16;
+  const separacionVertical = 18;
+
+  const separacionHorizontal = esEscritorio ? 18 : 16;
 
   const paddingBottom = esEscritorio ? 56 : Math.max(insets.bottom + 130, 155);
 
-  // ========================================================
-  // CARGAR HISTORIAL
-  // ========================================================
+  /*
+   * ==================================================
+   * CARGAR HISTORIAL
+   * ==================================================
+   */
 
   const cargarHistorial = useCallback(async () => {
     try {
@@ -136,19 +132,17 @@ export default function HistorialDiarioScreen() {
     }
   }, []);
 
-  // ========================================================
-  // ACTUALIZAR AL VOLVER
-  // ========================================================
-
   useFocusEffect(
     useCallback(() => {
       cargarHistorial();
     }, [cargarHistorial]),
   );
 
-  // ========================================================
-  // ELIMINAR
-  // ========================================================
+  /*
+   * ==================================================
+   * ELIMINAR REGISTRO
+   * ==================================================
+   */
 
   const confirmarEliminar = (id: string) => {
     Alert.alert(
@@ -157,12 +151,10 @@ export default function HistorialDiarioScreen() {
       [
         {
           text: "Cancelar",
-
           style: "cancel",
         },
         {
           text: "Eliminar",
-
           style: "destructive",
 
           onPress: async () => {
@@ -181,9 +173,11 @@ export default function HistorialDiarioScreen() {
     );
   };
 
-  // ========================================================
-  // FILTRAR
-  // ========================================================
+  /*
+   * ==================================================
+   * FILTROS
+   * ==================================================
+   */
 
   const registrosFiltrados = useMemo(() => {
     if (filtroSeleccionado === "todas") {
@@ -199,37 +193,45 @@ export default function HistorialDiarioScreen() {
     return registros;
   }, [registros, filtroSeleccionado]);
 
-  // ========================================================
-  // FORMATEAR FECHA
-  // ========================================================
+  /*
+   * ==================================================
+   * FORMATEAR FECHA
+   * ==================================================
+   */
 
   const formatearFechaHora = (fechaIso: string) => {
     const fecha = new Date(fechaIso);
 
     const fechaFormateada = fecha.toLocaleDateString("es-ES", {
       day: "2-digit",
-
       month: "short",
-
       year: "numeric",
     });
 
     const horaFormateada = fecha.toLocaleTimeString("es-ES", {
       hour: "2-digit",
-
       minute: "2-digit",
     });
 
     return `${fechaFormateada}, ${horaFormateada}`;
   };
 
-  // ========================================================
-  // UI
-  // ========================================================
+  /*
+   * ==================================================
+   * PANTALLA
+   * ==================================================
+   */
 
   return (
     <SafeAreaView
-      edges={["top"]}
+      /*
+       * IMPORTANTE:
+       *
+       * AppHeader ya ocupa la zona superior.
+       * No agregamos edges={["top"]} aquí para
+       * evitar un espacio doble sobre el contenido.
+       */
+      edges={[]}
       style={{
         flex: 1,
 
@@ -237,7 +239,7 @@ export default function HistorialDiarioScreen() {
       }}
     >
       {/* ==================================================
-          ENCABEZADO
+          HEADER
       ================================================== */}
 
       <View
@@ -263,7 +265,14 @@ export default function HistorialDiarioScreen() {
 
             paddingHorizontal,
 
-            paddingVertical: esEscritorio ? 18 : 14,
+            /*
+             * Menos espacio superior en móvil.
+             * AppHeader ya está encima.
+             */
+
+            paddingTop: esEscritorio ? 18 : 4,
+
+            paddingBottom: esEscritorio ? 18 : 10,
           }}
         >
           <Pressable
@@ -280,9 +289,7 @@ export default function HistorialDiarioScreen() {
 
               justifyContent: "center",
 
-              backgroundColor: pressed
-                ? primarySoftColor
-                : surfaceSecondaryColor,
+              backgroundColor: pressed ? surfaceSecondaryColor : "transparent",
             })}
           >
             <Ionicons name="arrow-back" size={22} color={textColor} />
@@ -361,11 +368,9 @@ export default function HistorialDiarioScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
             paddingHorizontal,
-
-            gap: 10,
           }}
         >
-          {FILTROS.map((filtro) => {
+          {FILTROS.map((filtro, index) => {
             const activo = filtroSeleccionado === filtro.id;
 
             return (
@@ -373,6 +378,8 @@ export default function HistorialDiarioScreen() {
                 key={filtro.id}
                 onPress={() => setFiltroSeleccionado(filtro.id)}
                 style={({ pressed }) => ({
+                  marginRight: index < FILTROS.length - 1 ? 10 : 0,
+
                   paddingHorizontal: esEscritorio ? 18 : 16,
 
                   paddingVertical: 9,
@@ -408,7 +415,7 @@ export default function HistorialDiarioScreen() {
       </View>
 
       {/* ==================================================
-          CARGANDO
+          CONTENIDO
       ================================================== */}
 
       {cargando ? (
@@ -445,6 +452,8 @@ export default function HistorialDiarioScreen() {
           numColumns={numeroColumnas}
           showsVerticalScrollIndicator={false}
           style={{
+            flex: 1,
+
             width: "100%",
 
             maxWidth: maxWidthContenido,
@@ -461,15 +470,10 @@ export default function HistorialDiarioScreen() {
           columnWrapperStyle={
             numeroColumnas > 1
               ? {
-                  gap: gapColumnas,
-                }
+                justifyContent: "space-between",
+              }
               : undefined
           }
-
-          // ==================================================
-          // VACÍO
-          // ==================================================
-
           ListEmptyComponent={
             <View
               style={{
@@ -537,76 +541,110 @@ export default function HistorialDiarioScreen() {
               </Text>
             </View>
           }
+          renderItem={({ item, index }) => (
+            <View
+              style={{
+                width: numeroColumnas === 1 ? "100%" : undefined,
 
-          // ==================================================
-          // REGISTRO
-          // ==================================================
-
-          renderItem={({ item }) => (
-            <Pressable
-              onPress={() =>
-                router.push(`/diario/${item.id_registro}` as never)
-              }
-              style={({ pressed }) => ({
-                flex: 1,
+                flex: numeroColumnas > 1 ? 1 : undefined,
 
                 minWidth: 0,
 
-                marginBottom: gapColumnas,
+                marginBottom: separacionVertical,
 
-                overflow: "hidden",
-
-                borderRadius: 22,
-
-                borderWidth: 1,
-
-                borderColor,
-
-                backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
-
-                elevation: 1,
-
-                shadowColor: "#000000",
-
-                shadowOffset: {
-                  width: 0,
-
-                  height: 2,
-                },
-
-                shadowOpacity: 0.05,
-
-                shadowRadius: 5,
-              })}
+                marginRight:
+                  numeroColumnas > 1 &&
+                    index % numeroColumnas !== numeroColumnas - 1
+                    ? separacionHorizontal
+                    : 0,
+              }}
             >
-              {/* ==========================================
-                      LÍNEA SUPERIOR
-                  ========================================== */}
+              {/* ==================================================
+                  TARJETA
+              ================================================== */}
 
-              <View
-                style={{
-                  height: 6,
+              <Pressable
+                onPress={() =>
+                  router.push(`/diario/${item.id_registro}` as never)
+                }
+                style={({ pressed }) => ({
+                  width: "100%",
 
-                  backgroundColor: primaryColor,
-                }}
-              />
+                  minWidth: 0,
 
-              <View
-                style={{
-                  flex: 1,
+                  borderWidth: esTelefono ? 1.5 : 1,
 
-                  padding: esEscritorio ? 18 : 16,
+                  borderColor,
 
-                  justifyContent: "space-between",
-                }}
+                  borderRadius: esTelefono ? 20 : 24,
+
+                  overflow: "hidden",
+
+                  backgroundColor: pressed
+                    ? surfaceSecondaryColor
+                    : surfaceColor,
+
+                  /*
+                   * SOMBRA
+                   */
+
+                  elevation: esTelefono ? 6 : 3,
+
+                  shadowColor: "#000000",
+
+                  shadowOffset: {
+                    width: 0,
+
+                    height: esTelefono ? 5 : 3,
+                  },
+
+                  shadowOpacity: esTelefono ? 0.15 : 0.1,
+
+                  shadowRadius: esTelefono ? 12 : 8,
+
+                  opacity: pressed ? 0.96 : 1,
+                })}
               >
-                <View>
+                {/* ==================================================
+                    FRANJA SUPERIOR
+                ================================================== */}
+
+                <View
+                  style={{
+                    height: esTelefono ? 4 : 5,
+
+                    backgroundColor: primaryColor,
+                  }}
+                />
+
+                {/* ==================================================
+                    CONTENIDO
+                ================================================== */}
+
+                <View
+                  style={{
+                    backgroundColor: surfaceColor,
+
+                    paddingHorizontal: 20,
+
+                    paddingTop: esTelefono ? 20 : 18,
+
+                    paddingBottom: esTelefono ? 20 : 18,
+                  }}
+                >
+                  {/* ==================================================
+                      TÍTULO
+                  ================================================== */}
+
                   <Text
-                    numberOfLines={1}
+                    numberOfLines={2}
+                    ellipsizeMode="tail"
                     style={{
                       fontFamily: "Nunito-Bold",
 
                       fontSize: esEscritorio ? 16 : 15,
+
+                      lineHeight: esEscritorio ? 22 : 21,
 
                       color: textColor,
                     }}
@@ -614,18 +652,21 @@ export default function HistorialDiarioScreen() {
                     {item.plantilla_nombre}
                   </Text>
 
+                  {/* ==================================================
+                      CONTENIDO
+                  ================================================== */}
+
                   <Text
                     numberOfLines={3}
+                    ellipsizeMode="tail"
                     style={{
-                      marginTop: 8,
-
-                      minHeight: 54,
+                      marginTop: 10,
 
                       fontFamily: "Nunito-Medium",
 
                       fontSize: 13,
 
-                      lineHeight: 18,
+                      lineHeight: 19,
 
                       color: textSecondaryColor,
                     }}
@@ -633,154 +674,199 @@ export default function HistorialDiarioScreen() {
                     {item.respuesta_corta || "Sin respuesta registrada."}
                   </Text>
 
+                  {/* ==================================================
+                      EMOCIONES
+                  ================================================== */}
+
                   {item.emociones.length > 0 && (
                     <View
                       style={{
-                        marginTop: 12,
+                        marginTop: 16,
 
-                        alignSelf: "flex-start",
+                        flexDirection: "row",
 
-                        maxWidth: "100%",
-
-                        paddingHorizontal: 12,
-
-                        paddingVertical: 6,
-
-                        borderRadius: 999,
-
-                        backgroundColor: primarySoftColor,
+                        flexWrap: "wrap",
                       }}
                     >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          fontFamily: "Nunito-Bold",
+                      {item.emociones.map((emocion, emocionIndex) => (
+                        <View
+                          key={`${emocion}-${emocionIndex}`}
+                          style={{
+                            marginRight: 8,
 
-                          fontSize: 11,
+                            marginBottom: 8,
 
-                          color: primaryColor,
-                        }}
-                      >
-                        {item.emociones.join(", ")}
-                      </Text>
+                            paddingHorizontal: 11,
+
+                            paddingVertical: 7,
+
+                            borderRadius: 999,
+
+                            backgroundColor: primarySoftColor,
+
+                            flexDirection: "row",
+
+                            alignItems: "center",
+                          }}
+                        >
+                          <Ionicons
+                            name={
+                              emocionIndex === 0
+                                ? "leaf-outline"
+                                : "sparkles-outline"
+                            }
+                            size={16}
+                            color={primaryColor}
+                          />
+
+                          <Text
+                            numberOfLines={1}
+                            style={{
+                              marginLeft: 5,
+
+                              fontFamily: "Nunito-SemiBold",
+
+                              fontSize: 11,
+
+                              lineHeight: 15,
+
+                              color: primaryColor,
+                            }}
+                          >
+                            {emocion}
+                          </Text>
+                        </View>
+                      ))}
                     </View>
                   )}
-                </View>
 
-                {/* ======================================
-                        PIE
-                    ====================================== */}
-
-                <View
-                  style={{
-                    marginTop: 16,
-
-                    paddingTop: 12,
-
-                    borderTopWidth: 1,
-
-                    borderTopColor: borderColor,
-
-                    flexDirection: "row",
-
-                    alignItems: "center",
-                  }}
-                >
-                  <Text
-                    numberOfLines={1}
-                    style={{
-                      flex: 1,
-
-                      marginRight: 8,
-
-                      fontFamily: "Nunito-SemiBold",
-
-                      fontSize: 11,
-
-                      color: textMutedColor,
-                    }}
-                  >
-                    {formatearFechaHora(item.fecha_inicio)}
-                  </Text>
+                  {/* ==================================================
+                      PIE DE TARJETA
+                  ================================================== */}
 
                   <View
                     style={{
+                      marginTop: 18,
+
+                      paddingTop: 14,
+
+                      borderTopWidth: 1,
+
+                      borderTopColor: borderColor,
+
                       flexDirection: "row",
 
                       alignItems: "center",
                     }}
                   >
-                    {/* EDITAR */}
+                    {/* FECHA */}
 
-                    <Pressable
-                      onPress={(event) => {
-                        event.stopPropagation();
+                    <Text
+                      numberOfLines={2}
+                      style={{
+                        flex: 1,
 
-                        router.push(
-                          `/diario/${item.id_registro}/editar` as never,
-                        );
+                        marginRight: 12,
+
+                        fontFamily: "Nunito-SemiBold",
+
+                        fontSize: 11,
+
+                        lineHeight: 16,
+
+                        color: textMutedColor,
                       }}
-                      hitSlop={8}
-                      style={({ pressed }) => ({
-                        width: 36,
+                    >
+                      {formatearFechaHora(item.fecha_inicio)}
+                    </Text>
 
-                        height: 36,
+                    {/* ACCIONES */}
 
-                        marginRight: 8,
-
-                        borderRadius: 12,
+                    <View
+                      style={{
+                        flexDirection: "row",
 
                         alignItems: "center",
 
-                        justifyContent: "center",
-
-                        backgroundColor: pressed
-                          ? surfaceSecondaryColor
-                          : primarySoftColor,
-                      })}
-                    >
-                      <Ionicons
-                        name="create-outline"
-                        size={17}
-                        color={primaryColor}
-                      />
-                    </Pressable>
-
-                    {/* ELIMINAR */}
-
-                    <Pressable
-                      onPress={(event) => {
-                        event.stopPropagation();
-
-                        confirmarEliminar(item.id_registro);
+                        flexShrink: 0,
                       }}
-                      hitSlop={8}
-                      style={({ pressed }) => ({
-                        width: 36,
-
-                        height: 36,
-
-                        borderRadius: 12,
-
-                        alignItems: "center",
-
-                        justifyContent: "center",
-
-                        backgroundColor: pressed
-                          ? surfaceSecondaryColor
-                          : "rgba(239, 68, 68, 0.10)",
-                      })}
                     >
-                      <Ionicons
-                        name="trash-outline"
-                        size={17}
-                        color={dangerColor}
-                      />
-                    </Pressable>
+                      {/* EDITAR */}
+
+                      <Pressable
+                        onPress={(event) => {
+                          event.stopPropagation();
+
+                          router.push(
+                            `/diario/${item.id_registro}/editar` as never,
+                          );
+                        }}
+                        hitSlop={8}
+                        accessibilityRole="button"
+                        accessibilityLabel="Editar registro"
+                        style={({ pressed }) => ({
+                          width: 38,
+
+                          height: 38,
+
+                          marginRight: 8,
+
+                          borderRadius: 12,
+
+                          alignItems: "center",
+
+                          justifyContent: "center",
+
+                          backgroundColor: pressed
+                            ? surfaceSecondaryColor
+                            : primarySoftColor,
+                        })}
+                      >
+                        <Ionicons
+                          name="create-outline"
+                          size={18}
+                          color={primaryColor}
+                        />
+                      </Pressable>
+
+                      {/* ELIMINAR */}
+
+                      <Pressable
+                        onPress={(event) => {
+                          event.stopPropagation();
+
+                          confirmarEliminar(item.id_registro);
+                        }}
+                        hitSlop={8}
+                        accessibilityRole="button"
+                        accessibilityLabel="Eliminar registro"
+                        style={({ pressed }) => ({
+                          width: 38,
+
+                          height: 38,
+
+                          borderRadius: 12,
+
+                          alignItems: "center",
+
+                          justifyContent: "center",
+
+                          backgroundColor: pressed
+                            ? surfaceSecondaryColor
+                            : "rgba(239, 68, 68, 0.10)",
+                        })}
+                      >
+                        <Ionicons
+                          name="trash-outline"
+                          size={18}
+                          color={dangerColor}
+                        />
+                      </Pressable>
+                    </View>
                   </View>
                 </View>
-              </View>
-            </Pressable>
+              </Pressable>
+            </View>
           )}
         />
       )}

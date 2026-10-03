@@ -1,4 +1,3 @@
-
 import React, { useCallback, useState } from "react";
 
 import {
@@ -26,23 +25,15 @@ import {
   subirFotoPerfil,
 } from "@/services/perfil/perfilService";
 
-import type {
-  PerfilCompleto,
-} from "@/services/perfil/perfilService";
+import type { PerfilCompleto } from "@/services/perfil/perfilService";
 
 import LogoutModal from "@/components/ui/LogoutModal";
 
-import {
-  useThemeMode,
-} from "@/contexts/ThemeModeContext";
+import { useThemeMode } from "@/contexts/ThemeModeContext";
 
-import type {
-  ThemePreference,
-} from "@/contexts/ThemeModeContext";
+import type { ThemePreference } from "@/contexts/ThemeModeContext";
 
-import {
-  useThemeColor,
-} from "@/hooks/use-theme-color";
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 // ==========================================================
 // CONSTANTES
@@ -104,6 +95,12 @@ const OPCIONES_TEMA: OpcionTema[] = [
 ];
 
 // ==========================================================
+// CONSTANTES RESPONSIVE
+// ==========================================================
+
+const ANCHO_SIDEBAR_DESKTOP = 220;
+
+// ==========================================================
 // PANTALLA PRINCIPAL
 // ==========================================================
 
@@ -122,15 +119,40 @@ export default function PerfilScreen() {
 
   const esEscritorio = width >= 1100;
 
-  const paddingHorizontal = esEscritorio
-    ? 40
-    : esTablet
-      ? 32
-      : 20;
+  const paddingHorizontal = esEscritorio ? 40 : esTablet ? 32 : 20;
+
+  // ========================================================
+  // ANCHO DISPONIBLE
+  // ========================================================
+
+  /*
+   * IMPORTANTE:
+   *
+   * SidebarDesktop ya es un hermano de esta pantalla
+   * dentro de (tabs)/_layout.tsx:
+   *
+   * <SidebarDesktop />
+   * <View style={desktopContent}>
+   *   <Pestanas />
+   * </View>
+   *
+   * Por eso NO debemos agregar paddingLeft aquí.
+   *
+   * El sidebar ya ocupa físicamente sus 220 px.
+   *
+   * Solo descontamos esos 220 px del cálculo del ancho
+   * máximo para evitar que el contenido interno intente
+   * ocupar el ancho completo de la ventana.
+   */
+
+  const anchoViewportContenido = Math.max(
+    0,
+    width - (esEscritorio ? ANCHO_SIDEBAR_DESKTOP : 0),
+  );
 
   const anchoDisponible = Math.max(
     0,
-    width - paddingHorizontal * 2,
+    anchoViewportContenido - paddingHorizontal * 2,
   );
 
   const anchoContenido = Math.min(
@@ -148,184 +170,113 @@ export default function PerfilScreen() {
   // TEMA
   // ========================================================
 
-  const {
-    themeMode,
-    themePreference,
-    systemTheme,
-    setThemeMode,
-  } = useThemeMode();
+  const { themeMode, themePreference, systemTheme, setThemeMode } =
+    useThemeMode();
 
-  const backgroundColor = useThemeColor(
-    {},
-    "background",
-  );
+  const backgroundColor = useThemeColor({}, "background");
 
-  const surfaceColor = useThemeColor(
-    {},
-    "surface",
-  );
+  const surfaceColor = useThemeColor({}, "surface");
 
-  const surfaceSecondaryColor = useThemeColor(
-    {},
-    "surfaceSecondary",
-  );
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
-  const borderColor = useThemeColor(
-    {},
-    "border",
-  );
+  const borderColor = useThemeColor({}, "border");
 
-  const dividerColor = useThemeColor(
-    {},
-    "divider",
-  );
+  const dividerColor = useThemeColor({}, "divider");
 
-  const textColor = useThemeColor(
-    {},
-    "text",
-  );
+  const textColor = useThemeColor({}, "text");
 
-  const textSecondaryColor = useThemeColor(
-    {},
-    "textSecondary",
-  );
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
 
-  const textMutedColor = useThemeColor(
-    {},
-    "textMuted",
-  );
+  const textMutedColor = useThemeColor({}, "textMuted");
 
-  const primaryColor = useThemeColor(
-    {},
-    "primary",
-  );
+  const primaryColor = useThemeColor({}, "primary");
 
-  const primarySoftColor = useThemeColor(
-    {},
-    "primarySoft",
-  );
+  const primarySoftColor = useThemeColor({}, "primarySoft");
 
-  const secondaryColor = useThemeColor(
-    {},
-    "secondary",
-  );
+  const secondaryColor = useThemeColor({}, "secondary");
 
-  const inputBackgroundColor = useThemeColor(
-    {},
-    "inputBackground",
-  );
+  const inputBackgroundColor = useThemeColor({}, "inputBackground");
 
-  const inputBorderColor = useThemeColor(
-    {},
-    "inputBorder",
-  );
+  const inputBorderColor = useThemeColor({}, "inputBorder");
 
-  const iconColor = useThemeColor(
-    {},
-    "icon",
-  );
+  const iconColor = useThemeColor({}, "icon");
 
   // ========================================================
   // ESTADOS
   // ========================================================
 
-  const [perfil, setPerfil] =
-    useState<PerfilCompleto | null>(null);
+  const [perfil, setPerfil] = useState<PerfilCompleto | null>(null);
 
   const [nombres, setNombres] = useState("");
 
   const [apellidos, setApellidos] = useState("");
 
-  const [nombrePreferido, setNombrePreferido] =
-    useState("");
+  const [nombrePreferido, setNombrePreferido] = useState("");
 
   const [telefono, setTelefono] = useState("");
 
-  const [fechaNacimiento, setFechaNacimiento] =
-    useState("");
+  const [fechaNacimiento, setFechaNacimiento] = useState("");
 
   const [genero, setGenero] = useState("");
 
-  const [mostrarGeneros, setMostrarGeneros] =
-    useState(false);
+  const [mostrarGeneros, setMostrarGeneros] = useState(false);
 
-  const [mostrarPassword, setMostrarPassword] =
-    useState(false);
+  const [mostrarPassword, setMostrarPassword] = useState(false);
 
-  const [nuevaPassword, setNuevaPassword] =
-    useState("");
+  const [nuevaPassword, setNuevaPassword] = useState("");
 
-  const [confirmarPassword, setConfirmarPassword] =
-    useState("");
+  const [confirmarPassword, setConfirmarPassword] = useState("");
 
-  const [verPassword, setVerPassword] =
-    useState(false);
+  const [verPassword, setVerPassword] = useState(false);
 
-  const [verConfirmacion, setVerConfirmacion] =
-    useState(false);
+  const [verConfirmacion, setVerConfirmacion] = useState(false);
 
-  const [cargando, setCargando] =
-    useState(true);
+  const [cargando, setCargando] = useState(true);
 
-  const [guardando, setGuardando] =
-    useState(false);
+  const [guardando, setGuardando] = useState(false);
 
-  const [guardandoPassword, setGuardandoPassword] =
-    useState(false);
+  const [guardandoPassword, setGuardandoPassword] = useState(false);
 
-  const [subiendoFoto, setSubiendoFoto] =
-    useState(false);
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
 
-  const [mostrarLogout, setMostrarLogout] =
-    useState(false);
+  const [mostrarLogout, setMostrarLogout] = useState(false);
 
-  const [versionFoto, setVersionFoto] =
-    useState(0);
+  const [versionFoto, setVersionFoto] = useState(0);
 
   // ========================================================
   // CARGAR PERFIL
   // ========================================================
 
-  const cargarPerfil = useCallback(
-    async (mostrarCarga = false) => {
-      try {
-        if (mostrarCarga) {
-          setCargando(true);
-        }
-
-        const datos =
-          await obtenerPerfilCompleto();
-
-        setPerfil(datos);
-
-        setNombres(datos.nombres ?? "");
-
-        setApellidos(datos.apellidos ?? "");
-
-        setNombrePreferido(
-          datos.nombre_preferido ?? "",
-        );
-
-        setTelefono(datos.telefono ?? "");
-
-        setFechaNacimiento(
-          datos.fecha_nacimiento ?? "",
-        );
-
-        setGenero(datos.genero ?? "");
-      } catch (error) {
-        Alert.alert(
-          "No pudimos cargar tu perfil",
-          error instanceof Error
-            ? error.message
-            : "Inténtalo nuevamente.",
-        );
-      } finally {
-        setCargando(false);
+  const cargarPerfil = useCallback(async (mostrarCarga = false) => {
+    try {
+      if (mostrarCarga) {
+        setCargando(true);
       }
-    },
-    [],
-  );
+
+      const datos = await obtenerPerfilCompleto();
+
+      setPerfil(datos);
+
+      setNombres(datos.nombres ?? "");
+
+      setApellidos(datos.apellidos ?? "");
+
+      setNombrePreferido(datos.nombre_preferido ?? "");
+
+      setTelefono(datos.telefono ?? "");
+
+      setFechaNacimiento(datos.fecha_nacimiento ?? "");
+
+      setGenero(datos.genero ?? "");
+    } catch (error) {
+      Alert.alert(
+        "No pudimos cargar tu perfil",
+        error instanceof Error ? error.message : "Inténtalo nuevamente.",
+      );
+    } finally {
+      setCargando(false);
+    }
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -338,20 +289,14 @@ export default function PerfilScreen() {
   // ========================================================
 
   const esIndependiente =
-    perfil?.rol_nombre
-      ?.trim()
-      .toLowerCase() === "independiente";
+    perfil?.rol_nombre?.trim().toLowerCase() === "independiente";
 
   const generoTexto =
-    GENEROS.find(
-      (item) => item.value === genero,
-    )?.label ?? "Selecciona una opción";
+    GENEROS.find((item) => item.value === genero)?.label ??
+    "Selecciona una opción";
 
   const uriFoto = perfil?.foto_url
-    ? `${perfil.foto_url
-    }${perfil.foto_url.includes("?")
-      ? "&"
-      : "?"
+    ? `${perfil.foto_url}${perfil.foto_url.includes("?") ? "&" : "?"
     }kiri_avatar_v=${versionFoto}`
     : null;
 
@@ -360,26 +305,14 @@ export default function PerfilScreen() {
   // ========================================================
 
   async function guardarCambios() {
-    if (
-      !nombres.trim() ||
-      !apellidos.trim()
-    ) {
-      Alert.alert(
-        "Datos incompletos",
-        "Ingresa tus nombres y apellidos.",
-      );
+    if (!nombres.trim() || !apellidos.trim()) {
+      Alert.alert("Datos incompletos", "Ingresa tus nombres y apellidos.");
 
       return;
     }
 
-    if (
-      fechaNacimiento &&
-      !/^\d{4}-\d{2}-\d{2}$/.test(fechaNacimiento)
-    ) {
-      Alert.alert(
-        "Fecha incorrecta",
-        "Utiliza el formato AAAA-MM-DD.",
-      );
+    if (fechaNacimiento && !/^\d{4}-\d{2}-\d{2}$/.test(fechaNacimiento)) {
+      Alert.alert("Fecha incorrecta", "Utiliza el formato AAAA-MM-DD.");
 
       return;
     }
@@ -405,9 +338,7 @@ export default function PerfilScreen() {
     } catch (error) {
       Alert.alert(
         "No se pudo guardar",
-        error instanceof Error
-          ? error.message
-          : "Inténtalo nuevamente.",
+        error instanceof Error ? error.message : "Inténtalo nuevamente.",
       );
     } finally {
       setGuardando(false);
@@ -421,38 +352,32 @@ export default function PerfilScreen() {
   function seleccionarFoto() {
     if (Platform.OS === "web") {
       void abrirGaleria();
-
       return;
     }
 
-    Alert.alert(
-      "Foto de perfil",
-      "Selecciona una opción",
-      [
-        {
-          text: "Cámara",
-          onPress: () => {
-            void tomarFoto();
-          },
+    Alert.alert("Foto de perfil", "Selecciona una opción", [
+      {
+        text: "Cámara",
+        onPress: () => {
+          void tomarFoto();
         },
-        {
-          text: "Galería",
-          onPress: () => {
-            void abrirGaleria();
-          },
+      },
+      {
+        text: "Galería",
+        onPress: () => {
+          void abrirGaleria();
         },
-        {
-          text: "Cancelar",
-          style: "cancel",
-        },
-      ],
-    );
+      },
+      {
+        text: "Cancelar",
+        style: "cancel",
+      },
+    ]);
   }
 
   async function tomarFoto() {
     try {
-      const permiso =
-        await ImagePicker.requestCameraPermissionsAsync();
+      const permiso = await ImagePicker.requestCameraPermissionsAsync();
 
       if (!permiso.granted) {
         Alert.alert(
@@ -463,35 +388,26 @@ export default function PerfilScreen() {
         return;
       }
 
-      const resultado =
-        await ImagePicker.launchCameraAsync({
-          allowsEditing: true,
-          aspect: [1, 1],
-          quality: 0.8,
-        });
+      const resultado = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
 
-      if (
-        !resultado.canceled &&
-        resultado.assets[0]
-      ) {
-        await guardarFoto(
-          resultado.assets[0],
-        );
+      if (!resultado.canceled && resultado.assets[0]) {
+        await guardarFoto(resultado.assets[0]);
       }
     } catch (error) {
       Alert.alert(
         "No se pudo abrir la cámara",
-        error instanceof Error
-          ? error.message
-          : "Inténtalo nuevamente.",
+        error instanceof Error ? error.message : "Inténtalo nuevamente.",
       );
     }
   }
 
   async function abrirGaleria() {
     try {
-      const permiso =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (!permiso.granted) {
         Alert.alert(
@@ -502,59 +418,39 @@ export default function PerfilScreen() {
         return;
       }
 
-      const resultado =
-        await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ["images"],
-          allowsEditing: true,
-          aspect: [1, 1],
-          quality: 0.8,
-        });
+      const resultado = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
 
-      if (
-        !resultado.canceled &&
-        resultado.assets[0]
-      ) {
-        await guardarFoto(
-          resultado.assets[0],
-        );
+      if (!resultado.canceled && resultado.assets[0]) {
+        await guardarFoto(resultado.assets[0]);
       }
     } catch (error) {
       Alert.alert(
         "No se pudo abrir la galería",
-        error instanceof Error
-          ? error.message
-          : "Inténtalo nuevamente.",
+        error instanceof Error ? error.message : "Inténtalo nuevamente.",
       );
     }
   }
 
-  async function guardarFoto(
-    asset: ImagePicker.ImagePickerAsset,
-  ) {
+  async function guardarFoto(asset: ImagePicker.ImagePickerAsset) {
     try {
       setSubiendoFoto(true);
 
-      await subirFotoPerfil(
-        asset.uri,
-        asset.mimeType ?? "image/jpeg",
-      );
+      await subirFotoPerfil(asset.uri, asset.mimeType ?? "image/jpeg");
 
       await cargarPerfil();
 
-      setVersionFoto(
-        (actual) => actual + 1,
-      );
+      setVersionFoto((actual) => actual + 1);
 
-      Alert.alert(
-        "Foto actualizada",
-        "Tu foto de perfil fue actualizada.",
-      );
+      Alert.alert("Foto actualizada", "Tu foto de perfil fue actualizada.");
     } catch (error) {
       Alert.alert(
         "No se pudo cambiar la foto",
-        error instanceof Error
-          ? error.message
-          : "Inténtalo nuevamente.",
+        error instanceof Error ? error.message : "Inténtalo nuevamente.",
       );
     } finally {
       setSubiendoFoto(false);
@@ -566,31 +462,19 @@ export default function PerfilScreen() {
   // ========================================================
 
   async function actualizarPassword() {
-    if (
-      !nuevaPassword ||
-      !confirmarPassword
-    ) {
-      Alert.alert(
-        "Datos incompletos",
-        "Completa ambos campos.",
-      );
+    if (!nuevaPassword || !confirmarPassword) {
+      Alert.alert("Datos incompletos", "Completa ambos campos.");
 
       return;
     }
 
     if (nuevaPassword.length < 8) {
-      Alert.alert(
-        "Contraseña muy corta",
-        "Utiliza al menos 8 caracteres.",
-      );
+      Alert.alert("Contraseña muy corta", "Utiliza al menos 8 caracteres.");
 
       return;
     }
 
-    if (
-      nuevaPassword !==
-      confirmarPassword
-    ) {
+    if (nuevaPassword !== confirmarPassword) {
       Alert.alert(
         "Las contraseñas no coinciden",
         "Verifica ambas contraseñas.",
@@ -602,12 +486,9 @@ export default function PerfilScreen() {
     try {
       setGuardandoPassword(true);
 
-      await cambiarPassword(
-        nuevaPassword,
-      );
+      await cambiarPassword(nuevaPassword);
 
       setNuevaPassword("");
-
       setConfirmarPassword("");
 
       setMostrarPassword(false);
@@ -619,9 +500,7 @@ export default function PerfilScreen() {
     } catch (error) {
       Alert.alert(
         "No se pudo actualizar",
-        error instanceof Error
-          ? error.message
-          : "Inténtalo nuevamente.",
+        error instanceof Error ? error.message : "Inténtalo nuevamente.",
       );
     } finally {
       setGuardandoPassword(false);
@@ -644,28 +523,17 @@ export default function PerfilScreen() {
     width: "100%" as const,
 
     flexDirection:
-      columnasFormulario === 2
-        ? ("row" as const)
-        : ("column" as const),
+      columnasFormulario === 2 ? ("row" as const) : ("column" as const),
 
     alignItems: "stretch" as const,
 
-    gap:
-      columnasFormulario === 2
-        ? 16
-        : 0,
+    gap: columnasFormulario === 2 ? 16 : 0,
   };
 
   const estiloCampoFormulario = {
-    flex:
-      columnasFormulario === 2
-        ? 1
-        : undefined,
+    flex: columnasFormulario === 2 ? 1 : undefined,
 
-    width:
-      columnasFormulario === 2
-        ? undefined
-        : ("100%" as const),
+    width: columnasFormulario === 2 ? undefined : ("100%" as const),
 
     minWidth: 0,
   };
@@ -679,24 +547,40 @@ export default function PerfilScreen() {
       <View
         style={{
           flex: 1,
+
           width: "100%",
+
+          /*
+           * IMPORTANTE:
+           *
+           * No usamos paddingLeft aquí.
+           *
+           * SidebarDesktop ya ocupa su espacio como hermano
+           * de esta pantalla dentro de (tabs)/_layout.tsx.
+           */
+
           backgroundColor,
+
           alignItems: "center",
+
           justifyContent: "center",
-          padding: 20,
+
+          paddingHorizontal: 20,
+          paddingVertical: 20,
         }}
       >
-        <ActivityIndicator
-          size="large"
-          color={primaryColor}
-        />
+        <ActivityIndicator size="large" color={primaryColor} />
 
         <Text
           style={{
             marginTop: 14,
+
             fontFamily: FONT.regular,
+
             fontSize: 14,
+
             color: textSecondaryColor,
+
             textAlign: "center",
           }}
         >
@@ -714,8 +598,18 @@ export default function PerfilScreen() {
     <View
       style={{
         flex: 1,
+
         width: "100%",
+
         minWidth: 0,
+
+        /*
+         * NO agregar paddingLeft aquí.
+         *
+         * SidebarDesktop ya está fuera de esta pantalla
+         * y ocupa su propio espacio en desktopRoot.
+         */
+
         backgroundColor,
       }}
     >
@@ -728,21 +622,34 @@ export default function PerfilScreen() {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
           flexGrow: 1,
+
           width: "100%",
+
           alignItems: "center",
+
           paddingTop: esTelefono ? 22 : 30,
+
           paddingBottom: paddingInferior,
+
+          paddingHorizontal: paddingHorizontal,
         }}
       >
-        {/* CONTENEDOR CENTRAL */}
+        {/* ==================================================
+            CONTENEDOR CENTRAL
+        ================================================== */}
 
         <View
           style={{
             width: anchoContenido,
+
             maxWidth: 1180,
+
             alignSelf: "center",
+
             flexDirection: "column",
+
             alignItems: "stretch",
+
             minWidth: 0,
           }}
         >
@@ -753,19 +660,20 @@ export default function PerfilScreen() {
           <View
             style={{
               width: "100%",
+
               alignItems: "center",
-              marginBottom: esTelefono
-                ? 26
-                : 32,
+
+              marginBottom: esTelefono ? 26 : 32,
             }}
           >
             <Text
               style={{
                 fontFamily: FONT.bold,
-                fontSize: esEscritorio
-                  ? 30
-                  : 25,
+
+                fontSize: esEscritorio ? 30 : 25,
+
                 color: textColor,
+
                 textAlign: "center",
               }}
             >
@@ -775,12 +683,15 @@ export default function PerfilScreen() {
             <Text
               style={{
                 marginTop: 5,
+
                 fontFamily: FONT.regular,
-                fontSize: esTelefono
-                  ? 14
-                  : 15,
+
+                fontSize: esTelefono ? 14 : 15,
+
                 lineHeight: 22,
+
                 color: textSecondaryColor,
+
                 textAlign: "center",
               }}
             >
@@ -796,16 +707,11 @@ export default function PerfilScreen() {
             style={{
               width: "100%",
 
-              flexDirection:
-                esEscritorio
-                  ? "row"
-                  : "column",
+              flexDirection: esEscritorio ? "row" : "column",
 
               alignItems: "stretch",
 
-              gap: esEscritorio
-                ? 28
-                : 0,
+              gap: esEscritorio ? 28 : 0,
             }}
           >
             {/* ==================================================
@@ -814,21 +720,14 @@ export default function PerfilScreen() {
 
             <View
               style={{
-                width: esEscritorio
-                  ? 320
-                  : "100%",
+                width: esEscritorio ? 320 : "100%",
 
                 minWidth: 0,
 
-                flexShrink:
-                  esEscritorio
-                    ? 0
-                    : 1,
+                flexShrink: esEscritorio ? 0 : 1,
               }}
             >
-              {/* ==============================================
-                  FOTO DE PERFIL
-              ============================================== */}
+              {/* FOTO DE PERFIL */}
 
               <View
                 style={{
@@ -836,9 +735,7 @@ export default function PerfilScreen() {
 
                   alignItems: "center",
 
-                  padding: esEscritorio
-                    ? 24
-                    : 20,
+                  padding: esEscritorio ? 24 : 20,
 
                   marginBottom: 22,
                 }}
@@ -851,21 +748,15 @@ export default function PerfilScreen() {
                 >
                   <View
                     style={{
-                      width: esEscritorio
-                        ? 124
-                        : 112,
+                      width: esEscritorio ? 124 : 112,
 
-                      height: esEscritorio
-                        ? 124
-                        : 112,
+                      height: esEscritorio ? 124 : 112,
 
                       position: "relative",
 
                       marginBottom: 22,
                     }}
                   >
-                    {/* AVATAR */}
-
                     <View
                       style={{
                         width: "100%",
@@ -875,11 +766,9 @@ export default function PerfilScreen() {
 
                         borderWidth: 3,
 
-                        borderColor:
-                          secondaryColor,
+                        borderColor: secondaryColor,
 
-                        backgroundColor:
-                          surfaceSecondaryColor,
+                        backgroundColor: surfaceSecondaryColor,
 
                         alignItems: "center",
 
@@ -909,8 +798,6 @@ export default function PerfilScreen() {
                       )}
                     </View>
 
-                    {/* CÁMARA */}
-
                     <TouchableOpacity
                       activeOpacity={0.8}
                       disabled={subiendoFoto}
@@ -930,48 +817,34 @@ export default function PerfilScreen() {
 
                         borderWidth: 3,
 
-                        borderColor:
-                          surfaceColor,
+                        borderColor: surfaceColor,
 
-                        backgroundColor:
-                          primaryColor,
+                        backgroundColor: primaryColor,
 
                         alignItems: "center",
 
                         justifyContent: "center",
 
-                        opacity:
-                          subiendoFoto
-                            ? 0.6
-                            : 1,
+                        opacity: subiendoFoto ? 0.6 : 1,
                       }}
                     >
                       {subiendoFoto ? (
-                        <ActivityIndicator
-                          size="small"
-                          color="#FFFFFF"
-                        />
+                        <ActivityIndicator size="small" color="#FFFFFF" />
                       ) : (
-                        <Ionicons
-                          name="camera"
-                          size={18}
-                          color="#FFFFFF"
-                        />
+                        <Ionicons name="camera" size={18} color="#FFFFFF" />
                       )}
                     </TouchableOpacity>
                   </View>
 
                   <Text
                     style={{
-                      fontFamily:
-                        FONT.regular,
+                      fontFamily: FONT.regular,
 
                       fontSize: 13,
 
                       lineHeight: 19,
 
-                      color:
-                        textSecondaryColor,
+                      color: textSecondaryColor,
 
                       textAlign: "center",
                     }}
@@ -981,13 +854,9 @@ export default function PerfilScreen() {
                 </View>
               </View>
 
-              {/* ==============================================
-                  CUENTA E INSTITUCIÓN
-              ============================================== */}
+              {/* CUENTA E INSTITUCIÓN */}
 
-              <TituloSeccion>
-                CUENTA E INSTITUCIÓN
-              </TituloSeccion>
+              <TituloSeccion>CUENTA E INSTITUCIÓN</TituloSeccion>
 
               <View
                 style={{
@@ -1002,10 +871,7 @@ export default function PerfilScreen() {
                   icono="person-circle-outline"
                   color={primaryColor}
                   titulo="Tipo de cuenta"
-                  valor={
-                    perfil?.rol_nombre ??
-                    "Sin rol"
-                  }
+                  valor={perfil?.rol_nombre ?? "Sin rol"}
                 />
 
                 <View
@@ -1014,8 +880,7 @@ export default function PerfilScreen() {
 
                     height: 1,
 
-                    backgroundColor:
-                      dividerColor,
+                    backgroundColor: dividerColor,
 
                     marginVertical: 16,
                   }}
@@ -1025,20 +890,13 @@ export default function PerfilScreen() {
                   icono="school-outline"
                   color={secondaryColor}
                   titulo="Institución"
-                  valor={
-                    perfil?.institucion_nombre ??
-                    "Cuenta independiente"
-                  }
+                  valor={perfil?.institucion_nombre ?? "Cuenta independiente"}
                 />
               </View>
 
-              {/* ==============================================
-                  APARIENCIA
-              ============================================== */}
+              {/* APARIENCIA */}
 
-              <TituloSeccion>
-                APARIENCIA
-              </TituloSeccion>
+              <TituloSeccion>APARIENCIA</TituloSeccion>
 
               <View
                 accessibilityRole="radiogroup"
@@ -1074,215 +932,151 @@ export default function PerfilScreen() {
 
                     lineHeight: 19,
 
-                    color:
-                      textSecondaryColor,
+                    color: textSecondaryColor,
                   }}
                 >
-                  Elige cómo quieres visualizar Kiri.
-                  Por defecto utilizamos la apariencia
-                  de tu dispositivo.
+                  Elige cómo quieres visualizar Kiri. Por defecto utilizamos la
+                  apariencia de tu dispositivo.
                 </Text>
-
-                {/* OPCIONES DE TEMA */}
 
                 <View
                   style={{
                     width: "100%",
-
                     gap: 10,
                   }}
                 >
-                  {OPCIONES_TEMA.map(
-                    (opcion) => {
-                      const seleccionada =
-                        themePreference ===
-                        opcion.value;
+                  {OPCIONES_TEMA.map((opcion) => {
+                    const seleccionada = themePreference === opcion.value;
 
-                      const descripcion =
-                        opcion.value ===
-                          "system"
-                          ? `Seguir el dispositivo (actualmente ${systemTheme ===
-                            "dark"
-                            ? "oscuro"
-                            : "claro"
-                          })`
-                          : opcion.description;
+                    const descripcion =
+                      opcion.value === "system"
+                        ? `Seguir el dispositivo (actualmente ${systemTheme === "dark" ? "oscuro" : "claro"
+                        })`
+                        : opcion.description;
 
-                      return (
-                        <TouchableOpacity
-                          key={opcion.value}
-                          activeOpacity={0.8}
-                          onPress={() =>
-                            setThemeMode(
-                              opcion.value,
-                            )
-                          }
-                          accessibilityRole="radio"
-                          accessibilityLabel={
-                            opcion.title
-                          }
-                          accessibilityState={{
-                            checked:
-                              seleccionada,
-                          }}
+                    return (
+                      <TouchableOpacity
+                        key={opcion.value}
+                        activeOpacity={0.8}
+                        onPress={() => setThemeMode(opcion.value)}
+                        accessibilityRole="radio"
+                        accessibilityLabel={opcion.title}
+                        accessibilityState={{
+                          checked: seleccionada,
+                        }}
+                        style={{
+                          width: "100%",
+
+                          borderRadius: 15,
+
+                          overflow: "hidden",
+                        }}
+                      >
+                        <View
                           style={{
                             width: "100%",
 
+                            minHeight: 76,
+
+                            paddingHorizontal: 12,
+
+                            paddingVertical: 12,
+
+                            borderWidth: seleccionada ? 2 : 1,
+
+                            borderColor: seleccionada
+                              ? primaryColor
+                              : borderColor,
+
                             borderRadius: 15,
 
-                            overflow:
-                              "hidden",
+                            backgroundColor: seleccionada
+                              ? primarySoftColor
+                              : surfaceSecondaryColor,
+
+                            flexDirection: "row",
+
+                            alignItems: "center",
+
+                            gap: 11,
                           }}
                         >
                           <View
                             style={{
-                              width: "100%",
+                              width: 42,
 
-                              minHeight: 76,
+                              height: 42,
 
-                              paddingHorizontal:
-                                12,
+                              borderRadius: 13,
 
-                              paddingVertical:
-                                12,
+                              flexShrink: 0,
 
-                              borderWidth:
-                                seleccionada
-                                  ? 2
-                                  : 1,
+                              backgroundColor: surfaceColor,
 
-                              borderColor:
-                                seleccionada
-                                  ? primaryColor
-                                  : borderColor,
+                              alignItems: "center",
 
-                              borderRadius:
-                                15,
-
-                              backgroundColor:
-                                seleccionada
-                                  ? primarySoftColor
-                                  : surfaceSecondaryColor,
-
-                              flexDirection:
-                                "row",
-
-                              alignItems:
-                                "center",
-
-                              gap: 11,
+                              justifyContent: "center",
                             }}
                           >
-                            {/* ICONO */}
-
-                            <View
-                              style={{
-                                width: 42,
-
-                                height: 42,
-
-                                borderRadius:
-                                  13,
-
-                                flexShrink: 0,
-
-                                backgroundColor:
-                                  surfaceColor,
-
-                                alignItems:
-                                  "center",
-
-                                justifyContent:
-                                  "center",
-                              }}
-                            >
-                              <Ionicons
-                                name={
-                                  opcion.icon
-                                }
-                                size={21}
-                                color={
-                                  primaryColor
-                                }
-                              />
-                            </View>
-
-                            {/* DESCRIPCIÓN */}
-
-                            <View
-                              style={{
-                                flex: 1,
-
-                                minWidth: 0,
-                              }}
-                            >
-                              <Text
-                                style={{
-                                  fontFamily:
-                                    FONT.bold,
-
-                                  fontSize:
-                                    14,
-
-                                  lineHeight:
-                                    19,
-
-                                  color:
-                                    textColor,
-                                }}
-                              >
-                                {
-                                  opcion.title
-                                }
-                              </Text>
-
-                              <Text
-                                style={{
-                                  marginTop:
-                                    3,
-
-                                  fontFamily:
-                                    FONT.regular,
-
-                                  fontSize:
-                                    12,
-
-                                  lineHeight:
-                                    17,
-
-                                  color:
-                                    textSecondaryColor,
-                                }}
-                              >
-                                {
-                                  descripcion
-                                }
-                              </Text>
-                            </View>
-
-                            {/* SELECCIÓN */}
-
                             <Ionicons
-                              name={
-                                seleccionada
-                                  ? "radio-button-on"
-                                  : "radio-button-off"
-                              }
-                              size={23}
-                              color={
-                                seleccionada
-                                  ? primaryColor
-                                  : textMutedColor
-                              }
+                              name={opcion.icon}
+                              size={21}
+                              color={primaryColor}
                             />
                           </View>
-                        </TouchableOpacity>
-                      );
-                    },
-                  )}
-                </View>
 
-                {/* TEMA ACTIVO */}
+                          <View
+                            style={{
+                              flex: 1,
+
+                              minWidth: 0,
+                            }}
+                          >
+                            <Text
+                              style={{
+                                fontFamily: FONT.bold,
+
+                                fontSize: 14,
+
+                                lineHeight: 19,
+
+                                color: textColor,
+                              }}
+                            >
+                              {opcion.title}
+                            </Text>
+
+                            <Text
+                              style={{
+                                marginTop: 3,
+
+                                fontFamily: FONT.regular,
+
+                                fontSize: 12,
+
+                                lineHeight: 17,
+
+                                color: textSecondaryColor,
+                              }}
+                            >
+                              {descripcion}
+                            </Text>
+                          </View>
+
+                          <Ionicons
+                            name={
+                              seleccionada
+                                ? "radio-button-on"
+                                : "radio-button-off"
+                            }
+                            size={23}
+                            color={seleccionada ? primaryColor : textMutedColor}
+                          />
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
 
                 <View
                   style={{
@@ -1294,8 +1088,7 @@ export default function PerfilScreen() {
 
                     borderTopWidth: 1,
 
-                    borderTopColor:
-                      dividerColor,
+                    borderTopColor: dividerColor,
 
                     flexDirection: "row",
 
@@ -1306,9 +1099,7 @@ export default function PerfilScreen() {
                 >
                   <Ionicons
                     name={
-                      themeMode === "dark"
-                        ? "moon-outline"
-                        : "sunny-outline"
+                      themeMode === "dark" ? "moon-outline" : "sunny-outline"
                     }
                     size={17}
                     color={primaryColor}
@@ -1316,30 +1107,21 @@ export default function PerfilScreen() {
 
                   <Text
                     style={{
-                      fontFamily:
-                        FONT.semibold,
+                      fontFamily: FONT.semibold,
 
                       fontSize: 12,
 
-                      color:
-                        textSecondaryColor,
+                      color: textSecondaryColor,
                     }}
                   >
-                    Tema activo:{" "}
-                    {themeMode === "dark"
-                      ? "Oscuro"
-                      : "Claro"}
+                    Tema activo: {themeMode === "dark" ? "Oscuro" : "Claro"}
                   </Text>
                 </View>
               </View>
 
-              {/* ==============================================
-                  PRIVACIDAD
-              ============================================== */}
+              {/* PRIVACIDAD */}
 
-              <TituloSeccion>
-                PRIVACIDAD
-              </TituloSeccion>
+              <TituloSeccion>PRIVACIDAD</TituloSeccion>
 
               <View
                 style={{
@@ -1351,8 +1133,7 @@ export default function PerfilScreen() {
 
                   borderRadius: 18,
 
-                  backgroundColor:
-                    primarySoftColor,
+                  backgroundColor: primarySoftColor,
 
                   padding: 17,
 
@@ -1360,8 +1141,7 @@ export default function PerfilScreen() {
 
                   flexDirection: "row",
 
-                  alignItems:
-                    "flex-start",
+                  alignItems: "flex-start",
 
                   gap: 12,
                 }}
@@ -1378,11 +1158,9 @@ export default function PerfilScreen() {
 
                     alignItems: "center",
 
-                    justifyContent:
-                      "center",
+                    justifyContent: "center",
 
-                    backgroundColor:
-                      surfaceColor,
+                    backgroundColor: surfaceColor,
                   }}
                 >
                   <Ionicons
@@ -1400,8 +1178,7 @@ export default function PerfilScreen() {
                 >
                   <Text
                     style={{
-                      fontFamily:
-                        FONT.bold,
+                      fontFamily: FONT.bold,
 
                       fontSize: 15,
 
@@ -1415,54 +1192,41 @@ export default function PerfilScreen() {
                     style={{
                       marginTop: 5,
 
-                      fontFamily:
-                        FONT.regular,
+                      fontFamily: FONT.regular,
 
                       fontSize: 12,
 
                       lineHeight: 19,
 
-                      color:
-                        textSecondaryColor,
+                      color: textSecondaryColor,
                     }}
                   >
-                    Tu información personal se mantiene
-                    privada y se utiliza para personalizar
-                    tu experiencia dentro de Kiri.
+                    Tu información personal se mantiene privada y se utiliza
+                    para personalizar tu experiencia dentro de Kiri.
                   </Text>
                 </View>
               </View>
 
-              {/* ==============================================
-                  CERRAR SESIÓN EN ESCRITORIO
-              ============================================== */}
+              {/* CERRAR SESIÓN ESCRITORIO */}
 
               {esEscritorio && (
                 <TouchableOpacity
                   activeOpacity={0.8}
-                  onPress={() =>
-                    setMostrarLogout(
-                      true,
-                    )
-                  }
+                  onPress={() => setMostrarLogout(true)}
                   style={{
                     ...tarjetaBase,
 
                     minHeight: 54,
 
-                    flexDirection:
-                      "row",
+                    flexDirection: "row",
 
-                    alignItems:
-                      "center",
+                    alignItems: "center",
 
-                    justifyContent:
-                      "center",
+                    justifyContent: "center",
 
                     gap: 9,
 
-                    paddingHorizontal:
-                      16,
+                    paddingHorizontal: 16,
                   }}
                 >
                   <Ionicons
@@ -1473,8 +1237,7 @@ export default function PerfilScreen() {
 
                   <Text
                     style={{
-                      fontFamily:
-                        FONT.bold,
+                      fontFamily: FONT.bold,
 
                       fontSize: 15,
 
@@ -1493,120 +1256,68 @@ export default function PerfilScreen() {
 
             <View
               style={{
-                flex: esEscritorio
-                  ? 1
-                  : undefined,
+                flex: esEscritorio ? 1 : undefined,
 
-                width: esEscritorio
-                  ? undefined
-                  : "100%",
+                width: esEscritorio ? undefined : "100%",
 
                 minWidth: 0,
 
                 flexShrink: 1,
               }}
             >
-              {/* ==============================================
-                  INFORMACIÓN PERSONAL
-              ============================================== */}
+              {/* INFORMACIÓN PERSONAL */}
 
               <View
                 style={{
                   ...tarjetaBase,
 
-                  padding: esTelefono
-                    ? 18
-                    : 24,
+                  padding: esTelefono ? 18 : 24,
 
                   marginBottom: 22,
                 }}
               >
-                <TituloSeccion
-                  sinMargenSuperior
-                >
+                <TituloSeccion sinMargenSuperior>
                   INFORMACIÓN PERSONAL
                 </TituloSeccion>
 
-                {/* NOMBRES / APELLIDOS */}
-
-                <View
-                  style={
-                    estiloFilaFormulario
-                  }
-                >
-                  <View
-                    style={
-                      estiloCampoFormulario
-                    }
-                  >
+                <View style={estiloFilaFormulario}>
+                  <View style={estiloCampoFormulario}>
                     <Campo
                       titulo="Nombres"
                       valor={nombres}
-                      onChange={
-                        setNombres
-                      }
+                      onChange={setNombres}
                       placeholder="Tus nombres"
                       icono="person-outline"
                     />
                   </View>
 
-                  <View
-                    style={
-                      estiloCampoFormulario
-                    }
-                  >
+                  <View style={estiloCampoFormulario}>
                     <Campo
                       titulo="Apellidos"
-                      valor={
-                        apellidos
-                      }
-                      onChange={
-                        setApellidos
-                      }
+                      valor={apellidos}
+                      onChange={setApellidos}
                       placeholder="Tus apellidos"
                       icono="person-outline"
                     />
                   </View>
                 </View>
 
-                {/* NOMBRE PREFERIDO / NACIMIENTO */}
-
-                <View
-                  style={
-                    estiloFilaFormulario
-                  }
-                >
-                  <View
-                    style={
-                      estiloCampoFormulario
-                    }
-                  >
+                <View style={estiloFilaFormulario}>
+                  <View style={estiloCampoFormulario}>
                     <Campo
                       titulo="Nombre preferido"
-                      valor={
-                        nombrePreferido
-                      }
-                      onChange={
-                        setNombrePreferido
-                      }
+                      valor={nombrePreferido}
+                      onChange={setNombrePreferido}
                       placeholder="¿Cómo quieres que te llamemos?"
                       icono="happy-outline"
                     />
                   </View>
 
-                  <View
-                    style={
-                      estiloCampoFormulario
-                    }
-                  >
+                  <View style={estiloCampoFormulario}>
                     <Campo
                       titulo="Fecha de nacimiento"
-                      valor={
-                        fechaNacimiento
-                      }
-                      onChange={
-                        setFechaNacimiento
-                      }
+                      valor={fechaNacimiento}
+                      onChange={setFechaNacimiento}
                       placeholder="AAAA-MM-DD"
                       icono="calendar-outline"
                       keyboardType="default"
@@ -1614,77 +1325,49 @@ export default function PerfilScreen() {
                   </View>
                 </View>
 
-                {/* GÉNERO / TELÉFONO */}
-
                 <View
                   style={{
                     ...estiloFilaFormulario,
 
-                    alignItems:
-                      "flex-start",
+                    alignItems: "flex-start",
                   }}
                 >
-                  {/* GÉNERO */}
-
-                  <View
-                    style={
-                      estiloCampoFormulario
-                    }
-                  >
+                  <View style={estiloCampoFormulario}>
                     <Text
                       style={{
-                        marginBottom:
-                          7,
+                        marginBottom: 7,
 
-                        fontFamily:
-                          FONT.semibold,
+                        fontFamily: FONT.semibold,
 
                         fontSize: 13,
 
-                        color:
-                          textColor,
+                        color: textColor,
                       }}
                     >
                       Género
                     </Text>
 
                     <TouchableOpacity
-                      activeOpacity={
-                        0.8
-                      }
-                      onPress={() =>
-                        setMostrarGeneros(
-                          (actual) =>
-                            !actual,
-                        )
-                      }
+                      activeOpacity={0.8}
+                      onPress={() => setMostrarGeneros((actual) => !actual)}
                       style={{
-                        width:
-                          "100%",
+                        width: "100%",
 
-                        minHeight:
-                          52,
+                        minHeight: 52,
 
-                        borderWidth:
-                          1,
+                        borderWidth: 1,
 
-                        borderColor:
-                          inputBorderColor,
+                        borderColor: inputBorderColor,
 
-                        borderRadius:
-                          14,
+                        borderRadius: 14,
 
-                        backgroundColor:
-                          inputBackgroundColor,
+                        backgroundColor: inputBackgroundColor,
 
-                        paddingHorizontal:
-                          14,
+                        paddingHorizontal: 14,
 
-                        flexDirection:
-                          "row",
+                        flexDirection: "row",
 
-                        alignItems:
-                          "center",
+                        alignItems: "center",
 
                         gap: 10,
                       }}
@@ -1692,175 +1375,109 @@ export default function PerfilScreen() {
                       <Ionicons
                         name="people-outline"
                         size={19}
-                        color={
-                          primaryColor
-                        }
+                        color={primaryColor}
                       />
 
                       <Text
-                        numberOfLines={
-                          1
-                        }
+                        numberOfLines={1}
                         style={{
                           flex: 1,
 
-                          minWidth:
-                            0,
+                          minWidth: 0,
 
-                          fontFamily:
-                            FONT.regular,
+                          fontFamily: FONT.regular,
 
-                          fontSize:
-                            14,
+                          fontSize: 14,
 
-                          color:
-                            textColor,
+                          color: textColor,
                         }}
                       >
-                        {
-                          generoTexto
-                        }
+                        {generoTexto}
                       </Text>
 
                       <Ionicons
-                        name={
-                          mostrarGeneros
-                            ? "chevron-up"
-                            : "chevron-down"
-                        }
+                        name={mostrarGeneros ? "chevron-up" : "chevron-down"}
                         size={18}
-                        color={
-                          iconColor
-                        }
+                        color={iconColor}
                       />
                     </TouchableOpacity>
-
-                    {/* LISTA DE GÉNEROS */}
 
                     {mostrarGeneros && (
                       <View
                         style={{
-                          width:
-                            "100%",
+                          width: "100%",
 
-                          marginTop:
-                            7,
+                          marginTop: 7,
 
-                          marginBottom:
-                            16,
+                          marginBottom: 16,
 
-                          backgroundColor:
-                            surfaceColor,
+                          backgroundColor: surfaceColor,
 
-                          borderWidth:
-                            1,
+                          borderWidth: 1,
 
                           borderColor,
 
-                          borderRadius:
-                            14,
+                          borderRadius: 14,
 
-                          overflow:
-                            "hidden",
+                          overflow: "hidden",
                         }}
                       >
-                        {GENEROS.map(
-                          (
-                            opcion,
-                            index,
-                          ) => (
-                            <TouchableOpacity
-                              key={
-                                opcion.value
-                              }
-                              activeOpacity={
-                                0.75
-                              }
-                              onPress={() => {
-                                setGenero(
-                                  opcion.value,
-                                );
+                        {GENEROS.map((opcion, index) => (
+                          <TouchableOpacity
+                            key={opcion.value}
+                            activeOpacity={0.75}
+                            onPress={() => {
+                              setGenero(opcion.value);
 
-                                setMostrarGeneros(
-                                  false,
-                                );
-                              }}
+                              setMostrarGeneros(false);
+                            }}
+                            style={{
+                              minHeight: 47,
+
+                              paddingHorizontal: 14,
+
+                              flexDirection: "row",
+
+                              alignItems: "center",
+
+                              justifyContent: "space-between",
+
+                              borderBottomWidth:
+                                index === GENEROS.length - 1 ? 0 : 1,
+
+                              borderBottomColor: dividerColor,
+                            }}
+                          >
+                            <Text
                               style={{
-                                minHeight:
-                                  47,
+                                fontFamily: FONT.regular,
 
-                                paddingHorizontal:
-                                  14,
+                                fontSize: 14,
 
-                                flexDirection:
-                                  "row",
-
-                                alignItems:
-                                  "center",
-
-                                justifyContent:
-                                  "space-between",
-
-                                borderBottomWidth:
-                                  index ===
-                                    GENEROS.length -
-                                    1
-                                    ? 0
-                                    : 1,
-
-                                borderBottomColor:
-                                  dividerColor,
+                                color: textColor,
                               }}
                             >
-                              <Text
-                                style={{
-                                  fontFamily:
-                                    FONT.regular,
+                              {opcion.label}
+                            </Text>
 
-                                  fontSize:
-                                    14,
-
-                                  color:
-                                    textColor,
-                                }}
-                              >
-                                {
-                                  opcion.label
-                                }
-                              </Text>
-
-                              {genero ===
-                                opcion.value && (
-                                  <Ionicons
-                                    name="checkmark-circle"
-                                    size={20}
-                                    color={
-                                      secondaryColor
-                                    }
-                                  />
-                                )}
-                            </TouchableOpacity>
-                          ),
-                        )}
+                            {genero === opcion.value && (
+                              <Ionicons
+                                name="checkmark-circle"
+                                size={20}
+                                color={secondaryColor}
+                              />
+                            )}
+                          </TouchableOpacity>
+                        ))}
                       </View>
                     )}
                   </View>
 
-                  {/* TELÉFONO */}
-
-                  <View
-                    style={
-                      estiloCampoFormulario
-                    }
-                  >
+                  <View style={estiloCampoFormulario}>
                     <Campo
                       titulo="Teléfono"
-                      valor={
-                        telefono
-                      }
-                      onChange={
-                        setTelefono
-                      }
+                      valor={telefono}
+                      onChange={setTelefono}
                       placeholder="Número de teléfono"
                       icono="call-outline"
                       keyboardType="phone-pad"
@@ -1869,33 +1486,24 @@ export default function PerfilScreen() {
                 </View>
               </View>
 
-              {/* ==============================================
-                  CUENTA
-              ============================================== */}
+              {/* CUENTA */}
 
               <View
                 style={{
                   ...tarjetaBase,
 
-                  padding: esTelefono
-                    ? 18
-                    : 24,
+                  padding: esTelefono ? 18 : 24,
 
                   marginBottom: 22,
                 }}
               >
-                <TituloSeccion
-                  sinMargenSuperior
-                >
-                  CUENTA
-                </TituloSeccion>
+                <TituloSeccion sinMargenSuperior>CUENTA</TituloSeccion>
 
                 <Text
                   style={{
                     marginBottom: 7,
 
-                    fontFamily:
-                      FONT.semibold,
+                    fontFamily: FONT.semibold,
 
                     fontSize: 13,
 
@@ -1917,17 +1525,13 @@ export default function PerfilScreen() {
 
                     borderRadius: 14,
 
-                    backgroundColor:
-                      surfaceSecondaryColor,
+                    backgroundColor: surfaceSecondaryColor,
 
-                    paddingHorizontal:
-                      14,
+                    paddingHorizontal: 14,
 
-                    flexDirection:
-                      "row",
+                    flexDirection: "row",
 
-                    alignItems:
-                      "center",
+                    alignItems: "center",
 
                     gap: 10,
                   }}
@@ -1935,76 +1539,51 @@ export default function PerfilScreen() {
                   <Ionicons
                     name="mail-outline"
                     size={19}
-                    color={
-                      primaryColor
-                    }
+                    color={primaryColor}
                   />
 
                   <Text
-                    numberOfLines={
-                      1
-                    }
+                    numberOfLines={1}
                     style={{
                       flex: 1,
 
                       minWidth: 0,
 
-                      fontFamily:
-                        FONT.regular,
+                      fontFamily: FONT.regular,
 
                       fontSize: 14,
 
-                      color:
-                        textSecondaryColor,
+                      color: textSecondaryColor,
                     }}
                   >
-                    {perfil?.correo ??
-                      ""}
+                    {perfil?.correo ?? ""}
                   </Text>
 
                   <Ionicons
                     name="lock-closed-outline"
                     size={17}
-                    color={
-                      iconColor
-                    }
+                    color={iconColor}
                   />
                 </View>
               </View>
 
-              {/* ==============================================
-                  SEGURIDAD
-              ============================================== */}
+              {/* SEGURIDAD */}
 
               {esIndependiente && (
                 <View
                   style={{
                     ...tarjetaBase,
 
-                    padding: esTelefono
-                      ? 18
-                      : 24,
+                    padding: esTelefono ? 18 : 24,
 
-                    marginBottom:
-                      22,
+                    marginBottom: 22,
                   }}
                 >
-                  <TituloSeccion
-                    sinMargenSuperior
-                  >
-                    SEGURIDAD
-                  </TituloSeccion>
+                  <TituloSeccion sinMargenSuperior>SEGURIDAD</TituloSeccion>
 
                   <TouchableOpacity
-                    activeOpacity={
-                      0.8
-                    }
-                    onPress={() =>
-                      setMostrarPassword(
-                        (actual) =>
-                          !actual,
-                      )
-                    }
+                    activeOpacity={0.8}
+                    onPress={() => setMostrarPassword((actual) => !actual)}
                     style={{
                       width: "100%",
 
@@ -2012,16 +1591,13 @@ export default function PerfilScreen() {
 
                       padding: 14,
 
-                      backgroundColor:
-                        surfaceSecondaryColor,
+                      backgroundColor: surfaceSecondaryColor,
 
                       borderRadius: 15,
 
-                      flexDirection:
-                        "row",
+                      flexDirection: "row",
 
-                      alignItems:
-                        "center",
+                      alignItems: "center",
 
                       gap: 12,
                     }}
@@ -2032,49 +1608,37 @@ export default function PerfilScreen() {
 
                         height: 43,
 
-                        borderRadius:
-                          22,
+                        borderRadius: 22,
 
-                        backgroundColor:
-                          primarySoftColor,
+                        backgroundColor: primarySoftColor,
 
-                        alignItems:
-                          "center",
+                        alignItems: "center",
 
-                        justifyContent:
-                          "center",
+                        justifyContent: "center",
 
-                        flexShrink:
-                          0,
+                        flexShrink: 0,
                       }}
                     >
                       <Ionicons
                         name="key-outline"
                         size={21}
-                        color={
-                          primaryColor
-                        }
+                        color={primaryColor}
                       />
                     </View>
 
                     <View
                       style={{
                         flex: 1,
-
-                        minWidth:
-                          0,
+                        minWidth: 0,
                       }}
                     >
                       <Text
                         style={{
-                          fontFamily:
-                            FONT.bold,
+                          fontFamily: FONT.bold,
 
-                          fontSize:
-                            15,
+                          fontSize: 15,
 
-                          color:
-                            textColor,
+                          color: textColor,
                         }}
                       >
                         Cambiar contraseña
@@ -2082,20 +1646,15 @@ export default function PerfilScreen() {
 
                       <Text
                         style={{
-                          marginTop:
-                            3,
+                          marginTop: 3,
 
-                          fontFamily:
-                            FONT.regular,
+                          fontFamily: FONT.regular,
 
-                          fontSize:
-                            12,
+                          fontSize: 12,
 
-                          lineHeight:
-                            18,
+                          lineHeight: 18,
 
-                          color:
-                            textSecondaryColor,
+                          color: textSecondaryColor,
                         }}
                       >
                         Actualiza la contraseña de tu cuenta
@@ -2103,131 +1662,74 @@ export default function PerfilScreen() {
                     </View>
 
                     <Ionicons
-                      name={
-                        mostrarPassword
-                          ? "chevron-up"
-                          : "chevron-down"
-                      }
+                      name={mostrarPassword ? "chevron-up" : "chevron-down"}
                       size={19}
-                      color={
-                        iconColor
-                      }
+                      color={iconColor}
                     />
                   </TouchableOpacity>
-
-                  {/* FORMULARIO DE CONTRASEÑA */}
 
                   {mostrarPassword && (
                     <View
                       style={{
                         width: "100%",
 
-                        marginTop:
-                          14,
+                        marginTop: 14,
 
-                        padding:
-                          esTelefono
-                            ? 14
-                            : 18,
+                        padding: esTelefono ? 14 : 18,
 
-                        borderWidth:
-                          1,
+                        borderWidth: 1,
 
                         borderColor,
 
-                        borderRadius:
-                          15,
+                        borderRadius: 15,
 
-                        backgroundColor:
-                          surfaceColor,
+                        backgroundColor: surfaceColor,
                       }}
                     >
                       <PasswordInput
                         titulo="Nueva contraseña"
-                        valor={
-                          nuevaPassword
-                        }
-                        onChange={
-                          setNuevaPassword
-                        }
-                        visible={
-                          verPassword
-                        }
-                        onToggle={() =>
-                          setVerPassword(
-                            (actual) =>
-                              !actual,
-                          )
-                        }
+                        valor={nuevaPassword}
+                        onChange={setNuevaPassword}
+                        visible={verPassword}
+                        onToggle={() => setVerPassword((actual) => !actual)}
                       />
 
                       <PasswordInput
                         titulo="Confirmar contraseña"
-                        valor={
-                          confirmarPassword
-                        }
-                        onChange={
-                          setConfirmarPassword
-                        }
-                        visible={
-                          verConfirmacion
-                        }
-                        onToggle={() =>
-                          setVerConfirmacion(
-                            (actual) =>
-                              !actual,
-                          )
-                        }
+                        valor={confirmarPassword}
+                        onChange={setConfirmarPassword}
+                        visible={verConfirmacion}
+                        onToggle={() => setVerConfirmacion((actual) => !actual)}
                       />
 
                       <TouchableOpacity
-                        activeOpacity={
-                          0.8
-                        }
-                        disabled={
-                          guardandoPassword
-                        }
-                        onPress={
-                          actualizarPassword
-                        }
+                        activeOpacity={0.8}
+                        disabled={guardandoPassword}
+                        onPress={actualizarPassword}
                         style={{
-                          width:
-                            "100%",
+                          width: "100%",
 
-                          minHeight:
-                            50,
+                          minHeight: 50,
 
-                          borderRadius:
-                            14,
+                          borderRadius: 14,
 
-                          backgroundColor:
-                            primaryColor,
+                          backgroundColor: primaryColor,
 
-                          flexDirection:
-                            "row",
+                          flexDirection: "row",
 
-                          alignItems:
-                            "center",
+                          alignItems: "center",
 
-                          justifyContent:
-                            "center",
+                          justifyContent: "center",
 
                           gap: 9,
 
-                          paddingHorizontal:
-                            12,
+                          paddingHorizontal: 12,
 
-                          opacity:
-                            guardandoPassword
-                              ? 0.65
-                              : 1,
+                          opacity: guardandoPassword ? 0.65 : 1,
                         }}
                       >
                         {guardandoPassword ? (
-                          <ActivityIndicator
-                            size="small"
-                            color="#FFFFFF"
-                          />
+                          <ActivityIndicator size="small" color="#FFFFFF" />
                         ) : (
                           <>
                             <Ionicons
@@ -2238,14 +1740,11 @@ export default function PerfilScreen() {
 
                             <Text
                               style={{
-                                fontFamily:
-                                  FONT.bold,
+                                fontFamily: FONT.bold,
 
-                                fontSize:
-                                  14,
+                                fontSize: 14,
 
-                                color:
-                                  "#FFFFFF",
+                                color: "#FFFFFF",
                               }}
                             >
                               Actualizar contraseña
@@ -2258,76 +1757,49 @@ export default function PerfilScreen() {
                 </View>
               )}
 
-              {/* ==============================================
-                  GUARDAR CAMBIOS
-              ============================================== */}
+              {/* GUARDAR CAMBIOS */}
 
               <TouchableOpacity
                 activeOpacity={0.8}
                 disabled={guardando}
-                onPress={
-                  guardarCambios
-                }
+                onPress={guardarCambios}
                 style={{
-                  width:
-                    esEscritorio
-                      ? 320
-                      : "100%",
+                  width: esEscritorio ? 320 : "100%",
 
-                  alignSelf:
-                    esEscritorio
-                      ? "flex-end"
-                      : "stretch",
+                  alignSelf: esEscritorio ? "flex-end" : "stretch",
 
                   minHeight: 54,
 
                   borderRadius: 15,
 
-                  backgroundColor:
-                    primaryColor,
+                  backgroundColor: primaryColor,
 
-                  paddingHorizontal:
-                    18,
+                  paddingHorizontal: 18,
 
-                  flexDirection:
-                    "row",
+                  flexDirection: "row",
 
-                  alignItems:
-                    "center",
+                  alignItems: "center",
 
-                  justifyContent:
-                    "center",
+                  justifyContent: "center",
 
                   gap: 10,
 
-                  opacity:
-                    guardando
-                      ? 0.65
-                      : 1,
+                  opacity: guardando ? 0.65 : 1,
                 }}
               >
                 {guardando ? (
-                  <ActivityIndicator
-                    size="small"
-                    color="#FFFFFF"
-                  />
+                  <ActivityIndicator size="small" color="#FFFFFF" />
                 ) : (
                   <>
-                    <Ionicons
-                      name="save-outline"
-                      size={20}
-                      color="#FFFFFF"
-                    />
+                    <Ionicons name="save-outline" size={20} color="#FFFFFF" />
 
                     <Text
                       style={{
-                        fontFamily:
-                          FONT.bold,
+                        fontFamily: FONT.bold,
 
                         fontSize: 15,
 
-                        color:
-                          "#FFFFFF",
+                        color: "#FFFFFF",
                       }}
                     >
                       Guardar cambios
@@ -2336,18 +1808,12 @@ export default function PerfilScreen() {
                 )}
               </TouchableOpacity>
 
-              {/* ==============================================
-                  CERRAR SESIÓN MÓVIL / TABLET
-              ============================================== */}
+              {/* CERRAR SESIÓN MÓVIL / TABLET */}
 
               {!esEscritorio && (
                 <TouchableOpacity
                   activeOpacity={0.8}
-                  onPress={() =>
-                    setMostrarLogout(
-                      true,
-                    )
-                  }
+                  onPress={() => setMostrarLogout(true)}
                   style={{
                     ...tarjetaBase,
 
@@ -2355,19 +1821,15 @@ export default function PerfilScreen() {
 
                     marginTop: 14,
 
-                    flexDirection:
-                      "row",
+                    flexDirection: "row",
 
-                    alignItems:
-                      "center",
+                    alignItems: "center",
 
-                    justifyContent:
-                      "center",
+                    justifyContent: "center",
 
                     gap: 9,
 
-                    paddingHorizontal:
-                      16,
+                    paddingHorizontal: 16,
                   }}
                 >
                   <Ionicons
@@ -2378,8 +1840,7 @@ export default function PerfilScreen() {
 
                   <Text
                     style={{
-                      fontFamily:
-                        FONT.bold,
+                      fontFamily: FONT.bold,
 
                       fontSize: 15,
 
@@ -2401,9 +1862,7 @@ export default function PerfilScreen() {
 
       <LogoutModal
         visible={mostrarLogout}
-        onClose={() =>
-          setMostrarLogout(false)
-        }
+        onClose={() => setMostrarLogout(false)}
       />
     </View>
   );
@@ -2430,30 +1889,15 @@ function Campo({
   icono,
   keyboardType = "default",
 }: CampoProps) {
-  const textColor = useThemeColor(
-    {},
-    "text",
-  );
+  const textColor = useThemeColor({}, "text");
 
-  const primaryColor = useThemeColor(
-    {},
-    "primary",
-  );
+  const primaryColor = useThemeColor({}, "primary");
 
-  const inputBackgroundColor = useThemeColor(
-    {},
-    "inputBackground",
-  );
+  const inputBackgroundColor = useThemeColor({}, "inputBackground");
 
-  const inputBorderColor = useThemeColor(
-    {},
-    "inputBorder",
-  );
+  const inputBorderColor = useThemeColor({}, "inputBorder");
 
-  const placeholderColor = useThemeColor(
-    {},
-    "placeholder",
-  );
+  const placeholderColor = useThemeColor({}, "placeholder");
 
   return (
     <View
@@ -2467,8 +1911,7 @@ function Campo({
         style={{
           marginBottom: 7,
 
-          fontFamily:
-            FONT.semibold,
+          fontFamily: FONT.semibold,
 
           fontSize: 13,
 
@@ -2486,13 +1929,11 @@ function Campo({
 
           borderWidth: 1,
 
-          borderColor:
-            inputBorderColor,
+          borderColor: inputBorderColor,
 
           borderRadius: 14,
 
-          backgroundColor:
-            inputBackgroundColor,
+          backgroundColor: inputBackgroundColor,
 
           flexDirection: "row",
 
@@ -2503,19 +1944,13 @@ function Campo({
           gap: 10,
         }}
       >
-        <Ionicons
-          name={icono}
-          size={19}
-          color={primaryColor}
-        />
+        <Ionicons name={icono} size={19} color={primaryColor} />
 
         <TextInput
           value={valor}
           onChangeText={onChange}
           placeholder={placeholder}
-          placeholderTextColor={
-            placeholderColor
-          }
+          placeholderTextColor={placeholderColor}
           selectionColor={primaryColor}
           keyboardType={keyboardType}
           style={{
@@ -2525,8 +1960,7 @@ function Campo({
 
             minHeight: 50,
 
-            fontFamily:
-              FONT.regular,
+            fontFamily: FONT.regular,
 
             fontSize: 14,
 
@@ -2559,35 +1993,17 @@ function PasswordInput({
   visible,
   onToggle,
 }: PasswordProps) {
-  const textColor = useThemeColor(
-    {},
-    "text",
-  );
+  const textColor = useThemeColor({}, "text");
 
-  const iconColor = useThemeColor(
-    {},
-    "icon",
-  );
+  const iconColor = useThemeColor({}, "icon");
 
-  const primaryColor = useThemeColor(
-    {},
-    "primary",
-  );
+  const primaryColor = useThemeColor({}, "primary");
 
-  const inputBackgroundColor = useThemeColor(
-    {},
-    "inputBackground",
-  );
+  const inputBackgroundColor = useThemeColor({}, "inputBackground");
 
-  const inputBorderColor = useThemeColor(
-    {},
-    "inputBorder",
-  );
+  const inputBorderColor = useThemeColor({}, "inputBorder");
 
-  const placeholderColor = useThemeColor(
-    {},
-    "placeholder",
-  );
+  const placeholderColor = useThemeColor({}, "placeholder");
 
   return (
     <View
@@ -2600,8 +2016,7 @@ function PasswordInput({
         style={{
           marginBottom: 7,
 
-          fontFamily:
-            FONT.semibold,
+          fontFamily: FONT.semibold,
 
           fontSize: 13,
 
@@ -2619,13 +2034,11 @@ function PasswordInput({
 
           borderWidth: 1,
 
-          borderColor:
-            inputBorderColor,
+          borderColor: inputBorderColor,
 
           borderRadius: 14,
 
-          backgroundColor:
-            inputBackgroundColor,
+          backgroundColor: inputBackgroundColor,
 
           paddingHorizontal: 14,
 
@@ -2636,20 +2049,14 @@ function PasswordInput({
           gap: 10,
         }}
       >
-        <Ionicons
-          name="lock-closed-outline"
-          size={19}
-          color={primaryColor}
-        />
+        <Ionicons name="lock-closed-outline" size={19} color={primaryColor} />
 
         <TextInput
           value={valor}
           onChangeText={onChange}
           secureTextEntry={!visible}
           placeholder="••••••••"
-          placeholderTextColor={
-            placeholderColor
-          }
+          placeholderTextColor={placeholderColor}
           selectionColor={primaryColor}
           autoCapitalize="none"
           style={{
@@ -2659,8 +2066,7 @@ function PasswordInput({
 
             minHeight: 50,
 
-            fontFamily:
-              FONT.regular,
+            fontFamily: FONT.regular,
 
             fontSize: 14,
 
@@ -2676,9 +2082,7 @@ function PasswordInput({
           hitSlop={10}
           accessibilityRole="button"
           accessibilityLabel={
-            visible
-              ? "Ocultar contraseña"
-              : "Mostrar contraseña"
+            visible ? "Ocultar contraseña" : "Mostrar contraseña"
           }
           style={{
             width: 30,
@@ -2691,11 +2095,7 @@ function PasswordInput({
           }}
         >
           <Ionicons
-            name={
-              visible
-                ? "eye-off-outline"
-                : "eye-outline"
-            }
+            name={visible ? "eye-off-outline" : "eye-outline"}
             size={19}
             color={iconColor}
           />
@@ -2716,26 +2116,12 @@ type FilaProps = {
   valor: string;
 };
 
-function FilaInformacion({
-  icono,
-  color,
-  titulo,
-  valor,
-}: FilaProps) {
-  const textColor = useThemeColor(
-    {},
-    "text",
-  );
+function FilaInformacion({ icono, color, titulo, valor }: FilaProps) {
+  const textColor = useThemeColor({}, "text");
 
-  const textSecondaryColor = useThemeColor(
-    {},
-    "textSecondary",
-  );
+  const textSecondaryColor = useThemeColor({}, "textSecondary");
 
-  const surfaceSecondaryColor = useThemeColor(
-    {},
-    "surfaceSecondary",
-  );
+  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
   return (
     <View
@@ -2759,19 +2145,14 @@ function FilaInformacion({
 
           flexShrink: 0,
 
-          backgroundColor:
-            surfaceSecondaryColor,
+          backgroundColor: surfaceSecondaryColor,
 
           alignItems: "center",
 
           justifyContent: "center",
         }}
       >
-        <Ionicons
-          name={icono}
-          size={22}
-          color={color}
-        />
+        <Ionicons name={icono} size={22} color={color} />
       </View>
 
       <View
@@ -2782,13 +2163,11 @@ function FilaInformacion({
       >
         <Text
           style={{
-            fontFamily:
-              FONT.regular,
+            fontFamily: FONT.regular,
 
             fontSize: 12,
 
-            color:
-              textSecondaryColor,
+            color: textSecondaryColor,
           }}
         >
           {titulo}
@@ -2798,8 +2177,7 @@ function FilaInformacion({
           style={{
             marginTop: 3,
 
-            fontFamily:
-              FONT.bold,
+            fontFamily: FONT.bold,
 
             fontSize: 15,
 
@@ -2826,20 +2204,14 @@ function TituloSeccion({
   children: React.ReactNode;
   sinMargenSuperior?: boolean;
 }) {
-  const primaryColor = useThemeColor(
-    {},
-    "primary",
-  );
+  const primaryColor = useThemeColor({}, "primary");
 
   return (
     <Text
       style={{
         width: "100%",
 
-        marginTop:
-          sinMargenSuperior
-            ? 0
-            : 7,
+        marginTop: sinMargenSuperior ? 0 : 7,
 
         marginBottom: 14,
 

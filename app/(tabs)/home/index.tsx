@@ -1,7 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
 
-import { useTheme } from "@react-navigation/native";
-
 import { useRouter } from "expo-router";
 
 import React, { useState } from "react";
@@ -33,6 +31,8 @@ import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 import { useResumenBienestar } from "@/hooks/useResumenBienestar";
 
+import { useThemeMode } from "@/contexts/ThemeModeContext";
+
 // ==========================================================
 // COLORES DE RECOMENDACIONES
 // ==========================================================
@@ -40,33 +40,25 @@ import { useResumenBienestar } from "@/hooks/useResumenBienestar";
 const COLORES_RECOMENDACION = [
   {
     fondoClaro: "bg-purple-100",
-
     fondoOscuro: "bg-purple-950",
-
     icono: "#8B5CF6",
   },
 
   {
     fondoClaro: "bg-emerald-100",
-
     fondoOscuro: "bg-emerald-950",
-
     icono: "#10B981",
   },
 
   {
     fondoClaro: "bg-blue-100",
-
     fondoOscuro: "bg-blue-950",
-
     icono: "#4F8EF7",
   },
 
   {
     fondoClaro: "bg-amber-100",
-
     fondoOscuro: "bg-amber-950",
-
     icono: "#F59E0B",
   },
 ];
@@ -83,6 +75,10 @@ const MODULOS = [
 
     descripcion:
       "Registra cómo te sientes y lleva un seguimiento de tus emociones.",
+
+    tituloMovil: "Nuevo registro",
+
+    descripcionMovil: "Registra cómo te sientes.",
 
     icono: "book-outline" as const,
 
@@ -101,6 +97,10 @@ const MODULOS = [
     descripcion:
       "Explora instrumentos para conocer mejor diferentes áreas de tu bienestar.",
 
+    tituloMovil: "Cuestionarios",
+
+    descripcionMovil: "Conoce mejor tu bienestar.",
+
     icono: "document-text-outline" as const,
 
     color: "#8B5CF6",
@@ -117,6 +117,10 @@ const MODULOS = [
 
     descripcion:
       "Comparte experiencias y conecta con otras personas de la comunidad.",
+
+    tituloMovil: "Foro",
+
+    descripcionMovil: "Comparte y conecta.",
 
     icono: "megaphone-outline" as const,
 
@@ -135,6 +139,10 @@ const MODULOS = [
     descripcion:
       "Realiza tu entrevista y recibe un plan de bienestar personalizado.",
 
+    tituloMovil: "Entrevista",
+
+    descripcionMovil: "Recibe tu plan personalizado.",
+
     icono: "heart-outline" as const,
 
     color: "#EC6D8C",
@@ -151,6 +159,10 @@ const MODULOS = [
 
     descripcion:
       "Practica ejercicios de respiración, relajación y regulación emocional.",
+
+    tituloMovil: "Técnicas",
+
+    descripcionMovil: "Respira, relájate y regula.",
 
     icono: "leaf-outline" as const,
 
@@ -173,7 +185,7 @@ export default function HomeScreen() {
 
   const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
-  const { dark: isDarkMode } = useTheme();
+  const { themeMode } = useThemeMode();
 
   // ========================================================
   // PLAN DE BIENESTAR
@@ -201,8 +213,6 @@ export default function HomeScreen() {
     totalActividades,
   } = useProgresoHome();
 
-  const totalActividadesPlan = resumen?.actividades?.length ?? 0;
-
   // ========================================================
   // GRID
   // ========================================================
@@ -212,6 +222,8 @@ export default function HomeScreen() {
   // ========================================================
   // TEMA
   // ========================================================
+
+  const isDarkMode = themeMode === "dark";
 
   const backgroundColor = useThemeColor({}, "background");
 
@@ -241,7 +253,11 @@ export default function HomeScreen() {
       ? MAX_WIDTHS.contenido
       : undefined;
 
-  const numeroColumnasModulos = esEscritorio ? 5 : esTablet ? 2 : 1;
+  // ========================================================
+  // ACCESOS RÁPIDOS
+  // ========================================================
+
+  const numeroColumnasModulos = esEscritorio ? 5 : 2;
 
   const gapModulos = esEscritorio ? 14 : 16;
 
@@ -316,7 +332,6 @@ export default function HomeScreen() {
     <View
       style={{
         flex: 1,
-
         backgroundColor,
       }}
     >
@@ -327,7 +342,6 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingTop: esEscritorio ? 22 : 8,
-
           paddingBottom,
         }}
       >
@@ -375,13 +389,13 @@ export default function HomeScreen() {
 
                 width: esEscritorio ? undefined : "100%",
 
-                minHeight: esEscritorio ? 140 : undefined,
+                minHeight: esEscritorio ? 140 : 125,
 
-                borderRadius: 22,
+                borderRadius: 20,
 
-                padding: 20,
+                padding: esTelefono ? 16 : 18,
 
-                marginBottom: esEscritorio ? 0 : 16,
+                marginBottom: esEscritorio ? 0 : 14,
 
                 backgroundColor: primaryColor,
 
@@ -395,7 +409,6 @@ export default function HomeScreen() {
 
                     shadowOffset: {
                       width: 0,
-
                       height: 3,
                     },
 
@@ -410,6 +423,10 @@ export default function HomeScreen() {
                 }),
               }}
             >
+              {/* ==================================================
+                  TÍTULO
+              ================================================== */}
+
               <Text
                 style={{
                   fontFamily: "Nunito-SemiBold",
@@ -422,37 +439,48 @@ export default function HomeScreen() {
                 Racha emocional
               </Text>
 
+              {/* ==================================================
+                  INFORMACIÓN DE RACHA
+                  
+                  IMPORTANTE:
+                  En móvil ahora también es ROW.
+              ================================================== */}
+
               <View
                 style={{
                   flex: esEscritorio ? 1 : undefined,
 
-                  flexDirection: esTelefono ? "column" : "row",
+                  flexDirection: "row",
 
-                  alignItems: esTelefono ? "flex-start" : "center",
+                  alignItems: "center",
 
                   justifyContent: "space-between",
 
-                  gap: esTelefono ? 14 : 10,
+                  gap: esTelefono ? 6 : 10,
 
                   marginTop: 8,
+
+                  width: "100%",
                 }}
               >
-                {/* ==========================================
-                    DÍAS DE RACHA
-                ========================================== */}
+                {/* ==============================================
+                    NÚMERO DE DÍAS
+                ============================================== */}
 
                 <View
                   style={{
                     flexDirection: "row",
 
                     alignItems: "baseline",
+
+                    flexShrink: 0,
                   }}
                 >
                   <Text
                     style={{
                       fontFamily: "Nunito-Bold",
 
-                      fontSize: esEscritorio ? 39 : 35,
+                      fontSize: esEscritorio ? 39 : 32,
 
                       color: textOnPrimaryColor,
                     }}
@@ -475,28 +503,34 @@ export default function HomeScreen() {
                   </Text>
                 </View>
 
-                {/* ==========================================
+                {/* ==============================================
                     ÚLTIMOS SIETE DÍAS
-                ========================================== */}
+                ============================================== */}
 
                 <View
                   style={{
+                    flex: 1,
+
                     flexDirection: "row",
 
-                    flexWrap: "wrap",
+                    alignItems: "center",
 
-                    gap: 5,
+                    justifyContent: "flex-end",
+
+                    gap: esTelefono ? 3 : 5,
+
+                    minWidth: 0,
                   }}
                 >
                   {diasSemana.map((dia) => (
                     <View
                       key={dia.fecha}
                       style={{
-                        width: 29,
+                        width: esTelefono ? 25 : 29,
 
-                        height: 29,
+                        height: esTelefono ? 25 : 29,
 
-                        borderRadius: 15,
+                        borderRadius: esTelefono ? 13 : 15,
 
                         borderWidth: dia.esHoy ? 1.5 : 0,
 
@@ -505,6 +539,8 @@ export default function HomeScreen() {
                         alignItems: "center",
 
                         justifyContent: "center",
+
+                        flexShrink: 1,
 
                         backgroundColor: dia.completado
                           ? secondaryColor
@@ -515,7 +551,7 @@ export default function HomeScreen() {
                         style={{
                           fontFamily: "Nunito-Bold",
 
-                          fontSize: 11,
+                          fontSize: esTelefono ? 10 : 11,
 
                           color: textOnPrimaryColor,
                         }}
@@ -526,24 +562,42 @@ export default function HomeScreen() {
                   ))}
                 </View>
 
-                {/* ==========================================
+                {/* ==============================================
                     LLAMA
-                ========================================== */}
 
-                <Ionicons
-                  name={actividadHoy ? "flame" : "flame-outline"}
-                  size={28}
-                  color={textOnPrimaryColor}
-                />
+                    AHORA FORMA PARTE DE LA MISMA FILA
+                ============================================== */}
+
+                <View
+                  style={{
+                    width: esTelefono ? 28 : 32,
+
+                    height: esTelefono ? 28 : 32,
+
+                    alignItems: "center",
+
+                    justifyContent: "center",
+
+                    flexShrink: 0,
+
+                    marginLeft: esTelefono ? 2 : 4,
+                  }}
+                >
+                  <Ionicons
+                    name={actividadHoy ? "flame" : "flame-outline"}
+                    size={esTelefono ? 24 : 28}
+                    color={textOnPrimaryColor}
+                  />
+                </View>
               </View>
 
-              {/* ==========================================
+              {/* ==================================================
                   MENSAJE
-              ========================================== */}
+              ================================================== */}
 
               <Text
                 style={{
-                  marginTop: 7,
+                  marginTop: 8,
 
                   textAlign: "right",
 
@@ -600,7 +654,6 @@ export default function HomeScreen() {
 
                     shadowOffset: {
                       width: 0,
-
                       height: 3,
                     },
 
@@ -744,16 +797,20 @@ export default function HomeScreen() {
                 <View
                   key={modulo.id}
                   style={{
-                    width: esTelefono ? "100%" : anchoTarjetaModulo,
+                    width: anchoTarjetaModulo,
 
-                    minHeight: esEscritorio ? 175 : esTablet ? 180 : undefined,
+                    minHeight: esEscritorio ? 175 : esTablet ? 180 : 165,
+
                     flexGrow: 0,
+
                     flexShrink: 0,
                   }}
                 >
                   <TarjetaModulo
-                    titulo={modulo.titulo}
-                    descripcion={modulo.descripcion}
+                    titulo={esTelefono ? modulo.tituloMovil : modulo.titulo}
+                    descripcion={
+                      esTelefono ? modulo.descripcionMovil : modulo.descripcion
+                    }
                     nombreIcono={modulo.icono}
                     colorAcento={modulo.color}
                     fondoIconoClaro={modulo.fondoIconoClaro}

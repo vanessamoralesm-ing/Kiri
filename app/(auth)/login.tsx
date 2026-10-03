@@ -122,7 +122,7 @@ export default function LoginScreen() {
     ? Math.min(width * 0.32, 430)
     : esTablet
       ? Math.min(width * 0.38, 350)
-      : Math.min(width * 0.82, 350);
+      : Math.min(width * 0.42, 220);
 
   // ======================================================
   // UI
@@ -162,6 +162,8 @@ export default function LoginScreen() {
                 flex: esTelefono ? undefined : esEscritorio ? 1.1 : 1,
 
                 width: esTelefono ? "100%" : undefined,
+
+                minHeight: esTelefono ? 280: 620,
               },
             ]}
           >
@@ -256,6 +258,7 @@ export default function LoginScreen() {
                 <Input
                   label="Correo Electrónico"
                   placeholder="ejemplo@correo.com"
+                  forceLight
                   value={email}
                   onChangeText={(value) => {
                     setEmail(value);
@@ -272,6 +275,7 @@ export default function LoginScreen() {
                 <Input
                   label="Contraseña"
                   placeholder="********"
+                  forceLight
                   value={password}
                   onChangeText={(value) => {
                     setPassword(value);
@@ -410,7 +414,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
 
-    width: "78%",
+    width: "62%",
     aspectRatio: 1,
 
     maxWidth: 470,

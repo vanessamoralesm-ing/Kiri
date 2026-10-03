@@ -31,35 +31,41 @@ export default function DiarioScreen() {
 
   const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
-  // ========================================================
-  // ESTADOS
-  // ========================================================
-
   const [cargando, setCargando] = useState(true);
 
   const [entradas, setEntradas] = useState<EntradaDiarioResumen[]>([]);
 
   const [anchoGrid, setAnchoGrid] = useState(0);
 
-  // ========================================================
-  // TEMA
-  // ========================================================
+  /*
+   * ==================================================
+   * COLORES
+   * ==================================================
+   */
 
   const backgroundColor = useThemeColor({}, "background");
+
   const surfaceColor = useThemeColor({}, "surface");
+
   const borderColor = useThemeColor({}, "border");
 
   const textColor = useThemeColor({}, "text");
+
   const textSecondaryColor = useThemeColor({}, "textSecondary");
+
   const textMutedColor = useThemeColor({}, "textMuted");
 
   const primaryColor = useThemeColor({}, "primary");
+
   const primarySoftColor = useThemeColor({}, "primarySoft");
+
   const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
 
-  // ========================================================
-  // RESPONSIVE
-  // ========================================================
+  /*
+   * ==================================================
+   * DIMENSIONES RESPONSIVAS
+   * ==================================================
+   */
 
   const paddingHorizontal = esEscritorio
     ? PADDING_RESPONSIVE.escritorio
@@ -73,24 +79,44 @@ export default function DiarioScreen() {
       ? MAX_WIDTHS.contenido
       : undefined;
 
+  /*
+   * ==================================================
+   * COLUMNAS
+   * ==================================================
+   *
+   * Teléfono:
+   *     1 columna
+   *
+   * Tablet:
+   *     2 columnas
+   *
+   * Escritorio:
+   *     2 columnas
+   */
+
   const numeroColumnas = esTelefono ? 1 : 2;
 
-  const gapEntradas = esEscritorio ? 18 : 16;
+  /*
+   * ==================================================
+   * ESPACIADO ENTRE TARJETAS
+   * ==================================================
+   */
 
-  const anchoTarjeta =
-    anchoGrid > 0
-      ? Math.max(
-        0,
-        (anchoGrid - gapEntradas * (numeroColumnas - 1)) / numeroColumnas,
-      )
-      : undefined;
+  const separacionEntradas = esTelefono ? 20 : esEscritorio ? 18 : 16;
 
-  // Espacio para la barra inferior del layout compartido.
+  /*
+   * ==================================================
+   * PADDING INFERIOR
+   * ==================================================
+   */
+
   const paddingBottom = esEscritorio ? 64 : esTablet ? 100 : 116;
 
-  // ========================================================
-  // NOMBRE DEL USUARIO
-  // ========================================================
+  /*
+   * ==================================================
+   * NOMBRE DEL USUARIO
+   * ==================================================
+   */
 
   const nombreUsuario = useMemo(() => {
     const nombrePreferidoPerfil =
@@ -125,9 +151,11 @@ export default function DiarioScreen() {
     user?.user_metadata?.nombres,
   ]);
 
-  // ========================================================
-  // CARGAR DATOS
-  // ========================================================
+  /*
+   * ==================================================
+   * CARGAR DATOS
+   * ==================================================
+   */
 
   const cargarDatos = useCallback(async () => {
     try {
@@ -151,9 +179,11 @@ export default function DiarioScreen() {
     }, [cargarDatos]),
   );
 
-  // ========================================================
-  // NAVEGACIÓN
-  // ========================================================
+  /*
+   * ==================================================
+   * NAVEGACIÓN
+   * ==================================================
+   */
 
   const irANuevoRegistro = () => {
     router.push({
@@ -172,9 +202,11 @@ export default function DiarioScreen() {
     router.push(`/diario/${id}` as never);
   };
 
-  // ========================================================
-  // FORMATEAR FECHA
-  // ========================================================
+  /*
+   * ==================================================
+   * FORMATEAR FECHA
+   * ==================================================
+   */
 
   const formatearFecha = (fechaIso: string) => {
     const fecha = new Date(fechaIso);
@@ -187,9 +219,16 @@ export default function DiarioScreen() {
     });
   };
 
-  // ========================================================
-  // MEDIR GRID
-  // ========================================================
+  /*
+   * ==================================================
+   * MEDIR GRID
+   * ==================================================
+   *
+   * Solo medimos el grid cuando hay más
+   * de una columna.
+   *
+   * En móvil no hacemos cálculos manuales.
+   */
 
   const medirGrid = (event: LayoutChangeEvent) => {
     const nuevoAncho = event.nativeEvent.layout.width;
@@ -199,41 +238,79 @@ export default function DiarioScreen() {
     );
   };
 
-  // ========================================================
-  // UI
-  // ========================================================
+  /*
+   * ==================================================
+   * ANCHO DE LAS TARJETAS
+   * ==================================================
+   *
+   * IMPORTANTE:
+   *
+   * En móvil:
+   *
+   *     no calculamos ancho.
+   *     width = 100%
+   *
+   * En tablet/escritorio:
+   *
+   *     dos columnas.
+   */
+
+  const anchoTarjeta =
+    !esTelefono && anchoGrid > 0
+      ? (anchoGrid - separacionEntradas * (numeroColumnas - 1)) / numeroColumnas
+      : undefined;
+
+  /*
+   * ==================================================
+   * RENDER
+   * ==================================================
+   */
 
   return (
     <View
       style={{
         flex: 1,
+
+        width: "100%",
         minWidth: 0,
+
         backgroundColor,
       }}
     >
       <ScrollView
         style={{
           flex: 1,
+
           width: "100%",
+          minWidth: 0,
         }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
           paddingTop: esEscritorio ? 28 : 20,
+
           paddingBottom,
         }}
       >
+        {/* ==================================================
+            CONTENEDOR PRINCIPAL
+        ================================================== */}
+
         <View
           style={{
             width: "100%",
+            minWidth: 0,
+
             maxWidth: maxWidthContenido,
+
             alignSelf: "center",
+
             paddingHorizontal,
           }}
         >
-          {/* ==============================================
-              BIENVENIDA / NUEVO REGISTRO
-          ============================================== */}
+          {/* ==================================================
+              BIENVENIDA
+          ================================================== */}
 
           <View
             style={{
@@ -247,14 +324,15 @@ export default function DiarioScreen() {
             />
           </View>
 
-          {/* ==============================================
-              RESUMEN DEL DIARIO
-          ============================================== */}
+          {/* ==================================================
+              RESUMEN
+          ================================================== */}
 
           <View
             style={{
               width: "100%",
               minWidth: 0,
+
               marginTop: esEscritorio ? 24 : 20,
             }}
           >
@@ -264,43 +342,61 @@ export default function DiarioScreen() {
             />
           </View>
 
-          {/* ==============================================
+          {/* ==================================================
               ENTRADAS RECIENTES
-          ============================================== */}
+          ================================================== */}
 
           <View
             style={{
               width: "100%",
+              minWidth: 0,
+
               marginTop: esEscritorio ? 38 : esTablet ? 34 : 30,
+
               marginBottom: esTelefono ? 18 : 20,
             }}
           >
+            {/* HEADER */}
+
             <View
               style={{
                 width: "100%",
+                minWidth: 0,
+
                 flexDirection: "row",
+
                 alignItems: "center",
+
                 justifyContent: "space-between",
-                gap: 10,
               }}
             >
+              {/* TÍTULO */}
+
               <View
                 style={{
                   flex: 1,
+
                   minWidth: 0,
+
+                  marginRight: 10,
                 }}
               >
                 <Text
                   style={{
                     fontFamily: "Nunito-Bold",
+
                     fontSize: esEscritorio ? 23 : esTelefono ? 19 : 21,
+
                     lineHeight: esEscritorio ? 30 : 26,
+
                     color: textColor,
                   }}
                 >
                   Entradas recientes
                 </Text>
               </View>
+
+              {/* VER TODAS */}
 
               <Pressable
                 onPress={verTodasLasEntradas}
@@ -309,18 +405,26 @@ export default function DiarioScreen() {
                 accessibilityLabel="Ver todas las entradas"
                 style={({ pressed }) => ({
                   flexShrink: 0,
+
                   borderRadius: 12,
+
                   opacity: pressed ? 0.7 : 1,
                 })}
               >
                 <View
                   style={{
                     minHeight: 40,
+
                     paddingHorizontal: 12,
+
                     borderRadius: 12,
+
                     flexDirection: "row",
+
                     alignItems: "center",
+
                     justifyContent: "center",
+
                     backgroundColor: primarySoftColor,
                   }}
                 >
@@ -328,8 +432,11 @@ export default function DiarioScreen() {
                     numberOfLines={1}
                     style={{
                       fontFamily: "Nunito-SemiBold",
+
                       fontSize: esTelefono ? 12 : 13,
+
                       lineHeight: 18,
+
                       color: primaryColor,
                     }}
                   >
@@ -348,12 +455,18 @@ export default function DiarioScreen() {
               </Pressable>
             </View>
 
+            {/* SUBTÍTULO */}
+
             <Text
               style={{
                 marginTop: 6,
+
                 fontFamily: "Nunito-Medium",
+
                 fontSize: esTelefono ? 13 : 14,
+
                 lineHeight: 20,
+
                 color: textMutedColor,
               }}
             >
@@ -361,25 +474,29 @@ export default function DiarioScreen() {
             </Text>
           </View>
 
-          {/* ==============================================
-              CONTENIDO
-          ============================================== */}
+          {/* ==================================================
+              CARGANDO
+          ================================================== */}
 
           {cargando ? (
-            // ==================================================
-            // CARGANDO
-            // ==================================================
-
             <View
               style={{
                 width: "100%",
+                minWidth: 0,
+
                 minHeight: 160,
+
                 padding: 28,
+
                 borderRadius: 22,
+
                 borderWidth: 1,
                 borderColor,
+
                 backgroundColor: surfaceColor,
+
                 alignItems: "center",
+
                 justifyContent: "center",
               }}
             >
@@ -388,10 +505,15 @@ export default function DiarioScreen() {
               <Text
                 style={{
                   marginTop: 14,
+
                   fontFamily: "Nunito-Medium",
+
                   fontSize: 14,
+
                   lineHeight: 20,
+
                   color: textMutedColor,
+
                   textAlign: "center",
                 }}
               >
@@ -399,39 +521,49 @@ export default function DiarioScreen() {
               </Text>
             </View>
           ) : entradas.length === 0 ? (
-            // ==================================================
-            // ESTADO VACÍO
-            // ==================================================
+            /*
+             * ==================================================
+             * SIN ENTRADAS
+             * ==================================================
+             */
 
             <View
               style={{
                 width: "100%",
+                minWidth: 0,
+
                 maxWidth: esEscritorio ? 640 : undefined,
+
                 alignSelf: "center",
 
                 paddingHorizontal: esTelefono ? 20 : 30,
+
                 paddingTop: esTelefono ? 24 : 32,
+
                 paddingBottom: esTelefono ? 26 : 34,
 
                 borderRadius: 24,
+
                 borderWidth: 1,
                 borderColor,
+
                 backgroundColor: surfaceColor,
 
                 alignItems: "center",
               }}
             >
-              {/* ICONO */}
-
               <View
                 style={{
                   width: esTelefono ? 64 : 72,
+
                   height: esTelefono ? 64 : 72,
+
                   borderRadius: 20,
 
                   backgroundColor: primarySoftColor,
 
                   alignItems: "center",
+
                   justifyContent: "center",
                 }}
               >
@@ -442,12 +574,12 @@ export default function DiarioScreen() {
                 />
               </View>
 
-              {/* MENSAJES */}
-
               <View
                 style={{
                   width: "100%",
+
                   marginTop: 18,
+
                   alignItems: "center",
                 }}
               >
@@ -456,10 +588,13 @@ export default function DiarioScreen() {
                     width: "100%",
 
                     fontFamily: "Nunito-Bold",
+
                     fontSize: esTelefono ? 16 : 18,
+
                     lineHeight: esTelefono ? 23 : 25,
 
                     textAlign: "center",
+
                     color: textColor,
                   }}
                 >
@@ -469,13 +604,17 @@ export default function DiarioScreen() {
                 <Text
                   style={{
                     width: "100%",
+
                     marginTop: 8,
 
                     fontFamily: "Nunito-Medium",
+
                     fontSize: esTelefono ? 13 : 14,
+
                     lineHeight: 20,
 
                     textAlign: "center",
+
                     color: textSecondaryColor,
                   }}
                 >
@@ -483,18 +622,12 @@ export default function DiarioScreen() {
                 </Text>
               </View>
 
-              {/* ==========================================
-                  BOTÓN CREAR PRIMER REGISTRO
-
-                  El texto se centra respecto al ancho
-                  TOTAL del botón. El icono no participa
-                  en la distribución del texto.
-              ========================================== */}
-
               <View
                 style={{
                   width: "100%",
+
                   marginTop: esTelefono ? 28 : 32,
+
                   alignItems: "center",
                 }}
               >
@@ -504,9 +637,11 @@ export default function DiarioScreen() {
                   accessibilityLabel="Crear primer registro"
                   style={({ pressed }) => ({
                     width: "100%",
+
                     maxWidth: 320,
 
                     borderRadius: 14,
+
                     overflow: "hidden",
 
                     opacity: pressed ? 0.82 : 1,
@@ -515,6 +650,7 @@ export default function DiarioScreen() {
                   <View
                     style={{
                       width: "100%",
+
                       minHeight: 54,
 
                       paddingHorizontal: 16,
@@ -525,45 +661,46 @@ export default function DiarioScreen() {
                       backgroundColor: primaryColor,
 
                       flexDirection: "row",
+
                       alignItems: "center",
+
                       justifyContent: "center",
 
                       position: "relative",
                     }}
                   >
-                    {/* TEXTO CENTRADO */}
-
                     <Text
                       numberOfLines={2}
                       style={{
                         width: "100%",
 
-                        // Deja espacio para el icono
-                        // sin desplazar el centro del texto.
                         paddingHorizontal: 24,
 
                         fontFamily: "Nunito-Bold",
+
                         fontSize: 14,
+
                         lineHeight: 20,
 
                         textAlign: "center",
+
                         color: textOnPrimaryColor,
                       }}
                     >
                       Crear primer registro
                     </Text>
 
-                    {/* ICONO INDEPENDIENTE */}
-
                     <View
                       style={{
                         position: "absolute",
 
                         left: 16,
+
                         top: 0,
                         bottom: 0,
 
                         alignItems: "center",
+
                         justifyContent: "center",
                       }}
                     >
@@ -578,43 +715,91 @@ export default function DiarioScreen() {
               </View>
             </View>
           ) : (
-            // ==================================================
-            // ENTRADAS RECIENTES
-            // ==================================================
+            /*
+             * ==================================================
+             * ENTRADAS RECIENTES
+             * ==================================================
+             */
 
             <View
-              onLayout={medirGrid}
+              onLayout={!esTelefono ? medirGrid : undefined}
               style={{
                 width: "100%",
                 minWidth: 0,
 
-                flexDirection: numeroColumnas > 1 ? "row" : "column",
+                /*
+                 * MUY IMPORTANTE:
+                 *
+                 * No agregamos padding adicional
+                 * en móvil.
+                 */
+                paddingHorizontal: 0,
 
-                flexWrap: numeroColumnas > 1 ? "wrap" : "nowrap",
+                flexDirection: numeroColumnas === 1 ? "column" : "row",
 
-                alignItems: "stretch",
+                flexWrap: numeroColumnas === 1 ? "nowrap" : "wrap",
 
-                gap: gapEntradas,
+                /*
+                 * En móvil stretch permite que
+                 * cada hijo ocupe todo el ancho.
+                 */
+                alignItems: numeroColumnas === 1 ? "stretch" : "flex-start",
               }}
             >
-              {entradas.map((item) => (
-                <View
-                  key={item.id_registro}
-                  style={{
-                    width:
-                      numeroColumnas === 1 ? "100%" : (anchoTarjeta ?? "100%"),
-                    minWidth: 0,
-                  }}
-                >
-                  <TarjetaEntradaDiario
-                    fecha={formatearFecha(item.fecha_inicio)}
-                    titulo={item.plantilla_nombre}
-                    contenido={item.respuesta_corta}
-                    emociones={item.emociones}
-                    onPress={() => abrirEntrada(item.id_registro)}
-                  />
-                </View>
-              ))}
+              {entradas.map((item, index) => {
+                const esUltimaColumna =
+                  numeroColumnas === 1 || (index + 1) % numeroColumnas === 0;
+
+                const esUltimaEntrada = index === entradas.length - 1;
+
+                return (
+                  <View
+                    key={item.id_registro}
+                    style={{
+                      /*
+                       * ======================================
+                       * MÓVIL
+                       * ======================================
+                       *
+                       * La tarjeta recibe exactamente
+                       * el ancho del grid.
+                       */
+                      width: esTelefono ? "100%" : anchoTarjeta,
+
+                      minWidth: 0,
+
+                      /*
+                       * ======================================
+                       * MARGEN HORIZONTAL
+                       * ======================================
+                       *
+                       * Solamente se aplica cuando
+                       * realmente tenemos dos columnas.
+                       */
+                      marginRight:
+                        !esTelefono && numeroColumnas > 1 && !esUltimaColumna
+                          ? separacionEntradas
+                          : 0,
+
+                      /*
+                       * ======================================
+                       * MARGEN VERTICAL
+                       * ======================================
+                       */
+
+                      marginBottom: !esUltimaEntrada ? separacionEntradas : 0,
+                    }}
+                  >
+                    <TarjetaEntradaDiario
+                      fecha={formatearFecha(item.fecha_inicio)}
+                      titulo={item.plantilla_nombre}
+                      contenido={item.respuesta_corta}
+                      emociones={item.emociones}
+                      onPress={() => abrirEntrada(item.id_registro)}
+                    />
+                  </View>
+                );
+              })}
             </View>
           )}
         </View>
