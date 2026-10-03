@@ -1,6 +1,12 @@
 import React from "react";
 
-import { Image, ImageSourcePropType, Platform, Text, View } from "react-native";
+import {
+  Image,
+  ImageSourcePropType,
+  Platform,
+  Text,
+  View,
+} from "react-native";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
@@ -28,18 +34,19 @@ export default function EncabezadoCard({
   // RESPONSIVE
   // ========================================================
 
-  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
+  const {
+    esTelefono,
+    esTablet,
+    esEscritorio,
+  } = useResponsiveLayout();
 
   // ========================================================
   // COLORES DEL TEMA
   // ========================================================
 
   const surfaceColor = useThemeColor({}, "surface");
-
   const textColor = useThemeColor({}, "text");
-
   const textSecondaryColor = useThemeColor({}, "textSecondary");
-
   const accentColor = useThemeColor({}, "accent");
 
   // ========================================================
@@ -82,10 +89,12 @@ export default function EncabezadoCard({
 
               ios: {
                 shadowColor: "#000000",
+
                 shadowOffset: {
                   width: 0,
                   height: 2,
                 },
+
                 shadowOpacity: 0.08,
                 shadowRadius: 6,
               },
@@ -97,13 +106,14 @@ export default function EncabezadoCard({
           }}
         >
           {/* ==================================================
-              IMAGEN
+              IMAGEN MÓVIL
               ================================================== */}
 
           <View
             style={{
               width: "100%",
-              height: 170,
+
+              aspectRatio: 16 / 9,
 
               borderRadius: 20,
               overflow: "hidden",
@@ -118,7 +128,6 @@ export default function EncabezadoCard({
               style={{
                 width: "100%",
                 height: "100%",
-                borderRadius: 20,
               }}
             />
           </View>
@@ -177,22 +186,11 @@ export default function EncabezadoCard({
 
   // ========================================================
   // TABLET / ESCRITORIO
+  //Reducimos el tamaño máximo de la tarjeta para que
+  //no se vea excesivamente grande en escritorio.
   // ========================================================
 
-  /*
-   * Reducimos el tamaño máximo de la tarjeta para que
-   * no se vea excesivamente grande en escritorio.
-   */
   const maxWidthCard = esEscritorio ? 780 : 720;
-
-  /*
-   * Contenedor de imagen más compacto.
-   *
-   * La imagen utiliza "contain", por lo que se muestra
-   * completa y mantiene su proporción original.
-   */
-  const alturaImagen = esEscritorio ? 190 : 230;
-
   // ========================================================
   // UI TABLET / ESCRITORIO
   // ========================================================
@@ -204,9 +202,13 @@ export default function EncabezadoCard({
 
         alignItems: "center",
 
-        paddingHorizontal: esEscritorio ? 16 : 24,
+        paddingHorizontal: esEscritorio
+          ? 16
+          : 24,
 
-        paddingTop: esEscritorio ? 8 : 14,
+        paddingTop: esEscritorio
+          ? 8
+          : 14,
       }}
     >
       {/* ==================================================
@@ -228,11 +230,17 @@ export default function EncabezadoCard({
 
           backgroundColor: surfaceColor,
 
-          paddingHorizontal: esEscritorio ? 14 : 24,
+          paddingHorizontal: esEscritorio
+            ? 14
+            : 24,
 
-          paddingTop: esEscritorio ? 14 : 20,
+          paddingTop: esEscritorio
+            ? 14
+            : 20,
 
-          paddingBottom: esEscritorio ? 20 : 22,
+          paddingBottom: esEscritorio
+            ? 20
+            : 22,
 
           ...Platform.select({
             web: {
@@ -248,7 +256,6 @@ export default function EncabezadoCard({
               },
 
               shadowOpacity: 0.08,
-
               shadowRadius: 6,
             },
 
@@ -259,13 +266,14 @@ export default function EncabezadoCard({
         }}
       >
         {/* ==================================================
-            IMAGEN
+            IMAGEN TABLET / WEB
+            - respeta los bordes redondeados
             ================================================== */}
-
         <View
           style={{
-            width: "100%",
-            height: alturaImagen,
+            width: esEscritorio ? "70%" : "100%",
+
+            aspectRatio: 16 / 9,
 
             borderRadius: 22,
             overflow: "hidden",
@@ -280,7 +288,6 @@ export default function EncabezadoCard({
             style={{
               width: "100%",
               height: "100%",
-              borderRadius: 22,
             }}
           />
         </View>
@@ -293,11 +300,15 @@ export default function EncabezadoCard({
           style={{
             width: "100%",
 
-            maxWidth: esEscritorio ? 700 : 650,
+            maxWidth: esEscritorio
+              ? 700
+              : 650,
 
             alignItems: "center",
 
-            marginTop: esEscritorio ? 4 : 8,
+            marginTop: esEscritorio
+              ? 4
+              : 8,
 
             paddingHorizontal: 12,
           }}
@@ -310,9 +321,8 @@ export default function EncabezadoCard({
             style={{
               fontFamily: "Nunito-Bold",
 
-              fontSize: esEscritorio ? 25 : 25,
-
-              lineHeight: esEscritorio ? 31 : 31,
+              fontSize: 25,
+              lineHeight: 31,
 
               textAlign: "center",
 
@@ -332,9 +342,8 @@ export default function EncabezadoCard({
 
               fontFamily: "Nunito-Medium",
 
-              fontSize: esEscritorio ? 15 : 15,
-
-              lineHeight: esEscritorio ? 22 : 22,
+              fontSize: 15,
+              lineHeight: 22,
 
               textAlign: "center",
 
