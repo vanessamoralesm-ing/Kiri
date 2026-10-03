@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { Alert, Image, Pressable, Text, View } from "react-native";
+import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -26,6 +26,7 @@ interface PublicacionCardProps {
 
 export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
     const router = useRouter();
+
     const { profile } = useAuth();
 
     // ======================================================
@@ -43,7 +44,7 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
     const [procesandoReaccion, setProcesandoReaccion] = useState(false);
 
     // ======================================================
-    // SINCRONIZAR CON PROPS
+    // SINCRONIZAR PROPS
     // ======================================================
 
     useEffect(() => {
@@ -53,23 +54,33 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
     }, [publicacion.reaccion_usuario, publicacion.total_reacciones]);
 
     // ======================================================
-    // TEMA
+    // COLORES
     // ======================================================
 
     const surfaceColor = useThemeColor({}, "surface");
+
     const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
+
     const borderColor = useThemeColor({}, "border");
+
     const textColor = useThemeColor({}, "text");
+
     const textSecondaryColor = useThemeColor({}, "textSecondary");
+
     const textMutedColor = useThemeColor({}, "textMuted");
+
     const iconColor = useThemeColor({}, "icon");
+
     const primaryColor = useThemeColor({}, "primary");
+
     const primarySoftColor = useThemeColor({}, "primarySoft");
+
     const accentColor = useThemeColor({}, "accent");
+
     const accentSoftColor = useThemeColor({}, "accentSoft");
 
     // ======================================================
-    // DATOS VISUALES
+    // DATOS
     // ======================================================
 
     const nombreUsuario =
@@ -86,7 +97,7 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
     const reaccionMeGusta = reaccionActual === "me_gusta";
 
     // ======================================================
-    // FORMATEAR FECHA
+    // FECHA
     // ======================================================
 
     function formatearFecha(fecha: string) {
@@ -134,7 +145,7 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
     const fecha = formatearFecha(publicacion.fecha_publicacion);
 
     // ======================================================
-    // ABRIR PUBLICACIÓN / COMENTARIOS
+    // ABRIR PUBLICACIÓN
     // ======================================================
 
     function abrirPublicacion() {
@@ -168,7 +179,9 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
 
         const totalAnterior = totalReacciones;
 
-        // Actualización optimista
+        // --------------------------------------------------
+        // ACTUALIZACIÓN OPTIMISTA
+        // --------------------------------------------------
 
         if (reaccionAnterior === "me_gusta") {
             setReaccionActual(null);
@@ -216,26 +229,19 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
 
     return (
         <View
-            style={{
-                marginBottom: 20,
-                padding: 20,
-                borderRadius: 24,
-                borderWidth: 1,
-                borderColor,
-                backgroundColor: surfaceColor,
-            }}
+            style={[
+                styles.card,
+                {
+                    backgroundColor: surfaceColor,
+                    borderColor,
+                },
+            ]}
         >
             {/* ==================================================
-                USUARIO
+                ENCABEZADO
             ================================================== */}
 
-            <View
-                style={{
-                    marginBottom: 16,
-                    flexDirection: "row",
-                    alignItems: "center",
-                }}
-            >
+            <View style={styles.encabezado}>
                 {/* AVATAR */}
 
                 {fotoPerfil ? (
@@ -243,110 +249,101 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
                         source={{
                             uri: fotoPerfil,
                         }}
-                        style={{
-                            width: 46,
-                            height: 46,
-                            borderRadius: 23,
-                            marginRight: 12,
-                            borderWidth: 1,
-                            borderColor,
-                        }}
+                        resizeMode="cover"
+                        style={[
+                            styles.avatar,
+                            {
+                                borderColor,
+                            },
+                        ]}
                     />
                 ) : (
                     <View
-                        style={{
-                            width: 46,
-                            height: 46,
-                            borderRadius: 23,
-                            marginRight: 12,
-                            alignItems: "center",
-                            justifyContent: "center",
-                            backgroundColor: surfaceSecondaryColor,
-                            borderWidth: 1,
-                            borderColor,
-                        }}
+                        style={[
+                            styles.avatar,
+                            styles.avatarVacio,
+                            {
+                                backgroundColor: surfaceSecondaryColor,
+                                borderColor,
+                            },
+                        ]}
                     >
-                        <Ionicons name="person-outline" size={23} color={iconColor} />
+                        <Ionicons name="person-outline" size={22} color={iconColor} />
                     </View>
                 )}
 
-                {/* NOMBRE Y FECHA */}
+                {/* INFORMACIÓN DEL USUARIO */}
 
-                <View
-                    style={{
-                        flex: 1,
-                    }}
-                >
-                    <View
-                        style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            flexWrap: "wrap",
-                        }}
-                    >
-                        <Text
-                            numberOfLines={1}
-                            style={{
-                                maxWidth: "70%",
-                                fontFamily: "Nunito-Bold",
-                                fontSize: 16,
+                <View style={styles.informacionUsuario}>
+                    <Text
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                        style={[
+                            styles.nombreUsuario,
+                            {
                                 color: textColor,
-                            }}
-                        >
-                            {nombreUsuario}
-                        </Text>
+                            },
+                        ]}
+                    >
+                        {nombreUsuario}
+                    </Text>
 
+                    <View style={styles.metaUsuario}>
                         {fecha && (
+                            <Text
+                                style={[
+                                    styles.fecha,
+                                    {
+                                        color: textSecondaryColor,
+                                    },
+                                ]}
+                            >
+                                {fecha}
+                            </Text>
+                        )}
+
+                        {publicacion.editada && (
                             <>
-                                <Text
-                                    style={{
-                                        marginHorizontal: 6,
-                                        fontFamily: "Nunito-Medium",
-                                        color: textMutedColor,
-                                    }}
-                                >
-                                    |
-                                </Text>
+                                {fecha && (
+                                    <Text
+                                        style={[
+                                            styles.separadorMeta,
+                                            {
+                                                color: textMutedColor,
+                                            },
+                                        ]}
+                                    >
+                                        •
+                                    </Text>
+                                )}
 
                                 <Text
-                                    style={{
-                                        fontFamily: "Nunito-Medium",
-                                        fontSize: 13,
-                                        color: primaryColor,
-                                    }}
+                                    style={[
+                                        styles.editada,
+                                        {
+                                            color: textMutedColor,
+                                        },
+                                    ]}
                                 >
-                                    {fecha}
+                                    Editada
                                 </Text>
                             </>
                         )}
                     </View>
-
-                    {publicacion.editada && (
-                        <Text
-                            style={{
-                                marginTop: 2,
-                                fontFamily: "Nunito-Medium",
-                                fontSize: 11,
-                                color: textMutedColor,
-                            }}
-                        >
-                            Editada
-                        </Text>
-                    )}
                 </View>
 
                 {/* OPCIONES */}
 
                 <Pressable
                     hitSlop={8}
-                    style={({ pressed }) => ({
-                        width: 40,
-                        height: 40,
-                        borderRadius: 20,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor: pressed ? surfaceSecondaryColor : "transparent",
-                    })}
+                    accessibilityRole="button"
+                    accessibilityLabel="Opciones de publicación"
+                    style={({ pressed }) => [
+                        styles.botonOpciones,
+                        {
+                            backgroundColor: pressed ? surfaceSecondaryColor : "transparent",
+                        },
+                    ]}
                 >
                     <Ionicons name="ellipsis-horizontal" size={21} color={iconColor} />
                 </Pressable>
@@ -357,32 +354,25 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
             ================================================== */}
 
             {emociones.length > 0 && (
-                <View
-                    style={{
-                        marginBottom: 14,
-                        flexDirection: "row",
-                        flexWrap: "wrap",
-                        gap: 8,
-                    }}
-                >
+                <View style={styles.contenedorEmociones}>
                     {emociones.map((emocion) => (
                         <View
                             key={emocion.id_emocion_foro}
-                            style={{
-                                paddingHorizontal: 12,
-                                paddingVertical: 5,
-                                borderRadius: 999,
-                                backgroundColor: accentSoftColor,
-                                borderWidth: 1,
-                                borderColor: accentColor,
-                            }}
+                            style={[
+                                styles.chipEmocion,
+                                {
+                                    backgroundColor: accentSoftColor,
+                                    borderColor: accentColor,
+                                },
+                            ]}
                         >
                             <Text
-                                style={{
-                                    fontFamily: "Nunito-Medium",
-                                    fontSize: 13,
-                                    color: accentColor,
-                                }}
+                                style={[
+                                    styles.textoEmocion,
+                                    {
+                                        color: accentColor,
+                                    },
+                                ]}
                             >
                                 {emocion.nombre}
                             </Text>
@@ -392,36 +382,43 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
             )}
 
             {/* ==================================================
-                PUBLICACIÓN
+                CONTENIDO
             ================================================== */}
 
             <Pressable
                 onPress={abrirPublicacion}
                 accessibilityRole="button"
                 accessibilityLabel={`Abrir publicación ${publicacion.titulo}`}
-                style={({ pressed }) => ({
-                    opacity: pressed ? 0.82 : 1,
-                })}
+                style={({ pressed }) => [
+                    styles.contenidoPublicacion,
+                    {
+                        opacity: pressed ? 0.82 : 1,
+                    },
+                ]}
             >
+                {/* TÍTULO */}
+
                 <Text
-                    style={{
-                        marginBottom: 8,
-                        fontFamily: "Nunito-Bold",
-                        fontSize: 18,
-                        color: textColor,
-                    }}
+                    style={[
+                        styles.titulo,
+                        {
+                            color: textColor,
+                        },
+                    ]}
                 >
                     {publicacion.titulo}
                 </Text>
 
+                {/* CONTENIDO */}
+
                 <Text
                     numberOfLines={8}
-                    style={{
-                        fontFamily: "Nunito-Medium",
-                        fontSize: 15,
-                        lineHeight: 23,
-                        color: textSecondaryColor,
-                    }}
+                    style={[
+                        styles.contenido,
+                        {
+                            color: textSecondaryColor,
+                        },
+                    ]}
                 >
                     {publicacion.contenido}
                 </Text>
@@ -432,11 +429,12 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
             ================================================== */}
 
             <View
-                style={{
-                    marginTop: 20,
-                    flexDirection: "row",
-                    alignItems: "center",
-                }}
+                style={[
+                    styles.acciones,
+                    {
+                        borderTopColor: borderColor,
+                    },
+                ]}
             >
                 {/* ME GUSTA */}
 
@@ -447,29 +445,31 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
                     accessibilityLabel={
                         reaccionMeGusta ? "Quitar Me gusta" : "Dar Me gusta"
                     }
-                    style={({ pressed }) => ({
-                        minHeight: 40,
-                        paddingHorizontal: 10,
-                        borderRadius: 12,
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 7,
-                        opacity: procesandoReaccion ? 0.55 : pressed ? 0.75 : 1,
-                        backgroundColor: reaccionMeGusta ? primarySoftColor : "transparent",
-                    })}
+                    hitSlop={6}
+                    style={({ pressed }) => [
+                        styles.botonAccion,
+                        {
+                            opacity: procesandoReaccion ? 0.55 : pressed ? 0.7 : 1,
+
+                            backgroundColor: reaccionMeGusta
+                                ? primarySoftColor
+                                : "transparent",
+                        },
+                    ]}
                 >
                     <Ionicons
                         name={reaccionMeGusta ? "heart" : "heart-outline"}
-                        size={22}
-                        color={primaryColor}
+                        size={23}
+                        color={reaccionMeGusta ? primaryColor : iconColor}
                     />
 
                     <Text
-                        style={{
-                            fontFamily: "Nunito-SemiBold",
-                            fontSize: 14,
-                            color: primaryColor,
-                        }}
+                        style={[
+                            styles.numeroAccion,
+                            {
+                                color: reaccionMeGusta ? primaryColor : textSecondaryColor,
+                            },
+                        ]}
                     >
                         {totalReacciones}
                     </Text>
@@ -485,31 +485,202 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
                             ? "Comentar publicación"
                             : `Ver ${totalComentarios} comentarios`
                     }
-                    style={({ pressed }) => ({
-                        marginLeft: 14,
-                        minHeight: 40,
-                        paddingHorizontal: 10,
-                        borderRadius: 12,
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 7,
-                        opacity: pressed ? 0.7 : 1,
-                        backgroundColor: pressed ? surfaceSecondaryColor : "transparent",
-                    })}
+                    hitSlop={6}
+                    style={({ pressed }) => [
+                        styles.botonAccion,
+                        {
+                            opacity: pressed ? 0.7 : 1,
+
+                            backgroundColor: pressed ? surfaceSecondaryColor : "transparent",
+                        },
+                    ]}
                 >
-                    <Ionicons name="chatbubble-outline" size={20} color={iconColor} />
+                    <Ionicons name="chatbubble-outline" size={22} color={iconColor} />
 
                     <Text
-                        style={{
-                            fontFamily: "Nunito-Medium",
-                            fontSize: 14,
-                            color: textSecondaryColor,
-                        }}
+                        style={[
+                            styles.numeroAccion,
+                            {
+                                color: textSecondaryColor,
+                            },
+                        ]}
                     >
                         {totalComentarios}
                     </Text>
                 </Pressable>
+
+                <View style={styles.espacioAcciones} />
             </View>
         </View>
     );
 }
+
+// ==========================================================
+// ESTILOS
+// ==========================================================
+
+const styles = StyleSheet.create({
+    // ======================================================
+    // CARD
+    // ======================================================
+
+    card: {
+        width: "100%",
+        marginBottom: 4,
+        padding: 20,
+        borderRadius: 22,
+        borderWidth: 1,
+    },
+
+    // ======================================================
+    // ENCABEZADO
+    // ======================================================
+
+    encabezado: {
+        width: "100%",
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 16,
+    },
+
+    avatar: {
+        width: 46,
+        height: 46,
+        borderRadius: 23,
+        borderWidth: 1,
+        flexShrink: 0,
+    },
+
+    avatarVacio: {
+        alignItems: "center",
+        justifyContent: "center",
+    },
+
+    informacionUsuario: {
+        flex: 1,
+        minWidth: 0,
+        marginLeft: 12,
+        paddingRight: 4,
+    },
+
+    nombreUsuario: {
+        fontFamily: "Nunito-Bold",
+        fontSize: 16,
+        lineHeight: 20,
+        flexShrink: 1,
+    },
+
+    metaUsuario: {
+        flexDirection: "row",
+        alignItems: "center",
+        flexWrap: "wrap",
+        marginTop: 3,
+    },
+
+    fecha: {
+        fontFamily: "Nunito-Medium",
+        fontSize: 13,
+        lineHeight: 18,
+    },
+
+    separadorMeta: {
+        marginHorizontal: 5,
+        fontSize: 12,
+    },
+
+    editada: {
+        fontFamily: "Nunito-Medium",
+        fontSize: 12,
+        lineHeight: 18,
+    },
+
+    botonOpciones: {
+        width: 40,
+        height: 40,
+        marginLeft: 4,
+        borderRadius: 20,
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+    },
+
+    // ======================================================
+    // EMOCIONES
+    // ======================================================
+
+    contenedorEmociones: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        marginBottom: 16,
+        gap: 8,
+    },
+
+    chipEmocion: {
+        paddingHorizontal: 12,
+        paddingVertical: 5,
+        borderRadius: 999,
+        borderWidth: 1,
+    },
+
+    textoEmocion: {
+        fontFamily: "Nunito-Medium",
+        fontSize: 13,
+        lineHeight: 18,
+    },
+
+    // ======================================================
+    // CONTENIDO
+    // ======================================================
+
+    contenidoPublicacion: {
+        width: "100%",
+    },
+
+    titulo: {
+        marginBottom: 8,
+        fontFamily: "Nunito-Bold",
+        fontSize: 18,
+        lineHeight: 25,
+    },
+
+    contenido: {
+        fontFamily: "Nunito-Medium",
+        fontSize: 15,
+        lineHeight: 23,
+    },
+
+    // ======================================================
+    // ACCIONES
+    // ======================================================
+
+    acciones: {
+        width: "100%",
+        flexDirection: "row",
+        alignItems: "center",
+        minHeight: 48,
+        marginTop: 18,
+        paddingTop: 10,
+        borderTopWidth: 1,
+    },
+
+    botonAccion: {
+        minHeight: 40,
+        paddingHorizontal: 10,
+        borderRadius: 12,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        marginRight: 6,
+    },
+
+    numeroAccion: {
+        marginLeft: 7,
+        fontFamily: "Nunito-SemiBold",
+        fontSize: 15,
+        lineHeight: 20,
+    },
+
+    espacioAcciones: {
+        flex: 1,
+    },
+});

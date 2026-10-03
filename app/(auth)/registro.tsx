@@ -1,3 +1,4 @@
+import { useThemeMode } from "@/contexts/ThemeModeContext";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker, {
   DateTimePickerEvent,
@@ -7,6 +8,7 @@ import React, { useState } from "react";
 
 import {
   ActivityIndicator,
+  Image,
   Platform,
   Pressable,
   ScrollView,
@@ -38,23 +40,23 @@ const OPCIONES_GENERO: {
   label: string;
   value: Genero;
 }[] = [
-    {
-      label: "Femenino",
-      value: "femenino",
-    },
-    {
-      label: "Masculino",
-      value: "masculino",
-    },
-    {
-      label: "Otro",
-      value: "otro",
-    },
-    {
-      label: "Prefiero no decir",
-      value: "prefiero_no_decir",
-    },
-  ];
+  {
+    label: "Femenino",
+    value: "femenino",
+  },
+  {
+    label: "Masculino",
+    value: "masculino",
+  },
+  {
+    label: "Otro",
+    value: "otro",
+  },
+  {
+    label: "Prefiero no decir",
+    value: "prefiero_no_decir",
+  },
+];
 
 // ==========================================================
 // COMPONENTE
@@ -67,6 +69,7 @@ export default function RegisterScreen() {
   const { signUp } = useAuth();
 
   const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
+  const { themeMode } = useThemeMode();
 
   // ========================================================
   // TEMA
@@ -356,26 +359,26 @@ export default function RegisterScreen() {
 
             ...(Platform.OS === "web" && !esTelefono
               ? ({
-                boxShadow: "0px 6px 20px rgba(0,0,0,0.045)",
-              } as any)
+                  boxShadow: "0px 6px 20px rgba(0,0,0,0.045)",
+                } as any)
               : {}),
 
             ...(Platform.OS === "ios" && !esTelefono
               ? {
-                shadowColor: "#000000",
-                shadowOffset: {
-                  width: 0,
-                  height: 4,
-                },
-                shadowOpacity: 0.05,
-                shadowRadius: 12,
-              }
+                  shadowColor: "#000000",
+                  shadowOffset: {
+                    width: 0,
+                    height: 4,
+                  },
+                  shadowOpacity: 0.05,
+                  shadowRadius: 12,
+                }
               : {}),
 
             ...(Platform.OS === "android" && !esTelefono
               ? {
-                elevation: 3,
-              }
+                  elevation: 3,
+                }
               : {}),
           }}
         >
@@ -388,20 +391,27 @@ export default function RegisterScreen() {
           >
             <View
               style={{
-                width: esEscritorio ? 92 : 76,
-                height: esEscritorio ? 92 : 76,
+                width: esEscritorio ? 120 : 100,
+                height: esEscritorio ? 120 : 100,
                 borderRadius: esEscritorio ? 28 : 23,
 
                 alignItems: "center",
                 justifyContent: "center",
 
-                backgroundColor: primarySoftColor,
+                overflow: "hidden",
               }}
             >
-              <Ionicons
-                name="heart-outline"
-                size={esEscritorio ? 42 : 34}
-                color={primaryColor}
+              <Image
+                source={
+                  themeMode === "dark"
+                    ? require("../../assets/images/splash-icon-ps.png")
+                    : require("../../assets/images/splash-icon.png")
+                }
+                resizeMode="contain"
+                style={{
+                  width: esEscritorio ? 120 : 100,
+                  height: esEscritorio ? 120 : 100,
+                }}
               />
             </View>
           </View>

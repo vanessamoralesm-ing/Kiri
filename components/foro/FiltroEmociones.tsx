@@ -1,16 +1,8 @@
 import React from "react";
 
-import {
-    Pressable,
-    ScrollView,
-    Text,
-    View,
-} from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
-import {
-    useThemeColor,
-} from "@/hooks/use-theme-color";
-
+import { useThemeColor } from "@/hooks/use-theme-color";
 
 // ==========================================================
 // PROPS
@@ -18,10 +10,8 @@ import {
 
 interface Props {
     seleccionada: string;
-
     onSeleccionar: (emocion: string) => void;
 }
-
 
 // ==========================================================
 // EMOCIONES
@@ -39,6 +29,17 @@ const EMOCIONES = [
     "Tristeza",
 ];
 
+// ==========================================================
+// NORMALIZAR TEXTO
+// ==========================================================
+
+function normalizarTexto(texto: string): string {
+    return texto
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
+        .toLowerCase();
+}
 
 // ==========================================================
 // COMPONENTE
@@ -48,35 +49,17 @@ export default function FiltroEmociones({
     seleccionada,
     onSeleccionar,
 }: Props) {
-
     // ========================================================
     // TEMA
     // ========================================================
 
-    const primaryColor =
-        useThemeColor(
-            {},
-            "primary"
-        );
+    const primaryColor = useThemeColor({}, "primary");
 
-    const surfaceSecondaryColor =
-        useThemeColor(
-            {},
-            "surfaceSecondary"
-        );
+    const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
-    const borderColor =
-        useThemeColor(
-            {},
-            "border"
-        );
+    const borderColor = useThemeColor({}, "border");
 
-    const textSecondaryColor =
-        useThemeColor(
-            {},
-            "textSecondary"
-        );
-
+    const textSecondaryColor = useThemeColor({}, "textSecondary");
 
     // ========================================================
     // UI
@@ -84,97 +67,55 @@ export default function FiltroEmociones({
 
     return (
         <View>
-
             <ScrollView
                 horizontal
 
-                showsHorizontalScrollIndicator={
-                    false
-                }
+                showsHorizontalScrollIndicator={false}
 
                 contentContainerStyle={{
                     gap: 10,
                     paddingHorizontal: 2,
                 }}
             >
+                {EMOCIONES.map((emocion) => {
+                    const activa =
+                        normalizarTexto(seleccionada) === normalizarTexto(emocion);
 
-                {
-                    EMOCIONES.map(
-                        emocion => {
+                    return (
+                        <Pressable
+                            key={emocion}
 
-                            const activa =
-                                seleccionada ===
-                                emocion;
+                            onPress={() => onSeleccionar(emocion)}
 
+                            style={{
+                                borderRadius: 999,
 
-                            return (
+                                borderWidth: 1,
 
-                                <Pressable
-                                    key={
-                                        emocion
-                                    }
+                                paddingHorizontal: 20,
 
-                                    onPress={() =>
-                                        onSeleccionar(
-                                            emocion
-                                        )
-                                    }
+                                paddingVertical: 12,
 
-                                    style={{
-                                        borderRadius:
-                                            999,
+                                borderColor: activa ? primaryColor : borderColor,
 
-                                        borderWidth:
-                                            1,
+                                backgroundColor: activa ? primaryColor : surfaceSecondaryColor,
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    fontFamily: activa ? "Nunito-SemiBold" : "Nunito-Medium",
 
-                                        paddingHorizontal:
-                                            20,
+                                    fontSize: 16,
 
-                                        paddingVertical:
-                                            12,
-
-                                        borderColor:
-                                            activa
-                                                ? primaryColor
-                                                : borderColor,
-
-                                        backgroundColor:
-                                            activa
-                                                ? primaryColor
-                                                : surfaceSecondaryColor,
-                                    }}
-                                >
-
-                                    <Text
-                                        style={{
-                                            fontFamily:
-                                                activa
-                                                    ? "Nunito-SemiBold"
-                                                    : "Nunito-Medium",
-
-                                            fontSize:
-                                                16,
-
-                                            color:
-                                                activa
-                                                    ? "#FFFFFF"
-                                                    : textSecondaryColor,
-                                        }}
-                                    >
-                                        {emocion}
-                                    </Text>
-
-                                </Pressable>
-
-                            );
-
-                        }
-                    )
-                }
-
+                                    color: activa ? "#FFFFFF" : textSecondaryColor,
+                                }}
+                            >
+                                {emocion}
+                            </Text>
+                        </Pressable>
+                    );
+                })}
             </ScrollView>
-
         </View>
     );
-
 }

@@ -1,13 +1,7 @@
-
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@react-navigation/native";
 import React from "react";
-import {
-  Platform,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Platform, Text, TouchableOpacity, View } from "react-native";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
@@ -32,7 +26,12 @@ export function TarjetaModulo({
   onPress,
 }: TarjetaModuloProps) {
   const { dark: isDarkMode } = useTheme();
+
   const { esTelefono, esTablet } = useResponsiveLayout();
+
+  // ==========================================================
+  // TEMA
+  // ==========================================================
 
   const surfaceColor = useThemeColor({}, "surface");
   const textColor = useThemeColor({}, "text");
@@ -42,11 +41,19 @@ export function TarjetaModulo({
   const primarySoftColor = useThemeColor({}, "primarySoft");
   const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
+  // ==========================================================
+  // COLORES DEL MÓDULO
+  // ==========================================================
+
   const colorIcono = colorAcento ?? primaryColor;
 
   const fondoIcono = isDarkMode
     ? (fondoIconoOscuro ?? primarySoftColor)
     : (fondoIconoClaro ?? primarySoftColor);
+
+  // ==========================================================
+  // UI
+  // ==========================================================
 
   return (
     <TouchableOpacity
@@ -55,99 +62,157 @@ export function TarjetaModulo({
       style={{
         width: "100%",
 
-        // La altura se adapta al contenido en móvil.
-        // Sin height: "100%" ni flex: 1.
-        minHeight: esTelefono ? 104 : esTablet ? 180 : 175,
+        /*
+         * Altura de la tarjeta.
+         *
+         * En móvil usamos una altura suficiente para que:
+         * - el icono tenga espacio
+         * - el texto respire
+         * - la flecha quede abajo
+         */
+        minHeight: esTelefono ? 178 : esTablet ? 180 : 175,
 
         borderRadius: 20,
+
         borderWidth: 1,
+
         borderColor,
 
         paddingHorizontal: esTelefono ? 14 : 18,
+
         paddingVertical: esTelefono ? 14 : 18,
 
         backgroundColor: surfaceColor,
 
-        flexDirection: esTelefono ? "row" : "column",
-        alignItems: esTelefono ? "center" : "stretch",
-        justifyContent: esTelefono ? "flex-start" : "space-between",
+        flexDirection: "column",
+
+        alignItems: "stretch",
+
+        justifyContent: "flex-start",
 
         ...(Platform.OS === "web"
           ? ({
-              boxShadow: "0px 3px 8px rgba(0,0,0,0.05)",
-            } as any)
+            boxShadow: "0px 3px 8px rgba(0,0,0,0.05)",
+          } as any)
           : Platform.OS === "ios"
             ? {
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 3 },
-                shadowOpacity: 0.05,
-                shadowRadius: 8,
-              }
+              shadowColor: "#000000",
+
+              shadowOffset: {
+                width: 0,
+                height: 3,
+              },
+
+              shadowOpacity: 0.05,
+
+              shadowRadius: 8,
+            }
             : Platform.OS === "android"
-              ? { elevation: 3 }
+              ? {
+                elevation: 3,
+              }
               : {}),
       }}
     >
-      {/* ICONO */}
+      {/* ======================================================
+          ICONO
+          ====================================================== */}
 
       <View
         style={{
-          width: esTelefono ? 52 : 56,
-          height: esTelefono ? 52 : 56,
-          borderRadius: 16,
+          width: esTelefono ? 54 : 56,
 
-          flexShrink: 0,
-          alignSelf: esTelefono ? "center" : "center",
+          height: esTelefono ? 54 : 56,
+
+          borderRadius: esTelefono ? 17 : 16,
+
+          alignSelf: "center",
 
           alignItems: "center",
+
           justifyContent: "center",
 
           backgroundColor: fondoIcono,
+
+          marginBottom: esTelefono ? 10 : 12,
         }}
       >
         <Ionicons
           name={nombreIcono}
-          size={esTelefono ? 25 : 27}
+          size={esTelefono ? 27 : 27}
           color={colorIcono}
         />
       </View>
 
-      {/* TÍTULO Y DESCRIPCIÓN */}
+      {/* ======================================================
+          TÍTULO + DESCRIPCIÓN
+          ====================================================== */}
 
       <View
         style={{
-          flex: esTelefono ? 1 : undefined,
+          width: "100%",
+
+          flex: 1,
+
           minWidth: 0,
 
-          marginLeft: esTelefono ? 12 : 0,
-          marginTop: esTelefono ? 0 : 12,
+          alignItems: "center",
 
-          alignItems: esTelefono ? "flex-start" : "center",
-          justifyContent: "center",
+          justifyContent: "flex-start",
+
+          /*
+           * Dejamos un pequeño margen para que el contenido
+           * no choque visualmente con los bordes.
+           */
+          paddingHorizontal: esTelefono ? 2 : 0,
         }}
       >
+        {/* ====================================================
+            TÍTULO
+            ==================================================== */}
+
         <Text
+          numberOfLines={esTelefono ? 2 : 2}
+          ellipsizeMode="tail"
           style={{
+            width: "100%",
+
             fontFamily: "Nunito-Bold",
+
             fontSize: esTelefono ? 15 : 15,
-            lineHeight: 20,
+
+            lineHeight: esTelefono ? 20 : 20,
+
             color: textColor,
-            textAlign: esTelefono ? "left" : "center",
+
+            textAlign: "center",
           }}
         >
           {titulo}
         </Text>
 
+        {/* ====================================================
+            DESCRIPCIÓN
+            ==================================================== */}
+
         {!!descripcion && (
           <Text
             numberOfLines={esTelefono ? 3 : 3}
+            ellipsizeMode="tail"
             style={{
-              marginTop: 5,
+              width: "100%",
+
+              marginTop: 4,
+
               fontFamily: "Nunito-Medium",
-              fontSize: esTelefono ? 12 : 12,
-              lineHeight: 17,
+
+              fontSize: esTelefono ? 11.5 : 12,
+
+              lineHeight: esTelefono ? 16 : 17,
+
               color: textSecondaryColor,
-              textAlign: esTelefono ? "left" : "center",
+
+              textAlign: "center",
             }}
           >
             {descripcion}
@@ -155,32 +220,30 @@ export function TarjetaModulo({
         )}
       </View>
 
-      {/* FLECHA */}
+      {/* ======================================================
+          FLECHA
+          ====================================================== */}
 
       <View
         style={{
-          width: 30,
-          height: 30,
+          width: esTelefono ? 30 : 30,
+
+          height: esTelefono ? 30 : 30,
+
           borderRadius: 15,
 
-          flexShrink: 0,
-
-          marginLeft: esTelefono ? 8 : 0,
-          marginTop: esTelefono ? 0 : 12,
-
-          alignSelf: esTelefono ? "center" : "flex-end",
+          alignSelf: "center",
 
           alignItems: "center",
+
           justifyContent: "center",
 
           backgroundColor: surfaceSecondaryColor,
+
+          marginTop: esTelefono ? 10 : 12,
         }}
       >
-        <Ionicons
-          name="arrow-forward"
-          size={16}
-          color={colorIcono}
-        />
+        <Ionicons name="arrow-forward" size={16} color={colorIcono} />
       </View>
     </TouchableOpacity>
   );
