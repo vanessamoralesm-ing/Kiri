@@ -163,7 +163,7 @@ const contenidoCategorias = {
     ),
 
     descripcion:
-      "Comprende por qué algunas veces dejamos nuestras responsabilidades para después y cómo podemos empezar a cambiar este hábito.",
+      "Es el hábito de posponer tareas o responsabilidades importantes.",
 
     mito:
       "“Las personas procrastinan simplemente porque son perezosas.”",
@@ -299,7 +299,7 @@ export default function CategoriaScreen() {
       return () => {
         cancelAnimationFrame(frame);
       };
-    }, [id])
+    }, [])//
   );
 
   // ========================================================

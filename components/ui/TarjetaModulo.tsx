@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "expo-router/react-navigation";
+import { useTheme } from "@react-navigation/native";
 import React from "react";
 import { Platform, Text, TouchableOpacity, View } from "react-native";
 

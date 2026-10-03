@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect } from "expo-router/react-navigation";
+import { useFocusEffect } from "@react-navigation/native";
 import { router, useLocalSearchParams } from "expo-router";
 
 import React, {
@@ -140,10 +140,8 @@ const idsCategorias: Record<string, string> = {
 // ==========================================================
 // NORMALIZAR TEXTO
 // ==========================================================
-
 // Elimina tildes y diferencias entre mayúsculas/minúsculas.
-// Permite, por ejemplo, encontrar "Procrastinación"
-// escribiendo "procrastinacion".
+
 function normalizarTexto(texto: string) {
   return texto
     .normalize("NFD")
@@ -165,7 +163,7 @@ export default function LecturasScreen() {
   // ========================================================
 
   // Se utiliza el sistema responsive general del proyecto.
-  // No se modifican los breakpoints definidos por tu compañero.
+  // No se modifican los breakpoints definidos.
   const {
     esTelefono,
     esTablet,
@@ -316,7 +314,6 @@ export default function LecturasScreen() {
   // ========================================================
   // ANCHO DE LOS CARDS
   // ========================================================
-
   /*
    * Calculamos cuánto espacio queda para cada card después
    * de descontar los espacios existentes entre columnas.
@@ -342,9 +339,6 @@ export default function LecturasScreen() {
    * No cambia visualmente el tamaño del card de forma
    * perceptible, pero evita problemas de redondeo en ciertos
    * dispositivos Android con diferentes densidades de pantalla.
-   *
-   * Tablet y escritorio conservan los tamaños máximos que
-   * ya utilizábamos.
    */
   const anchoTarjeta =
     anchoDisponible > 0
@@ -392,7 +386,6 @@ export default function LecturasScreen() {
   // ========================================================
   // MEDIR GRID
   // ========================================================
-
   /*
    * onLayout obtiene el ancho real del grid.
    *
@@ -423,7 +416,6 @@ export default function LecturasScreen() {
   // ========================================================
   // VOLVER A LA CATEGORÍA
   // ========================================================
-
   /*
    * Si entramos desde "Ver todas" de una categoría,
    * la flecha regresa al detalle de esa categoría.
@@ -461,7 +453,6 @@ export default function LecturasScreen() {
       "/(tabs)/educacion"
     );
   }
-
   // ========================================================
   // UI
   // ========================================================
