@@ -2,7 +2,7 @@ import {
   DarkTheme,
   DefaultTheme,
   Theme,
-} from "expo-router/react-navigation";
+} from "@react-navigation/native";
 
 import {
   Platform,

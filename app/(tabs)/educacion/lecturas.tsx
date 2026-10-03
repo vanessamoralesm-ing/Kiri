@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect } from "expo-router/react-navigation";
+import { useFocusEffect } from "@react-navigation/native";
 import { router, useLocalSearchParams } from "expo-router";
+
 import React, {
   useCallback,
   useEffect,
@@ -35,7 +36,6 @@ import {
 
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
-
 
 // ==========================================================
 // DATOS
@@ -114,6 +114,8 @@ const lecturas = [
   },
 ];
 
+// Categorías disponibles para filtrar las lecturas.
+// "Todas" permite mostrar nuevamente la biblioteca completa.
 const categorias = [
   "Todas",
   "Ansiedad",
@@ -124,6 +126,8 @@ const categorias = [
   "Depresión",
 ];
 
+// Relaciona el nombre visible de una categoría con el id
+// utilizado por la ruta /educacion/[id].
 const idsCategorias: Record<string, string> = {
   Ansiedad: "Ansiedad",
   Autoestima: "Autoestima",
@@ -136,6 +140,7 @@ const idsCategorias: Record<string, string> = {
 // ==========================================================
 // NORMALIZAR TEXTO
 // ==========================================================
+// Elimina tildes y diferencias entre mayúsculas/minúsculas.
 
 function normalizarTexto(texto: string) {
   return texto
@@ -153,109 +158,88 @@ export default function LecturasScreen() {
   const { categoria } =
     useLocalSearchParams<{ categoria?: string }>();
 
+  // ========================================================
+  // RESPONSIVE
+  // ========================================================
+
+  // Se utiliza el sistema responsive general del proyecto.
+  // No se modifican los breakpoints definidos.
   const {
     esTelefono,
     esTablet,
     esEscritorio,
   } = useResponsiveLayout();
 
-  const scrollViewRef =
-    useRef<ScrollView>(null);
+  // Referencia utilizada para regresar el ScrollView
+  // al inicio cada vez que se vuelve a esta pantalla.
+  const scrollViewRef = useRef<ScrollView>(null);
 
-  const [busqueda, setBusqueda] =
-    useState("");
+  // ========================================================
+  // ESTADOS
+  // ========================================================
+
+  const [busqueda, setBusqueda] = useState("");
 
   const [
     categoriaSeleccionada,
     setCategoriaSeleccionada,
-  ] = useState(
-    categoria || "Todas"
-  );
+  ] = useState(categoria || "Todas");
 
-  const [anchoGrid, setAnchoGrid] =
-    useState(0);
-
+  // Guarda el ancho REAL disponible del contenedor
+  // donde se dibujan las lecturas.
+  const [anchoGrid, setAnchoGrid] = useState(0);
 
   // ========================================================
   // ANIMACIÓN BOTÓN VOLVER
   // ========================================================
 
-  const escalaVolver =
-    useSharedValue(1);
+  const escalaVolver = useSharedValue(1);
 
-  const estiloVolver =
-    useAnimatedStyle(() => ({
-      transform: [
-        {
-          scale:
-            escalaVolver.value,
-        },
-      ],
-    }));
+  const estiloVolver = useAnimatedStyle(() => ({
+    transform: [
+      {
+        scale: escalaVolver.value,
+      },
+    ],
+  }));
 
   // ========================================================
   // COLORES DEL TEMA
   // ========================================================
 
   const backgroundColor =
-    useThemeColor(
-      {},
-      "background"
-    );
+    useThemeColor({}, "background");
 
   const surfaceColor =
-    useThemeColor(
-      {},
-      "surface"
-    );
+    useThemeColor({}, "surface");
 
   const surfaceSecondaryColor =
-    useThemeColor(
-      {},
-      "surfaceSecondary"
-    );
+    useThemeColor({}, "surfaceSecondary");
 
   const textColor =
-    useThemeColor(
-      {},
-      "text"
-    );
+    useThemeColor({}, "text");
 
   const textSecondaryColor =
-    useThemeColor(
-      {},
-      "textSecondary"
-    );
+    useThemeColor({}, "textSecondary");
 
   const textMutedColor =
-    useThemeColor(
-      {},
-      "textMuted"
-    );
+    useThemeColor({}, "textMuted");
 
   const primaryColor =
-    useThemeColor(
-      {},
-      "primary"
-    );
+    useThemeColor({}, "primary");
 
   const primarySoftColor =
-    useThemeColor(
-      {},
-      "primarySoft"
-    );
+    useThemeColor({}, "primarySoft");
 
   const borderColor =
-    useThemeColor(
-      {},
-      "border"
-    );
-
+    useThemeColor({}, "border");
 
   // ========================================================
   // ACTUALIZAR CATEGORÍA
   // ========================================================
 
+  // Cuando la pantalla recibe otra categoría desde la ruta,
+  // actualizamos el filtro y limpiamos la búsqueda anterior.
   useEffect(() => {
     setCategoriaSeleccionada(
       categoria || "Todas"
@@ -267,6 +251,9 @@ export default function LecturasScreen() {
   // ========================================================
   // VOLVER SIEMPRE AL INICIO AL ENTRAR
   // ========================================================
+
+  // Cada vez que esta pantalla vuelve a recibir el foco,
+  // regresamos el scroll al inicio.
   useFocusEffect(
     useCallback(() => {
       const frame =
@@ -287,6 +274,7 @@ export default function LecturasScreen() {
   // RESPONSIVE DEL PROYECTO
   // ========================================================
 
+  // Conservamos los paddings definidos globalmente.
   const paddingHorizontal =
     esEscritorio
       ? PADDING_RESPONSIVE.escritorio
@@ -294,6 +282,8 @@ export default function LecturasScreen() {
         ? PADDING_RESPONSIVE.tablet
         : PADDING_RESPONSIVE.telefono;
 
+  // Limita el contenido en pantallas grandes para evitar
+  // que la interfaz se estire demasiado.
   const maxWidthContenido =
     esEscritorio
       ? MAX_WIDTHS.dashboard
@@ -301,6 +291,11 @@ export default function LecturasScreen() {
         ? MAX_WIDTHS.contenido
         : undefined;
 
+  // Número de columnas establecido para cada dispositivo.
+  //
+  // Teléfono   -> 2
+  // Tablet     -> 3
+  // Escritorio -> 4
   const numeroColumnas =
     esEscritorio
       ? 4
@@ -308,6 +303,7 @@ export default function LecturasScreen() {
         ? 3
         : 2;
 
+  // Separación horizontal entre cards.
   const gapLecturas =
     esEscritorio
       ? 26
@@ -315,34 +311,42 @@ export default function LecturasScreen() {
         ? 18
         : 12;
 
-
   // ========================================================
   // ANCHO DE LOS CARDS
   // ========================================================
-
+  /*
+   * Calculamos cuánto espacio queda para cada card después
+   * de descontar los espacios existentes entre columnas.
+   *
+   * Math.floor es importante principalmente en Android:
+   * evita que un resultado decimal termine ocupando unas
+   * décimas más de lo disponible y mande la segunda tarjeta
+   * accidentalmente a la siguiente fila.
+   */
   const anchoDisponible =
     anchoGrid > 0
-      ? (
-          anchoGrid -
-          gapLecturas *
-            (numeroColumnas - 1)
-        ) /
-        numeroColumnas
+      ? Math.floor(
+          (
+            anchoGrid -
+            gapLecturas * (numeroColumnas - 1)
+          ) / numeroColumnas
+        )
       : 0;
 
+  /*
+   * En teléfono dejamos 1 px adicional de seguridad.
+   *
+   * No cambia visualmente el tamaño del card de forma
+   * perceptible, pero evita problemas de redondeo en ciertos
+   * dispositivos Android con diferentes densidades de pantalla.
+   */
   const anchoTarjeta =
     anchoDisponible > 0
       ? esEscritorio
-        ? Math.min(
-            anchoDisponible,
-            230
-          )
+        ? Math.min(anchoDisponible, 230)
         : esTablet
-          ? Math.min(
-              anchoDisponible,
-              190
-            )
-          : anchoDisponible
+          ? Math.min(anchoDisponible, 190)
+          : Math.max(anchoDisponible - 1, 0)
       : esEscritorio
         ? 230
         : esTablet
@@ -353,53 +357,53 @@ export default function LecturasScreen() {
   // FILTRAR LECTURAS
   // ========================================================
 
-  const lecturasFiltradas =
-    useMemo(() => {
-      const texto =
-        normalizarTexto(busqueda);
+  // useMemo evita volver a filtrar innecesariamente mientras
+  // la búsqueda y la categoría no hayan cambiado.
+  const lecturasFiltradas = useMemo(() => {
+    const texto = normalizarTexto(busqueda);
 
-      return lecturas.filter(
-        (lectura) => {
-          const coincideCategoria =
-            categoriaSeleccionada ===
-              "Todas" ||
-            lectura.categoria ===
-              categoriaSeleccionada;
+    return lecturas.filter((lectura) => {
+      const coincideCategoria =
+        categoriaSeleccionada === "Todas" ||
+        lectura.categoria === categoriaSeleccionada;
 
-          const coincideBusqueda =
-            !texto ||
-            normalizarTexto(
-              lectura.titulo
-            ).includes(texto) ||
-            normalizarTexto(
-              lectura.descripcion
-            ).includes(texto) ||
-            normalizarTexto(
-              lectura.categoria
-            ).includes(texto);
+      const coincideBusqueda =
+        !texto ||
+        normalizarTexto(lectura.titulo).includes(texto) ||
+        normalizarTexto(lectura.descripcion).includes(texto) ||
+        normalizarTexto(lectura.categoria).includes(texto);
 
-          return (
-            coincideCategoria &&
-            coincideBusqueda
-          );
-        }
+      return (
+        coincideCategoria &&
+        coincideBusqueda
       );
-    }, [
-      busqueda,
-      categoriaSeleccionada,
-    ]);
-
+    });
+  }, [
+    busqueda,
+    categoriaSeleccionada,
+  ]);
 
   // ========================================================
   // MEDIR GRID
   // ========================================================
-
+  /*
+   * onLayout obtiene el ancho real del grid.
+   *
+   * Esto es preferible a usar un ancho fijo porque permite
+   * que los cards se adapten al espacio que realmente tienen
+   * disponible en cada teléfono, tablet o navegador.
+   */
   function medirGrid(
     event: LayoutChangeEvent
   ) {
     const nuevoAncho =
       event.nativeEvent.layout.width;
 
+    /*
+     * Solo actualizamos el estado cuando el ancho realmente
+     * cambió. Esto evita renders innecesarios por pequeñas
+     * variaciones de medición.
+     */
     setAnchoGrid((anterior) =>
       Math.abs(
         nuevoAncho - anterior
@@ -412,14 +416,19 @@ export default function LecturasScreen() {
   // ========================================================
   // VOLVER A LA CATEGORÍA
   // ========================================================
-
+  /*
+   * Si entramos desde "Ver todas" de una categoría,
+   * la flecha regresa al detalle de esa categoría.
+   *
+   * Si no existe una categoría específica, vuelve al
+   * index principal de Educación.
+   */
   function volverACategoria() {
     const destino =
       categoria &&
       categoria !== "Todas"
         ? categoria
-        : categoriaSeleccionada !==
-            "Todas"
+        : categoriaSeleccionada !== "Todas"
           ? categoriaSeleccionada
           : null;
 
@@ -455,9 +464,7 @@ export default function LecturasScreen() {
       style={{
         backgroundColor,
       }}
-      showsVerticalScrollIndicator={
-        false
-      }
+      showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={{
         paddingTop:
@@ -476,17 +483,11 @@ export default function LecturasScreen() {
       <View
         style={{
           width: "100%",
-
-          maxWidth:
-            maxWidthContenido,
-
-          alignSelf:
-            "center",
-
+          maxWidth: maxWidthContenido,
+          alignSelf: "center",
           paddingHorizontal,
         }}
       >
-
         {/* =================================================
             BOTÓN VOLVER
             ================================================= */}
@@ -495,8 +496,7 @@ export default function LecturasScreen() {
           style={[
             estiloVolver,
             {
-              alignSelf:
-                "flex-start",
+              alignSelf: "flex-start",
 
               marginBottom:
                 esEscritorio
@@ -506,36 +506,23 @@ export default function LecturasScreen() {
           ]}
         >
           <Pressable
-            onPress={
-              volverACategoria
-            }
-
+            onPress={volverACategoria}
             onPressIn={() => {
               escalaVolver.value =
                 withSpring(0.9);
             }}
-
             onPressOut={() => {
               escalaVolver.value =
                 withSpring(1);
             }}
-
             hitSlop={10}
-
-            style={({
-              pressed,
-            }) => ({
+            style={({ pressed }) => ({
               width: 48,
-
               height: 48,
-
               borderRadius: 24,
 
-              alignItems:
-                "center",
-
-              justifyContent:
-                "center",
+              alignItems: "center",
+              justifyContent: "center",
 
               backgroundColor:
                 surfaceSecondaryColor,
@@ -549,9 +536,7 @@ export default function LecturasScreen() {
             <Ionicons
               name="chevron-back"
               size={27}
-              color={
-                textSecondaryColor
-              }
+              color={textSecondaryColor}
             />
           </Pressable>
         </Animated.View>
@@ -562,9 +547,7 @@ export default function LecturasScreen() {
 
         <Animated.View
           entering={
-            FadeInDown.duration(
-              450
-            )
+            FadeInDown.duration(450)
           }
           style={{
             width: "100%",
@@ -574,8 +557,7 @@ export default function LecturasScreen() {
                 ? 1100
                 : undefined,
 
-            alignSelf:
-              "center",
+            alignSelf: "center",
           }}
         >
           <EncabezadoCard
@@ -605,8 +587,7 @@ export default function LecturasScreen() {
                 ? 760
                 : undefined,
 
-            alignSelf:
-              "center",
+            alignSelf: "center",
 
             marginTop:
               esTelefono
@@ -616,9 +597,7 @@ export default function LecturasScreen() {
         >
           <SearchBar
             value={busqueda}
-            onChangeText={
-              setBusqueda
-            }
+            onChangeText={setBusqueda}
             placeholder="Buscar una lectura..."
           />
         </Animated.View>
@@ -650,34 +629,28 @@ export default function LecturasScreen() {
                   ? 20
                   : 18,
 
-              color:
-                textColor,
+              color: textColor,
             }}
           >
             Categorías
           </Text>
 
+          {/* El ScrollView horizontal permite recorrer todas
+              las categorías sin comprimir los botones. */}
           <ScrollView
             horizontal
-            showsHorizontalScrollIndicator={
-              false
-            }
+            showsHorizontalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{
               paddingTop: 4,
-
               paddingBottom: 8,
-
               paddingRight: 24,
             }}
           >
             <View
               style={{
-                flexDirection:
-                  "row",
-
-                alignItems:
-                  "center",
+                flexDirection: "row",
+                alignItems: "center",
 
                 gap:
                   esEscritorio
@@ -685,105 +658,91 @@ export default function LecturasScreen() {
                     : 9,
               }}
             >
-              {categorias.map(
-                (item) => {
-                  const seleccionada =
-                    categoriaSeleccionada ===
-                    item;
+              {categorias.map((item) => {
+                const seleccionada =
+                  categoriaSeleccionada ===
+                  item;
 
-                  return (
-                    <Pressable
-                      key={item}
+                return (
+                  <Pressable
+                    key={item}
+                    onPress={() =>
+                      setCategoriaSeleccionada(
+                        item
+                      )
+                    }
+                    style={({ pressed }) => ({
+                      opacity:
+                        pressed
+                          ? 0.78
+                          : 1,
+                    })}
+                  >
+                    <View
+                      style={{
+                        minHeight:
+                          esEscritorio
+                            ? 44
+                            : 40,
 
-                      onPress={() =>
-                        setCategoriaSeleccionada(
-                          item
-                        )
-                      }
+                        minWidth:
+                          item === "Todas"
+                            ? 78
+                            : undefined,
 
-                      style={({
-                        pressed,
-                      }) => ({
-                        opacity:
-                          pressed
-                            ? 0.78
-                            : 1,
-                      })}
+                        paddingHorizontal:
+                          esEscritorio
+                            ? 20
+                            : 17,
+
+                        paddingVertical:
+                          esEscritorio
+                            ? 10
+                            : 8,
+
+                        borderRadius: 999,
+
+                        borderWidth: 1,
+
+                        borderColor:
+                          seleccionada
+                            ? primaryColor
+                            : borderColor,
+
+                        backgroundColor:
+                          seleccionada
+                            ? primaryColor
+                            : surfaceSecondaryColor,
+
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
                     >
-                      <View
+                      <Text
+                        numberOfLines={1}
                         style={{
-                          minHeight:
-                            esEscritorio
-                              ? 44
-                              : 40,
-
-                          minWidth:
-                            item ===
-                            "Todas"
-                              ? 78
-                              : undefined,
-
-                          paddingHorizontal:
-                            esEscritorio
-                              ? 20
-                              : 17,
-
-                          paddingVertical:
-                            esEscritorio
-                              ? 10
-                              : 8,
-
-                          borderRadius:
-                            999,
-
-                          borderWidth:
-                            1,
-
-                          borderColor:
+                          fontFamily:
                             seleccionada
-                              ? primaryColor
-                              : borderColor,
+                              ? "Nunito-Bold"
+                              : "Nunito-SemiBold",
 
-                          backgroundColor:
+                          fontSize:
+                            esEscritorio
+                              ? 15
+                              : 13,
+
+                          color:
                             seleccionada
-                              ? primaryColor
-                              : surfaceSecondaryColor,
-
-                          alignItems:
-                            "center",
-
-                          justifyContent:
-                            "center",
+                              ? "#FFFFFF"
+                              : textSecondaryColor,
                         }}
                       >
-                        <Text
-                          numberOfLines={
-                            1
-                          }
-                          style={{
-                            fontFamily:
-                              seleccionada
-                                ? "Nunito-Bold"
-                                : "Nunito-SemiBold",
-
-                            fontSize:
-                              esEscritorio
-                                ? 15
-                                : 13,
-
-                            color:
-                              seleccionada
-                                ? "#FFFFFF"
-                                : textSecondaryColor,
-                          }}
-                        >
-                          {item}
-                        </Text>
-                      </View>
-                    </Pressable>
-                  );
-                }
-              )}
+                        {item}
+                      </Text>
+                    </View>
+                  </Pressable>
+                );
+              })}
             </View>
           </ScrollView>
         </Animated.View>
@@ -818,12 +777,10 @@ export default function LecturasScreen() {
                   ? 24
                   : 21,
 
-              color:
-                textColor,
+              color: textColor,
             }}
           >
-            {categoriaSeleccionada ===
-            "Todas"
+            {categoriaSeleccionada === "Todas"
               ? "Todas las lecturas"
               : categoriaSeleccionada}
           </Text>
@@ -838,15 +795,11 @@ export default function LecturasScreen() {
                   ? 14
                   : 13,
 
-              color:
-                textMutedColor,
+              color: textMutedColor,
             }}
           >
-            {
-              lecturasFiltradas.length
-            }{" "}
-            {lecturasFiltradas.length ===
-            1
+            {lecturasFiltradas.length}{" "}
+            {lecturasFiltradas.length === 1
               ? "lectura encontrada"
               : "lecturas encontradas"}
           </Text>
@@ -856,29 +809,24 @@ export default function LecturasScreen() {
             GRID DE LECTURAS
             ================================================= */}
 
-        {lecturasFiltradas.length >
-        0 ? (
+        {lecturasFiltradas.length > 0 ? (
           <View
-            onLayout={
-              medirGrid
-            }
+            onLayout={medirGrid}
             style={{
               width: "100%",
 
-              flexDirection:
-                "row",
+              flexDirection: "row",
+              flexWrap: "wrap",
 
-              flexWrap:
-                "wrap",
+              /*
+               * flex-start evita separar exageradamente los
+               * libros cuando una categoría tiene solo 1 o 2.
+               */
+              justifyContent: "flex-start",
 
-              justifyContent:
-                "flex-start",
+              alignItems: "flex-start",
 
-              alignItems:
-                "flex-start",
-
-              columnGap:
-                gapLecturas,
+              columnGap: gapLecturas,
 
               rowGap:
                 esEscritorio
@@ -887,42 +835,34 @@ export default function LecturasScreen() {
             }}
           >
             {lecturasFiltradas.map(
-              (
-                lectura,
-                index
-              ) => (
+              (lectura, index) => (
                 <Animated.View
-                  key={
-                    lectura.id
-                  }
+                  key={lectura.id}
                   entering={
                     FadeInDown
                       .delay(
                         240 +
-                          index *
-                            50
+                          index * 50
                       )
-                      .duration(
-                        400
-                      )
+                      .duration(400)
                   }
                   style={{
-                    width:
-                      anchoTarjeta,
+                    /*
+                     * El ancho ya incluye el número correcto
+                     * de columnas y un margen de seguridad
+                     * para evitar saltos de fila en Android.
+                     */
+                    width: anchoTarjeta,
 
+                    // Permite que el elemento pueda reducirse
+                    // sin imponer un ancho mínimo inesperado.
                     minWidth: 0,
                   }}
                 >
                   <LecturaRecomendadaCard
-                    titulo={
-                      lectura.titulo
-                    }
-                    index={
-                      index
-                    }
-                    ancho={
-                      anchoTarjeta
-                    }
+                    titulo={lectura.titulo}
+                    index={index}
+                    ancho={anchoTarjeta}
                     onPress={() => {
                       console.log(
                         "Lectura seleccionada:",
@@ -935,16 +875,13 @@ export default function LecturasScreen() {
             )}
           </View>
         ) : (
-
           /* =================================================
              ESTADO VACÍO
              ================================================= */
 
           <Animated.View
             entering={
-              FadeInDown.duration(
-                350
-              )
+              FadeInDown.duration(350)
             }
             style={{
               width: "100%",
@@ -954,11 +891,8 @@ export default function LecturasScreen() {
                   ? 620
                   : undefined,
 
-              alignSelf:
-                "center",
-
-              alignItems:
-                "center",
+              alignSelf: "center",
+              alignItems: "center",
 
               marginTop:
                 esEscritorio
@@ -975,11 +909,8 @@ export default function LecturasScreen() {
                   ? 38
                   : 34,
 
-              borderRadius:
-                22,
-
+              borderRadius: 22,
               borderWidth: 1,
-
               borderColor,
 
               backgroundColor:
@@ -989,17 +920,11 @@ export default function LecturasScreen() {
             <View
               style={{
                 width: 64,
-
                 height: 64,
+                borderRadius: 32,
 
-                borderRadius:
-                  32,
-
-                alignItems:
-                  "center",
-
-                justifyContent:
-                  "center",
+                alignItems: "center",
+                justifyContent: "center",
 
                 backgroundColor:
                   primarySoftColor,
@@ -1008,9 +933,7 @@ export default function LecturasScreen() {
               <Ionicons
                 name="search-outline"
                 size={28}
-                color={
-                  primaryColor
-                }
+                color={primaryColor}
               />
             </View>
 
@@ -1019,16 +942,14 @@ export default function LecturasScreen() {
               style={{
                 marginTop: 16,
 
-                textAlign:
-                  "center",
+                textAlign: "center",
 
                 fontSize:
                   esEscritorio
                     ? 18
                     : 17,
 
-                color:
-                  textColor,
+                color: textColor,
               }}
             >
               No encontramos esa categoría
@@ -1038,11 +959,9 @@ export default function LecturasScreen() {
               className="font-nunito-medium"
               style={{
                 maxWidth: 420,
-
                 marginTop: 8,
 
-                textAlign:
-                  "center",
+                textAlign: "center",
 
                 fontSize:
                   esEscritorio

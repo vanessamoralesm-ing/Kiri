@@ -85,6 +85,10 @@ export default function CategoriaCard({
     "primarySoft"
   );
 
+  const accentColor = useThemeColor(
+    {},
+    "accent"
+  );
 
   // ========================================================
   // DISEÑO PARA TELÉFONO
@@ -185,6 +189,12 @@ export default function CategoriaCard({
 
               borderRadius: 22,
 
+              // borde morado del fondo de la imagen
+              borderWidth: 1.5,
+
+              borderColor:
+                accentColor,
+
               alignItems: "center",
 
               justifyContent: "center",
@@ -206,7 +216,6 @@ export default function CategoriaCard({
             />
           </View>
         </View>
-
 
         {/* ==================================================
             TÍTULO
@@ -242,11 +251,9 @@ export default function CategoriaCard({
       </Pressable>
     );
   }
-
-
   // ========================================================
   // TABLET Y ESCRITORIO
-  // Conserva el diseño responsive de tu compañero.
+  // Conserva el diseño responsive.
   // ========================================================
 
   const alturaImagen =
@@ -349,7 +356,6 @@ export default function CategoriaCard({
         }),
       })}
     >
-
       {/* ==================================================
           IMAGEN
           ================================================== */}
@@ -374,6 +380,12 @@ export default function CategoriaCard({
               alturaImagen + 16,
 
             borderRadius: 22,
+
+            // borde morado del fondo de la imagen
+            borderWidth: 1.5,
+
+            borderColor:
+              accentColor,
 
             alignItems: "center",
 
@@ -435,7 +447,6 @@ export default function CategoriaCard({
           >
             {titulo}
           </Text>
-
 
           <Text
             style={{
