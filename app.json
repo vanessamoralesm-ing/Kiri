@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "appkiri",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+
     "ios": {
       "supportsTablet": true
     },
@@ -16,7 +16,6 @@
         "backgroundColor": "#4685F6",
         "foregroundImage": "./assets/images/icon-adaptive.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.app_kiri"
     },

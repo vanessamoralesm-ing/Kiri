@@ -2,7 +2,7 @@ import "../global.css";
 
 import React, { useEffect, useRef, useState } from "react";
 
-import { ThemeProvider } from "@react-navigation/native";
+import { ThemeProvider } from "expo-router/react-navigation";
 
 import { useFonts } from "expo-font";
 
