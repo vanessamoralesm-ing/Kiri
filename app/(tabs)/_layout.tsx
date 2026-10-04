@@ -36,23 +36,11 @@ function FabForo({ esEscritorio }: { esEscritorio: boolean }) {
 
   const primaryColor = useThemeColor({}, "primary");
 
-  // ========================================================
-  // TAMAÑO
-  // ========================================================
-
   const tamanio = esEscritorio ? 64 : esTablet ? 62 : 58;
-
-  // ========================================================
-  // ACCIÓN
-  // ========================================================
 
   const crearPublicacion = () => {
     router.push("/(tabs)/foro/crear" as never);
   };
-
-  // ========================================================
-  // UI
-  // ========================================================
 
   return (
     <Pressable
@@ -61,29 +49,43 @@ function FabForo({ esEscritorio }: { esEscritorio: boolean }) {
       accessibilityLabel="Crear nueva publicación"
       accessibilityHint="Abre la pantalla para crear una nueva publicación en el foro"
       hitSlop={12}
-      style={({ pressed }) => [
-        styles.fab,
-        {
+      style={({ pressed }) => ({
+        width: tamanio,
+        height: tamanio,
+        alignItems: "center",
+        justifyContent: "center",
+        opacity: pressed ? 0.75 : 1,
+      })}
+    >
+      <View
+        style={{
           width: tamanio,
           height: tamanio,
-          opacity: pressed ? 0.75 : 1,
-        },
-      ]}
-    >
-      {/* ==================================================
-          CÍRCULO
-      ================================================== */}
+          borderRadius: tamanio / 2,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: primaryColor,
 
-      <View
-        style={[
-          styles.fabCircle,
-          {
-            width: tamanio,
-            height: tamanio,
-            borderRadius: tamanio / 2,
-            backgroundColor: primaryColor,
-          },
-        ]}
+          ...Platform.select({
+            ios: {
+              shadowColor: "#000000",
+              shadowOffset: {
+                width: 0,
+                height: 6,
+              },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+            },
+
+            android: {
+              elevation: 12,
+            },
+
+            web: {
+              boxShadow: "0px 6px 14px rgba(0,0,0,0.25)",
+            },
+          }),
+        }}
       >
         <Ionicons name="add" size={esTelefono ? 32 : 34} color="#FFFFFF" />
       </View>
@@ -98,21 +100,39 @@ function FabForo({ esEscritorio }: { esEscritorio: boolean }) {
 interface PestanasProps {
   backgroundColor: string;
   esEscritorio: boolean;
+  mostrarBarraMovil: boolean;
 }
 
-function Pestanas({ backgroundColor, esEscritorio }: PestanasProps) {
+function Pestanas({
+  backgroundColor,
+  esEscritorio,
+  mostrarBarraMovil,
+}: PestanasProps) {
   return (
     <Tabs
       tabBar={
         esEscritorio
           ? () => null
-          : (props) => <BarraNavegacionCurva {...props} />
+          : mostrarBarraMovil
+            ? (props) => <BarraNavegacionCurva {...props} />
+            : () => null
       }
       screenOptions={{
         headerShown: false,
 
         sceneStyle: {
           backgroundColor,
+          flex: 1,
+        },
+
+        tabBarStyle: {
+          backgroundColor: "transparent",
+          borderTopWidth: 0,
+
+          // IMPORTANTE:
+          // En foro/crear y foro/[id] eliminamos completamente
+          // el contenedor del tab bar.
+          display: mostrarBarraMovil ? "flex" : "none",
         },
       }}
     >
@@ -199,36 +219,37 @@ export default function LayoutPestanas() {
   const { themeMode } = useThemeMode();
 
   // ========================================================
-  // DETECCIÓN DEL FORO
+  // RUTAS
   // ========================================================
 
+  const estamosEnForoPrincipal = pathname === "/foro" || pathname === "/foro/";
+
+  const estamosEnForoSecundario =
+    pathname.startsWith("/foro/") && !estamosEnForoPrincipal;
+
   /*
-   * TEMPORALMENTE TRUE.
+   * La barra curva solamente existe en las pantallas
+   * principales.
    *
-   * Cuando confirmemos que el FAB está perfectamente
-   * colocado, cambia esto por la condición de abajo.
+   * /foro
+   * /home
+   * /diario
+   * /educacion
+   * /tecnicas
+   * /perfil
+   *
+   * NO existe en:
+   *
+   * /foro/crear
+   * /foro/[id]
    */
-
-const estamosEnForoPrincipal =  pathname === "/foro" || pathname === "/foro/";
+  const mostrarBarraMovil = !estamosEnForoSecundario;
 
   // ========================================================
-  // ESPACIO DEL FAB
+  // FAB
   // ========================================================
-
-  /*
-   * Distancia desde el borde derecho.
-   */
 
   const fabPaddingRight = esEscritorio ? 32 : esTablet ? 28 : 20;
-
-  /*
-   * Distancia desde la parte inferior.
-   *
-   * La barra curva mide aproximadamente 75 px.
-   *
-   * Dejamos además una separación para que el FAB
-   * quede flotando sobre ella.
-   */
 
   const fabPaddingBottom = esEscritorio
     ? 32
@@ -272,8 +293,19 @@ const estamosEnForoPrincipal =  pathname === "/foro" || pathname === "/foro/";
               TABS
           ================================================== */}
 
-          <View style={styles.desktopMain}>
-            <Pestanas backgroundColor={backgroundColor} esEscritorio={true} />
+          <View
+            style={[
+              styles.desktopMain,
+              {
+                backgroundColor,
+              },
+            ]}
+          >
+            <Pestanas
+              backgroundColor={backgroundColor}
+              esEscritorio={true}
+              mostrarBarraMovil={false}
+            />
           </View>
 
           {/* ==================================================
@@ -325,11 +357,22 @@ const estamosEnForoPrincipal =  pathname === "/foro" || pathname === "/foro/";
       <AppHeader />
 
       {/* ==================================================
-          CONTENIDO + TABS
+          CONTENIDO
       ================================================== */}
 
-      <View style={styles.mobileMain}>
-        <Pestanas backgroundColor={backgroundColor} esEscritorio={false} />
+      <View
+        style={[
+          styles.mobileMain,
+          {
+            backgroundColor,
+          },
+        ]}
+      >
+        <Pestanas
+          backgroundColor={backgroundColor}
+          esEscritorio={false}
+          mostrarBarraMovil={mostrarBarraMovil}
+        />
       </View>
 
       {/* ==================================================
@@ -365,25 +408,23 @@ const styles = StyleSheet.create({
 
   desktopRoot: {
     flex: 1,
-
     flexDirection: "row",
+    minWidth: 0,
+    minHeight: 0,
   },
 
   desktopContent: {
     flex: 1,
-
     minWidth: 0,
-
+    minHeight: 0,
     position: "relative",
-
     overflow: "visible",
   },
 
   desktopMain: {
     flex: 1,
-
+    minWidth: 0,
     minHeight: 0,
-
     overflow: "visible",
   },
 
@@ -410,41 +451,32 @@ const styles = StyleSheet.create({
 
   mobileRoot: {
     flex: 1,
+    minWidth: 0,
+    minHeight: 0,
 
     position: "relative",
-
     overflow: "visible",
   },
 
   mobileMain: {
     flex: 1,
-
+    minWidth: 0,
     minHeight: 0,
 
     overflow: "visible",
   },
 
   // ========================================================
-  // CAPA DEL FAB
+  // FAB MOBILE
   // ========================================================
 
   mobileFabLayer: {
     position: "absolute",
 
-    /*
-     * LA CAPA OCUPA TODA LA PANTALLA
-     */
-
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-
-    /*
-     * ESTO ES LO QUE COLOCA EL FAB:
-     *
-     * derecha + abajo
-     */
 
     alignItems: "flex-end",
     justifyContent: "flex-end",
@@ -453,68 +485,5 @@ const styles = StyleSheet.create({
     elevation: 99999,
 
     overflow: "visible",
-  },
-
-  // ========================================================
-  // FAB
-  // ========================================================
-
-  fab: {
-    /*
-     * IMPORTANTE:
-     *
-     * YA NO usamos position absolute.
-     *
-     * La capa padre se encarga de posicionarlo.
-     */
-
-    alignItems: "center",
-
-    justifyContent: "center",
-
-    zIndex: 999999,
-
-    elevation: 999999,
-
-    overflow: "visible",
-  },
-
-  // ========================================================
-  // CÍRCULO
-  // ========================================================
-
-  fabCircle: {
-    alignItems: "center",
-
-    justifyContent: "center",
-
-    overflow: "hidden",
-
-    zIndex: 999999,
-
-    elevation: 999999,
-
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000000",
-
-        shadowOffset: {
-          width: 0,
-          height: 6,
-        },
-
-        shadowOpacity: 0.3,
-
-        shadowRadius: 8,
-      },
-
-      android: {
-        elevation: 12,
-      },
-
-      web: {
-        boxShadow: "0px 6px 14px rgba(0,0,0,0.25)",
-      },
-    }),
   },
 });
