@@ -113,9 +113,9 @@ export function TarjetaAcceso({
 
   // Los fondos fuertes necesitan texto claro.
   const tieneFondoFuerte =
-    colorFondo === "primary" ||
-    colorFondo === "secondary" ||
-    colorFondo === "accent";
+    colorFondo === "primary" || //azul
+    colorFondo === "secondary" || //verde
+    colorFondo === "accent"; //morado
 
   // Cuando la tarjeta tiene un fondo fuerte,
   // los contenedores del icono y la flecha utilizan
