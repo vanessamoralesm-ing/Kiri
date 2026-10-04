@@ -62,9 +62,7 @@ export default function Input({
   // COLORES
   // ========================================================
 
-  const textColor = forceLight
-    ? Colors.light.text
-    : themeTextColor;
+  const textColor = forceLight ? Colors.light.text : themeTextColor;
 
   const textSecondaryColor = forceLight
     ? Colors.light.textSecondary
@@ -82,9 +80,7 @@ export default function Input({
     ? Colors.light.placeholder
     : themePlaceholderColor;
 
-  const primaryColor = forceLight
-    ? Colors.light.primary
-    : themePrimaryColor;
+  const primaryColor = forceLight ? Colors.light.primary : themePrimaryColor;
 
   // ========================================================
   // UI
@@ -135,9 +131,7 @@ export default function Input({
             },
             style,
           ]}
-          placeholderTextColor={
-            placeholderTextColor ?? placeholderColor
-          }
+          placeholderTextColor={placeholderTextColor ?? placeholderColor}
           selectionColor={primaryColor}
           onFocus={(event) => {
             setEnfocado(true);
@@ -153,11 +147,7 @@ export default function Input({
             ICONO DERECHO
         ================================================== */}
 
-        {rightIcon && (
-          <View style={styles.rightIcon}>
-            {rightIcon}
-          </View>
-        )}
+        {rightIcon && <View style={styles.rightIcon}>{rightIcon}</View>}
       </View>
     </View>
   );
