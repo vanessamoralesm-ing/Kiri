@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 
-import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
@@ -43,8 +44,10 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
 
     const [procesandoReaccion, setProcesandoReaccion] = useState(false);
 
+    const [errorFotoPerfil, setErrorFotoPerfil] = useState(false);
+
     // ======================================================
-    // SINCRONIZAR PROPS
+    // SINCRONIZAR REACCIONES
     // ======================================================
 
     useEffect(() => {
@@ -52,6 +55,51 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
 
         setTotalReacciones(publicacion.total_reacciones ?? 0);
     }, [publicacion.reaccion_usuario, publicacion.total_reacciones]);
+
+    // ======================================================
+    // USUARIO
+    // ======================================================
+
+    const usuario = publicacion.usuario;
+
+    const nombreUsuario =
+        usuario?.nombre_preferido?.trim() || usuario?.nombres?.trim() || "Usuario";
+
+    const fotoPerfil = usuario?.foto_perfil?.trim() || null;
+
+    // ======================================================
+    // DEBUG USUARIO
+    // ======================================================
+
+    useEffect(() => {
+        console.log("👤 DATOS USUARIO CARD:", {
+            idPublicacion: publicacion.id_publicacion,
+
+            idUsuario: publicacion.id_usuario,
+
+            nombreMostrado: nombreUsuario,
+
+            tieneFoto: Boolean(fotoPerfil),
+
+            usuario,
+        });
+    }, [
+        publicacion.id_publicacion,
+        publicacion.id_usuario,
+        nombreUsuario,
+        fotoPerfil,
+        usuario,
+    ]);
+
+    // ======================================================
+    // REINICIAR ERROR DE FOTO
+    // ======================================================
+
+    useEffect(() => {
+        setErrorFotoPerfil(false);
+    }, [fotoPerfil]);
+
+    const mostrarFotoPerfil = Boolean(fotoPerfil) && !errorFotoPerfil;
 
     // ======================================================
     // COLORES
@@ -80,15 +128,8 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
     const accentSoftColor = useThemeColor({}, "accentSoft");
 
     // ======================================================
-    // DATOS
+    // OTROS DATOS
     // ======================================================
-
-    const nombreUsuario =
-        publicacion.usuario?.nombre_preferido?.trim() ||
-        publicacion.usuario?.nombres?.trim() ||
-        "Usuario";
-
-    const fotoPerfil = publicacion.usuario?.foto_perfil ?? null;
 
     const emociones = publicacion.emociones ?? [];
 
@@ -151,6 +192,7 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
     function abrirPublicacion() {
         router.push({
             pathname: "/(tabs)/foro/[id]",
+
             params: {
                 id: publicacion.id_publicacion,
             },
@@ -224,7 +266,7 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
     }
 
     // ======================================================
-    // UI
+    // RENDER
     // ======================================================
 
     return (
@@ -238,41 +280,66 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
             ]}
         >
             {/* ==================================================
-                ENCABEZADO
-            ================================================== */}
+          ENCABEZADO
+      ================================================== */}
 
             <View style={styles.encabezado}>
-                {/* AVATAR */}
+                {/* ==================================================
+            FOTO
+        ================================================== */}
 
-                {fotoPerfil ? (
-                    <Image
-                        source={{
-                            uri: fotoPerfil,
-                        }}
-                        resizeMode="cover"
-                        style={[
-                            styles.avatar,
-                            {
-                                borderColor,
-                            },
-                        ]}
-                    />
-                ) : (
-                    <View
-                        style={[
-                            styles.avatar,
-                            styles.avatarVacio,
-                            {
-                                backgroundColor: surfaceSecondaryColor,
-                                borderColor,
-                            },
-                        ]}
-                    >
-                        <Ionicons name="person-outline" size={22} color={iconColor} />
-                    </View>
-                )}
+                <View
+                    style={[
+                        styles.avatarContainer,
+                        {
+                            borderColor,
+                        },
+                    ]}
+                >
+                    {mostrarFotoPerfil && fotoPerfil ? (
+                        <Image
+                            source={{
+                                uri: fotoPerfil,
+                            }}
+                            style={styles.avatar}
+                            contentFit="cover"
+                            cachePolicy="none"
+                            transition={150}
+                            accessibilityRole="image"
+                            accessibilityLabel={`Foto de perfil de ${nombreUsuario}`}
+                            onLoad={() => {
+                                console.log("🟢 AVATAR CARGADO", {
+                                    idUsuario: publicacion.id_usuario,
+                                    usuario: nombreUsuario,
+                                });
+                            }}
+                            onError={(event) => {
+                                console.error("🔴 ERROR CARGANDO AVATAR", {
+                                    idUsuario: publicacion.id_usuario,
+                                    usuario: nombreUsuario,
+                                    error: event,
+                                });
 
-                {/* INFORMACIÓN DEL USUARIO */}
+                                setErrorFotoPerfil(true);
+                            }}
+                        />
+                    ) : (
+                        <View
+                            style={[
+                                styles.avatarPlaceholder,
+                                {
+                                    backgroundColor: surfaceSecondaryColor,
+                                },
+                            ]}
+                        >
+                            <Ionicons name="person-outline" size={22} color={iconColor} />
+                        </View>
+                    )}
+                </View>
+
+                {/* ==================================================
+            INFORMACIÓN DEL USUARIO
+        ================================================== */}
 
                 <View style={styles.informacionUsuario}>
                     <Text
@@ -332,7 +399,9 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
                     </View>
                 </View>
 
-                {/* OPCIONES */}
+                {/* ==================================================
+            OPCIONES
+        ================================================== */}
 
                 <Pressable
                     hitSlop={8}
@@ -350,8 +419,8 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
             </View>
 
             {/* ==================================================
-                EMOCIONES
-            ================================================== */}
+          EMOCIONES
+      ================================================== */}
 
             {emociones.length > 0 && (
                 <View style={styles.contenedorEmociones}>
@@ -382,8 +451,8 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
             )}
 
             {/* ==================================================
-                CONTENIDO
-            ================================================== */}
+          CONTENIDO
+      ================================================== */}
 
             <Pressable
                 onPress={abrirPublicacion}
@@ -396,8 +465,6 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
                     },
                 ]}
             >
-                {/* TÍTULO */}
-
                 <Text
                     style={[
                         styles.titulo,
@@ -408,8 +475,6 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
                 >
                     {publicacion.titulo}
                 </Text>
-
-                {/* CONTENIDO */}
 
                 <Text
                     numberOfLines={8}
@@ -425,8 +490,8 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
             </Pressable>
 
             {/* ==================================================
-                ACCIONES
-            ================================================== */}
+          ACCIONES
+      ================================================== */}
 
             <View
                 style={[
@@ -436,8 +501,6 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
                     },
                 ]}
             >
-                {/* ME GUSTA */}
-
                 <Pressable
                     disabled={procesandoReaccion}
                     onPress={manejarReaccion}
@@ -445,6 +508,9 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
                     accessibilityLabel={
                         reaccionMeGusta ? "Quitar Me gusta" : "Dar Me gusta"
                     }
+                    accessibilityState={{
+                        disabled: procesandoReaccion,
+                    }}
                     hitSlop={6}
                     style={({ pressed }) => [
                         styles.botonAccion,
@@ -474,8 +540,6 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
                         {totalReacciones}
                     </Text>
                 </Pressable>
-
-                {/* COMENTARIOS */}
 
                 <Pressable
                     onPress={abrirPublicacion}
@@ -520,10 +584,6 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
 // ==========================================================
 
 const styles = StyleSheet.create({
-    // ======================================================
-    // CARD
-    // ======================================================
-
     card: {
         width: "100%",
         marginBottom: 4,
@@ -532,10 +592,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
     },
 
-    // ======================================================
-    // ENCABEZADO
-    // ======================================================
-
     encabezado: {
         width: "100%",
         flexDirection: "row",
@@ -543,15 +599,24 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
 
-    avatar: {
+    avatarContainer: {
         width: 46,
         height: 46,
         borderRadius: 23,
+        overflow: "hidden",
         borderWidth: 1,
         flexShrink: 0,
     },
 
-    avatarVacio: {
+    avatar: {
+        width: "100%",
+        height: "100%",
+        backgroundColor: "#dddddd",
+    },
+
+    avatarPlaceholder: {
+        width: "100%",
+        height: "100%",
         alignItems: "center",
         justifyContent: "center",
     },
@@ -604,10 +669,6 @@ const styles = StyleSheet.create({
         flexShrink: 0,
     },
 
-    // ======================================================
-    // EMOCIONES
-    // ======================================================
-
     contenedorEmociones: {
         flexDirection: "row",
         flexWrap: "wrap",
@@ -628,10 +689,6 @@ const styles = StyleSheet.create({
         lineHeight: 18,
     },
 
-    // ======================================================
-    // CONTENIDO
-    // ======================================================
-
     contenidoPublicacion: {
         width: "100%",
     },
@@ -648,10 +705,6 @@ const styles = StyleSheet.create({
         fontSize: 15,
         lineHeight: 23,
     },
-
-    // ======================================================
-    // ACCIONES
-    // ======================================================
 
     acciones: {
         width: "100%",

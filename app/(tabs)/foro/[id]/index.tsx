@@ -18,10 +18,7 @@ import {
     View,
 } from "react-native";
 
-import {
-    SafeAreaView,
-    useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import ComentarioCard from "@/components/foro/ComentarioCard";
 
@@ -55,8 +52,6 @@ import type {
 
 export default function DetallePublicacionScreen() {
     const router = useRouter();
-
-    const insets = useSafeAreaInsets();
 
     const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
@@ -136,21 +131,13 @@ export default function DetallePublicacionScreen() {
             ? MAX_WIDTHS.contenido
             : undefined;
 
-    /*
-     * El detalle del foro mantiene un feed central para
-     * evitar líneas demasiado largas en escritorio.
-     */
     const maxWidthFeed = esEscritorio ? 900 : esTablet ? 760 : undefined;
 
     const paddingTopContenido = esEscritorio ? 26 : esTablet ? 22 : 18;
 
-    const paddingBottomContenido = esEscritorio ? 32 : 26;
+    const paddingBottomContenido = esEscritorio ? 40 : 30;
 
     const paddingTarjeta = esEscritorio ? 26 : esTablet ? 22 : 18;
-
-    const paddingBottomComposer = esEscritorio
-        ? 14
-        : Math.max(insets.bottom + 8, 12);
 
     // ========================================================
     // DATOS DERIVADOS
@@ -170,6 +157,14 @@ export default function DetallePublicacionScreen() {
 
     const totalReacciones = publicacion?.total_reacciones ?? 0;
 
+    const comentarioTieneContenido = nuevoComentario.trim().length > 0;
+
+    const puedePublicarComentario =
+        comentarioTieneContenido &&
+        !publicandoComentario &&
+        !authLoading &&
+        Boolean(profile?.id_usuario);
+
     // ========================================================
     // FECHA
     // ========================================================
@@ -183,13 +178,9 @@ export default function DetallePublicacionScreen() {
 
         return valor.toLocaleDateString("es-NI", {
             day: "2-digit",
-
             month: "long",
-
             year: "numeric",
-
             hour: "2-digit",
-
             minute: "2-digit",
         });
     }
@@ -391,7 +382,9 @@ export default function DetallePublicacionScreen() {
             return;
         }
 
-        if (!nuevoComentario.trim()) {
+        const contenido = nuevoComentario.trim();
+
+        if (!contenido) {
             Alert.alert(
                 "Comentario vacío",
                 "Escribe algo antes de publicar tu comentario.",
@@ -408,7 +401,7 @@ export default function DetallePublicacionScreen() {
 
                 idUsuario: profile.id_usuario,
 
-                contenido: nuevoComentario,
+                contenido,
             });
 
             setComentarios((actuales) => [...actuales, comentario]);
@@ -466,6 +459,7 @@ export default function DetallePublicacionScreen() {
                         try {
                             await eliminarComentario(
                                 comentario.id_comentario,
+
                                 profile.id_usuario,
                             );
 
@@ -491,6 +485,7 @@ export default function DetallePublicacionScreen() {
                         } catch (e) {
                             Alert.alert(
                                 "No se pudo eliminar",
+
                                 e instanceof Error
                                     ? e.message
                                     : "Ocurrió un error al eliminar el comentario.",
@@ -521,6 +516,7 @@ export default function DetallePublicacionScreen() {
         if (!profile?.id_usuario) {
             Alert.alert(
                 "Sesión requerida",
+
                 "Debes iniciar sesión para reportar contenido.",
             );
 
@@ -579,10 +575,15 @@ export default function DetallePublicacionScreen() {
                 motivo,
             });
 
-            Alert.alert("Reporte enviado", "Gracias. Revisaremos este contenido.");
+            Alert.alert(
+                "Reporte enviado",
+
+                "Gracias. Revisaremos este contenido.",
+            );
         } catch (e) {
             Alert.alert(
                 "No se pudo reportar",
+
                 e instanceof Error
                     ? e.message
                     : "Ocurrió un error al enviar el reporte.",
@@ -600,37 +601,26 @@ export default function DetallePublicacionScreen() {
                 edges={[]}
                 style={{
                     flex: 1,
-
                     backgroundColor,
                 }}
             >
                 <View
                     style={{
                         flex: 1,
-
                         alignItems: "center",
-
                         justifyContent: "center",
-
-                        paddingHorizontal: paddingHorizontal,
+                        paddingHorizontal,
                     }}
                 >
                     <View
                         style={{
                             width: 68,
-
                             height: 68,
-
                             borderRadius: 34,
-
                             alignItems: "center",
-
                             justifyContent: "center",
-
                             borderWidth: 1,
-
                             borderColor,
-
                             backgroundColor: surfaceColor,
                         }}
                     >
@@ -640,11 +630,8 @@ export default function DetallePublicacionScreen() {
                     <Text
                         style={{
                             marginTop: 16,
-
                             fontFamily: "Nunito-SemiBold",
-
                             fontSize: 15,
-
                             color: textSecondaryColor,
                         }}
                     >
@@ -665,52 +652,36 @@ export default function DetallePublicacionScreen() {
                 edges={[]}
                 style={{
                     flex: 1,
-
                     backgroundColor,
                 }}
             >
                 <View
                     style={{
                         flex: 1,
-
                         paddingHorizontal,
-
                         alignItems: "center",
-
                         justifyContent: "center",
                     }}
                 >
                     <View
                         style={{
                             width: "100%",
-
                             maxWidth: 440,
-
                             padding: esTelefono ? 22 : 28,
-
                             borderRadius: 24,
-
                             borderWidth: 1,
-
                             borderColor,
-
                             alignItems: "center",
-
                             backgroundColor: surfaceColor,
                         }}
                     >
                         <View
                             style={{
                                 width: 64,
-
                                 height: 64,
-
                                 borderRadius: 32,
-
                                 alignItems: "center",
-
                                 justifyContent: "center",
-
                                 backgroundColor: primarySoftColor,
                             }}
                         >
@@ -724,13 +695,9 @@ export default function DetallePublicacionScreen() {
                         <Text
                             style={{
                                 marginTop: 16,
-
                                 fontFamily: "Nunito-Bold",
-
                                 fontSize: 20,
-
                                 textAlign: "center",
-
                                 color: textColor,
                             }}
                         >
@@ -740,15 +707,10 @@ export default function DetallePublicacionScreen() {
                         <Text
                             style={{
                                 marginTop: 8,
-
                                 fontFamily: "Nunito-Medium",
-
                                 fontSize: 14,
-
                                 lineHeight: 21,
-
                                 textAlign: "center",
-
                                 color: textSecondaryColor,
                             }}
                         >
@@ -759,21 +721,13 @@ export default function DetallePublicacionScreen() {
                             onPress={() => cargarDetalle()}
                             style={({ pressed }) => ({
                                 marginTop: 24,
-
                                 minHeight: 48,
-
                                 paddingHorizontal: 22,
-
                                 borderRadius: 14,
-
                                 flexDirection: "row",
-
                                 alignItems: "center",
-
                                 justifyContent: "center",
-
                                 backgroundColor: primaryColor,
-
                                 opacity: pressed ? 0.82 : 1,
                             })}
                         >
@@ -786,9 +740,7 @@ export default function DetallePublicacionScreen() {
                             <Text
                                 style={{
                                     marginLeft: 8,
-
                                     fontFamily: "Nunito-Bold",
-
                                     color: textOnPrimaryColor,
                                 }}
                             >
@@ -810,19 +762,26 @@ export default function DetallePublicacionScreen() {
             edges={[]}
             style={{
                 flex: 1,
-
                 backgroundColor,
             }}
         >
             <KeyboardAvoidingView
                 style={{
                     flex: 1,
+                    minHeight: 0,
+                    width: "100%",
                 }}
-                behavior={Platform.OS === "ios" ? "padding" : undefined}
+                behavior={
+                    Platform.OS === "ios"
+                        ? "padding"
+                        : Platform.OS === "android"
+                            ? "height"
+                            : undefined
+                }
             >
                 {/* ==================================================
-            HEADER
-        ================================================== */}
+                    HEADER
+                ================================================== */}
 
                 <View
                     style={{
@@ -929,12 +888,20 @@ export default function DetallePublicacionScreen() {
                 </View>
 
                 {/* ==================================================
-            CONTENIDO
-        ================================================== */}
+                    CONTENIDO
+                ================================================== */}
 
                 <ScrollView
+                    style={{
+                        flex: 1,
+                        minHeight: 0,
+                        width: "100%",
+                    }}
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
+                    keyboardDismissMode={
+                        Platform.OS === "ios" ? "interactive" : "on-drag"
+                    }
                     refreshControl={
                         <RefreshControl
                             refreshing={refrescando}
@@ -970,8 +937,8 @@ export default function DetallePublicacionScreen() {
                             }}
                         >
                             {/* ==================================================
-                  PUBLICACIÓN
-              ================================================== */}
+                                PUBLICACIÓN
+                            ================================================== */}
 
                             <View
                                 style={{
@@ -995,7 +962,6 @@ export default function DetallePublicacionScreen() {
 
                                             shadowOffset: {
                                                 width: 0,
-
                                                 height: 3,
                                             },
 
@@ -1010,9 +976,7 @@ export default function DetallePublicacionScreen() {
                                     }),
                                 }}
                             >
-                                {/* ==============================================
-                    AUTOR
-                ============================================== */}
+                                {/* AUTOR */}
 
                                 <View
                                     style={{
@@ -1105,9 +1069,7 @@ export default function DetallePublicacionScreen() {
                                     </View>
                                 </View>
 
-                                {/* ==============================================
-                    EMOCIONES
-                ============================================== */}
+                                {/* EMOCIONES */}
 
                                 {(publicacion.emociones ?? []).length > 0 && (
                                     <View
@@ -1154,9 +1116,7 @@ export default function DetallePublicacionScreen() {
                                     </View>
                                 )}
 
-                                {/* ==============================================
-                    TÍTULO
-                ============================================== */}
+                                {/* TÍTULO */}
 
                                 <Text
                                     style={{
@@ -1174,9 +1134,7 @@ export default function DetallePublicacionScreen() {
                                     {publicacion.titulo}
                                 </Text>
 
-                                {/* ==============================================
-                    CONTENIDO
-                ============================================== */}
+                                {/* CONTENIDO */}
 
                                 <Text
                                     style={{
@@ -1194,9 +1152,7 @@ export default function DetallePublicacionScreen() {
                                     {publicacion.contenido}
                                 </Text>
 
-                                {/* ==============================================
-                    ACCIONES
-                ============================================== */}
+                                {/* ACCIONES */}
 
                                 <View
                                     style={{
@@ -1290,8 +1246,8 @@ export default function DetallePublicacionScreen() {
                             </View>
 
                             {/* ==================================================
-                  COMENTARIOS
-              ================================================== */}
+                                COMENTARIOS
+                            ================================================== */}
 
                             <View
                                 style={{
@@ -1366,6 +1322,10 @@ export default function DetallePublicacionScreen() {
                                     </Text>
                                 </View>
                             </View>
+
+                            {/* ==================================================
+                                LISTA DE COMENTARIOS
+                            ================================================== */}
 
                             {comentarios.length === 0 ? (
                                 <View
@@ -1457,164 +1417,194 @@ export default function DetallePublicacionScreen() {
                                     })}
                                 </View>
                             )}
-                        </View>
-                    </View>
-                </ScrollView>
 
-                {/* ==================================================
-            NUEVO COMENTARIO
-        ================================================== */}
+                            {/* ==================================================
+                                NUEVO COMENTARIO
+                            ================================================== */}
 
-                <View
-                    style={{
-                        borderTopWidth: 1,
-
-                        borderTopColor: dividerColor,
-
-                        backgroundColor,
-
-                        paddingBottom: paddingBottomComposer,
-                    }}
-                >
-                    <View
-                        style={{
-                            width: "100%",
-
-                            maxWidth: maxWidthContenido,
-
-                            alignSelf: "center",
-
-                            paddingHorizontal,
-                        }}
-                    >
-                        <View
-                            style={{
-                                width: "100%",
-
-                                maxWidth: maxWidthFeed,
-
-                                alignSelf: "center",
-
-                                paddingTop: 10,
-                            }}
-                        >
                             <View
                                 style={{
-                                    minHeight: 54,
+                                    width: "100%",
 
-                                    paddingLeft: 16,
+                                    marginTop: 20,
 
-                                    paddingRight: 6,
+                                    marginBottom: 10,
 
-                                    borderRadius: 18,
+                                    padding: 16,
+
+                                    borderRadius: 20,
 
                                     borderWidth: 1,
 
                                     borderColor,
 
-                                    flexDirection: "row",
-
-                                    alignItems: "center",
-
                                     backgroundColor: surfaceColor,
-
-                                    ...Platform.select({
-                                        web: {
-                                            boxShadow: "0px 2px 8px rgba(0,0,0,0.03)",
-                                        },
-                                    }),
                                 }}
                             >
-                                <TextInput
-                                    value={nuevoComentario}
-                                    onChangeText={setNuevoComentario}
-                                    editable={!publicandoComentario}
-                                    placeholder="Escribe un comentario..."
-                                    placeholderTextColor={placeholderColor}
-                                    selectionColor={primaryColor}
-                                    multiline
-                                    maxLength={1000}
+                                <Text
                                     style={{
-                                        flex: 1,
+                                        marginBottom: 10,
 
-                                        maxHeight: 110,
+                                        fontFamily: "Nunito-Bold",
 
-                                        paddingVertical: 12,
-
-                                        fontFamily: "Nunito-Medium",
-
-                                        fontSize: 15,
+                                        fontSize: 16,
 
                                         color: textColor,
-
-                                        outlineStyle: "none" as any,
                                     }}
-                                />
+                                >
+                                    Escribe un comentario
+                                </Text>
 
-                                <Pressable
-                                    disabled={publicandoComentario || !nuevoComentario.trim()}
-                                    onPress={manejarPublicarComentario}
-                                    accessibilityRole="button"
-                                    accessibilityLabel="Publicar comentario"
-                                    style={({ pressed }) => ({
-                                        width: 44,
+                                <View
+                                    style={{
+                                        width: "100%",
 
-                                        height: 44,
+                                        minHeight: 54,
 
-                                        borderRadius: 15,
+                                        paddingLeft: 14,
 
-                                        flexShrink: 0,
+                                        paddingRight: 6,
+
+                                        borderRadius: 16,
+
+                                        borderWidth: 1,
+
+                                        borderColor,
+
+                                        flexDirection: "row",
 
                                         alignItems: "center",
 
-                                        justifyContent: "center",
-
-                                        opacity:
-                                            publicandoComentario || !nuevoComentario.trim()
-                                                ? 0.45
-                                                : pressed
-                                                    ? 0.82
-                                                    : 1,
-
-                                        backgroundColor: primaryColor,
-                                    })}
+                                        backgroundColor: backgroundColor,
+                                    }}
                                 >
-                                    {publicandoComentario ? (
-                                        <ActivityIndicator
-                                            size="small"
-                                            color={textOnPrimaryColor}
-                                        />
-                                    ) : (
-                                        <Ionicons
-                                            name="send"
-                                            size={20}
-                                            color={textOnPrimaryColor}
-                                        />
-                                    )}
-                                </Pressable>
+                                    <TextInput
+                                        value={nuevoComentario}
+                                        onChangeText={setNuevoComentario}
+                                        editable={!publicandoComentario}
+                                        placeholder="Escribe un comentario..."
+                                        placeholderTextColor={placeholderColor}
+                                        selectionColor={primaryColor}
+                                        multiline
+                                        maxLength={1000}
+                                        textAlignVertical="center"
+                                        style={{
+                                            flex: 1,
+
+                                            minWidth: 0,
+
+                                            minHeight: 48,
+
+                                            maxHeight: 110,
+
+                                            paddingTop: 10,
+
+                                            paddingBottom: 10,
+
+                                            paddingRight: 8,
+
+                                            fontFamily: "Nunito-Medium",
+
+                                            fontSize: 15,
+
+                                            lineHeight: 21,
+
+                                            color: textColor,
+
+                                            outlineStyle: "none" as any,
+                                        }}
+                                    />
+
+                                    {/* ==================================================
+                                        BOTÓN ENVIAR
+                                    ================================================== */}
+
+                                    <Pressable
+                                        disabled={!puedePublicarComentario}
+                                        onPress={manejarPublicarComentario}
+                                        accessibilityRole="button"
+                                        accessibilityLabel="Publicar comentario"
+                                        accessibilityState={{
+                                            disabled: !puedePublicarComentario,
+                                        }}
+                                        hitSlop={6}
+                                        style={({ pressed }) => ({
+                                            width: 44,
+
+                                            height: 44,
+
+                                            borderRadius: 14,
+
+                                            flexShrink: 0,
+
+                                            alignItems: "center",
+
+                                            justifyContent: "center",
+
+                                            /*
+                                             * IMPORTANTE:
+                                             * El fondo usa primaryColor
+                                             * y el icono usa textOnPrimaryColor.
+                                             *
+                                             * Esto evita que el icono blanco
+                                             * desaparezca en modo claro.
+                                             */
+                                            backgroundColor: puedePublicarComentario
+                                                ? primaryColor
+                                                : surfaceSecondaryColor,
+
+                                            opacity: puedePublicarComentario
+                                                ? pressed
+                                                    ? 0.82
+                                                    : 1
+                                                : 0.65,
+                                        })}
+                                    >
+                                        {publicandoComentario ? (
+                                            <ActivityIndicator
+                                                size="small"
+                                                color={textOnPrimaryColor}
+                                            />
+                                        ) : (
+                                            <Ionicons
+                                                name="send"
+                                                size={20}
+                                                color={
+                                                    puedePublicarComentario
+                                                        ? textOnPrimaryColor
+                                                        : iconColor
+                                                }
+                                            />
+                                        )}
+                                    </Pressable>
+                                </View>
+
+                                <View
+                                    style={{
+                                        marginTop: 5,
+
+                                        flexDirection: "row",
+
+                                        justifyContent: "flex-end",
+                                    }}
+                                >
+                                    <Text
+                                        style={{
+                                            fontFamily: "Nunito-Medium",
+
+                                            fontSize: 11,
+
+                                            color: textMutedColor,
+                                        }}
+                                    >
+                                        {nuevoComentario.length}
+                                        /1000
+                                    </Text>
+                                </View>
                             </View>
-
-                            <Text
-                                style={{
-                                    marginTop: 5,
-
-                                    marginRight: 4,
-
-                                    textAlign: "right",
-
-                                    fontFamily: "Nunito-Medium",
-
-                                    fontSize: 11,
-
-                                    color: textMutedColor,
-                                }}
-                            >
-                                {nuevoComentario.length}
-                                /1000
-                            </Text>
                         </View>
                     </View>
-                </View>
+                </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>
     );
