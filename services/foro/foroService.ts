@@ -1,47 +1,36 @@
 import { supabase } from "@/lib/supabase";
 
 import type {
-    ComentarioForo,
-    CrearComentarioInput,
-    CrearPublicacionInput,
-    CrearReporteInput,
-    CrearRespuestaPreguntaSemanaInput,
-    EditarComentarioInput,
-    EditarPublicacionInput,
-    EmocionForo,
-    PreguntaSemanaForo,
-    PublicacionForo,
-    RespuestaPreguntaSemanaConUsuario,
-    RespuestaPreguntaSemanaForo,
-    TipoReaccion,
-    UsuarioForo,
+  ComentarioForo,
+  CrearComentarioInput,
+  CrearPublicacionInput,
+  CrearReporteInput,
+  CrearRespuestaPreguntaSemanaInput,
+  EditarComentarioInput,
+  EditarPublicacionInput,
+  EmocionForo,
+  PreguntaSemanaForo,
+  PublicacionForo,
+  RespuestaPreguntaSemanaConUsuario,
+  RespuestaPreguntaSemanaForo,
+  TipoReaccion,
+  UsuarioForo,
 } from "@/types/foro";
-
-// ==========================================================
-// TIPOS AUXILIARES
-// ==========================================================
-
-interface UsuarioForoRpc {
-    id_usuario: string;
-    nombres: string;
-    apellidos: string;
-    nombre_preferido: string | null;
-    foto_perfil: string | null;
-}
 
 // ==========================================================
 // TABLAS
 // ==========================================================
 
 const TABLAS = {
-    publicacion: "publicacion",
-    comentario: "comentario",
-    reaccion: "reaccion",
-    emocion: "emocion_foro",
-    publicacionEmocion: "publicacion_emocion_foro",
-    reporte: "reporte",
-    preguntaSemana: "pregunta_semana",
-    respuestaPreguntaSemana: "respuesta_pregunta_semana",
+  usuario: "usuario",
+  publicacion: "publicacion",
+  comentario: "comentario",
+  reaccion: "reaccion",
+  emocion: "emocion_foro",
+  publicacionEmocion: "publicacion_emocion_foro",
+  reporte: "reporte",
+  preguntaSemana: "pregunta_semana",
+  respuestaPreguntaSemana: "respuesta_pregunta_semana",
 } as const;
 
 // ==========================================================
@@ -50,79 +39,176 @@ const TABLAS = {
 
 const BUCKET_FOTO_PERFIL = "avatars";
 
+// Las URLs firmadas duran 1 hora.
+const DURACION_URL_AVATAR = 60 * 60;
+
 // ==========================================================
 // HELPERS
 // ==========================================================
 
 function limpiarTexto(valor: string): string {
-    return valor.trim();
+  return valor.trim();
 }
 
 function quitarDuplicados(valores: string[]): string[] {
-    return [...new Set(valores.filter((valor) => Boolean(valor)))];
+  return [...new Set(valores.filter(Boolean))];
 }
 
 // ==========================================================
 // FOTO DE PERFIL
 // ==========================================================
 
-function obtenerUrlFotoPerfil(ruta: string | null | undefined): string | null {
-    if (!ruta) return null;
+/**
+ * Convierte la ruta guardada en BD en una URL utilizable.
+ *
+ * La BD debe guardar únicamente la ruta del objeto dentro
+ * del bucket, por ejemplo:
+ *
+ * d311765b-8872-408f-aaf1-c8e37e3cdeb9/avatar
+ *
+ * Bucket:
+ *
+ * avatars
+ *
+ * El bucket es privado, por lo que se genera una URL firmada.
+ */
+async function obtenerUrlFotoPerfil(
+  idUsuario: string,
+  fotoPerfilGuardada?: string | null,
+): Promise<string | null> {
+  const idLimpio = idUsuario?.trim();
 
-    const rutaLimpia = ruta.trim();
+  if (!idLimpio) {
+    return null;
+  }
 
-    if (!rutaLimpia) return null;
+  const valorGuardado = fotoPerfilGuardada?.trim();
 
-    if (rutaLimpia.startsWith("http://") || rutaLimpia.startsWith("https://")) {
-        return rutaLimpia;
-    }
+  // ------------------------------------------------------
+  // SIN FOTO
+  // ------------------------------------------------------
 
-    const rutaStorage = rutaLimpia.replace(/^\/+/, "");
+  if (!valorGuardado) {
+    return null;
+  }
 
-    const { data } = supabase.storage
-        .from(BUCKET_FOTO_PERFIL)
-        .getPublicUrl(rutaStorage);
+  // ------------------------------------------------------
+  // YA ES UNA URL COMPLETA
+  // ------------------------------------------------------
 
-    return data?.publicUrl ?? null;
+  if (/^https?:\/\//i.test(valorGuardado)) {
+    return valorGuardado;
+  }
+
+  // ------------------------------------------------------
+  // NORMALIZAR RUTA
+  // ------------------------------------------------------
+
+  let rutaAvatar = valorGuardado.replace(/^\/+/, "");
+
+  const prefijoBucket = `${BUCKET_FOTO_PERFIL}/`;
+
+  // Si alguna fila guarda:
+  //
+  // avatars/d311.../avatar
+  //
+  // solamente necesitamos:
+  //
+  // d311.../avatar
+  //
+  if (rutaAvatar.startsWith(prefijoBucket)) {
+    rutaAvatar = rutaAvatar.slice(prefijoBucket.length);
+  }
+
+  if (!rutaAvatar) {
+    return null;
+  }
+
+  // ------------------------------------------------------
+  // CREAR URL FIRMADA
+  // ------------------------------------------------------
+
+  const { data, error } = await supabase.storage
+    .from(BUCKET_FOTO_PERFIL)
+    .createSignedUrl(rutaAvatar, DURACION_URL_AVATAR);
+
+  if (error) {
+    return null;
+  }
+
+  const signedUrl = data?.signedUrl?.trim();
+
+  if (!signedUrl) {
+    return null;
+  }
+
+  return signedUrl;
 }
 
 // ==========================================================
-// USUARIOS DEL FORO
+// OBTENER USUARIOS POR IDS
 // ==========================================================
 
 async function obtenerUsuariosPorIds(
-    idsUsuarios: string[],
+  idsUsuarios: string[],
 ): Promise<Map<string, UsuarioForo>> {
-    const ids = quitarDuplicados(idsUsuarios);
-    const mapa = new Map<string, UsuarioForo>();
+  const ids = quitarDuplicados(idsUsuarios);
 
-    if (ids.length === 0) {
-        return mapa;
-    }
+  const mapa = new Map<string, UsuarioForo>();
 
-    const { data, error } = await supabase.rpc("obtener_usuarios_foro", {
-        ids_usuarios: ids,
-    });
-
-    if (error) {
-        console.error("Error obteniendo usuarios del foro:", error);
-
-        throw new Error("No se pudieron cargar los usuarios del foro.");
-    }
-
-    const usuarios = (data ?? []) as UsuarioForoRpc[];
-
-    usuarios.forEach((usuario) => {
-        mapa.set(usuario.id_usuario, {
-            id_usuario: usuario.id_usuario,
-            nombres: usuario.nombres,
-            apellidos: usuario.apellidos,
-            nombre_preferido: usuario.nombre_preferido,
-            foto_perfil: obtenerUrlFotoPerfil(usuario.foto_perfil),
-        });
-    });
-
+  if (ids.length === 0) {
     return mapa;
+  }
+
+  const { data, error } = await supabase
+    .from(TABLAS.usuario)
+    .select(
+      `
+        id_usuario,
+        nombres,
+        apellidos,
+        nombre_preferido,
+        foto_perfil
+      `,
+    )
+    .in("id_usuario", ids);
+
+  if (error) {
+    throw new Error("No se pudieron cargar los usuarios del foro.");
+  }
+
+  const usuariosEncontrados = data ?? [];
+
+  const usuariosConAvatar = await Promise.all(
+    usuariosEncontrados.map(async (usuario) => {
+      let fotoPerfil: string | null = null;
+
+      try {
+        fotoPerfil = await obtenerUrlFotoPerfil(
+          usuario.id_usuario,
+          usuario.foto_perfil,
+        );
+      } catch {
+        fotoPerfil = null;
+      }
+
+      const usuarioForo: UsuarioForo = {
+        id_usuario: usuario.id_usuario,
+        nombres: usuario.nombres ?? "",
+        apellidos: usuario.apellidos ?? "",
+        nombre_preferido: usuario.nombre_preferido ?? null,
+        foto_perfil: fotoPerfil,
+      };
+
+      return usuarioForo;
+    }),
+  );
+
+  usuariosConAvatar.forEach((usuario) => {
+    mapa.set(usuario.id_usuario, usuario);
+  });
+
+  return mapa;
 }
 
 // ==========================================================
@@ -130,27 +216,27 @@ async function obtenerUsuariosPorIds(
 // ==========================================================
 
 export async function obtenerEmocionesActivas(): Promise<EmocionForo[]> {
-    const { data, error } = await supabase
-        .from(TABLAS.emocion)
-        .select(
-            `
-            id_emocion_foro,
-            nombre,
-            descripcion,
-            estado,
-            fecha_registro
-        `,
-        )
-        .eq("estado", true)
-        .order("nombre", { ascending: true });
+  const { data, error } = await supabase
+    .from(TABLAS.emocion)
+    .select(
+      `
+        id_emocion_foro,
+        nombre,
+        descripcion,
+        estado,
+        fecha_registro
+      `,
+    )
+    .eq("estado", true)
+    .order("nombre", {
+      ascending: true,
+    });
 
-    if (error) {
-        console.error("Error obteniendo emociones del foro:", error);
+  if (error) {
+    throw new Error("No se pudieron cargar las emociones del foro.");
+  }
 
-        throw new Error("No se pudieron cargar las emociones del foro.");
-    }
-
-    return (data ?? []) as EmocionForo[];
+  return (data ?? []) as EmocionForo[];
 }
 
 // ==========================================================
@@ -158,167 +244,161 @@ export async function obtenerEmocionesActivas(): Promise<EmocionForo[]> {
 // ==========================================================
 
 async function obtenerEmocionesDePublicaciones(
-    idsPublicaciones: string[],
+  idsPublicaciones: string[],
 ): Promise<Map<string, EmocionForo[]>> {
-    const mapa = new Map<string, EmocionForo[]>();
-    const ids = quitarDuplicados(idsPublicaciones);
+  const mapa = new Map<string, EmocionForo[]>();
 
-    if (ids.length === 0) {
-        return mapa;
-    }
+  const ids = quitarDuplicados(idsPublicaciones);
 
-    const { data: relaciones, error: relacionesError } = await supabase
-        .from(TABLAS.publicacionEmocion)
-        .select(
-            `
-            id_publicacion,
-            id_emocion_foro
-        `,
-        )
-        .in("id_publicacion", ids);
-
-    if (relacionesError) {
-        console.error(
-            "Error obteniendo relaciones publicación-emoción:",
-            relacionesError,
-        );
-
-        throw new Error(
-            "No se pudieron cargar las emociones de las publicaciones.",
-        );
-    }
-
-    const idsEmociones = quitarDuplicados(
-        (relaciones ?? []).map((relacion) => relacion.id_emocion_foro),
-    );
-
-    if (idsEmociones.length === 0) {
-        return mapa;
-    }
-
-    const { data: emociones, error: emocionesError } = await supabase
-        .from(TABLAS.emocion)
-        .select(
-            `
-            id_emocion_foro,
-            nombre,
-            descripcion,
-            estado,
-            fecha_registro
-        `,
-        )
-        .in("id_emocion_foro", idsEmociones);
-
-    if (emocionesError) {
-        console.error("Error obteniendo emociones:", emocionesError);
-
-        throw new Error("No se pudieron cargar las emociones.");
-    }
-
-    const mapaEmociones = new Map<string, EmocionForo>();
-
-    (emociones ?? []).forEach((emocion) => {
-        mapaEmociones.set(emocion.id_emocion_foro, emocion as EmocionForo);
-    });
-
-    (relaciones ?? []).forEach((relacion) => {
-        const emocion = mapaEmociones.get(relacion.id_emocion_foro);
-
-        if (!emocion) return;
-
-        const actuales = mapa.get(relacion.id_publicacion) ?? [];
-
-        actuales.push(emocion);
-
-        mapa.set(relacion.id_publicacion, actuales);
-    });
-
+  if (ids.length === 0) {
     return mapa;
+  }
+
+  const { data: relaciones, error: relacionesError } = await supabase
+    .from(TABLAS.publicacionEmocion)
+    .select(
+      `
+        id_publicacion,
+        id_emocion_foro
+      `,
+    )
+    .in("id_publicacion", ids);
+
+  if (relacionesError) {
+    throw new Error(
+      "No se pudieron cargar las emociones de las publicaciones.",
+    );
+  }
+
+  const idsEmociones = quitarDuplicados(
+    (relaciones ?? []).map((relacion) => relacion.id_emocion_foro),
+  );
+
+  if (idsEmociones.length === 0) {
+    return mapa;
+  }
+
+  const { data: emociones, error: emocionesError } = await supabase
+    .from(TABLAS.emocion)
+    .select(
+      `
+        id_emocion_foro,
+        nombre,
+        descripcion,
+        estado,
+        fecha_registro
+      `,
+    )
+    .in("id_emocion_foro", idsEmociones);
+
+  if (emocionesError) {
+    throw new Error("No se pudieron cargar las emociones.");
+  }
+
+  const mapaEmociones = new Map<string, EmocionForo>();
+
+  (emociones ?? []).forEach((emocion) => {
+    mapaEmociones.set(emocion.id_emocion_foro, emocion as EmocionForo);
+  });
+
+  (relaciones ?? []).forEach((relacion) => {
+    const emocion = mapaEmociones.get(relacion.id_emocion_foro);
+
+    if (!emocion) {
+      return;
+    }
+
+    const actuales = mapa.get(relacion.id_publicacion) ?? [];
+
+    actuales.push(emocion);
+
+    mapa.set(relacion.id_publicacion, actuales);
+  });
+
+  return mapa;
 }
 
 // ==========================================================
-// DATOS SOCIALES DE PUBLICACIONES
+// DATOS SOCIALES
 // ==========================================================
 
 async function obtenerDatosSocialesPublicaciones(
-    idsPublicaciones: string[],
-    idUsuarioActual?: string,
+  idsPublicaciones: string[],
+  idUsuarioActual?: string,
 ) {
-    const mapaReacciones = new Map<string, number>();
-    const mapaComentarios = new Map<string, number>();
-    const mapaReaccionUsuario = new Map<string, TipoReaccion>();
+  const mapaReacciones = new Map<string, number>();
 
-    const ids = quitarDuplicados(idsPublicaciones);
+  const mapaComentarios = new Map<string, number>();
 
-    if (ids.length === 0) {
-        return {
-            mapaReacciones,
-            mapaComentarios,
-            mapaReaccionUsuario,
-        };
-    }
+  const mapaReaccionUsuario = new Map<string, TipoReaccion>();
 
-    // ======================================================
-    // REACCIONES
-    // ======================================================
+  const ids = quitarDuplicados(idsPublicaciones);
 
-    const { data: reacciones, error: reaccionesError } = await supabase
-        .from(TABLAS.reaccion)
-        .select(
-            `
-            id_publicacion,
-            id_usuario,
-            tipo_reaccion
-        `,
-        )
-        .in("id_publicacion", ids);
-
-    if (reaccionesError) {
-        console.error("Error obteniendo reacciones:", reaccionesError);
-
-        throw new Error("No se pudieron cargar las reacciones del foro.");
-    }
-
-    (reacciones ?? []).forEach((reaccion) => {
-        const totalActual = mapaReacciones.get(reaccion.id_publicacion) ?? 0;
-
-        mapaReacciones.set(reaccion.id_publicacion, totalActual + 1);
-
-        if (idUsuarioActual && reaccion.id_usuario === idUsuarioActual) {
-            mapaReaccionUsuario.set(
-                reaccion.id_publicacion,
-                reaccion.tipo_reaccion as TipoReaccion,
-            );
-        }
-    });
-
-    // ======================================================
-    // COMENTARIOS
-    // ======================================================
-
-    const { data: comentarios, error: comentariosError } = await supabase
-        .from(TABLAS.comentario)
-        .select("id_publicacion")
-        .in("id_publicacion", ids)
-        .eq("estado", "activo");
-
-    if (comentariosError) {
-        console.error("Error obteniendo comentarios:", comentariosError);
-
-        throw new Error("No se pudieron cargar los comentarios del foro.");
-    }
-
-    (comentarios ?? []).forEach((comentario) => {
-        const totalActual = mapaComentarios.get(comentario.id_publicacion) ?? 0;
-
-        mapaComentarios.set(comentario.id_publicacion, totalActual + 1);
-    });
-
+  if (ids.length === 0) {
     return {
-        mapaReacciones,
-        mapaComentarios,
-        mapaReaccionUsuario,
+      mapaReacciones,
+      mapaComentarios,
+      mapaReaccionUsuario,
     };
+  }
+
+  // ------------------------------------------------------
+  // REACCIONES
+  // ------------------------------------------------------
+
+  const { data: reacciones, error: reaccionesError } = await supabase
+    .from(TABLAS.reaccion)
+    .select(
+      `
+        id_publicacion,
+        id_usuario,
+        tipo_reaccion
+      `,
+    )
+    .in("id_publicacion", ids);
+
+  if (reaccionesError) {
+    throw new Error("No se pudieron cargar las reacciones del foro.");
+  }
+
+  (reacciones ?? []).forEach((reaccion) => {
+    const totalActual = mapaReacciones.get(reaccion.id_publicacion) ?? 0;
+
+    mapaReacciones.set(reaccion.id_publicacion, totalActual + 1);
+
+    if (idUsuarioActual && reaccion.id_usuario === idUsuarioActual) {
+      mapaReaccionUsuario.set(
+        reaccion.id_publicacion,
+        reaccion.tipo_reaccion as TipoReaccion,
+      );
+    }
+  });
+
+  // ------------------------------------------------------
+  // COMENTARIOS
+  // ------------------------------------------------------
+
+  const { data: comentarios, error: comentariosError } = await supabase
+    .from(TABLAS.comentario)
+    .select("id_publicacion")
+    .in("id_publicacion", ids)
+    .eq("estado", "activo");
+
+  if (comentariosError) {
+    throw new Error("No se pudieron cargar los comentarios del foro.");
+  }
+
+  (comentarios ?? []).forEach((comentario) => {
+    const totalActual = mapaComentarios.get(comentario.id_publicacion) ?? 0;
+
+    mapaComentarios.set(comentario.id_publicacion, totalActual + 1);
+  });
+
+  return {
+    mapaReacciones,
+    mapaComentarios,
+    mapaReaccionUsuario,
+  };
 }
 
 // ==========================================================
@@ -326,67 +406,74 @@ async function obtenerDatosSocialesPublicaciones(
 // ==========================================================
 
 export async function obtenerPublicaciones(
-    idUsuarioActual?: string,
+  idUsuarioActual?: string,
 ): Promise<PublicacionForo[]> {
-    const { data, error } = await supabase
-        .from(TABLAS.publicacion)
-        .select(
-            `
-            id_publicacion,
-            id_usuario,
-            titulo,
-            contenido,
-            fecha_publicacion,
-            fecha_actualizacion,
-            estado,
-            editada
-        `,
-        )
-        .eq("estado", "activa")
-        .order("fecha_publicacion", { ascending: false });
+  const { data, error } = await supabase
+    .from(TABLAS.publicacion)
+    .select(
+      `
+        id_publicacion,
+        id_usuario,
+        titulo,
+        contenido,
+        fecha_publicacion,
+        fecha_actualizacion,
+        estado,
+        editada
+      `,
+    )
+    .eq("estado", "activa")
+    .order("fecha_publicacion", {
+      ascending: false,
+    });
 
-    if (error) {
-        console.error("Error obteniendo publicaciones:", error);
+  if (error) {
+    throw new Error("No se pudieron cargar las publicaciones del foro.");
+  }
 
-        throw new Error("No se pudieron cargar las publicaciones del foro.");
-    }
+  const publicaciones = (data ?? []) as PublicacionForo[];
 
-    const publicaciones = (data ?? []) as PublicacionForo[];
+  if (publicaciones.length === 0) {
+    return [];
+  }
 
-    if (publicaciones.length === 0) {
-        return [];
-    }
+  const idsPublicaciones = publicaciones.map(
+    (publicacion) => publicacion.id_publicacion,
+  );
 
-    const idsPublicaciones = publicaciones.map(
-        (publicacion) => publicacion.id_publicacion,
-    );
+  const idsUsuarios = publicaciones.map(
+    (publicacion) => publicacion.id_usuario,
+  );
 
-    const idsUsuarios = publicaciones.map(
-        (publicacion) => publicacion.id_usuario,
-    );
+  const [usuarios, emociones, datosSociales] = await Promise.all([
+    obtenerUsuariosPorIds(idsUsuarios),
 
-    const [usuarios, emociones, datosSociales] = await Promise.all([
-        obtenerUsuariosPorIds(idsUsuarios),
-        obtenerEmocionesDePublicaciones(idsPublicaciones),
-        obtenerDatosSocialesPublicaciones(idsPublicaciones, idUsuarioActual),
-    ]);
+    obtenerEmocionesDePublicaciones(idsPublicaciones),
 
-    return publicaciones.map((publicacion) => ({
-        ...publicacion,
+    obtenerDatosSocialesPublicaciones(idsPublicaciones, idUsuarioActual),
+  ]);
 
-        usuario: usuarios.get(publicacion.id_usuario) ?? null,
+  return publicaciones.map((publicacion) => {
+    const usuario = usuarios.get(publicacion.id_usuario) ?? null;
 
-        emociones: emociones.get(publicacion.id_publicacion) ?? [],
+    return {
+      ...publicacion,
 
-        total_reacciones:
-            datosSociales.mapaReacciones.get(publicacion.id_publicacion) ?? 0,
+      usuario,
 
-        total_comentarios:
-            datosSociales.mapaComentarios.get(publicacion.id_publicacion) ?? 0,
+      emociones: emociones.get(publicacion.id_publicacion) ?? [],
 
-        reaccion_usuario:
-            datosSociales.mapaReaccionUsuario.get(publicacion.id_publicacion) ?? null,
-    }));
+      total_reacciones:
+        datosSociales.mapaReacciones.get(publicacion.id_publicacion) ?? 0,
+
+      total_comentarios:
+        datosSociales.mapaComentarios.get(publicacion.id_publicacion) ?? 0,
+
+      reaccion_usuario:
+        datosSociales.mapaReaccionUsuario.get(publicacion.id_publicacion) ??
+        null,
+    };
+  });
 }
 
 // ==========================================================
@@ -394,59 +481,59 @@ export async function obtenerPublicaciones(
 // ==========================================================
 
 export async function obtenerPublicacionPorId(
-    idPublicacion: string,
-    idUsuarioActual?: string,
+  idPublicacion: string,
+  idUsuarioActual?: string,
 ): Promise<PublicacionForo | null> {
-    const { data, error } = await supabase
-        .from(TABLAS.publicacion)
-        .select(
-            `
-            id_publicacion,
-            id_usuario,
-            titulo,
-            contenido,
-            fecha_publicacion,
-            fecha_actualizacion,
-            estado,
-            editada
-        `,
-        )
-        .eq("id_publicacion", idPublicacion)
-        .eq("estado", "activa")
-        .maybeSingle();
+  const { data, error } = await supabase
+    .from(TABLAS.publicacion)
+    .select(
+      `
+        id_publicacion,
+        id_usuario,
+        titulo,
+        contenido,
+        fecha_publicacion,
+        fecha_actualizacion,
+        estado,
+        editada
+      `,
+    )
+    .eq("id_publicacion", idPublicacion)
+    .eq("estado", "activa")
+    .maybeSingle();
 
-    if (error) {
-        console.error("Error obteniendo publicación:", error);
+  if (error) {
+    throw new Error("No se pudo cargar la publicación.");
+  }
 
-        throw new Error("No se pudo cargar la publicación.");
-    }
+  if (!data) {
+    return null;
+  }
 
-    if (!data) {
-        return null;
-    }
+  const [usuarios, emociones, datosSociales] = await Promise.all([
+    obtenerUsuariosPorIds([data.id_usuario]),
 
-    const [usuarios, emociones, datosSociales] = await Promise.all([
-        obtenerUsuariosPorIds([data.id_usuario]),
-        obtenerEmocionesDePublicaciones([data.id_publicacion]),
-        obtenerDatosSocialesPublicaciones([data.id_publicacion], idUsuarioActual),
-    ]);
+    obtenerEmocionesDePublicaciones([data.id_publicacion]),
 
-    return {
-        ...(data as PublicacionForo),
+    obtenerDatosSocialesPublicaciones([data.id_publicacion], idUsuarioActual),
+  ]);
 
-        usuario: usuarios.get(data.id_usuario) ?? null,
+  return {
+    ...(data as PublicacionForo),
 
-        emociones: emociones.get(data.id_publicacion) ?? [],
+    usuario: usuarios.get(data.id_usuario) ?? null,
 
-        total_reacciones:
-            datosSociales.mapaReacciones.get(data.id_publicacion) ?? 0,
+    emociones: emociones.get(data.id_publicacion) ?? [],
 
-        total_comentarios:
-            datosSociales.mapaComentarios.get(data.id_publicacion) ?? 0,
+    total_reacciones:
+      datosSociales.mapaReacciones.get(data.id_publicacion) ?? 0,
 
-        reaccion_usuario:
-            datosSociales.mapaReaccionUsuario.get(data.id_publicacion) ?? null,
-    };
+    total_comentarios:
+      datosSociales.mapaComentarios.get(data.id_publicacion) ?? 0,
+
+    reaccion_usuario:
+      datosSociales.mapaReaccionUsuario.get(data.id_publicacion) ?? null,
+  };
 }
 
 // ==========================================================
@@ -454,86 +541,83 @@ export async function obtenerPublicacionPorId(
 // ==========================================================
 
 export async function crearPublicacion({
-    idUsuario,
-    titulo,
-    contenido,
-    emociones = [],
+  idUsuario,
+  titulo,
+  contenido,
+  emociones = [],
 }: CrearPublicacionInput): Promise<PublicacionForo> {
-    const tituloLimpio = limpiarTexto(titulo);
-    const contenidoLimpio = limpiarTexto(contenido);
+  const tituloLimpio = limpiarTexto(titulo);
 
-    if (!tituloLimpio) {
-        throw new Error("Debes escribir un título.");
-    }
+  const contenidoLimpio = limpiarTexto(contenido);
 
-    if (!contenidoLimpio) {
-        throw new Error("Debes escribir el contenido de la publicación.");
-    }
+  if (!tituloLimpio) {
+    throw new Error("Debes escribir un título.");
+  }
 
-    const { data: publicacion, error: publicacionError } = await supabase
+  if (!contenidoLimpio) {
+    throw new Error("Debes escribir el contenido de la publicación.");
+  }
+
+  const { data: publicacion, error: publicacionError } = await supabase
+    .from(TABLAS.publicacion)
+    .insert({
+      id_usuario: idUsuario,
+      titulo: tituloLimpio,
+      contenido: contenidoLimpio,
+      estado: "activa",
+      editada: false,
+    })
+    .select(
+      `
+        id_publicacion,
+        id_usuario,
+        titulo,
+        contenido,
+        fecha_publicacion,
+        fecha_actualizacion,
+        estado,
+        editada
+      `,
+    )
+    .single();
+
+  if (publicacionError) {
+    throw new Error("No se pudo crear la publicación.");
+  }
+
+  const emocionesUnicas = quitarDuplicados(emociones);
+
+  if (emocionesUnicas.length > 0) {
+    const relaciones = emocionesUnicas.map((idEmocion) => ({
+      id_publicacion: publicacion.id_publicacion,
+      id_emocion_foro: idEmocion,
+    }));
+
+    const { error: emocionesError } = await supabase
+      .from(TABLAS.publicacionEmocion)
+      .insert(relaciones);
+
+    if (emocionesError) {
+      await supabase
         .from(TABLAS.publicacion)
-        .insert({
-            id_usuario: idUsuario,
-            titulo: tituloLimpio,
-            contenido: contenidoLimpio,
-            estado: "activa",
-            editada: false,
-        })
-        .select(
-            `
-            id_publicacion,
-            id_usuario,
-            titulo,
-            contenido,
-            fecha_publicacion,
-            fecha_actualizacion,
-            estado,
-            editada
-        `,
-        )
-        .single();
+        .delete()
+        .eq("id_publicacion", publicacion.id_publicacion)
+        .eq("id_usuario", idUsuario);
 
-    if (publicacionError) {
-        console.error("Error creando publicación:", publicacionError);
-
-        throw new Error("No se pudo crear la publicación.");
+      throw new Error("No se pudo completar la creación de la publicación.");
     }
+  }
 
-    const emocionesUnicas = quitarDuplicados(emociones);
+  const resultado = await obtenerPublicacionPorId(
+    publicacion.id_publicacion,
+    idUsuario,
+  );
 
-    if (emocionesUnicas.length > 0) {
-        const relaciones = emocionesUnicas.map((idEmocion) => ({
-            id_publicacion: publicacion.id_publicacion,
-            id_emocion_foro: idEmocion,
-        }));
+  if (!resultado) {
+    throw new Error("La publicación fue creada, pero no se pudo recuperar.");
+  }
 
-        const { error: emocionesError } = await supabase
-            .from(TABLAS.publicacionEmocion)
-            .insert(relaciones);
-
-        if (emocionesError) {
-            console.error("Error guardando emociones:", emocionesError);
-
-            await supabase
-                .from(TABLAS.publicacion)
-                .delete()
-                .eq("id_publicacion", publicacion.id_publicacion)
-                .eq("id_usuario", idUsuario);
-
-            throw new Error("No se pudo completar la creación de la publicación.");
-        }
-    }
-
-    const resultado = await obtenerPublicacionPorId(
-        publicacion.id_publicacion,
-        idUsuario,
-    );
-
-    if (!resultado) {
-        throw new Error("La publicación fue creada, pero no se pudo recuperar.");
-    }
-
-    return resultado;
+  return resultado;
 }
 
 // ==========================================================
@@ -541,75 +625,70 @@ export async function crearPublicacion({
 // ==========================================================
 
 export async function editarPublicacion({
-    idPublicacion,
-    idUsuario,
-    titulo,
-    contenido,
-    emociones,
+  idPublicacion,
+  idUsuario,
+  titulo,
+  contenido,
+  emociones,
 }: EditarPublicacionInput): Promise<void> {
-    const tituloLimpio = limpiarTexto(titulo);
-    const contenidoLimpio = limpiarTexto(contenido);
+  const tituloLimpio = limpiarTexto(titulo);
 
-    if (!tituloLimpio) {
-        throw new Error("Debes escribir un título.");
+  const contenidoLimpio = limpiarTexto(contenido);
+
+  if (!tituloLimpio) {
+    throw new Error("Debes escribir un título.");
+  }
+
+  if (!contenidoLimpio) {
+    throw new Error("Debes escribir el contenido de la publicación.");
+  }
+
+  const { error } = await supabase
+    .from(TABLAS.publicacion)
+    .update({
+      titulo: tituloLimpio,
+      contenido: contenidoLimpio,
+      editada: true,
+      fecha_actualizacion: new Date().toISOString(),
+    })
+    .eq("id_publicacion", idPublicacion)
+    .eq("id_usuario", idUsuario);
+
+  if (error) {
+    throw new Error("No se pudo editar la publicación.");
+  }
+
+  if (emociones !== undefined) {
+    const { error: eliminarError } = await supabase
+      .from(TABLAS.publicacionEmocion)
+      .delete()
+      .eq("id_publicacion", idPublicacion);
+
+    if (eliminarError) {
+      throw new Error(
+        "La publicación fue actualizada, pero no se pudieron actualizar sus emociones.",
+      );
     }
 
-    if (!contenidoLimpio) {
-        throw new Error("Debes escribir el contenido de la publicación.");
+    const emocionesUnicas = quitarDuplicados(emociones);
+
+    if (emocionesUnicas.length > 0) {
+      const { error: insertarError } = await supabase
+        .from(TABLAS.publicacionEmocion)
+        .insert(
+          emocionesUnicas.map((idEmocion) => ({
+            id_publicacion: idPublicacion,
+            id_emocion_foro: idEmocion,
+          })),
+        );
+
+      if (insertarError) {
+        throw new Error(
+          "La publicación fue actualizada, pero no se pudieron guardar sus emociones.",
+        );
+      }
     }
-
-    const { error } = await supabase
-        .from(TABLAS.publicacion)
-        .update({
-            titulo: tituloLimpio,
-            contenido: contenidoLimpio,
-            editada: true,
-            fecha_actualizacion: new Date().toISOString(),
-        })
-        .eq("id_publicacion", idPublicacion)
-        .eq("id_usuario", idUsuario);
-
-    if (error) {
-        console.error("Error editando publicación:", error);
-
-        throw new Error("No se pudo editar la publicación.");
-    }
-
-    if (emociones !== undefined) {
-        const { error: eliminarError } = await supabase
-            .from(TABLAS.publicacionEmocion)
-            .delete()
-            .eq("id_publicacion", idPublicacion);
-
-        if (eliminarError) {
-            console.error("Error eliminando emociones anteriores:", eliminarError);
-
-            throw new Error(
-                "La publicación fue actualizada, pero no se pudieron actualizar sus emociones.",
-            );
-        }
-
-        const emocionesUnicas = quitarDuplicados(emociones);
-
-        if (emocionesUnicas.length > 0) {
-            const { error: insertarError } = await supabase
-                .from(TABLAS.publicacionEmocion)
-                .insert(
-                    emocionesUnicas.map((idEmocion) => ({
-                        id_publicacion: idPublicacion,
-                        id_emocion_foro: idEmocion,
-                    })),
-                );
-
-            if (insertarError) {
-                console.error("Error insertando nuevas emociones:", insertarError);
-
-                throw new Error(
-                    "La publicación fue actualizada, pero no se pudieron guardar sus emociones.",
-                );
-            }
-        }
-    }
+  }
 }
 
 // ==========================================================
@@ -617,23 +696,21 @@ export async function editarPublicacion({
 // ==========================================================
 
 export async function eliminarPublicacion(
-    idPublicacion: string,
-    idUsuario: string,
+  idPublicacion: string,
+  idUsuario: string,
 ): Promise<void> {
-    const { error } = await supabase
-        .from(TABLAS.publicacion)
-        .update({
-            estado: "eliminada",
-            fecha_actualizacion: new Date().toISOString(),
-        })
-        .eq("id_publicacion", idPublicacion)
-        .eq("id_usuario", idUsuario);
+  const { error } = await supabase
+    .from(TABLAS.publicacion)
+    .update({
+      estado: "eliminada",
+      fecha_actualizacion: new Date().toISOString(),
+    })
+    .eq("id_publicacion", idPublicacion)
+    .eq("id_usuario", idUsuario);
 
-    if (error) {
-        console.error("Error eliminando publicación:", error);
-
-        throw new Error("No se pudo eliminar la publicación.");
-    }
+  if (error) {
+    throw new Error("No se pudo eliminar la publicación.");
+  }
 }
 
 // ==========================================================
@@ -641,49 +718,47 @@ export async function eliminarPublicacion(
 // ==========================================================
 
 export async function obtenerComentarios(
-    idPublicacion: string,
+  idPublicacion: string,
 ): Promise<ComentarioForo[]> {
-    const { data, error } = await supabase
-        .from(TABLAS.comentario)
-        .select(
-            `
-            id_comentario,
-            id_publicacion,
-            id_usuario,
-            contenido,
-            fecha_comentario,
-            fecha_actualizacion,
-            estado,
-            editada
-        `,
-        )
-        .eq("id_publicacion", idPublicacion)
-        .eq("estado", "activo")
-        .order("fecha_comentario", {
-            ascending: true,
-        });
+  const { data, error } = await supabase
+    .from(TABLAS.comentario)
+    .select(
+      `
+        id_comentario,
+        id_publicacion,
+        id_usuario,
+        contenido,
+        fecha_comentario,
+        fecha_actualizacion,
+        estado,
+        editada
+      `,
+    )
+    .eq("id_publicacion", idPublicacion)
+    .eq("estado", "activo")
+    .order("fecha_comentario", {
+      ascending: true,
+    });
 
-    if (error) {
-        console.error("Error obteniendo comentarios:", error);
+  if (error) {
+    throw new Error("No se pudieron cargar los comentarios.");
+  }
 
-        throw new Error("No se pudieron cargar los comentarios.");
-    }
+  const comentarios = (data ?? []) as ComentarioForo[];
 
-    const comentarios = (data ?? []) as ComentarioForo[];
+  if (comentarios.length === 0) {
+    return [];
+  }
 
-    if (comentarios.length === 0) {
-        return [];
-    }
+  const usuarios = await obtenerUsuariosPorIds(
+    comentarios.map((comentario) => comentario.id_usuario),
+  );
 
-    const usuarios = await obtenerUsuariosPorIds(
-        comentarios.map((comentario) => comentario.id_usuario),
-    );
+  return comentarios.map((comentario) => ({
+    ...comentario,
 
-    return comentarios.map((comentario) => ({
-        ...comentario,
-
-        usuario: usuarios.get(comentario.id_usuario) ?? null,
-    }));
+    usuario: usuarios.get(comentario.id_usuario) ?? null,
+  }));
 }
 
 // ==========================================================
@@ -691,51 +766,50 @@ export async function obtenerComentarios(
 // ==========================================================
 
 export async function crearComentario({
-    idPublicacion,
-    idUsuario,
-    contenido,
+  idPublicacion,
+  idUsuario,
+  contenido,
 }: CrearComentarioInput): Promise<ComentarioForo> {
-    const contenidoLimpio = limpiarTexto(contenido);
+  const contenidoLimpio = limpiarTexto(contenido);
 
-    if (!contenidoLimpio) {
-        throw new Error("Escribe un comentario antes de publicarlo.");
-    }
+  if (!contenidoLimpio) {
+    throw new Error("Escribe un comentario antes de publicarlo.");
+  }
 
-    const { data, error } = await supabase
-        .from(TABLAS.comentario)
-        .insert({
-            id_publicacion: idPublicacion,
-            id_usuario: idUsuario,
-            contenido: contenidoLimpio,
-            estado: "activo",
-            editada: false,
-        })
-        .select(
-            `
-            id_comentario,
-            id_publicacion,
-            id_usuario,
-            contenido,
-            fecha_comentario,
-            fecha_actualizacion,
-            estado,
-            editada
+  const { data, error } = await supabase
+    .from(TABLAS.comentario)
+    .insert({
+      id_publicacion: idPublicacion,
+      id_usuario: idUsuario,
+      contenido: contenidoLimpio,
+      estado: "activo",
+      editada: false,
+    })
+    .select(
+      `
+          id_comentario,
+          id_publicacion,
+          id_usuario,
+          contenido,
+          fecha_comentario,
+          fecha_actualizacion,
+          estado,
+          editada
         `,
-        )
-        .single();
+    )
+    .single();
 
-    if (error) {
-        console.error("Error creando comentario:", error);
+  if (error) {
+    throw new Error("No se pudo publicar el comentario.");
+  }
 
-        throw new Error("No se pudo publicar el comentario.");
-    }
+  const usuarios = await obtenerUsuariosPorIds([idUsuario]);
 
-    const usuarios = await obtenerUsuariosPorIds([idUsuario]);
+  return {
+    ...(data as ComentarioForo),
 
-    return {
-        ...(data as ComentarioForo),
-        usuario: usuarios.get(idUsuario) ?? null,
-    };
+    usuario: usuarios.get(idUsuario) ?? null,
+  };
 }
 
 // ==========================================================
@@ -743,31 +817,29 @@ export async function crearComentario({
 // ==========================================================
 
 export async function editarComentario({
-    idComentario,
-    idUsuario,
-    contenido,
+  idComentario,
+  idUsuario,
+  contenido,
 }: EditarComentarioInput): Promise<void> {
-    const contenidoLimpio = limpiarTexto(contenido);
+  const contenidoLimpio = limpiarTexto(contenido);
 
-    if (!contenidoLimpio) {
-        throw new Error("El comentario no puede quedar vacío.");
-    }
+  if (!contenidoLimpio) {
+    throw new Error("El comentario no puede quedar vacío.");
+  }
 
-    const { error } = await supabase
-        .from(TABLAS.comentario)
-        .update({
-            contenido: contenidoLimpio,
-            editada: true,
-            fecha_actualizacion: new Date().toISOString(),
-        })
-        .eq("id_comentario", idComentario)
-        .eq("id_usuario", idUsuario);
+  const { error } = await supabase
+    .from(TABLAS.comentario)
+    .update({
+      contenido: contenidoLimpio,
+      editada: true,
+      fecha_actualizacion: new Date().toISOString(),
+    })
+    .eq("id_comentario", idComentario)
+    .eq("id_usuario", idUsuario);
 
-    if (error) {
-        console.error("Error editando comentario:", error);
-
-        throw new Error("No se pudo editar el comentario.");
-    }
+  if (error) {
+    throw new Error("No se pudo editar el comentario.");
+  }
 }
 
 // ==========================================================
@@ -775,111 +847,101 @@ export async function editarComentario({
 // ==========================================================
 
 export async function eliminarComentario(
-    idComentario: string,
-    idUsuario: string,
+  idComentario: string,
+  idUsuario: string,
 ): Promise<void> {
-    const { error } = await supabase
-        .from(TABLAS.comentario)
-        .update({
-            estado: "eliminado",
-            fecha_actualizacion: new Date().toISOString(),
-        })
-        .eq("id_comentario", idComentario)
-        .eq("id_usuario", idUsuario);
+  const { error } = await supabase
+    .from(TABLAS.comentario)
+    .update({
+      estado: "eliminado",
+      fecha_actualizacion: new Date().toISOString(),
+    })
+    .eq("id_comentario", idComentario)
+    .eq("id_usuario", idUsuario);
 
-    if (error) {
-        console.error("Error eliminando comentario:", error);
-
-        throw new Error("No se pudo eliminar el comentario.");
-    }
+  if (error) {
+    throw new Error("No se pudo eliminar el comentario.");
+  }
 }
 
 // ==========================================================
-// REACCIONAR PUBLICACIÓN
+// REACCIONAR
 // ==========================================================
 
 export async function reaccionarPublicacion(
-    idPublicacion: string,
-    idUsuario: string,
-    tipoReaccion: TipoReaccion,
+  idPublicacion: string,
+  idUsuario: string,
+  tipoReaccion: TipoReaccion,
 ): Promise<TipoReaccion | null> {
-    const { data: reaccionActual, error: buscarError } = await supabase
-        .from(TABLAS.reaccion)
-        .select(
-            `
-            id_reaccion,
-            tipo_reaccion
-        `,
-        )
-        .eq("id_publicacion", idPublicacion)
-        .eq("id_usuario", idUsuario)
-        .maybeSingle();
+  const { data: reaccionActual, error: buscarError } = await supabase
+    .from(TABLAS.reaccion)
+    .select(
+      `
+        id_reaccion,
+        tipo_reaccion
+      `,
+    )
+    .eq("id_publicacion", idPublicacion)
+    .eq("id_usuario", idUsuario)
+    .maybeSingle();
 
-    if (buscarError) {
-        console.error("Error buscando reacción:", buscarError);
+  if (buscarError) {
+    throw new Error("No se pudo procesar la reacción.");
+  }
 
-        throw new Error("No se pudo procesar la reacción.");
+  // ------------------------------------------------------
+  // QUITAR REACCIÓN
+  // ------------------------------------------------------
+
+  if (reaccionActual?.tipo_reaccion === tipoReaccion) {
+    const { error } = await supabase
+      .from(TABLAS.reaccion)
+      .delete()
+      .eq("id_reaccion", reaccionActual.id_reaccion)
+      .eq("id_usuario", idUsuario);
+
+    if (error) {
+      throw new Error("No se pudo quitar la reacción.");
     }
 
-    // ======================================================
-    // MISMA REACCIÓN -> QUITAR
-    // ======================================================
+    return null;
+  }
 
-    if (reaccionActual?.tipo_reaccion === tipoReaccion) {
-        const { error } = await supabase
-            .from(TABLAS.reaccion)
-            .delete()
-            .eq("id_reaccion", reaccionActual.id_reaccion)
-            .eq("id_usuario", idUsuario);
+  // ------------------------------------------------------
+  // CAMBIAR REACCIÓN
+  // ------------------------------------------------------
 
-        if (error) {
-            console.error("Error eliminando reacción:", error);
-
-            throw new Error("No se pudo quitar la reacción.");
-        }
-
-        return null;
-    }
-
-    // ======================================================
-    // CAMBIAR REACCIÓN
-    // ======================================================
-
-    if (reaccionActual) {
-        const { error } = await supabase
-            .from(TABLAS.reaccion)
-            .update({
-                tipo_reaccion: tipoReaccion,
-            })
-            .eq("id_reaccion", reaccionActual.id_reaccion)
-            .eq("id_usuario", idUsuario);
-
-        if (error) {
-            console.error("Error actualizando reacción:", error);
-
-            throw new Error("No se pudo cambiar la reacción.");
-        }
-
-        return tipoReaccion;
-    }
-
-    // ======================================================
-    // NUEVA REACCIÓN
-    // ======================================================
-
-    const { error: insertarError } = await supabase.from(TABLAS.reaccion).insert({
-        id_publicacion: idPublicacion,
-        id_usuario: idUsuario,
+  if (reaccionActual) {
+    const { error } = await supabase
+      .from(TABLAS.reaccion)
+      .update({
         tipo_reaccion: tipoReaccion,
-    });
+      })
+      .eq("id_reaccion", reaccionActual.id_reaccion)
+      .eq("id_usuario", idUsuario);
 
-    if (insertarError) {
-        console.error("Error creando reacción:", insertarError);
-
-        throw new Error("No se pudo registrar la reacción.");
+    if (error) {
+      throw new Error("No se pudo cambiar la reacción.");
     }
 
     return tipoReaccion;
+  }
+
+  // ------------------------------------------------------
+  // CREAR REACCIÓN
+  // ------------------------------------------------------
+
+  const { error: insertarError } = await supabase.from(TABLAS.reaccion).insert({
+    id_publicacion: idPublicacion,
+    id_usuario: idUsuario,
+    tipo_reaccion: tipoReaccion,
+  });
+
+  if (insertarError) {
+    throw new Error("No se pudo registrar la reacción.");
+  }
+
+  return tipoReaccion;
 }
 
 // ==========================================================
@@ -887,40 +949,38 @@ export async function reaccionarPublicacion(
 // ==========================================================
 
 export async function crearReporte({
-    idUsuarioReporta,
-    idPublicacion = null,
-    idComentario = null,
-    motivo,
-    descripcion = null,
+  idUsuarioReporta,
+  idPublicacion = null,
+  idComentario = null,
+  motivo,
+  descripcion = null,
 }: CrearReporteInput): Promise<void> {
-    if (!idPublicacion && !idComentario) {
-        throw new Error(
-            "Debes indicar la publicación o comentario que deseas reportar.",
-        );
-    }
+  if (!idPublicacion && !idComentario) {
+    throw new Error(
+      "Debes indicar la publicación o comentario que deseas reportar.",
+    );
+  }
 
-    if (idPublicacion && idComentario) {
-        throw new Error(
-            "Un reporte debe corresponder a una publicación o a un comentario, no a ambos.",
-        );
-    }
+  if (idPublicacion && idComentario) {
+    throw new Error(
+      "Un reporte debe corresponder a una publicación o a un comentario, no a ambos.",
+    );
+  }
 
-    const descripcionLimpia = descripcion?.trim() || null;
+  const descripcionLimpia = descripcion?.trim() || null;
 
-    const { error } = await supabase.from(TABLAS.reporte).insert({
-        id_usuario_reporta: idUsuarioReporta,
-        id_publicacion: idPublicacion,
-        id_comentario: idComentario,
-        motivo,
-        descripcion: descripcionLimpia,
-        estado: "pendiente",
-    });
+  const { error } = await supabase.from(TABLAS.reporte).insert({
+    id_usuario_reporta: idUsuarioReporta,
+    id_publicacion: idPublicacion,
+    id_comentario: idComentario,
+    motivo,
+    descripcion: descripcionLimpia,
+    estado: "pendiente",
+  });
 
-    if (error) {
-        console.error("Error creando reporte:", error);
-
-        throw new Error("No se pudo enviar el reporte.");
-    }
+  if (error) {
+    throw new Error("No se pudo enviar el reporte.");
+  }
 }
 
 // ==========================================================
@@ -928,147 +988,142 @@ export async function crearReporte({
 // ==========================================================
 
 export async function obtenerPreguntaSemanaActiva(): Promise<PreguntaSemanaForo | null> {
-    const { data, error } = await supabase
-        .from(TABLAS.preguntaSemana)
-        .select(
-            `
-            id_pregunta_semana,
-            pregunta,
-            fecha_inicio,
-            fecha_fin,
-            estado
+  const { data, error } = await supabase
+    .from(TABLAS.preguntaSemana)
+    .select(
+      `
+          id_pregunta_semana,
+          pregunta,
+          fecha_inicio,
+          fecha_fin,
+          estado
         `,
-        )
-        .order("fecha_inicio", {
-            ascending: false,
-        })
-        .limit(1)
-        .maybeSingle();
+    )
+    .eq("estado", true)
+    .order("fecha_inicio", {
+      ascending: false,
+    })
+    .limit(1)
+    .maybeSingle();
 
-    if (error) {
-        console.error("Error obteniendo pregunta de la semana:", error);
+  if (error) {
+    throw new Error("No se pudo cargar la pregunta de la semana.");
+  }
 
-        throw new Error("No se pudo cargar la pregunta de la semana.");
-    }
-
-    return data ? (data as PreguntaSemanaForo) : null;
+  return data ? (data as PreguntaSemanaForo) : null;
 }
 
 // ==========================================================
-// RESPONDER PREGUNTA DE LA SEMANA
+// RESPONDER PREGUNTA
 // ==========================================================
 
 export async function responderPreguntaSemana({
-    idPreguntaSemana,
-    idUsuario,
-    respuesta,
+  idPreguntaSemana,
+  idUsuario,
+  respuesta,
 }: CrearRespuestaPreguntaSemanaInput): Promise<RespuestaPreguntaSemanaForo> {
-    const respuestaLimpia = limpiarTexto(respuesta);
+  const respuestaLimpia = limpiarTexto(respuesta);
 
-    if (!idPreguntaSemana) {
-        throw new Error("La pregunta de la semana no es válida.");
+  if (!idPreguntaSemana) {
+    throw new Error("La pregunta de la semana no es válida.");
+  }
+
+  if (!idUsuario) {
+    throw new Error("No se pudo identificar al usuario.");
+  }
+
+  if (!respuestaLimpia) {
+    throw new Error("Escribe una respuesta antes de enviarla.");
+  }
+
+  if (respuestaLimpia.length > 500) {
+    throw new Error("La respuesta no puede superar los 500 caracteres.");
+  }
+
+  // ------------------------------------------------------
+  // VERIFICAR PREGUNTA
+  // ------------------------------------------------------
+
+  const { data: pregunta, error: preguntaError } = await supabase
+    .from(TABLAS.preguntaSemana)
+    .select(
+      `
+        id_pregunta_semana,
+        estado,
+        fecha_inicio,
+        fecha_fin
+      `,
+    )
+    .eq("id_pregunta_semana", idPreguntaSemana)
+    .maybeSingle();
+
+  if (preguntaError) {
+    throw new Error("No se pudo verificar la pregunta de la semana.");
+  }
+
+  if (!pregunta) {
+    throw new Error("Esta pregunta ya no está disponible.");
+  }
+
+  if (pregunta.estado !== true) {
+    throw new Error("Esta pregunta ya no está activa.");
+  }
+
+  // ------------------------------------------------------
+  // VERIFICAR FECHAS
+  // ------------------------------------------------------
+
+  const ahora = new Date();
+
+  const fechaInicio = new Date(pregunta.fecha_inicio);
+
+  const fechaFin = pregunta.fecha_fin ? new Date(pregunta.fecha_fin) : null;
+
+  if (Number.isNaN(fechaInicio.getTime())) {
+    throw new Error("La fecha de inicio de la pregunta no es válida.");
+  }
+
+  if (ahora < fechaInicio) {
+    throw new Error("Esta pregunta todavía no está disponible.");
+  }
+
+  if (fechaFin) {
+    if (Number.isNaN(fechaFin.getTime())) {
+      throw new Error("La fecha de finalización de la pregunta no es válida.");
     }
 
-    if (!idUsuario) {
-        throw new Error("No se pudo identificar al usuario.");
+    if (ahora > fechaFin) {
+      throw new Error("El período para responder esta pregunta ya terminó.");
     }
+  }
 
-    if (!respuestaLimpia) {
-        throw new Error("Escribe una respuesta antes de enviarla.");
-    }
+  // ------------------------------------------------------
+  // GUARDAR RESPUESTA
+  // ------------------------------------------------------
 
-    if (respuestaLimpia.length > 500) {
-        throw new Error("La respuesta no puede superar los 500 caracteres.");
-    }
-
-    // ======================================================
-    // VERIFICAR PREGUNTA
-    // ======================================================
-
-    const { data: pregunta, error: preguntaError } = await supabase
-        .from(TABLAS.preguntaSemana)
-        .select(
-            `
-            id_pregunta_semana,
-            estado,
-            fecha_inicio,
-            fecha_fin
+  const { data, error } = await supabase
+    .from(TABLAS.respuestaPreguntaSemana)
+    .insert({
+      id_pregunta_semana: idPreguntaSemana,
+      id_usuario: idUsuario,
+      respuesta: respuestaLimpia,
+    })
+    .select(
+      `
+          id_respuesta,
+          id_pregunta_semana,
+          id_usuario,
+          respuesta,
+          fecha_respuesta
         `,
-        )
-        .eq("id_pregunta_semana", idPreguntaSemana)
-        .maybeSingle();
+    )
+    .single();
 
-    if (preguntaError) {
-        console.error("Error verificando pregunta semanal:", preguntaError);
+  if (error) {
+    throw new Error("No se pudo guardar tu respuesta.");
+  }
 
-        throw new Error("No se pudo verificar la pregunta de la semana.");
-    }
-
-    if (!pregunta) {
-        throw new Error("Esta pregunta ya no está disponible.");
-    }
-
-    if (pregunta.estado !== true) {
-        throw new Error("Esta pregunta ya no está activa.");
-    }
-
-    // ======================================================
-    // VALIDAR FECHAS
-    // ======================================================
-
-    const ahora = new Date();
-
-    const fechaInicio = new Date(pregunta.fecha_inicio);
-
-    const fechaFin = pregunta.fecha_fin ? new Date(pregunta.fecha_fin) : null;
-
-    if (Number.isNaN(fechaInicio.getTime())) {
-        throw new Error("La fecha de inicio de la pregunta no es válida.");
-    }
-
-    if (ahora < fechaInicio) {
-        throw new Error("Esta pregunta todavía no está disponible.");
-    }
-
-    if (fechaFin) {
-        if (Number.isNaN(fechaFin.getTime())) {
-            throw new Error("La fecha de finalización de la pregunta no es válida.");
-        }
-
-        if (ahora > fechaFin) {
-            throw new Error("El período para responder esta pregunta ya terminó.");
-        }
-    }
-
-    // ======================================================
-    // INSERTAR RESPUESTA
-    // ======================================================
-
-    const { data, error } = await supabase
-        .from(TABLAS.respuestaPreguntaSemana)
-        .insert({
-            id_pregunta_semana: idPreguntaSemana,
-            id_usuario: idUsuario,
-            respuesta: respuestaLimpia,
-        })
-        .select(
-            `
-            id_respuesta,
-            id_pregunta_semana,
-            id_usuario,
-            respuesta,
-            fecha_respuesta
-        `,
-        )
-        .single();
-
-    if (error) {
-        console.error("Error guardando respuesta semanal:", error);
-
-        throw new Error("No se pudo guardar tu respuesta.");
-    }
-
-    return data as RespuestaPreguntaSemanaForo;
+  return data as RespuestaPreguntaSemanaForo;
 }
 
 // ==========================================================
@@ -1076,85 +1131,81 @@ export async function responderPreguntaSemana({
 // ==========================================================
 
 export async function obtenerRespuestasPreguntaSemanaUsuario(
-    idPreguntaSemana: string,
-    idUsuario: string,
+  idPreguntaSemana: string,
+  idUsuario: string,
 ): Promise<RespuestaPreguntaSemanaForo[]> {
-    if (!idPreguntaSemana || !idUsuario) {
-        return [];
-    }
+  if (!idPreguntaSemana || !idUsuario) {
+    return [];
+  }
 
-    const { data, error } = await supabase
-        .from(TABLAS.respuestaPreguntaSemana)
-        .select(
-            `
-            id_respuesta,
-            id_pregunta_semana,
-            id_usuario,
-            respuesta,
-            fecha_respuesta
+  const { data, error } = await supabase
+    .from(TABLAS.respuestaPreguntaSemana)
+    .select(
+      `
+          id_respuesta,
+          id_pregunta_semana,
+          id_usuario,
+          respuesta,
+          fecha_respuesta
         `,
-        )
-        .eq("id_pregunta_semana", idPreguntaSemana)
-        .eq("id_usuario", idUsuario)
-        .order("fecha_respuesta", {
-            ascending: false,
-        });
+    )
+    .eq("id_pregunta_semana", idPreguntaSemana)
+    .eq("id_usuario", idUsuario)
+    .order("fecha_respuesta", {
+      ascending: false,
+    });
 
-    if (error) {
-        console.error("Error obteniendo respuestas del usuario:", error);
+  if (error) {
+    throw new Error("No se pudieron consultar tus respuestas.");
+  }
 
-        throw new Error("No se pudieron consultar tus respuestas.");
-    }
-
-    return (data ?? []) as RespuestaPreguntaSemanaForo[];
+  return (data ?? []) as RespuestaPreguntaSemanaForo[];
 }
 
 // ==========================================================
-// TODAS LAS RESPUESTAS DE LA PREGUNTA
+// TODAS LAS RESPUESTAS
 // ==========================================================
 
 export async function obtenerRespuestasPreguntaSemana(
-    idPreguntaSemana: string,
+  idPreguntaSemana: string,
 ): Promise<RespuestaPreguntaSemanaConUsuario[]> {
-    if (!idPreguntaSemana) {
-        return [];
-    }
+  if (!idPreguntaSemana) {
+    return [];
+  }
 
-    const { data, error } = await supabase
-        .from(TABLAS.respuestaPreguntaSemana)
-        .select(
-            `
-            id_respuesta,
-            id_pregunta_semana,
-            id_usuario,
-            respuesta,
-            fecha_respuesta
+  const { data, error } = await supabase
+    .from(TABLAS.respuestaPreguntaSemana)
+    .select(
+      `
+          id_respuesta,
+          id_pregunta_semana,
+          id_usuario,
+          respuesta,
+          fecha_respuesta
         `,
-        )
-        .eq("id_pregunta_semana", idPreguntaSemana)
-        .order("fecha_respuesta", {
-            ascending: false,
-        });
+    )
+    .eq("id_pregunta_semana", idPreguntaSemana)
+    .order("fecha_respuesta", {
+      ascending: false,
+    });
 
-    if (error) {
-        console.error("Error obteniendo respuestas de la semana:", error);
+  if (error) {
+    throw new Error("No se pudieron cargar las respuestas.");
+  }
 
-        throw new Error("No se pudieron cargar las respuestas.");
-    }
+  const respuestas = (data ?? []) as RespuestaPreguntaSemanaForo[];
 
-    const respuestas = (data ?? []) as RespuestaPreguntaSemanaForo[];
+  if (respuestas.length === 0) {
+    return [];
+  }
 
-    if (respuestas.length === 0) {
-        return [];
-    }
+  const usuarios = await obtenerUsuariosPorIds(
+    respuestas.map((respuesta) => respuesta.id_usuario),
+  );
 
-    const usuarios = await obtenerUsuariosPorIds(
-        respuestas.map((respuesta) => respuesta.id_usuario),
-    );
+  return respuestas.map((respuesta) => ({
+    ...respuesta,
 
-    return respuestas.map((respuesta) => ({
-        ...respuesta,
-
-        usuario: usuarios.get(respuesta.id_usuario) ?? null,
-    }));
+    usuario: usuarios.get(respuesta.id_usuario) ?? null,
+  }));
 }
