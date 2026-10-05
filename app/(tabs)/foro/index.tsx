@@ -276,16 +276,6 @@ export default function ForoScreen() {
         esEscritorio ? MAX_WIDTHS.contenido : 760,
     );
 
-    /*
-     * La tab bar ya forma parte del layout de React Navigation.
-     *
-     * No necesitamos calcular su altura aquí porque
-     * este ScrollView vive dentro del área de contenido
-     * reservada por Tabs.
-     *
-     * Dejamos espacio adicional al final para que la
-     * última publicación no quede pegada al FAB.
-     */
     const espacioInferiorScroll = esTelefono ? 150 : esTablet ? 140 : 100;
 
     // ========================================================

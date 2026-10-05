@@ -118,10 +118,7 @@ export default function InstitucionCodigoPantalla() {
         backgroundColor,
       }}
     >
-      <StatusBar
-        style={esOscuro ? "light" : "dark"}
-        backgroundColor={backgroundColor}
-      />
+    <StatusBar style={esOscuro ? "light" : "dark"} />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
