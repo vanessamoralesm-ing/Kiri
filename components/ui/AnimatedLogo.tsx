@@ -21,7 +21,7 @@ export default function AnimatedLogo() {
       damping: 12,
       stiffness: 90,
     });
-  }, []);
+  }, [logoOpacity, logoScale]);
 
   const animatedLogoStyle = useAnimatedStyle(() => ({
     opacity: logoOpacity.value,
@@ -33,13 +33,8 @@ export default function AnimatedLogo() {
   }));
 
   return (
-    <View style={styles.container}>
-      <Animated.View
-        style={[
-          styles.logoContainer,
-          animatedLogoStyle,
-        ]}
-      >
+    <View style={styles.container} pointerEvents="auto">
+      <Animated.View style={[styles.logoContainer, animatedLogoStyle]}>
         <Image
           source={require("../../assets/images/splash-icon-ps.png")}
           style={styles.logo}
@@ -52,15 +47,21 @@ export default function AnimatedLogo() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    ...StyleSheet.absoluteFill,
+
     backgroundColor: "#4F8EF7",
+
     justifyContent: "center",
     alignItems: "center",
+
+    zIndex: 9999,
+    elevation: 9999,
   },
 
   logoContainer: {
     width: "80%",
     maxWidth: 380,
+
     alignItems: "center",
     justifyContent: "center",
   },

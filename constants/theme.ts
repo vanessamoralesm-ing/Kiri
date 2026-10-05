@@ -22,19 +22,16 @@ export const BrandColors = {
   darkGray: "#2D3748",
 };
 
-
 // ==========================================================
 // PALETA GENERAL
 // ==========================================================
 
 export const Colors = {
-
   // ========================================================
   // MODO CLARO
   // ========================================================
 
   light: {
-
     // Marca
     primary: "#4F8EF7",
     secondary: "#7BBF9A",
@@ -91,15 +88,12 @@ export const Colors = {
     overlay: "rgba(45, 55, 72, 0.40)",
   },
 
-
   // ========================================================
   // MODO OSCURO
   // ========================================================
 
   dark: {
-
     // Marca
-    // Se mantienen los colores oficiales de Kiri
     primary: "#4F8EF7",
     secondary: "#7BBF9A",
     accent: "#B8A8F8",
@@ -156,75 +150,84 @@ export const Colors = {
   },
 };
 
+// ==========================================================
+// FUENTES DE NAVEGACIÓN
+// ==========================================================
+//
+// Se mantienen independientes de @react-navigation/native
+// para evitar el conflicto con Expo Router / SDK 56.
+//
+
+const KiriFonts = {
+  regular: {
+    fontFamily: "Nunito-Medium",
+    fontWeight: "400" as const,
+  },
+
+  medium: {
+    fontFamily: "Nunito-SemiBold",
+    fontWeight: "500" as const,
+  },
+
+  bold: {
+    fontFamily: "Nunito-Bold",
+    fontWeight: "700" as const,
+  },
+
+  heavy: {
+    fontFamily: "Nunito-Bold",
+    fontWeight: "800" as const,
+  },
+};
 
 // ==========================================================
-// TEMA CLARO PARA REACT NAVIGATION
+// TEMA KIRI - MODO CLARO
 // ==========================================================
+//
+// IMPORTANTE:
+// No importar Theme, DefaultTheme ni DarkTheme desde
+// @react-navigation/native.
+//
+// Estos objetos se utilizan directamente con:
+// ThemeProvider de expo-router/react-navigation.
+//
 
-export const KiriLightTheme: Theme = {
-  ...DefaultTheme,
-
+export const KiriLightTheme = {
   dark: false,
 
   colors: {
-    ...DefaultTheme.colors,
-
-    primary:
-      Colors.light.primary,
-
-    background:
-      Colors.light.background,
-
-    card:
-      Colors.light.surface,
-
-    text:
-      Colors.light.text,
-
-    border:
-      Colors.light.border,
-
-    notification:
-      Colors.light.accent,
+    primary: Colors.light.primary,
+    background: Colors.light.background,
+    card: Colors.light.surface,
+    text: Colors.light.text,
+    border: Colors.light.border,
+    notification: Colors.light.accent,
   },
+
+  fonts: KiriFonts,
 };
 
-
 // ==========================================================
-// TEMA OSCURO PARA REACT NAVIGATION
+// TEMA KIRI - MODO OSCURO
 // ==========================================================
 
-export const KiriDarkTheme: Theme = {
-  ...DarkTheme,
-
+export const KiriDarkTheme = {
   dark: true,
 
   colors: {
-    ...DarkTheme.colors,
-
-    primary:
-      Colors.dark.primary,
-
-    background:
-      Colors.dark.background,
-
-    card:
-      Colors.dark.surface,
-
-    text:
-      Colors.dark.text,
-
-    border:
-      Colors.dark.border,
-
-    notification:
-      Colors.dark.accent,
+    primary: Colors.dark.primary,
+    background: Colors.dark.background,
+    card: Colors.dark.surface,
+    text: Colors.dark.text,
+    border: Colors.dark.border,
+    notification: Colors.dark.accent,
   },
+
+  fonts: KiriFonts,
 };
 
-
 // ==========================================================
-// FUENTES
+// FUENTES GENERALES DE LA APLICACIÓN
 // ==========================================================
 
 export const Fonts = Platform.select({
@@ -243,16 +246,13 @@ export const Fonts = Platform.select({
   },
 
   web: {
-    sans:
-      "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+    sans: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
 
-    serif:
-      "Poppins, Georgia, 'Times New Roman', serif",
+    serif: "Poppins, Georgia, 'Times New Roman', serif",
 
     rounded:
       "Poppins, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
 
-    mono:
-      "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });
