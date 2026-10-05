@@ -19,7 +19,8 @@ import { EncabezadoHome } from "@/components/ui/EncabezadoHome";
 
 import { TarjetaModulo } from "@/components/ui/TarjetaModulo";
 
-import { TarjetaRecomendacion } from "@/components/ui/TarjetaRecomendacion";
+import { TarjetaAcceso } from "@/components/ui/TarjetaAccesso";
+
 
 import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
 
@@ -31,37 +32,13 @@ import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 import { useResumenBienestar } from "@/hooks/useResumenBienestar";
 
-import { useThemeMode } from "@/contexts/ThemeModeContext";
 
-// ==========================================================
-// COLORES DE RECOMENDACIONES
-// ==========================================================
-
-const COLORES_RECOMENDACION = [
-  {
-    fondoClaro: "bg-purple-100",
-    fondoOscuro: "bg-purple-950",
-    icono: "#8B5CF6",
-  },
-
-  {
-    fondoClaro: "bg-emerald-100",
-    fondoOscuro: "bg-emerald-950",
-    icono: "#10B981",
-  },
-
-  {
-    fondoClaro: "bg-blue-100",
-    fondoOscuro: "bg-blue-950",
-    icono: "#4F8EF7",
-  },
-
-  {
-    fondoClaro: "bg-amber-100",
-    fondoOscuro: "bg-amber-950",
-    icono: "#F59E0B",
-  },
-];
+const COLORES_RECOMENDADOS = [
+  "accent",//morado
+  "secondary",//color verde
+  "primary",//azul
+  "accent",
+]as const;
 
 // ==========================================================
 // MÓDULOS
@@ -185,8 +162,6 @@ export default function HomeScreen() {
 
   const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
-  const { themeMode } = useThemeMode();
-
   // ========================================================
   // PLAN DE BIENESTAR
   // ========================================================
@@ -222,8 +197,6 @@ export default function HomeScreen() {
   // ========================================================
   // TEMA
   // ========================================================
-
-  const isDarkMode = themeMode === "dark";
 
   const backgroundColor = useThemeColor({}, "background");
 
@@ -821,7 +794,6 @@ export default function HomeScreen() {
               ))}
             </View>
           </View>
-
           {/* ==================================================
               PARA TI HOY
           ================================================== */}
@@ -912,17 +884,14 @@ export default function HomeScreen() {
                   flexDirection: esEscritorio ? "row" : "column",
 
                   flexWrap: esEscritorio ? "wrap" : "nowrap",
-
-                  gap: esEscritorio ? 14 : 0,
+                  //Separacion entre tarjetas
+                  // Escritorio conserva 14px y tablet igual y Telefono Utiliza 12px
+                  gap: esEscritorio ? 14 : esTelefono ? 12:14,
                 }}
               >
                 {resumen.actividades.slice(0, 4).map((actividad, index) => {
                   const color =
-                    COLORES_RECOMENDACION[index % COLORES_RECOMENDACION.length];
-
-                  const fondoRecomendacion = isDarkMode
-                    ? color.fondoOscuro
-                    : color.fondoClaro;
+                    COLORES_RECOMENDADOS[index % COLORES_RECOMENDADOS.length];
 
                   return (
                     <View
@@ -933,15 +902,13 @@ export default function HomeScreen() {
                         width: esEscritorio ? undefined : "100%",
                       }}
                     >
-                      <TarjetaRecomendacion
+                      <TarjetaAcceso
                         titulo={actividad.titulo}
                         descripcion={actividad.descripcion}
-                        nombreIcono={
+                        icono={
                           actividad.icono as keyof typeof Ionicons.glyphMap
                         }
-                        colorFondo={fondoRecomendacion}
-                        colorIcono={color.icono}
-                        colorTextoFlecha={color.icono}
+                        color={color}
                         onPress={() =>
                           router.push({
                             pathname: "/(tabs)/entrevistas/[id]/plan",
@@ -962,13 +929,11 @@ export default function HomeScreen() {
                   width: esEscritorio ? "50%" : "100%",
                 }}
               >
-                <TarjetaRecomendacion
+                <TarjetaAcceso
                   titulo="Realiza tu entrevista de bienestar"
                   descripcion="Completa tu evaluación para recibir un plan personalizado."
-                  nombreIcono="heart-outline"
-                  colorFondo={isDarkMode ? "bg-blue-950" : "bg-blue-100"}
-                  colorIcono={primaryColor}
-                  colorTextoFlecha={primaryColor}
+                  icono="heart-outline"
+                  color="primary"
                   onPress={() => router.push("/(tabs)/entrevistas")}
                 />
               </View>

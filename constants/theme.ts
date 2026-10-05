@@ -1,4 +1,13 @@
-import { Platform } from "react-native";
+import {
+  DarkTheme,
+  DefaultTheme,
+  Theme,
+} from "expo-router";
+
+import {
+  Platform,
+} from "react-native";
+
 
 // ==========================================================
 // COLORES OFICIALES DE KIRI

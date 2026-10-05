@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { usePathname, useRouter, useTheme } from "expo-router";
+import { useTheme } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, Platform, Pressable, View } from "react-native";
 

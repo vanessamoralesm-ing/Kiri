@@ -1,5 +1,9 @@
 import "../global.css";
 
+import React, { useEffect, useRef, useState } from "react";
+
+import { ThemeProvider } from "expo-router/react-navigation";
+
 import { useFonts } from "expo-font";
 import { Stack, usePathname, useRouter } from "expo-router";
 import { ThemeProvider } from "expo-router/react-navigation";

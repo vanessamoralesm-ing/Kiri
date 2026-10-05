@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-
-import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useFocusEffect } from "expo-router/react-navigation";
+import { router, useLocalSearchParams } from "expo-router";
 
 import React, {
   useCallback,

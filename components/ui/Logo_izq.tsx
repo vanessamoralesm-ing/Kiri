@@ -6,7 +6,10 @@ import {
   StyleProp,
 } from "react-native";
 
-import { useThemeMode } from "@/contexts/ThemeModeContext";
+import {
+  useTheme,
+} from "expo-router/react-navigation";
+
 
 // ==========================================================
 // PROPS
