@@ -6,7 +6,6 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-
 import Animated, { FadeInUp } from "react-native-reanimated";
 
 import {
