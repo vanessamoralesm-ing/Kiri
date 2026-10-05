@@ -2,11 +2,9 @@ import React, { useCallback, useState } from "react";
 
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-import { useFocusEffect } from "@react-navigation/native";
 
 import Animated, { FadeInUp } from "react-native-reanimated";
 

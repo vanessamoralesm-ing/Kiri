@@ -71,7 +71,7 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
     // DEBUG USUARIO
     // ======================================================
 
-    useEffect(() => {
+    /*useEffect(() => {
         console.log("👤 DATOS USUARIO CARD:", {
             idPublicacion: publicacion.id_publicacion,
 
@@ -89,7 +89,7 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
         nombreUsuario,
         fotoPerfil,
         usuario,
-    ]);
+    ]);*/
 
     // ======================================================
     // REINICIAR ERROR DE FOTO
@@ -307,21 +307,7 @@ export default function PublicacionCard({ publicacion }: PublicacionCardProps) {
                             transition={150}
                             accessibilityRole="image"
                             accessibilityLabel={`Foto de perfil de ${nombreUsuario}`}
-                            onLoad={() => {
-                                console.log("🟢 AVATAR CARGADO", {
-                                    idUsuario: publicacion.id_usuario,
-                                    usuario: nombreUsuario,
-                                });
-                            }}
-                            onError={(event) => {
-                                console.error("🔴 ERROR CARGANDO AVATAR", {
-                                    idUsuario: publicacion.id_usuario,
-                                    usuario: nombreUsuario,
-                                    error: event,
-                                });
-
-                                setErrorFotoPerfil(true);
-                            }}
+                            
                         />
                     ) : (
                         <View
