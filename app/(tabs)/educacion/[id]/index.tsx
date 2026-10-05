@@ -630,10 +630,20 @@ export default function CategoriaScreen() {
                     titulo={recurso.titulo}
                     imagenPortada={
                       recurso.imagen_portada
-                    }
-                    index={index}
-                    ancho={anchoTarjeta}
-                  />
+                  }
+                  index={index}
+                  ancho={anchoTarjeta}
+                  onPress={() =>
+                    router.push({
+                      pathname:
+                      "/(tabs)/educacion/recursos/[id]",
+                    params: {
+                    id: recurso.id_recurso,
+                    categoriaId: id,
+                  },
+                  } as any)
+                }
+              />
                 </Animated.View>
               )
             )}
