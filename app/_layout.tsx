@@ -5,27 +5,27 @@ import React, { useEffect, useRef, useState } from "react";
 import { ThemeProvider } from "expo-router/react-navigation";
 
 import { useFonts } from "expo-font";
-
 import { Stack, usePathname, useRouter } from "expo-router";
-
+import { ThemeProvider } from "expo-router/react-navigation";
 import * as SplashScreen from "expo-splash-screen";
-
 import { StatusBar } from "expo-status-bar";
-
+import React, { useEffect, useRef, useState } from "react";
 import "react-native-reanimated";
 
 import AnimatedLogo from "@/components/ui/AnimatedLogo";
-
 import { KiriDarkTheme, KiriLightTheme } from "@/constants/theme";
-
-import { AuthProvider, useAuth } from "@/services/authProvider";
-
 import { ThemeModeProvider, useThemeMode } from "@/contexts/ThemeModeContext";
-
+import { AuthProvider, useAuth } from "@/services/authProvider";
 import { obtenerEstadoInicialEntrevista } from "@/services/entrevista/entrevistaService";
 
-// Mantener visible el splash nativo hasta que
-// las fuentes y la preferencia del tema estén listas.
+// ==========================================================
+// SPLASH NATIVO
+// ==========================================================
+//
+// Mantener visible el splash nativo de Expo mientras
+// se cargan las fuentes y la preferencia del tema.
+//
+
 void SplashScreen.preventAutoHideAsync();
 
 // ==========================================================
@@ -36,11 +36,9 @@ function RootNavigation() {
   const { loading, session, profile } = useAuth();
 
   const router = useRouter();
-
   const pathname = usePathname();
 
   const [splashTerminado, setSplashTerminado] = useState(false);
-
   const [inicioListo, setInicioListo] = useState(false);
 
   const verificacionInicialRef = useRef(false);
@@ -48,6 +46,9 @@ function RootNavigation() {
   // ========================================================
   // SPLASH PERSONALIZADO
   // ========================================================
+  //
+  // El AnimatedLogo permanecerá visible durante 3 segundos.
+  //
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -128,14 +129,6 @@ function RootNavigation() {
     const verificarRuta = async () => {
       const rol = profile.rol?.nombre ?? null;
 
-      if (__DEV__) {
-        console.log("[AUTH] Usuario:", session.user.id);
-
-        console.log("[AUTH] Perfil:", profile);
-
-        console.log("[AUTH] Rol:", rol);
-      }
-
       // ====================================================
       // 4. SUPERADMINISTRADOR
       // ====================================================
@@ -201,8 +194,9 @@ function RootNavigation() {
 
           return;
         }
-      } catch (error) {
-        console.error("Error verificando entrevista inicial:", error);
+      } catch {
+        // La verificación inicial no debe
+        // romper el árbol de navegación.
       }
     };
 
@@ -245,35 +239,36 @@ function RootNavigation() {
   }, [inicioListo, session, profile, pathname, router]);
 
   // ========================================================
-  // SPLASH PERSONALIZADO
-  // ========================================================
-
-  if (!inicioListo) {
-    return <AnimatedLogo />;
-  }
-
-  // ========================================================
   // STACK PRINCIPAL
   // ========================================================
+  //
+  // IMPORTANTE:
+  // El Stack se monta inmediatamente.
+  //
+  // Esto permite que Expo Router monte su árbol de
+  // navegación desde el inicio y evita bloquear el
+  // ContextNavigator mientras esperamos autenticación,
+  // perfil y splash.
+  //
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Stack.Screen name="index" />
+    <>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(entrevista)" />
+        <Stack.Screen name="(tecnica)" />
+        <Stack.Screen name="(superadmin)/superadmin" />
+      </Stack>
 
-      <Stack.Screen name="(auth)" />
-
-      <Stack.Screen name="(tabs)" />
-
-      <Stack.Screen name="(entrevista)" />
-
-      <Stack.Screen name="(tecnica)" />
-
-      <Stack.Screen name="(superadmin)/superadmin" />
-    </Stack>
+      {/* Splash visual personalizado de Kiri */}
+      {!inicioListo && <AnimatedLogo />}
+    </>
   );
 }
 
@@ -284,8 +279,10 @@ function RootNavigation() {
 function AppConTema() {
   const { isDarkMode } = useThemeMode();
 
+  const navigationTheme = isDarkMode ? KiriDarkTheme : KiriLightTheme;
+
   return (
-    <ThemeProvider value={isDarkMode ? KiriDarkTheme : KiriLightTheme}>
+    <ThemeProvider value={navigationTheme}>
       <AuthProvider>
         <RootNavigation />
       </AuthProvider>
@@ -302,19 +299,34 @@ function AppConTema() {
 function RootAppContent() {
   const { isThemeReady } = useThemeMode();
 
-  // Ocultar el splash nativo una vez recuperada
-  // la preferencia del tema.
+  // ========================================================
+  // OCULTAR SPLASH NATIVO
+  // ========================================================
+  //
+  // El splash nativo de Expo se mantiene hasta que
+  // conocemos la preferencia de tema.
+  //
+  // Después se oculta y aparece el AnimatedLogo.
+  //
+
   useEffect(() => {
-    if (isThemeReady) {
-      void SplashScreen.hideAsync();
+    if (!isThemeReady) {
+      return;
     }
+
+    void SplashScreen.hideAsync();
   }, [isThemeReady]);
 
-  // Evitar mostrar un tema incorrecto mientras
-  // se recupera la preferencia guardada.
-  if (!isThemeReady) {
-    return null;
-  }
+  // ========================================================
+  // IMPORTANTE
+  // ========================================================
+  //
+  // NO bloquear el montaje de Expo Router mientras se
+  // recupera la preferencia del tema.
+  //
+  // Esto permite que ContextNavigator se monte desde el
+  // inicio y evita la condición de carrera de useLinking.
+  //
 
   return <AppConTema />;
 }
@@ -326,9 +338,7 @@ function RootAppContent() {
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     "Nunito-Medium": require("../assets/fonts/Nunito-Medium.ttf"),
-
     "Nunito-SemiBold": require("../assets/fonts/Nunito-SemiBold.ttf"),
-
     "Nunito-Bold": require("../assets/fonts/Nunito-Bold.ttf"),
   });
 
@@ -351,7 +361,7 @@ export default function RootLayout() {
   }
 
   // ========================================================
-  // PROVIDER DEL TEMA
+  // PROVIDER DEL TEMA DE LA APLICACIÓN
   // ========================================================
 
   return (

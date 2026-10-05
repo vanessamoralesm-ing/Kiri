@@ -253,29 +253,29 @@ export default function WelcomeScreen() {
 
                 ...(Platform.OS === "web" && !esTelefono
                   ? ({
-                    boxShadow: "0px 10px 30px rgba(0,0,0,0.08)",
-                  } as any)
+                      boxShadow: "0px 10px 30px rgba(0,0,0,0.08)",
+                    } as any)
                   : {}),
 
                 ...(Platform.OS === "ios" && !esTelefono
                   ? {
-                    shadowColor: "#000000",
+                      shadowColor: "#000000",
 
-                    shadowOffset: {
-                      width: 0,
-                      height: 10,
-                    },
+                      shadowOffset: {
+                        width: 0,
+                        height: 10,
+                      },
 
-                    shadowOpacity: 0.08,
+                      shadowOpacity: 0.08,
 
-                    shadowRadius: 20,
-                  }
+                      shadowRadius: 20,
+                    }
                   : {}),
 
                 ...(Platform.OS === "android" && !esTelefono
                   ? {
-                    elevation: 6,
-                  }
+                      elevation: 6,
+                    }
                   : {}),
               },
             ]}
@@ -531,23 +531,23 @@ export default function WelcomeScreen() {
 
                     ...(Platform.OS === "ios"
                       ? {
-                        shadowColor: "#4F8EF7",
+                          shadowColor: "#4F8EF7",
 
-                        shadowOffset: {
-                          width: 0,
-                          height: 3,
-                        },
+                          shadowOffset: {
+                            width: 0,
+                            height: 3,
+                          },
 
-                        shadowOpacity: 0.18,
+                          shadowOpacity: 0.18,
 
-                        shadowRadius: 6,
-                      }
+                          shadowRadius: 6,
+                        }
                       : {}),
 
                     ...(Platform.OS === "android"
                       ? {
-                        elevation: 3,
-                      }
+                          elevation: 3,
+                        }
                       : {}),
                   }}
                 >
@@ -667,7 +667,7 @@ const styles = StyleSheet.create({
   },
 
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
 
     backgroundColor: "rgba(255,255,255,0.58)",
   },
