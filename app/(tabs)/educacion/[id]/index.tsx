@@ -1,6 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import React, { useCallback, useRef, useState } from "react";
+
+import {
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
+} from "expo-router";
+
+import React, {
+  useCallback,
+  useRef,
+  useState,
+} from "react";
 
 import {
   LayoutChangeEvent,
@@ -11,11 +21,15 @@ import {
   View,
 } from "react-native";
 
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated, {
+  FadeInDown,
+} from "react-native-reanimated";
 
 import EncabezadoCard from "@/components/educacion/EncabezadoCard";
 import LecturaRecomendadaCard from "@/components/educacion/LecturaRecomendadaCard";
 import MitoRealidadCard from "@/components/educacion/MitoRealidadCard";
+
+import BotonVolver from "@/components/ui/BotonVolver";
 
 import {
   MAX_WIDTHS,
@@ -23,11 +37,11 @@ import {
 } from "@/constants/responsive";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { useRecursosCategoria } from "@/hooks/useRecursosCategoria";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 // ==========================================================
-// DATOS TEMPORALES
-// Más adelante estos datos vendrán de Supabase.
+// CONTENIDO DE LAS CATEGORÍAS
 // ==========================================================
 
 const contenidoCategorias = {
@@ -50,25 +64,6 @@ const contenidoCategorias = {
 
     realidad:
       "La ansiedad es una respuesta normal ante el peligro o la incertidumbre, pero se convierte en un problema cuando es muy intensa, frecuente y afecta tu vida diaria.",
-
-    lecturas: [
-      {
-        id: "que-es-la-ansiedad",
-        categoria: "Ansiedad",
-        tiempo: "5 min de lectura",
-        titulo: "¿Qué es la ansiedad?",
-        descripcion:
-          "Conoce qué es la ansiedad, por qué aparece y cómo puede manifestarse en diferentes situaciones.",
-      },
-      {
-        id: "reconocer-ansiedad",
-        categoria: "Ansiedad",
-        tiempo: "7 min de lectura",
-        titulo: "Cómo reconocer la ansiedad",
-        descripcion:
-          "Aprende a identificar algunas señales físicas, emocionales y conductuales relacionadas con la ansiedad.",
-      },
-    ],
   },
 
   // ========================================================
@@ -90,25 +85,6 @@ const contenidoCategorias = {
 
     realidad:
       "Tener una autoestima saludable no significa sentirse bien en todo momento. También implica reconocer nuestras fortalezas y dificultades, aceptar que podemos equivocarnos y aprender a tratarnos con respeto.",
-
-    lecturas: [
-      {
-        id: "comprender-autoestima",
-        categoria: "Autoestima",
-        tiempo: "6 min de lectura",
-        titulo: "Comprendiendo la autoestima",
-        descripcion:
-          "Conoce qué es la autoestima y cómo puede influir en la manera en que pensamos y actuamos.",
-      },
-      {
-        id: "fortalecer-autoestima",
-        categoria: "Autoestima",
-        tiempo: "7 min de lectura",
-        titulo: "Cómo fortalecer tu autoestima",
-        descripcion:
-          "Descubre pequeñas acciones que pueden ayudarte a construir una relación más saludable contigo.",
-      },
-    ],
   },
 
   // ========================================================
@@ -123,32 +99,13 @@ const contenidoCategorias = {
     ),
 
     descripcion:
-      "Aprende qué es el estrés, cómo puede manifestarse y qué podemos hacer para manejarlo de una manera más saludable.",
+      "Aprende a como saber manejarlo de una manera más saludable.",
 
     mito:
       "“Todo el estrés es malo y debemos evitarlo por completo.”",
 
     realidad:
       "El estrés es una respuesta natural del organismo ante determinadas situaciones. En algunos momentos puede ayudarnos a reaccionar y adaptarnos, pero cuando se mantiene durante mucho tiempo puede afectar nuestro bienestar.",
-
-    lecturas: [
-      {
-        id: "comprender-estres",
-        categoria: "Estrés",
-        tiempo: "5 min de lectura",
-        titulo: "Comprendiendo el estrés",
-        descripcion:
-          "Conoce por qué aparece el estrés y cuáles son algunas de las señales más comunes.",
-      },
-      {
-        id: "manejar-estres",
-        categoria: "Estrés",
-        tiempo: "8 min de lectura",
-        titulo: "Estrategias para manejar el estrés",
-        descripcion:
-          "Conoce algunas estrategias que pueden ayudarte a afrontar situaciones estresantes.",
-      },
-    ],
   },
 
   // ========================================================
@@ -170,25 +127,6 @@ const contenidoCategorias = {
 
     realidad:
       "La procrastinación puede estar relacionada con diferentes factores, como el miedo a equivocarse, sentirse abrumado, la falta de motivación o la dificultad para organizar una tarea.",
-
-    lecturas: [
-      {
-        id: "entender-procrastinacion",
-        categoria: "Procrastinación",
-        tiempo: "6 min de lectura",
-        titulo: "¿Por qué procrastinamos?",
-        descripcion:
-          "Comprende algunas de las razones que pueden llevarnos a posponer nuestras responsabilidades.",
-      },
-      {
-        id: "evitar-procrastinacion",
-        categoria: "Procrastinación",
-        tiempo: "7 min de lectura",
-        titulo: "Pequeños pasos para dejar de procrastinar",
-        descripcion:
-          "Aprende estrategias sencillas para comenzar tus tareas y organizar mejor tu tiempo.",
-      },
-    ],
   },
 
   // ========================================================
@@ -210,25 +148,6 @@ const contenidoCategorias = {
 
     realidad:
       "Una persona puede disfrutar de momentos a solas sin sentirse sola. La soledad emocional aparece cuando sentimos que nuestras necesidades de conexión o compañía no están siendo satisfechas.",
-
-    lecturas: [
-      {
-        id: "comprender-soledad",
-        categoria: "Soledad",
-        tiempo: "5 min de lectura",
-        titulo: "Comprendiendo la soledad",
-        descripcion:
-          "Conoce las diferencias entre estar solo y experimentar sentimientos de soledad.",
-      },
-      {
-        id: "conexiones-saludables",
-        categoria: "Soledad",
-        tiempo: "7 min de lectura",
-        titulo: "Construyendo conexiones saludables",
-        descripcion:
-          "Descubre algunas formas de fortalecer nuestras relaciones y crear vínculos significativos.",
-      },
-    ],
   },
 
   // ========================================================
@@ -250,25 +169,6 @@ const contenidoCategorias = {
 
     realidad:
       "La depresión es una enfermedad médica real, no simple tristeza ni falta de voluntad. Es un apagón físico y mental que causa cansancio, desesperanza y pérdida de interés; si afecta tu vida diaria, busca ayuda profesional.",
-
-    lecturas: [
-      {
-        id: "comprender-depresion",
-        categoria: "Depresión",
-        tiempo: "7 min de lectura",
-        titulo: "Comprendiendo la depresión",
-        descripcion:
-          "Conoce qué es la depresión, algunas de sus manifestaciones más frecuentes y por qué no debe confundirse con una tristeza pasajera.",
-      },
-      {
-        id: "apoyo-ante-depresion",
-        categoria: "Depresión",
-        tiempo: "8 min de lectura",
-        titulo: "Cuándo y cómo buscar apoyo",
-        descripcion:
-          "Aprende a reconocer cuándo el malestar emocional requiere atención y qué formas de apoyo profesional y social pueden acompañar el proceso de recuperación.",
-      },
-    ],
   },
 };
 
@@ -299,7 +199,7 @@ export default function CategoriaScreen() {
       return () => {
         cancelAnimationFrame(frame);
       };
-    }, [])//
+    }, [])
   );
 
   // ========================================================
@@ -316,14 +216,29 @@ export default function CategoriaScreen() {
   // COLORES
   // ========================================================
 
-  const backgroundColor = useThemeColor({}, "background");
-  const surfaceColor = useThemeColor({}, "surface");
-  const textColor = useThemeColor({}, "text");
-  const textMutedColor = useThemeColor({}, "textMuted");
-  const primaryColor = useThemeColor({}, "primary");
-  const primarySoftColor = useThemeColor({}, "primarySoft");
-  const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
-  const borderColor = useThemeColor({}, "border");
+  const backgroundColor =
+    useThemeColor({}, "background");
+
+  const surfaceColor =
+    useThemeColor({}, "surface");
+
+  const textColor =
+    useThemeColor({}, "text");
+
+  const textMutedColor =
+    useThemeColor({}, "textMuted");
+
+  const primaryColor =
+    useThemeColor({}, "primary");
+
+  const primarySoftColor =
+    useThemeColor({}, "primarySoft");
+
+  const textOnPrimaryColor =
+    useThemeColor({}, "textOnPrimary");
+
+  const borderColor =
+    useThemeColor({}, "border");
 
   // ========================================================
   // CONFIGURACIÓN RESPONSIVE
@@ -355,7 +270,8 @@ export default function CategoriaScreen() {
   // ANCHO DE LECTURAS
   // ========================================================
 
-  const [anchoLecturas, setAnchoLecturas] = useState(0);
+  const [anchoLecturas, setAnchoLecturas] =
+    useState(0);
 
   const numeroColumnas = esEscritorio
     ? 4
@@ -389,8 +305,11 @@ export default function CategoriaScreen() {
           ? 190
           : 150;
 
-  function medirLecturas(event: LayoutChangeEvent) {
-    const nuevoAncho = event.nativeEvent.layout.width;
+  function medirLecturas(
+    event: LayoutChangeEvent
+  ) {
+    const nuevoAncho =
+      event.nativeEvent.layout.width;
 
     setAnchoLecturas((anterior) =>
       Math.abs(nuevoAncho - anterior) > 1
@@ -407,6 +326,15 @@ export default function CategoriaScreen() {
     contenidoCategorias[
       id as keyof typeof contenidoCategorias
     ];
+
+  // ========================================================
+  // RECURSOS DE SUPABASE
+  // ========================================================
+
+  const { recursos } =
+    useRecursosCategoria(
+      categoria?.titulo
+    );
 
   // ========================================================
   // CATEGORÍA NO ENCONTRADA
@@ -457,7 +385,8 @@ export default function CategoriaScreen() {
           <View
             className="h-[62px] w-[62px] items-center justify-center rounded-full"
             style={{
-              backgroundColor: primarySoftColor,
+              backgroundColor:
+                primarySoftColor,
             }}
           >
             <Ionicons
@@ -482,7 +411,8 @@ export default function CategoriaScreen() {
               color: textMutedColor,
             }}
           >
-            Es posible que el contenido solicitado ya no esté disponible.
+            Es posible que el contenido
+            solicitado ya no esté disponible.
           </Text>
 
           <Pressable
@@ -547,42 +477,19 @@ export default function CategoriaScreen() {
             BOTÓN VOLVER
             ================================================== */}
 
-        <Pressable
-          onPress={() =>
-            router.replace(
-              "/(tabs)/educacion" as any
-            )
-          }
-          hitSlop={10}
-          style={({ pressed }) => ({
-            width: 40,
-            height: 40,
+        <View
+          style={{
             marginBottom: 12,
-            borderRadius: 20,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: primarySoftColor,
-            opacity: pressed ? 0.7 : 1,
-
-            transform: [
-              {
-                scale: pressed ? 0.96 : 1,
-              },
-            ],
-
-            ...Platform.select({
-              web: {
-                cursor: "pointer",
-              } as any,
-            }),
-          })}
+          }}
         >
-          <Ionicons
-            name="chevron-back"
-            size={23}
-            color={primaryColor}
+          <BotonVolver
+            onPress={() =>
+              router.replace(
+                "/(tabs)/educacion" as any
+              )
+            }
           />
-        </Pressable>
+        </View>
 
         {/* ==================================================
             ENCABEZADO
@@ -639,7 +546,8 @@ export default function CategoriaScreen() {
                     color: textMutedColor,
                   }}
                 >
-                  Continúa explorando contenidos relacionados con este tema.
+                  Continúa explorando contenidos
+                  relacionados con este tema.
                 </Text>
               )}
             </View>
@@ -704,12 +612,14 @@ export default function CategoriaScreen() {
               columnGap: gapLecturas,
             }}
           >
-            {categoria.lecturas.map(
-              (lectura, index) => (
+            {recursos.map(
+              (recurso, index) => (
                 <Animated.View
-                  key={lectura.id}
+                  key={recurso.id_recurso}
                   entering={FadeInDown
-                    .delay(150 + index * 50)
+                    .delay(
+                      150 + index * 50
+                    )
                     .duration(400)}
                   style={{
                     width: anchoTarjeta,
@@ -717,7 +627,10 @@ export default function CategoriaScreen() {
                   }}
                 >
                   <LecturaRecomendadaCard
-                    titulo={lectura.titulo}
+                    titulo={recurso.titulo}
+                    imagenPortada={
+                      recurso.imagen_portada
+                    }
                     index={index}
                     ancho={anchoTarjeta}
                   />
