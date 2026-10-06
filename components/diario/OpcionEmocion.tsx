@@ -90,7 +90,7 @@ export function OpcionEmocion({
         {
           width: ancho,
 
-          minWidth: 110,
+          minWidth: 110, //es para que se vea bien en pantallas pequeñas
 
           minHeight: 118,
 
