@@ -1,5 +1,5 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router/react-navigation";
+
 import { router, useLocalSearchParams } from "expo-router";
 
 import React, {
@@ -12,7 +12,6 @@ import React, {
 
 import {
   LayoutChangeEvent,
-  Pressable,
   ScrollView,
   Text,
   View,
@@ -20,13 +19,14 @@ import {
 
 import Animated, {
   FadeInDown,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
 } from "react-native-reanimated";
 
 import EncabezadoCard from "@/components/educacion/EncabezadoCard";
 import LecturaRecomendadaCard from "@/components/educacion/LecturaRecomendadaCard";
+
+import BotonVolver from "@/components/ui/BotonVolver";
+import EstadoVacio from "@/components/ui/EstadoVacio";
+import FiltrosCategorias from "@/components/ui/FiltrosCategorias";
 import SearchBar from "@/components/ui/SearchBar";
 
 import {
@@ -35,87 +35,14 @@ import {
 } from "@/constants/responsive";
 
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { useLecturasEducacion } from "@/hooks/useLecturasEducacion";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 
 // ==========================================================
 // DATOS
 // ==========================================================
 
-const lecturas = [
-  {
-    id: "que-es-la-ansiedad",
-    categoria: "Ansiedad",
-    titulo: "¿Qué es la ansiedad?",
-    descripcion:
-      "Conoce qué es la ansiedad, por qué aparece y cómo puede manifestarse en diferentes situaciones.",
-  },
-  {
-    id: "reconocer-ansiedad",
-    categoria: "Ansiedad",
-    titulo: "Cómo reconocer la ansiedad",
-    descripcion:
-      "Aprende a identificar algunas señales físicas, emocionales y conductuales relacionadas con la ansiedad.",
-  },
-  {
-    id: "comprender-autoestima",
-    categoria: "Autoestima",
-    titulo: "Comprendiendo la autoestima",
-    descripcion:
-      "Conoce qué es la autoestima y cómo puede influir en la manera en que pensamos y actuamos.",
-  },
-  {
-    id: "fortalecer-autoestima",
-    categoria: "Autoestima",
-    titulo: "Cómo fortalecer tu autoestima",
-    descripcion:
-      "Descubre pequeñas acciones que pueden ayudarte a construir una relación más saludable contigo.",
-  },
-  {
-    id: "comprender-estres",
-    categoria: "Estrés",
-    titulo: "Comprendiendo el estrés",
-    descripcion:
-      "Conoce por qué aparece el estrés y cuáles son algunas de las señales más comunes.",
-  },
-  {
-    id: "manejar-estres",
-    categoria: "Estrés",
-    titulo: "Estrategias para manejar el estrés",
-    descripcion:
-      "Conoce algunas estrategias que pueden ayudarte a afrontar situaciones estresantes.",
-  },
-  {
-    id: "entender-procrastinacion",
-    categoria: "Procrastinación",
-    titulo: "¿Por qué procrastinamos?",
-    descripcion:
-      "Comprende algunas de las razones que pueden llevarnos a posponer nuestras responsabilidades.",
-  },
-  {
-    id: "evitar-procrastinacion",
-    categoria: "Procrastinación",
-    titulo: "Pequeños pasos para dejar de procrastinar",
-    descripcion:
-      "Aprende estrategias sencillas para comenzar tus tareas y organizar mejor tu tiempo.",
-  },
-  {
-    id: "comprender-soledad",
-    categoria: "Soledad",
-    titulo: "Comprendiendo la soledad",
-    descripcion:
-      "Conoce las diferencias entre estar solo y experimentar sentimientos de soledad.",
-  },
-  {
-    id: "conexiones-saludables",
-    categoria: "Soledad",
-    titulo: "Construyendo conexiones saludables",
-    descripcion:
-      "Descubre algunas formas de fortalecer nuestras relaciones y crear vínculos significativos.",
-  },
-];
-
 // Categorías disponibles para filtrar las lecturas.
-// "Todas" permite mostrar nuevamente la biblioteca completa.
 const categorias = [
   "Todas",
   "Ansiedad",
@@ -140,8 +67,8 @@ const idsCategorias: Record<string, string> = {
 // ==========================================================
 // NORMALIZAR TEXTO
 // ==========================================================
-// Elimina tildes y diferencias entre mayúsculas/minúsculas.
 
+// Elimina tildes y diferencias entre mayúsculas/minúsculas.
 function normalizarTexto(texto: string) {
   return texto
     .normalize("NFD")
@@ -185,23 +112,14 @@ export default function LecturasScreen() {
     setCategoriaSeleccionada,
   ] = useState(categoria || "Todas");
 
-  // Guarda el ancho REAL disponible del contenedor
-  // donde se dibujan las lecturas.
+  // Las lecturas se obtienen desde el hook de Educación.
+  // El hook se encarga de consultar y preparar los recursos
+  // registrados en Supabase para utilizarlos en la biblioteca.
+  const { lecturas } =
+    useLecturasEducacion();
+
+  // Guarda el ancho REAL disponible del contenedor donde se dibujan las lecturas.
   const [anchoGrid, setAnchoGrid] = useState(0);
-
-  // ========================================================
-  // ANIMACIÓN BOTÓN VOLVER
-  // ========================================================
-
-  const escalaVolver = useSharedValue(1);
-
-  const estiloVolver = useAnimatedStyle(() => ({
-    transform: [
-      {
-        scale: escalaVolver.value,
-      },
-    ],
-  }));
 
   // ========================================================
   // COLORES DEL TEMA
@@ -210,29 +128,11 @@ export default function LecturasScreen() {
   const backgroundColor =
     useThemeColor({}, "background");
 
-  const surfaceColor =
-    useThemeColor({}, "surface");
-
-  const surfaceSecondaryColor =
-    useThemeColor({}, "surfaceSecondary");
-
   const textColor =
     useThemeColor({}, "text");
 
-  const textSecondaryColor =
-    useThemeColor({}, "textSecondary");
-
   const textMutedColor =
     useThemeColor({}, "textMuted");
-
-  const primaryColor =
-    useThemeColor({}, "primary");
-
-  const primarySoftColor =
-    useThemeColor({}, "primarySoft");
-
-  const borderColor =
-    useThemeColor({}, "border");
 
   // ========================================================
   // ACTUALIZAR CATEGORÍA
@@ -252,8 +152,7 @@ export default function LecturasScreen() {
   // VOLVER SIEMPRE AL INICIO AL ENTRAR
   // ========================================================
 
-  // Cada vez que esta pantalla vuelve a recibir el foco,
-  // regresamos el scroll al inicio.
+  // Cada vez que esta pantalla vuelve a recibir el foco, regresamos el scroll al inicio.
   useFocusEffect(
     useCallback(() => {
       const frame =
@@ -314,6 +213,7 @@ export default function LecturasScreen() {
   // ========================================================
   // ANCHO DE LOS CARDS
   // ========================================================
+
   /*
    * Calculamos cuánto espacio queda para cada card después
    * de descontar los espacios existentes entre columnas.
@@ -365,13 +265,25 @@ export default function LecturasScreen() {
     return lecturas.filter((lectura) => {
       const coincideCategoria =
         categoriaSeleccionada === "Todas" ||
-        lectura.categoria === categoriaSeleccionada;
+        normalizarTexto(lectura.categoria) ===
+          normalizarTexto(
+            categoriaSeleccionada
+          );
 
       const coincideBusqueda =
         !texto ||
-        normalizarTexto(lectura.titulo).includes(texto) ||
-        normalizarTexto(lectura.descripcion).includes(texto) ||
-        normalizarTexto(lectura.categoria).includes(texto);
+        normalizarTexto(
+          lectura.titulo
+        ).includes(texto) ||
+        normalizarTexto(
+          lectura.descripcion || ""
+        ).includes(texto) ||
+        normalizarTexto(
+          lectura.categoria
+        ).includes(texto) ||
+        normalizarTexto(
+          lectura.autor_fuente || ""
+        ).includes(texto);
 
       return (
         coincideCategoria &&
@@ -381,11 +293,13 @@ export default function LecturasScreen() {
   }, [
     busqueda,
     categoriaSeleccionada,
+    lecturas,
   ]);
 
   // ========================================================
   // MEDIR GRID
   // ========================================================
+
   /*
    * onLayout obtiene el ancho real del grid.
    *
@@ -416,6 +330,7 @@ export default function LecturasScreen() {
   // ========================================================
   // VOLVER A LA CATEGORÍA
   // ========================================================
+
   /*
    * Si entramos desde "Ver todas" de una categoría,
    * la flecha regresa al detalle de esa categoría.
@@ -453,6 +368,7 @@ export default function LecturasScreen() {
       "/(tabs)/educacion"
     );
   }
+
   // ========================================================
   // UI
   // ========================================================
@@ -492,54 +408,20 @@ export default function LecturasScreen() {
             BOTÓN VOLVER
             ================================================= */}
 
-        <Animated.View
-          style={[
-            estiloVolver,
-            {
-              alignSelf: "flex-start",
+        <View
+          style={{
+            alignSelf: "flex-start",
 
-              marginBottom:
-                esEscritorio
-                  ? 22
-                  : 18,
-            },
-          ]}
+            marginBottom:
+              esEscritorio
+                ? 22
+                : 18,
+          }}
         >
-          <Pressable
+          <BotonVolver
             onPress={volverACategoria}
-            onPressIn={() => {
-              escalaVolver.value =
-                withSpring(0.9);
-            }}
-            onPressOut={() => {
-              escalaVolver.value =
-                withSpring(1);
-            }}
-            hitSlop={10}
-            style={({ pressed }) => ({
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-
-              alignItems: "center",
-              justifyContent: "center",
-
-              backgroundColor:
-                surfaceSecondaryColor,
-
-              opacity:
-                pressed
-                  ? 0.72
-                  : 1,
-            })}
-          >
-            <Ionicons
-              name="chevron-back"
-              size={27}
-              color={textSecondaryColor}
-            />
-          </Pressable>
-        </Animated.View>
+          />
+        </View>
 
         {/* =================================================
             ENCABEZADO
@@ -635,116 +517,17 @@ export default function LecturasScreen() {
             Categorías
           </Text>
 
-          {/* El ScrollView horizontal permite recorrer todas
-              las categorías sin comprimir los botones. */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{
-              paddingTop: 4,
-              paddingBottom: 8,
-              paddingRight: 24,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-
-                gap:
-                  esEscritorio
-                    ? 12
-                    : 9,
-              }}
-            >
-              {categorias.map((item) => {
-                const seleccionada =
-                  categoriaSeleccionada ===
-                  item;
-
-                return (
-                  <Pressable
-                    key={item}
-                    onPress={() =>
-                      setCategoriaSeleccionada(
-                        item
-                      )
-                    }
-                    style={({ pressed }) => ({
-                      opacity:
-                        pressed
-                          ? 0.78
-                          : 1,
-                    })}
-                  >
-                    <View
-                      style={{
-                        minHeight:
-                          esEscritorio
-                            ? 44
-                            : 40,
-
-                        minWidth:
-                          item === "Todas"
-                            ? 78
-                            : undefined,
-
-                        paddingHorizontal:
-                          esEscritorio
-                            ? 20
-                            : 17,
-
-                        paddingVertical:
-                          esEscritorio
-                            ? 10
-                            : 8,
-
-                        borderRadius: 999,
-
-                        borderWidth: 1,
-
-                        borderColor:
-                          seleccionada
-                            ? primaryColor
-                            : borderColor,
-
-                        backgroundColor:
-                          seleccionada
-                            ? primaryColor
-                            : surfaceSecondaryColor,
-
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          fontFamily:
-                            seleccionada
-                              ? "Nunito-Bold"
-                              : "Nunito-SemiBold",
-
-                          fontSize:
-                            esEscritorio
-                              ? 15
-                              : 13,
-
-                          color:
-                            seleccionada
-                              ? "#FFFFFF"
-                              : textSecondaryColor,
-                        }}
-                      >
-                        {item}
-                      </Text>
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </ScrollView>
+          {/* El filtro es un componente global para poder
+              reutilizar el mismo patrón en otras pantallas. */}
+          <FiltrosCategorias
+            opciones={categorias}
+            seleccionada={
+              categoriaSeleccionada
+            }
+            onSeleccionar={
+              setCategoriaSeleccionada
+            }
+          />
         </Animated.View>
 
         {/* =================================================
@@ -837,7 +620,7 @@ export default function LecturasScreen() {
             {lecturasFiltradas.map(
               (lectura, index) => (
                 <Animated.View
-                  key={lectura.id}
+                  key={lectura.id_recurso}
                   entering={
                     FadeInDown
                       .delay(
@@ -861,12 +644,15 @@ export default function LecturasScreen() {
                 >
                   <LecturaRecomendadaCard
                     titulo={lectura.titulo}
+                    imagenPortada={
+                      lectura.imagen_portada
+                    }
                     index={index}
                     ancho={anchoTarjeta}
                     onPress={() => {
                       console.log(
                         "Lectura seleccionada:",
-                        lectura.id
+                        lectura.id_recurso
                       );
                     }}
                   />
@@ -879,107 +665,11 @@ export default function LecturasScreen() {
              ESTADO VACÍO
              ================================================= */
 
-          <Animated.View
-            entering={
-              FadeInDown.duration(350)
-            }
-            style={{
-              width: "100%",
-
-              maxWidth:
-                esEscritorio
-                  ? 620
-                  : undefined,
-
-              alignSelf: "center",
-              alignItems: "center",
-
-              marginTop:
-                esEscritorio
-                  ? 12
-                  : 16,
-
-              paddingHorizontal:
-                esEscritorio
-                  ? 40
-                  : 24,
-
-              paddingVertical:
-                esEscritorio
-                  ? 38
-                  : 34,
-
-              borderRadius: 22,
-              borderWidth: 1,
-              borderColor,
-
-              backgroundColor:
-                surfaceColor,
-            }}
-          >
-            <View
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 32,
-
-                alignItems: "center",
-                justifyContent: "center",
-
-                backgroundColor:
-                  primarySoftColor,
-              }}
-            >
-              <Ionicons
-                name="search-outline"
-                size={28}
-                color={primaryColor}
-              />
-            </View>
-
-            <Text
-              className="font-nunito-bold"
-              style={{
-                marginTop: 16,
-
-                textAlign: "center",
-
-                fontSize:
-                  esEscritorio
-                    ? 18
-                    : 17,
-
-                color: textColor,
-              }}
-            >
-              No encontramos esa categoría
-            </Text>
-
-            <Text
-              className="font-nunito-medium"
-              style={{
-                maxWidth: 420,
-                marginTop: 8,
-
-                textAlign: "center",
-
-                fontSize:
-                  esEscritorio
-                    ? 14
-                    : 13,
-
-                lineHeight:
-                  esEscritorio
-                    ? 21
-                    : 20,
-
-                color:
-                  textSecondaryColor,
-              }}
-            >
-              Prueba con otra palabra o explora las categorías disponibles.
-            </Text>
-          </Animated.View>
+          <EstadoVacio
+            titulo="No encontramos esa categoría"
+            descripcion="Prueba con otra palabra o explora las categorías disponibles."
+            icono="search-outline"
+          />
         )}
       </View>
     </ScrollView>
