@@ -1,66 +1,71 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
-import { useThemeColor } from "@/hooks/use-theme-color";
-import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+import AdminCard from "@/components/admin/AdminCard";
+import AdminEmptyState from "@/components/admin/AdminEmptyState";
+import AdminIdentity from "@/components/admin/AdminIdentity";
+import AdminList from "@/components/admin/AdminList";
+import type { AdminColumn } from "@/components/admin/AdminTable";
+import Button from "@/components/ui/Button";
+import { nombreTipoInstitucion } from "@/types/instituciones/institucion";
+import type { SolicitudInstitucion } from "@/types/superadmin/solicitudes";
 
-import type {
-  SolicitudInstitucion,
-  TipoInstitucion,
-} from "@/types/superadmin/solicitudes";
-
-interface SolicitudesTableProps {
+type Props = {
   solicitudes: SolicitudInstitucion[];
   solicitudSeleccionada: SolicitudInstitucion | null;
   pagina: number;
   totalPaginas: number;
   totalFiltradas: number;
-  onSeleccionar: (solicitud: SolicitudInstitucion) => void;
+  onSeleccionar: (s: SolicitudInstitucion) => void;
   onCambiarPagina: (pagina: number) => void;
-}
+};
 
-function obtenerNombreTipo(tipo: TipoInstitucion) {
-  switch (tipo) {
-    case "educacion_superior":
-      return "Ed. Superior";
+const nombre = (s: SolicitudInstitucion) =>
+  [s.nombre_solicitante, s.apellido_solicitante].filter(Boolean).join(" ");
 
-    case "escolar":
-      return "Escolar K-12";
+const ubicacion = (s: SolicitudInstitucion) =>
+  [s.municipio, s.departamento].filter(Boolean).join(", ") ||
+  s.direccion ||
+  "Ubicación no especificada";
 
-    case "salud":
-      return "Red de Salud";
+const identidad = (s: SolicitudInstitucion) => {
+  const p = s.nombre_institucion.trim().split(/\s+/);
+  const iniciales = (p.length === 1 ? p[0].slice(0, 2) : p.slice(0, 2).map((x) => x[0]).join("")).toUpperCase();
 
-    default:
-      return "Institución";
-  }
-}
+  return (
+    <AdminIdentity
+      nombre={s.nombre_institucion}
+      detalle={ubicacion(s)}
+      iniciales={iniciales || "IN"}
+    />
+  );
+};
 
-function obtenerIniciales(nombre: string) {
-  const palabras = nombre.trim().split(/\s+/).filter(Boolean);
+const solicitante = (s: SolicitudInstitucion) => (
+  <View className="gap-1">
+    <Text className="font-nunito-semibold text-sm text-text">{nombre(s)}</Text>
+    <Text className="font-nunito-medium text-xs text-text-muted">{s.cargo_solicitante}</Text>
+  </View>
+);
 
-  if (palabras.length === 0) {
-    return "IN";
-  }
+const tipo = (s: SolicitudInstitucion) => {
+  const salud = s.tipo_institucion === "salud";
+  const escolar = s.tipo_institucion === "escolar";
 
-  if (palabras.length === 1) {
-    return palabras[0].slice(0, 2).toUpperCase();
-  }
+  return (
+    <View className={`self-start rounded-full px-3 py-1 ${salud ? "bg-secondary-soft" : escolar ? "bg-accent-soft" : "bg-primary-soft"}`}>
+      <Text className={`font-nunito-bold text-xs ${salud ? "text-secondary" : escolar ? "text-accent" : "text-primary"}`}>
+        {nombreTipoInstitucion(s.tipo_institucion)}
+      </Text>
+    </View>
+  );
+};
 
-  return palabras
-    .slice(0, 2)
-    .map((palabra) => palabra.charAt(0))
-    .join("")
-    .toUpperCase();
-}
-
-function obtenerUbicacion(solicitud: SolicitudInstitucion) {
-  const ubicacion = [solicitud.municipio, solicitud.departamento]
-    .filter(Boolean)
-    .join(", ");
-
-  return ubicacion || solicitud.direccion || "Ubicación no especificada";
-}
+const columns: AdminColumn<SolicitudInstitucion>[] = [
+  { key: "institucion", title: "INSTITUCIÓN", className: "w-64", render: identidad },
+  { key: "solicitante", title: "SOLICITANTE", render: solicitante },
+  { key: "tipo", title: "TIPO", className: "w-40", render: tipo },
+];
 
 export default function SolicitudesTable({
   solicitudes,
@@ -70,911 +75,86 @@ export default function SolicitudesTable({
   totalFiltradas,
   onSeleccionar,
   onCambiarPagina,
-}: SolicitudesTableProps) {
-  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
-
-  const surfaceColor = useThemeColor({}, "surface");
-
-  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
-
-  const borderColor = useThemeColor({}, "border");
-
-  const textColor = useThemeColor({}, "text");
-
-  const textSecondaryColor = useThemeColor({}, "textSecondary");
-
-  const textMutedColor = useThemeColor({}, "textMuted");
-
-  const primaryColor = useThemeColor({}, "primary");
-
-  const primarySoftColor = useThemeColor({}, "primarySoft");
-
-  const secondaryColor = useThemeColor({}, "secondary");
-
-  const secondarySoftColor = useThemeColor({}, "secondarySoft");
-
-  const accentColor = useThemeColor({}, "accent");
-
-  const accentSoftColor = useThemeColor({}, "accentSoft");
-
-  const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
-
-  function obtenerColoresTipo(tipo: TipoInstitucion) {
-    if (tipo === "salud") {
-      return {
-        fondo: secondarySoftColor,
-        color: secondaryColor,
-      };
-    }
-
-    if (tipo === "escolar") {
-      return {
-        fondo: accentSoftColor,
-        color: accentColor,
-      };
-    }
-
-    return {
-      fondo: primarySoftColor,
-      color: primaryColor,
-    };
-  }
-
-  // ========================================================
-  // PAGINACIÓN
-  // ========================================================
-
-  const renderPaginacion = () => (
-    <View
-      style={{
-        minHeight: esTelefono ? 72 : 62,
-
-        paddingHorizontal: esTelefono ? 12 : 18,
-
-        paddingVertical: esTelefono ? 10 : 0,
-
-        borderTopWidth: 1,
-
-        borderTopColor: borderColor,
-
-        flexDirection: esTelefono ? "column" : "row",
-
-        alignItems: esTelefono ? "stretch" : "center",
-
-        gap: esTelefono ? 8 : 0,
-      }}
-    >
-      <Text
-        style={{
-          fontFamily: "Nunito-Medium",
-
-          fontSize: 10,
-
-          textAlign: esTelefono ? "center" : "left",
-
-          color: textMutedColor,
-        }}
-      >
-        Mostrando {solicitudes.length} de {totalFiltradas} solicitudes
-      </Text>
-
-      {!esTelefono && (
-        <View
-          style={{
-            flex: 1,
-          }}
-        />
-      )}
-
-      <View
-        style={{
-          flexDirection: "row",
-
-          alignItems: "center",
-
-          justifyContent: "center",
-        }}
-      >
-        <Pressable
-          disabled={pagina === 1}
-          onPress={() => onCambiarPagina(Math.max(1, pagina - 1))}
-          style={{
-            width: 32,
-            height: 32,
-
-            alignItems: "center",
-
-            justifyContent: "center",
-
-            opacity: pagina === 1 ? 0.35 : 1,
-          }}
-        >
-          <Ionicons name="chevron-back" size={17} color={textSecondaryColor} />
-        </Pressable>
-
-        {Array.from(
-          {
-            length: totalPaginas,
-          },
-          (_, indice) => indice + 1,
-        ).map((numero) => (
-          <Pressable
-            key={numero}
-            onPress={() => onCambiarPagina(numero)}
-            style={{
-              width: 32,
-              height: 32,
-
-              marginHorizontal: 2,
-
-              borderRadius: 8,
-
-              alignItems: "center",
-
-              justifyContent: "center",
-
-              backgroundColor: pagina === numero ? primaryColor : "transparent",
-            }}
-          >
-            <Text
-              style={{
-                fontFamily: "Nunito-Bold",
-
-                fontSize: 10,
-
-                color:
-                  pagina === numero ? textOnPrimaryColor : textSecondaryColor,
-              }}
-            >
-              {numero}
-            </Text>
-          </Pressable>
-        ))}
-
-        <Pressable
-          disabled={pagina === totalPaginas}
-          onPress={() => onCambiarPagina(Math.min(totalPaginas, pagina + 1))}
-          style={{
-            width: 32,
-            height: 32,
-
-            alignItems: "center",
-
-            justifyContent: "center",
-
-            opacity: pagina === totalPaginas ? 0.35 : 1,
-          }}
-        >
-          <Ionicons
-            name="chevron-forward"
-            size={17}
-            color={textSecondaryColor}
-          />
-        </Pressable>
-      </View>
-    </View>
-  );
+}: Props) {
+  const seleccionada = solicitudSeleccionada?.id_solicitud;
 
   return (
-    <View
-      style={{
-        width: "100%",
+    <View className="gap-4">
+      <Text className="font-nunito-bold text-lg text-text">Registro de Peticiones</Text>
 
-        flex: esEscritorio ? 1.45 : undefined,
+      {solicitudes.length ? (
+        <AdminList
+          items={solicitudes}
+          columns={columns}
+          keyExtractor={(s) => s.id_solicitud}
+          onPressItem={onSeleccionar}
+          selectedKey={seleccionada}
+          renderCard={(s) => {
+            const activa = seleccionada === s.id_solicitud;
 
-        minWidth: 0,
-
-        minHeight: esEscritorio ? 710 : undefined,
-
-        overflow: "hidden",
-
-        borderWidth: 1,
-        borderColor,
-        borderRadius: 18,
-
-        backgroundColor: surfaceColor,
-      }}
-    >
-      {/* CABECERA */}
-
-      <View
-        style={{
-          minHeight: esTelefono ? 68 : 58,
-
-          paddingHorizontal: esTelefono ? 14 : 18,
-
-          paddingVertical: esTelefono ? 12 : 0,
-
-          flexDirection: "row",
-
-          alignItems: "center",
-
-          borderBottomWidth: 1,
-
-          borderBottomColor: borderColor,
-        }}
-      >
-        <View
-          style={{
-            flex: 1,
-            minWidth: 0,
+            return (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Revisar solicitud de ${s.nombre_institucion}`}
+                accessibilityState={{ selected: activa }}
+                onPress={() => onSeleccionar(s)}
+                className="rounded-2xl active:opacity-80"
+              >
+                <AdminCard className={activa ? "border-primary bg-primary-soft" : "bg-surface-secondary"}>
+                  {identidad(s)}
+                  {solicitante(s)}
+                  {tipo(s)}
+                </AdminCard>
+              </Pressable>
+            );
           }}
-        >
-          <Text
-            style={{
-              fontFamily: "Nunito-Bold",
-
-              fontSize: esTelefono ? 18 : 16,
-
-              color: textColor,
-            }}
-          >
-            Registro de Peticiones
-          </Text>
-
-          {esTelefono && (
-            <Text
-              style={{
-                marginTop: 3,
-
-                fontFamily: "Nunito-Medium",
-
-                fontSize: 10,
-
-                color: textMutedColor,
-              }}
-            >
-              {solicitudes.length} de {totalFiltradas} solicitudes
-            </Text>
-          )}
-        </View>
-
-        {!esTelefono && (
-          <>
-            <View
-              style={{
-                marginLeft: 10,
-
-                paddingHorizontal: 9,
-
-                paddingVertical: 4,
-
-                borderRadius: 999,
-
-                backgroundColor: primarySoftColor,
-              }}
-            >
-              <Text
-                style={{
-                  fontFamily: "Nunito-Bold",
-
-                  fontSize: 9,
-
-                  color: primaryColor,
-                }}
-              >
-                {solicitudes.length} mostradas
-              </Text>
-            </View>
-
-            <View
-              style={{
-                flex: 1,
-              }}
-            />
-
-            <Pressable
-              style={{
-                flexDirection: "row",
-
-                alignItems: "center",
-              }}
-            >
-              <Ionicons name="options-outline" size={16} color={primaryColor} />
-
-              <Text
-                style={{
-                  marginLeft: 6,
-
-                  fontFamily: "Nunito-SemiBold",
-
-                  fontSize: 11,
-
-                  color: primaryColor,
-                }}
-              >
-                Ajustar columnas
-              </Text>
-            </Pressable>
-          </>
-        )}
-      </View>
-
-      {/* ====================================================
-          MÓVIL - TARJETAS
-      ==================================================== */}
-
-      {esTelefono ? (
-        <View
-          style={{
-            padding: 12,
-
-            gap: 10,
-          }}
-        >
-          {solicitudes.length > 0 ? (
-            solicitudes.map((solicitud) => {
-              const seleccionada =
-                solicitudSeleccionada?.id_solicitud === solicitud.id_solicitud;
-
-              const colores = obtenerColoresTipo(solicitud.tipo_institucion);
-
-              const iniciales = obtenerIniciales(solicitud.nombre_institucion);
-
-              const nombreSolicitante = [
-                solicitud.nombre_solicitante,
-                solicitud.apellido_solicitante,
-              ]
-                .filter(Boolean)
-                .join(" ");
-
-              const ubicacion = obtenerUbicacion(solicitud);
-
-              return (
-                <Pressable
-                  key={solicitud.id_solicitud}
-                  onPress={() => onSeleccionar(solicitud)}
-                  style={({ pressed }) => ({
-                    width: "100%",
-
-                    padding: 14,
-
-                    borderWidth: 1,
-
-                    borderColor: seleccionada ? primaryColor : borderColor,
-
-                    borderRadius: 16,
-
-                    opacity: pressed ? 0.85 : 1,
-
-                    backgroundColor: seleccionada
-                      ? primarySoftColor
-                      : surfaceSecondaryColor,
-                  })}
-                >
-                  {/* INSTITUCIÓN */}
-
-                  <View
-                    style={{
-                      flexDirection: "row",
-
-                      alignItems: "center",
-                    }}
-                  >
-                    <View
-                      style={{
-                        width: 46,
-
-                        height: 46,
-
-                        borderRadius: 13,
-
-                        flexShrink: 0,
-
-                        alignItems: "center",
-
-                        justifyContent: "center",
-
-                        backgroundColor: colores.fondo,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          fontFamily: "Nunito-Bold",
-
-                          fontSize: 14,
-
-                          color: colores.color,
-                        }}
-                      >
-                        {iniciales}
-                      </Text>
-                    </View>
-
-                    <View
-                      style={{
-                        flex: 1,
-
-                        minWidth: 0,
-
-                        marginLeft: 12,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          fontFamily: "Nunito-Bold",
-
-                          fontSize: 14,
-
-                          lineHeight: 19,
-
-                          color: textColor,
-                        }}
-                      >
-                        {solicitud.nombre_institucion}
-                      </Text>
-
-                      <Text
-                        style={{
-                          marginTop: 3,
-
-                          fontFamily: "Nunito-Medium",
-
-                          fontSize: 11,
-
-                          color: textMutedColor,
-                        }}
-                      >
-                        {ubicacion}
-                      </Text>
-                    </View>
-
-                    <Ionicons
-                      name="chevron-forward"
-                      size={18}
-                      color={textMutedColor}
-                    />
-                  </View>
-
-                  {/* SOLICITANTE */}
-
-                  <View
-                    style={{
-                      marginTop: 14,
-
-                      paddingTop: 12,
-
-                      borderTopWidth: 1,
-
-                      borderTopColor: borderColor,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontFamily: "Nunito-Medium",
-
-                        fontSize: 9,
-
-                        color: textMutedColor,
-                      }}
-                    >
-                      SOLICITANTE
-                    </Text>
-
-                    <Text
-                      style={{
-                        marginTop: 4,
-
-                        fontFamily: "Nunito-SemiBold",
-
-                        fontSize: 12,
-
-                        color: textColor,
-                      }}
-                    >
-                      {nombreSolicitante}
-                    </Text>
-
-                    <Text
-                      style={{
-                        marginTop: 2,
-
-                        fontFamily: "Nunito-Medium",
-
-                        fontSize: 10,
-
-                        color: textMutedColor,
-                      }}
-                    >
-                      {solicitud.cargo_solicitante}
-                    </Text>
-                  </View>
-
-                  {/* TIPO */}
-
-                  <View
-                    style={{
-                      marginTop: 12,
-
-                      alignSelf: "flex-start",
-
-                      paddingHorizontal: 10,
-
-                      paddingVertical: 5,
-
-                      borderRadius: 999,
-
-                      backgroundColor: colores.fondo,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontFamily: "Nunito-Bold",
-
-                        fontSize: 10,
-
-                        color: colores.color,
-                      }}
-                    >
-                      {obtenerNombreTipo(solicitud.tipo_institucion)}
-                    </Text>
-                  </View>
-                </Pressable>
-              );
-            })
-          ) : (
-            <View
-              style={{
-                minHeight: 260,
-
-                alignItems: "center",
-
-                justifyContent: "center",
-
-                padding: 20,
-              }}
-            >
-              <Ionicons
-                name="search-outline"
-                size={36}
-                color={textMutedColor}
-              />
-
-              <Text
-                style={{
-                  marginTop: 12,
-
-                  fontFamily: "Nunito-Bold",
-
-                  fontSize: 14,
-
-                  color: textColor,
-                }}
-              >
-                No encontramos solicitudes
-              </Text>
-
-              <Text
-                style={{
-                  marginTop: 4,
-
-                  fontFamily: "Nunito-Medium",
-
-                  fontSize: 12,
-
-                  textAlign: "center",
-
-                  color: textMutedColor,
-                }}
-              >
-                Prueba cambiando los filtros de búsqueda.
-              </Text>
-            </View>
-          )}
-        </View>
+        />
       ) : (
-        <>
-          {/* ==================================================
-              TABLET / ESCRITORIO - TABLA
-          ================================================== */}
-
-          <View
-            style={{
-              minHeight: 42,
-
-              paddingHorizontal: 14,
-
-              flexDirection: "row",
-
-              alignItems: "center",
-
-              backgroundColor: surfaceSecondaryColor,
-            }}
-          >
-            <Text
-              style={{
-                flex: 1.55,
-
-                fontFamily: "Nunito-Bold",
-
-                fontSize: 10,
-
-                color: textSecondaryColor,
-              }}
-            >
-              INSTITUCIÓN
-            </Text>
-
-            <Text
-              style={{
-                flex: 0.75,
-
-                fontFamily: "Nunito-Bold",
-
-                fontSize: 10,
-
-                color: textSecondaryColor,
-              }}
-            >
-              SOLICITANTE
-            </Text>
-
-            <Text
-              style={{
-                width: 105,
-
-                fontFamily: "Nunito-Bold",
-
-                fontSize: 10,
-
-                color: textSecondaryColor,
-              }}
-            >
-              TIPO
-            </Text>
-          </View>
-
-          {solicitudes.length > 0 ? (
-            solicitudes.map((solicitud) => {
-              const seleccionada =
-                solicitudSeleccionada?.id_solicitud === solicitud.id_solicitud;
-
-              const colores = obtenerColoresTipo(solicitud.tipo_institucion);
-
-              const iniciales = obtenerIniciales(solicitud.nombre_institucion);
-
-              const nombreSolicitante = [
-                solicitud.nombre_solicitante,
-                solicitud.apellido_solicitante,
-              ]
-                .filter(Boolean)
-                .join(" ");
-
-              const ubicacion = obtenerUbicacion(solicitud);
-
-              return (
-                <Pressable
-                  key={solicitud.id_solicitud}
-                  onPress={() => onSeleccionar(solicitud)}
-                  style={({ pressed }) => ({
-                    minHeight: 86,
-
-                    paddingHorizontal: 14,
-
-                    paddingVertical: 12,
-
-                    borderBottomWidth: 1,
-
-                    borderBottomColor: borderColor,
-
-                    flexDirection: "row",
-
-                    alignItems: "center",
-
-                    opacity: pressed ? 0.85 : 1,
-
-                    backgroundColor: seleccionada
-                      ? primarySoftColor
-                      : surfaceColor,
-                  })}
-                >
-                  <View
-                    style={{
-                      flex: 1.55,
-
-                      flexDirection: "row",
-
-                      alignItems: "center",
-
-                      minWidth: 0,
-                    }}
-                  >
-                    <View
-                      style={{
-                        width: 40,
-
-                        height: 40,
-
-                        borderRadius: 11,
-
-                        alignItems: "center",
-
-                        justifyContent: "center",
-
-                        backgroundColor: colores.fondo,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          fontFamily: "Nunito-Bold",
-
-                          fontSize: 14,
-
-                          color: colores.color,
-                        }}
-                      >
-                        {iniciales}
-                      </Text>
-                    </View>
-
-                    <View
-                      style={{
-                        flex: 1,
-
-                        marginLeft: 11,
-
-                        minWidth: 0,
-                      }}
-                    >
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          fontFamily: "Nunito-Bold",
-
-                          fontSize: 12,
-
-                          color: textColor,
-                        }}
-                      >
-                        {solicitud.nombre_institucion}
-                      </Text>
-
-                      <Text
-                        numberOfLines={1}
-                        style={{
-                          marginTop: 3,
-
-                          fontFamily: "Nunito-Medium",
-
-                          fontSize: 10,
-
-                          color: textMutedColor,
-                        }}
-                      >
-                        {ubicacion}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View
-                    style={{
-                      flex: 0.75,
-
-                      paddingHorizontal: 8,
-                    }}
-                  >
-                    <Text
-                      numberOfLines={1}
-                      style={{
-                        fontFamily: "Nunito-SemiBold",
-
-                        fontSize: 11,
-
-                        color: textColor,
-                      }}
-                    >
-                      {nombreSolicitante}
-                    </Text>
-
-                    <Text
-                      numberOfLines={2}
-                      style={{
-                        marginTop: 2,
-
-                        fontFamily: "Nunito-Medium",
-
-                        fontSize: 9,
-
-                        color: textMutedColor,
-                      }}
-                    >
-                      {solicitud.cargo_solicitante}
-                    </Text>
-                  </View>
-
-                  <View
-                    style={{
-                      width: 105,
-
-                      alignItems: "flex-start",
-                    }}
-                  >
-                    <View
-                      style={{
-                        paddingHorizontal: 8,
-
-                        paddingVertical: 4,
-
-                        borderRadius: 999,
-
-                        backgroundColor: colores.fondo,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          fontFamily: "Nunito-Bold",
-
-                          fontSize: 9,
-
-                          color: colores.color,
-                        }}
-                      >
-                        {obtenerNombreTipo(solicitud.tipo_institucion)}
-                      </Text>
-                    </View>
-                  </View>
-                </Pressable>
-              );
-            })
-          ) : (
-            <View
-              style={{
-                flex: 1,
-
-                minHeight: 350,
-
-                alignItems: "center",
-
-                justifyContent: "center",
-              }}
-            >
-              <Ionicons
-                name="search-outline"
-                size={36}
-                color={textMutedColor}
-              />
-
-              <Text
-                style={{
-                  marginTop: 12,
-
-                  fontFamily: "Nunito-Bold",
-
-                  fontSize: 14,
-
-                  color: textColor,
-                }}
-              >
-                No encontramos solicitudes
-              </Text>
-
-              <Text
-                style={{
-                  marginTop: 4,
-
-                  fontFamily: "Nunito-Medium",
-
-                  fontSize: 12,
-
-                  color: textMutedColor,
-                }}
-              >
-                Prueba cambiando los filtros de búsqueda.
-              </Text>
-            </View>
-          )}
-
-          {esEscritorio && (
-            <View
-              style={{
-                flex: 1,
-              }}
-            />
-          )}
-        </>
+        <AdminEmptyState mensaje="No encontramos solicitudes. Prueba cambiando los filtros de búsqueda." />
       )}
 
-      {renderPaginacion()}
+      <View className="gap-3 border-t border-border pt-3 md:flex-row md:items-center md:justify-between">
+        <Text className="font-nunito-medium text-xs text-text-muted">
+          Mostrando {solicitudes.length} de {totalFiltradas} solicitudes
+        </Text>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerClassName="flex-row items-center gap-2"
+        >
+          <Button
+            title="Anterior"
+            icon="chevron-back"
+            variant="secondary"
+            disabled={pagina === 1}
+            onPress={() => onCambiarPagina(pagina - 1)}
+            className="my-0 min-h-9 w-auto px-3 py-1"
+            textClassName="text-xs"
+          />
+
+          {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((n) => (
+            <Button
+              key={n}
+              title={String(n)}
+              variant={pagina === n ? "primary" : "secondary"}
+              onPress={() => onCambiarPagina(n)}
+              className="my-0 min-h-9 w-9 px-1 py-1"
+              textClassName="text-xs"
+            />
+          ))}
+
+          <Button
+            title="Siguiente"
+            icon="chevron-forward"
+            variant="secondary"
+            disabled={pagina === totalPaginas}
+            onPress={() => onCambiarPagina(pagina + 1)}
+            className="my-0 min-h-9 w-auto px-3 py-1"
+            textClassName="text-xs"
+          />
+        </ScrollView>
+      </View>
     </View>
   );
 }

@@ -1,39 +1,28 @@
 import React, { useState } from "react";
-
-import {
-  StyleProp,
-  StyleSheet,
-  Text,
-  TextInput,
-  TextInputProps,
-  View,
-  ViewStyle,
-} from "react-native";
+import { StyleProp, Text, TextInput, TextInputProps, View, ViewStyle } from "react-native";
 
 import { Colors } from "@/constants/theme";
-import { useThemeColor } from "@/hooks/use-theme-color";
-
-// ==========================================================
-// PROPIEDADES
-// ==========================================================
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { cn } from "@/utils/cn";
 
 interface InputProps extends TextInputProps {
   label: string;
   rightLabel?: React.ReactNode;
   rightIcon?: React.ReactNode;
   estiloContenedor?: StyleProp<ViewStyle>;
+  containerClassName?: string;
+  inputClassName?: string;
   forceLight?: boolean;
 }
-
-// ==========================================================
-// COMPONENTE
-// ==========================================================
 
 export default function Input({
   label,
   rightLabel,
   rightIcon,
   estiloContenedor,
+  containerClassName,
+  inputClassName,
+  className,
   style,
   placeholderTextColor,
   onFocus,
@@ -41,65 +30,16 @@ export default function Input({
   forceLight = false,
   ...props
 }: InputProps) {
-  // ========================================================
-  // ESTADO
-  // ========================================================
-
   const [enfocado, setEnfocado] = useState(false);
-
-  // ========================================================
-  // TEMA
-  // ========================================================
-
-  const themeTextColor = useThemeColor({}, "text");
-  const themeTextSecondaryColor = useThemeColor({}, "textSecondary");
-  const themeInputBackgroundColor = useThemeColor({}, "inputBackground");
-  const themeInputBorderColor = useThemeColor({}, "inputBorder");
-  const themePlaceholderColor = useThemeColor({}, "placeholder");
-  const themePrimaryColor = useThemeColor({}, "primary");
-
-  // ========================================================
-  // COLORES
-  // ========================================================
-
-  const textColor = forceLight ? Colors.light.text : themeTextColor;
-
-  const textSecondaryColor = forceLight
-    ? Colors.light.textSecondary
-    : themeTextSecondaryColor;
-
-  const inputBackgroundColor = forceLight
-    ? Colors.light.inputBackground
-    : themeInputBackgroundColor;
-
-  const inputBorderColor = forceLight
-    ? Colors.light.inputBorder
-    : themeInputBorderColor;
-
-  const placeholderColor = forceLight
-    ? Colors.light.placeholder
-    : themePlaceholderColor;
-
-  const primaryColor = forceLight ? Colors.light.primary : themePrimaryColor;
-
-  // ========================================================
-  // UI
-  // ========================================================
+  const esOscuro = useColorScheme() === "dark";
+  const colores = forceLight ? Colors.light : esOscuro ? Colors.dark : Colors.light;
 
   return (
-    <View style={[styles.container, estiloContenedor]}>
-      {/* ==================================================
-          ETIQUETA
-      ================================================== */}
-
-      <View style={styles.labelContainer}>
+    <View style={estiloContenedor} className={cn("mb-5 w-full", containerClassName)}>
+      <View className="mb-2 flex-row items-center justify-between gap-2">
         <Text
-          style={[
-            styles.label,
-            {
-              color: textColor,
-            },
-          ]}
+          className={cn("shrink font-nunito-semibold text-base", !forceLight && "text-text")}
+          style={forceLight ? { color: Colors.light.text } : undefined}
         >
           {label}
         </Text>
@@ -107,105 +47,50 @@ export default function Input({
         {rightLabel}
       </View>
 
-      {/* ==================================================
-          CAMPO
-      ================================================== */}
-
       <View
-        style={[
-          styles.inputContainer,
-          {
-            backgroundColor: inputBackgroundColor,
-            borderColor: enfocado ? primaryColor : inputBorderColor,
-            borderWidth: enfocado ? 2 : 1,
-          },
-        ]}
+        className={cn(
+          "relative min-h-14 w-full flex-row items-center overflow-hidden rounded-2xl bg-input",
+          enfocado ? "border-2 border-primary" : "border border-input-border",
+        )}
+        style={
+          forceLight
+            ? {
+                backgroundColor: Colors.light.inputBackground,
+                borderColor: enfocado ? Colors.light.primary : Colors.light.inputBorder,
+              }
+            : undefined
+        }
       >
         <TextInput
           {...props}
+          className={cn(
+            "h-14 min-w-0 flex-1 px-4 py-2 font-nunito-medium text-base text-text",
+            className,
+            inputClassName,
+          )}
           style={[
-            styles.input,
-            {
-              color: textColor,
-              paddingRight: rightIcon ? 52 : 16,
-            },
+            forceLight ? { color: Colors.light.text } : undefined,
+            rightIcon ? { paddingRight: 52 } : undefined,
             style,
           ]}
-          placeholderTextColor={placeholderTextColor ?? placeholderColor}
-          selectionColor={primaryColor}
-          onFocus={(event) => {
+          placeholderTextColor={placeholderTextColor ?? colores.placeholder}
+          selectionColor={colores.primary}
+          onFocus={(e) => {
             setEnfocado(true);
-            onFocus?.(event);
+            onFocus?.(e);
           }}
-          onBlur={(event) => {
+          onBlur={(e) => {
             setEnfocado(false);
-            onBlur?.(event);
+            onBlur?.(e);
           }}
         />
 
-        {/* ==================================================
-            ICONO DERECHO
-        ================================================== */}
-
-        {rightIcon && <View style={styles.rightIcon}>{rightIcon}</View>}
+        {rightIcon && (
+          <View className="absolute bottom-0 right-3 top-0 w-7 items-center justify-center">
+            {rightIcon}
+          </View>
+        )}
       </View>
     </View>
   );
 }
-
-// ==========================================================
-// ESTILOS
-// ==========================================================
-
-const styles = StyleSheet.create({
-  container: {
-    width: "100%",
-    marginBottom: 20,
-  },
-
-  labelContainer: {
-    width: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 10,
-    marginBottom: 9,
-  },
-
-  label: {
-    flexShrink: 1,
-    fontSize: 15,
-    lineHeight: 21,
-    fontFamily: "Nunito-SemiBold",
-  },
-
-  inputContainer: {
-    width: "100%",
-    minHeight: 54,
-    position: "relative",
-    borderRadius: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    overflow: "hidden",
-  },
-
-  input: {
-    flex: 1,
-    minWidth: 0,
-    height: 54,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    fontSize: 15,
-    fontFamily: "Nunito-Medium",
-  },
-
-  rightIcon: {
-    position: "absolute",
-    right: 14,
-    top: 0,
-    bottom: 0,
-    width: 28,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
