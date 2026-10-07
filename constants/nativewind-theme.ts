@@ -1,4 +1,5 @@
 import { vars } from "nativewind";
+
 import { Colors } from "@/constants/theme";
 
 const crearTema = (colors: typeof Colors.light) =>
