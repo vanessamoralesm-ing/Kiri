@@ -1,7 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as FileSystem from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { Alert, Image, Platform, Pressable, Text, View } from "react-native";
+
 import Animated, {
   Extrapolation,
   FadeInDown,
@@ -23,17 +26,18 @@ import { RecursoPsicoeducativo } from "@/types/educacion";
 export default function DetalleRecurso() {
   const router = useRouter(); // Navegación.
   const insets = useSafeAreaInsets(); // Área segura.
-
-  const { id, categoriaId } = useLocalSearchParams<{
-    id?: string;
-    categoriaId?: string;
-  }>(); // Parámetros de ruta.
+  const { id, categoriaId, origen } = useLocalSearchParams<{
+  id?: string;
+  categoriaId?: string;
+  origen?: string;
+}>(); // Parámetros de ruta.
 
   const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout(); // Responsive.
 
   const [recurso, setRecurso] = useState<RecursoPsicoeducativo | null>(null); // Libro.
   const [cargando, setCargando] = useState(true); // Estado de carga.
   const [esFavorito, setEsFavorito] = useState(false); // Favorito.
+  const [descargando, setDescargando] = useState(false); // Estado de descarga.
 
   const scrollY = useSharedValue(0); // Posición del scroll.
   const escalaCorazon = useSharedValue(1); // Animación del favorito.
@@ -123,33 +127,84 @@ export default function DetalleRecurso() {
     });
   } // Formatea la fecha.
 
-  function volverACategoria() {
-    if (categoriaId) {
-      router.replace({
-        pathname: "/(tabs)/educacion/[id]",
-        params: { id: categoriaId },
-      } as any);
-      return;
-    }
+ function volverACategoria() {
+  if (origen === "lecturas") {
+    router.replace("/(tabs)/educacion/lecturas" as any);
+    return;
+  }
 
-    if (router.canGoBack()) {
-      router.back();
-      return;
-    }
+  if (categoriaId) {
+    router.replace({
+      pathname: "/(tabs)/educacion/[id]",
+      params: { id: categoriaId },
+    } as any);
+    return;
+  }
 
-    router.replace("/(tabs)/educacion" as any);
-  } // Regresa a la categoría.
+  router.replace("/(tabs)/educacion" as any);
+} // Regresa a la categoría.
 
   function cambiarFavorito() {
     setEsFavorito((valorActual) => !valorActual);
   } // Cambia el favorito.
 
+  async function descargarPdf() {
+    if (!recurso || !recurso.url_recurso?.trim() || descargando) return;
+
+    const recursoActual = recurso; // Mantiene una referencia segura del recurso.
+    const urlPdf = recurso.url_recurso.trim(); // URL del PDF.
+    try {
+      setDescargando(true); // Evita descargas repetidas.
+
+      if (Platform.OS === "web") {
+        const respuesta = await fetch(urlPdf); // Descarga el PDF en web.
+        if (!respuesta.ok) throw new Error("No se pudo descargar el PDF.");
+
+        const archivo = await respuesta.blob(); // Convierte la respuesta en archivo.
+        const urlArchivo = URL.createObjectURL(archivo); // Crea una URL temporal.
+        const enlace = document.createElement("a"); // Crea el enlace de descarga.
+
+        enlace.href = urlArchivo;
+        enlace.download = `${recursoActual.titulo || "libro"}.pdf`;
+        document.body.appendChild(enlace);
+        enlace.click();
+        enlace.remove();
+        URL.revokeObjectURL(urlArchivo); // Libera la URL temporal.
+        return;
+      }
+
+      //borre algo
+      const nombreArchivo = `${recursoActual.titulo || "libro"}.pdf`.replace(
+        /[\\/:*?"<>|]/g,
+        "-"
+      ); // Limpia caracteres inválidos.
+
+      const rutaArchivo = `${FileSystem.cacheDirectory}${nombreArchivo}`; // Ruta temporal.
+      const descarga = await FileSystem.downloadAsync(urlPdf, rutaArchivo); // Descarga el PDF.
+
+      if (!(await Sharing.isAvailableAsync())) {
+        Alert.alert("Descarga completada", "El PDF se descargó correctamente.");
+        return;
+      }
+
+      await Sharing.shareAsync(descarga.uri, {
+        mimeType: "application/pdf",
+        dialogTitle: "Guardar PDF",
+        UTI: "com.adobe.pdf",
+      }); // Abre las opciones del dispositivo.
+    } catch {
+      Alert.alert(
+        "No se pudo descargar",
+        "Ocurrió un problema al descargar el PDF. Inténtalo nuevamente."
+      );
+    } finally {
+      setDescargando(false); // Habilita nuevamente el botón.
+    }
+  } // Descarga el PDF según la plataforma.
+
   if (cargando) {
     return (
-      <View
-        className="flex-1 items-center justify-center"
-        style={{ backgroundColor }}
-      >
+      <View className="flex-1 items-center justify-center" style={{ backgroundColor }}>
         <Text
           className="font-nunito-semibold"
           style={{ fontSize: 15, color: textSecondaryColor }}
@@ -322,9 +377,7 @@ export default function DetalleRecurso() {
                   }}
                   hitSlop={12}
                   className="h-[54px] w-[54px] items-center justify-center"
-                  style={({ pressed }) => ({
-                    opacity: pressed ? 0.72 : 1,
-                  })}
+                  style={({ pressed }) => ({ opacity: pressed ? 0.72 : 1 })}
                 >
                   <Ionicons
                     name={esFavorito ? "heart" : "heart-outline"}
@@ -455,9 +508,8 @@ export default function DetalleRecurso() {
                   ]}
                 >
                   <Pressable
-                    onPress={() => {
-                      // Aquí se conectará la descarga del PDF.
-                    }}
+                    onPress={descargarPdf}
+                    disabled={descargando}
                     onPressIn={() => {
                       escalaDescargar.value = withSpring(0.9);
                     }}
@@ -467,6 +519,7 @@ export default function DetalleRecurso() {
                     className="h-full w-full items-center justify-center"
                     style={({ pressed }) => ({
                       backgroundColor: pressed ? "#6E4BEF" : colorBotones,
+                      opacity: descargando ? 0.7 : 1,
                     })}
                   >
                     <View
@@ -508,7 +561,11 @@ export default function DetalleRecurso() {
                     onPress={() => {
                       router.push({
                         pathname: "/(tabs)/educacion/recursos/[id]/lector",
-                        params: { id: recurso.id_recurso, categoriaId },
+                        params: {
+                          id: recurso.id_recurso,
+                          categoriaId,
+                          origen,
+                        },
                       } as any);
                     }}
                     onPressIn={() => {
