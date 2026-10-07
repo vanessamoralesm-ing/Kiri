@@ -1,3 +1,5 @@
+export type TipoAutorregistro = "emocional" | "abc";
+
 export interface EmocionAutorregistro {
   id_emocion: string;
   nombre: string;
@@ -13,10 +15,15 @@ export interface GuardarDiarioEmocionalParams {
   ideaUtil: string;
 }
 
+export interface GuardarAutorregistroABCParams {
+  idUsuario: string;
+  contenido: string;
+}
 export interface EntradaDiarioResumen {
   id_registro: string;
   fecha_inicio: string;
   plantilla_nombre: string;
+  plantilla_tipo: TipoAutorregistro;
   emociones: string[];
   respuesta_corta: string;
 }
@@ -30,4 +37,11 @@ export interface DetalleRegistroDiario {
   motivo: string;
   reaccion: string;
   ideaUtil: string;
+}
+
+export interface DetalleRegistroABC {
+  id_registro: string;
+  fecha_inicio: string;
+  plantilla_nombre: string;
+  contenido: string;
 }
