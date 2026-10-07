@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ViewProps } from "react-native";
+import { View, type ViewProps } from "react-native";
 
 import { NativeWindTheme } from "@/constants/nativewind-theme";
 import { useThemeMode } from "@/contexts/ThemeModeContext";
@@ -17,10 +17,7 @@ export default function ThemeScope({
     <View
       {...props}
       className={cn("flex-1 bg-background", className)}
-      style={[
-        isDarkMode ? NativeWindTheme.dark : NativeWindTheme.light,
-        style,
-      ]}
+      style={[isDarkMode ? NativeWindTheme.dark : NativeWindTheme.light, style]}
     >
       {children}
     </View>

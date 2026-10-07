@@ -1,3 +1,4 @@
+import React from "react";
 import type { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 
 import { PlatformPressable } from "@react-navigation/elements";
