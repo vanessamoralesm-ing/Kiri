@@ -1,5 +1,5 @@
 import React from "react";
-
+import { useThemeMode } from "@/contexts/ThemeModeContext";
 import {
   Image,
   ImageStyle,

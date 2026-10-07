@@ -1,640 +1,302 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
-import { Image, Platform, Pressable, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 
 import Logo from "@/components/ui/Logo_izq";
-
 import { useThemeMode } from "@/contexts/ThemeModeContext";
-import { useThemeColor } from "@/hooks/use-theme-color";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useAuth } from "@/services/authProvider";
-
-// ==========================================================
-// COMPONENTE
-// ==========================================================
+import { cn } from "@/utils/cn";
 
 export default function AdminHeader() {
-    const router = useRouter();
+  const router = useRouter();
+  const { profile, user } = useAuth();
+  const { isDarkMode, toggleDarkMode } = useThemeMode();
+  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
 
-    const { profile, user } = useAuth();
+  const [menuPerfilAbierto, setMenuPerfilAbierto] = useState(false);
 
-    const { isDarkMode, toggleDarkMode } = useThemeMode();
-
-    const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
-
-    const [menuPerfilAbierto, setMenuPerfilAbierto] = useState(false);
-
-    // ========================================================
-    // TEMA
-    // ========================================================
-
-    const surfaceColor = useThemeColor({}, "surface");
-    const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
-    const borderColor = useThemeColor({}, "border");
-
-    const textColor = useThemeColor({}, "text");
-    const textSecondaryColor = useThemeColor({}, "textSecondary");
-    const textMutedColor = useThemeColor({}, "textMuted");
-
-    const primaryColor = useThemeColor({}, "primary");
-    const primarySoftColor = useThemeColor({}, "primarySoft");
-
-    const secondaryColor = useThemeColor({}, "secondary");
-    const secondarySoftColor = useThemeColor({}, "secondarySoft");
-
-    // ========================================================
-    // USUARIO
-    // ========================================================
-
-    const nombreUsuario = useMemo(() => {
-        const nombrePreferido = profile?.nombre_preferido?.trim();
-
-        const nombres = profile?.nombres?.trim();
-
-        const metadata =
-            user?.user_metadata?.nombre_preferido?.trim?.() ||
-            user?.user_metadata?.nombres?.trim?.() ||
-            user?.user_metadata?.nombre?.trim?.();
-
-        return nombrePreferido || nombres || metadata || "Usuario";
-    }, [profile?.nombre_preferido, profile?.nombres, user?.user_metadata]);
-
-    const nombreCompleto = useMemo(() => {
-        const nombres =
-            profile?.nombres?.trim() || user?.user_metadata?.nombres?.trim?.() || "";
-
-        const apellidos =
-            profile?.apellidos?.trim() ||
-            user?.user_metadata?.apellidos?.trim?.() ||
-            "";
-
-        return `${nombres} ${apellidos}`.trim() || nombreUsuario;
-    }, [
-        profile?.nombres,
-        profile?.apellidos,
-        user?.user_metadata,
-        nombreUsuario,
-    ]);
-
-    const fotoPerfil =
-        profile?.foto_perfil ?? user?.user_metadata?.foto_perfil ?? null;
-
-    // ========================================================
-    // RESPONSIVE
-    // ========================================================
-
-    const alturaHeader = esEscritorio ? 82 : esTablet ? 68 : 62;
-
-    const paddingHorizontal = esEscritorio ? 28 : esTablet ? 18 : 12;
-
-    const tamañoAvatar = esEscritorio ? 40 : 34;
-
-    // ========================================================
-    // UI
-    // ========================================================
+  const nombreUsuario = useMemo(() => {
+    const metadata = user?.user_metadata;
 
     return (
-        <View
-            style={{
-                minHeight: alturaHeader,
+      profile?.nombre_preferido?.trim() ||
+      profile?.nombres?.trim() ||
+      metadata?.nombre_preferido?.trim?.() ||
+      metadata?.nombres?.trim?.() ||
+      metadata?.nombre?.trim?.() ||
+      "Usuario"
+    );
+  }, [profile, user?.user_metadata]);
 
-                paddingHorizontal,
+  const nombreCompleto = useMemo(() => {
+    const metadata = user?.user_metadata;
 
-                borderBottomWidth: 1,
-                borderBottomColor: borderColor,
+    const nombres =
+      profile?.nombres?.trim() ||
+      metadata?.nombres?.trim?.() ||
+      "";
 
-                backgroundColor: surfaceColor,
+    const apellidos =
+      profile?.apellidos?.trim() ||
+      metadata?.apellidos?.trim?.() ||
+      "";
 
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
+    return `${nombres} ${apellidos}`.trim() || nombreUsuario;
+  }, [profile, user?.user_metadata, nombreUsuario]);
 
-                zIndex: 5000,
-                overflow: "visible",
-            }}
+  const fotoPerfil =
+    profile?.foto_perfil ??
+    user?.user_metadata?.foto_perfil ??
+    null;
+
+  const avatarSize = esEscritorio ? 40 : 34;
+
+  const abrirConfiguracion = () => {
+    setMenuPerfilAbierto(false);
+    router.push("/superadmin/configuracion" as never);
+  };
+
+  return (
+    <View
+      className={cn(
+        "z-50 flex-row items-center justify-between border-b border-border bg-surface",
+        esEscritorio
+          ? "min-h-20 px-7"
+          : esTablet
+            ? "min-h-16 px-5"
+            : "min-h-16 px-3",
+      )}
+    >
+      {/* IZQUIERDA */}
+      {esEscritorio ? (
+        <View className="min-w-0 flex-1">
+          <Text
+            numberOfLines={1}
+            className="font-nunito-bold text-2xl text-text"
+          >
+            Hola, {nombreUsuario} (Superadministrador)
+          </Text>
+
+          <Text className="mt-1 font-nunito-medium text-sm text-text-secondary">
+            Bienvenido a Kiri
+          </Text>
+        </View>
+      ) : (
+        <View className="min-w-0 flex-1 flex-row items-center">
+          <Logo
+            ancho={esTelefono ? 68 : 78}
+            alto={esTelefono ? 30 : 34}
+          />
+
+          <View className="ml-2 min-w-0 flex-1">
+            <Text
+              numberOfLines={1}
+              className={cn(
+                "font-nunito-bold text-text",
+                esTelefono ? "text-sm" : "text-base",
+              )}
+            >
+              Hola, {nombreUsuario}
+            </Text>
+
+            <Text
+              numberOfLines={1}
+              className="mt-0.5 font-nunito-medium text-[10px] text-text-muted"
+            >
+              Superadministrador
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* ACCIONES */}
+      <View
+        className={cn(
+          "ml-2 flex-row items-center",
+          esEscritorio ? "gap-3" : "gap-1",
+        )}
+      >
+        {/* TEMA */}
+        <Pressable
+          onPress={toggleDarkMode}
+          accessibilityRole="button"
+          accessibilityLabel={
+            isDarkMode
+              ? "Cambiar a modo claro"
+              : "Cambiar a modo oscuro"
+          }
+          className={cn(
+            "min-h-10 flex-row items-center justify-center rounded-xl border border-border bg-surface active:bg-surface-secondary",
+            esEscritorio ? "px-3" : "min-w-10 px-1",
+          )}
         >
-            {/* ==================================================
-          IZQUIERDA
-      ================================================== */}
+          <View className="h-8 w-8 items-center justify-center rounded-lg bg-primary-soft">
+            <Ionicons
+              name={isDarkMode ? "moon-outline" : "sunny-outline"}
+              size={18}
+              className="text-primary"
+            />
+          </View>
 
-            {esEscritorio ? (
-                <View
-                    style={{
-                        flex: 1,
-                        minWidth: 0,
-                    }}
-                >
-                    <Text
-                        numberOfLines={1}
-                        style={{
-                            fontFamily: "Nunito-Bold",
-                            fontSize: 22,
-                            color: textColor,
-                        }}
-                    >
-                        Hola, {nombreUsuario} (Superadministrador)
-                    </Text>
+          {esEscritorio && (
+            <>
+              <Text className="ml-2 font-nunito-semibold text-xs text-text-secondary">
+                {isDarkMode ? "Oscuro" : "Claro"}
+              </Text>
 
-                    <Text
-                        style={{
-                            marginTop: 3,
+              <Ionicons
+                name="swap-horizontal-outline"
+                size={14}
+                className="ml-2 text-text-muted"
+              />
+            </>
+          )}
+        </Pressable>
 
-                            fontFamily: "Nunito-Medium",
-                            fontSize: 13,
+        {/* ESTADO SISTEMA */}
+        {esEscritorio && (
+          <View className="min-h-9 flex-row items-center rounded-full bg-secondary-soft px-4">
+            <View className="mr-2 h-2 w-2 rounded-full bg-secondary" />
 
-                            color: textSecondaryColor,
-                        }}
-                    >
-                        Bienvenido a Kiri
-                    </Text>
-                </View>
+            <Text className="font-nunito-semibold text-xs text-secondary">
+              Sistema Operativo 100%
+            </Text>
+          </View>
+        )}
+
+        {/* NOTIFICACIONES */}
+        {!esTelefono && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Ver notificaciones"
+            className="relative h-10 w-10 items-center justify-center rounded-xl active:bg-surface-secondary"
+          >
+            <Ionicons
+              name="notifications-outline"
+              size={20}
+              className="text-text-secondary"
+            />
+
+            <View className="absolute right-2 top-2 h-2 w-2 rounded-full border border-surface bg-danger" />
+          </Pressable>
+        )}
+
+        {/* PERFIL */}
+        <View className="relative z-50">
+          <Pressable
+            onPress={() =>
+              setMenuPerfilAbierto((actual) => !actual)
+            }
+            className={cn(
+              "flex-row items-center justify-center rounded-xl active:bg-surface-secondary",
+              menuPerfilAbierto && "bg-primary-soft",
+              esEscritorio
+                ? "min-h-14 min-w-56 px-2"
+                : "min-h-11 min-w-11 px-1",
+            )}
+          >
+            {fotoPerfil ? (
+              <Image
+                source={{ uri: fotoPerfil }}
+                style={{
+                  width: avatarSize,
+                  height: avatarSize,
+                  borderRadius: avatarSize / 2,
+                }}
+                className="border border-border"
+              />
             ) : (
-                <View
-                    style={{
-                        flex: 1,
-                        minWidth: 0,
-
-                        flexDirection: "row",
-                        alignItems: "center",
-                    }}
-                >
-                    <Logo ancho={esTelefono ? 68 : 78} alto={esTelefono ? 30 : 34} />
-
-                    <View
-                        style={{
-                            flex: 1,
-                            minWidth: 0,
-
-                            marginLeft: 9,
-                        }}
-                    >
-                        <Text
-                            numberOfLines={1}
-                            style={{
-                                fontFamily: "Nunito-Bold",
-
-                                fontSize: esTelefono ? 14 : 16,
-
-                                color: textColor,
-                            }}
-                        >
-                            Hola, {nombreUsuario}
-                        </Text>
-
-                        <Text
-                            numberOfLines={1}
-                            style={{
-                                marginTop: 1,
-
-                                fontFamily: "Nunito-Medium",
-                                fontSize: 10,
-
-                                color: textMutedColor,
-                            }}
-                        >
-                            Superadministrador
-                        </Text>
-                    </View>
-                </View>
+              <View
+                style={{
+                  width: avatarSize,
+                  height: avatarSize,
+                  borderRadius: avatarSize / 2,
+                }}
+                className="items-center justify-center border border-border bg-surface-secondary"
+              >
+                <Ionicons
+                  name="person-outline"
+                  size={18}
+                  className="text-primary"
+                />
+              </View>
             )}
 
-            {/* ==================================================
-          ACCIONES
-      ================================================== */}
-
-            <View
-                style={{
-                    marginLeft: 8,
-
-                    flexDirection: "row",
-                    alignItems: "center",
-
-                    gap: esEscritorio ? 12 : 5,
-                }}
-            >
-                {/* TEMA */}
-
-                <Pressable
-                    onPress={toggleDarkMode}
-                    accessibilityRole="button"
-                    accessibilityLabel={
-                        isDarkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"
-                    }
-                    style={({ pressed }) => ({
-                        minWidth: esEscritorio ? undefined : 40,
-
-                        minHeight: 40,
-
-                        paddingHorizontal: esEscritorio ? 12 : 3,
-
-                        borderRadius: 12,
-
-                        borderWidth: 1,
-                        borderColor,
-
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "center",
-
-                        backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
-                    })}
-                >
-                    <View
-                        style={{
-                            width: esEscritorio ? 28 : 32,
-
-                            height: esEscritorio ? 28 : 32,
-
-                            borderRadius: 9,
-
-                            alignItems: "center",
-                            justifyContent: "center",
-
-                            backgroundColor: primarySoftColor,
-                        }}
-                    >
-                        <Ionicons
-                            name={isDarkMode ? "moon-outline" : "sunny-outline"}
-                            size={18}
-                            color={primaryColor}
-                        />
-                    </View>
-
-                    {esEscritorio && (
-                        <>
-                            <Text
-                                style={{
-                                    marginLeft: 8,
-
-                                    fontFamily: "Nunito-SemiBold",
-                                    fontSize: 12,
-
-                                    color: textSecondaryColor,
-                                }}
-                            >
-                                {isDarkMode ? "Oscuro" : "Claro"}
-                            </Text>
-
-                            <Ionicons
-                                name="swap-horizontal-outline"
-                                size={14}
-                                color={textMutedColor}
-                                style={{
-                                    marginLeft: 7,
-                                }}
-                            />
-                        </>
-                    )}
-                </Pressable>
-
-                {/* ESTADO SISTEMA - SOLO ESCRITORIO */}
-
-                {esEscritorio && (
-                    <View
-                        style={{
-                            minHeight: 34,
-
-                            paddingHorizontal: 15,
-
-                            borderRadius: 999,
-
-                            flexDirection: "row",
-                            alignItems: "center",
-
-                            backgroundColor: secondarySoftColor,
-                        }}
-                    >
-                        <View
-                            style={{
-                                width: 7,
-                                height: 7,
-
-                                borderRadius: 4,
-
-                                marginRight: 8,
-
-                                backgroundColor: secondaryColor,
-                            }}
-                        />
-
-                        <Text
-                            style={{
-                                fontFamily: "Nunito-SemiBold",
-                                fontSize: 12,
-                                color: secondaryColor,
-                            }}
-                        >
-                            Sistema Operativo 100%
-                        </Text>
-                    </View>
-                )}
-
-                {/* NOTIFICACIONES - TABLET / ESCRITORIO */}
-
-                {!esTelefono && (
-                    <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel="Ver notificaciones"
-                        style={({ pressed }) => ({
-                            width: 40,
-                            height: 40,
-
-                            borderRadius: 12,
-
-                            alignItems: "center",
-                            justifyContent: "center",
-
-                            backgroundColor: pressed ? surfaceSecondaryColor : "transparent",
-                        })}
-                    >
-                        <Ionicons
-                            name="notifications-outline"
-                            size={20}
-                            color={textSecondaryColor}
-                        />
-
-                        <View
-                            style={{
-                                position: "absolute",
-
-                                top: 7,
-                                right: 8,
-
-                                width: 7,
-                                height: 7,
-
-                                borderRadius: 4,
-
-                                backgroundColor: "#DC2626",
-
-                                borderWidth: 1.5,
-                                borderColor: surfaceColor,
-                            }}
-                        />
-                    </Pressable>
-                )}
-
-                {/* ==================================================
-            PERFIL
-        ================================================== */}
-
-                <View
-                    style={{
-                        position: "relative",
-
-                        zIndex: 6000,
-
-                        ...(Platform.OS === "android"
-                            ? {
-                                elevation: 30,
-                            }
-                            : {}),
-                    }}
-                >
-                    <Pressable
-                        onPress={() => setMenuPerfilAbierto((actual) => !actual)}
-                        style={({ pressed }) => ({
-                            minWidth: esEscritorio ? 220 : 42,
-
-                            minHeight: esEscritorio ? 56 : 42,
-
-                            paddingHorizontal: esEscritorio ? 10 : 4,
-
-                            borderRadius: 13,
-
-                            flexDirection: "row",
-                            alignItems: "center",
-                            justifyContent: "center",
-
-                            backgroundColor: menuPerfilAbierto
-                                ? primarySoftColor
-                                : pressed
-                                    ? surfaceSecondaryColor
-                                    : "transparent",
-                        })}
-                    >
-                        {fotoPerfil ? (
-                            <Image
-                                source={{
-                                    uri: fotoPerfil,
-                                }}
-                                style={{
-                                    width: tamañoAvatar,
-                                    height: tamañoAvatar,
-
-                                    borderRadius: tamañoAvatar / 2,
-
-                                    borderWidth: 1,
-                                    borderColor,
-                                }}
-                            />
-                        ) : (
-                            <View
-                                style={{
-                                    width: tamañoAvatar,
-                                    height: tamañoAvatar,
-
-                                    borderRadius: tamañoAvatar / 2,
-
-                                    alignItems: "center",
-                                    justifyContent: "center",
-
-                                    backgroundColor: surfaceSecondaryColor,
-
-                                    borderWidth: 1,
-                                    borderColor,
-                                }}
-                            >
-                                <Ionicons
-                                    name="person-outline"
-                                    size={18}
-                                    color={primaryColor}
-                                />
-                            </View>
-                        )}
-
-                        {esEscritorio && (
-                            <>
-                                <View
-                                    style={{
-                                        flex: 1,
-                                        minWidth: 0,
-
-                                        marginLeft: 10,
-                                    }}
-                                >
-                                    <Text
-                                        numberOfLines={1}
-                                        style={{
-                                            fontFamily: "Nunito-Bold",
-                                            fontSize: 13,
-                                            color: textColor,
-                                        }}
-                                    >
-                                        {nombreCompleto}
-                                    </Text>
-
-                                    <Text
-                                        numberOfLines={1}
-                                        style={{
-                                            marginTop: 1,
-
-                                            fontFamily: "Nunito-Medium",
-                                            fontSize: 11,
-
-                                            color: textMutedColor,
-                                        }}
-                                    >
-                                        Superadministrador
-                                    </Text>
-                                </View>
-
-                                <Ionicons
-                                    name={menuPerfilAbierto ? "chevron-up" : "chevron-down"}
-                                    size={16}
-                                    color={textMutedColor}
-                                />
-                            </>
-                        )}
-                    </Pressable>
-
-                    {/* DROPDOWN */}
-
-                    {menuPerfilAbierto && (
-                        <View
-                            style={{
-                                position: "absolute",
-
-                                top: esEscritorio ? 62 : 48,
-
-                                right: 0,
-
-                                width: esTelefono ? 175 : 210,
-
-                                padding: 6,
-
-                                borderRadius: 13,
-
-                                borderWidth: 1,
-                                borderColor,
-
-                                backgroundColor: surfaceColor,
-
-                                zIndex: 9999,
-
-                                ...(Platform.OS === "web"
-                                    ? ({
-                                        boxShadow: "0px 8px 24px rgba(0,0,0,0.14)",
-                                    } as any)
-                                    : {}),
-
-                                ...(Platform.OS === "ios"
-                                    ? {
-                                        shadowColor: "#000000",
-
-                                        shadowOffset: {
-                                            width: 0,
-                                            height: 8,
-                                        },
-
-                                        shadowOpacity: 0.14,
-                                        shadowRadius: 12,
-                                    }
-                                    : {}),
-
-                                ...(Platform.OS === "android"
-                                    ? {
-                                        elevation: 25,
-                                    }
-                                    : {}),
-                            }}
-                        >
-                            <Pressable
-                                onPress={() => {
-                                    setMenuPerfilAbierto(false);
-
-                                    router.push("/superadmin/perfil" as never);
-                                }}
-                                style={({ pressed }) => ({
-                                    minHeight: 40,
-
-                                    paddingHorizontal: 10,
-
-                                    borderRadius: 9,
-
-                                    flexDirection: "row",
-                                    alignItems: "center",
-
-                                    backgroundColor: pressed
-                                        ? surfaceSecondaryColor
-                                        : "transparent",
-                                })}
-                            >
-                                <Ionicons
-                                    name="person-outline"
-                                    size={18}
-                                    color={textSecondaryColor}
-                                />
-
-                                <Text
-                                    style={{
-                                        marginLeft: 9,
-
-                                        fontFamily: "Nunito-Medium",
-                                        fontSize: 12,
-
-                                        color: textSecondaryColor,
-                                    }}
-                                >
-                                    Mi perfil
-                                </Text>
-                            </Pressable>
-
-                            <Pressable
-                                onPress={() => {
-                                    setMenuPerfilAbierto(false);
-
-                                    router.push("/superadmin/configuracion" as never);
-                                }}
-                                style={({ pressed }) => ({
-                                    minHeight: 40,
-
-                                    paddingHorizontal: 10,
-
-                                    borderRadius: 9,
-
-                                    flexDirection: "row",
-                                    alignItems: "center",
-
-                                    backgroundColor: pressed
-                                        ? surfaceSecondaryColor
-                                        : "transparent",
-                                })}
-                            >
-                                <Ionicons
-                                    name="settings-outline"
-                                    size={18}
-                                    color={textSecondaryColor}
-                                />
-
-                                <Text
-                                    style={{
-                                        marginLeft: 9,
-
-                                        fontFamily: "Nunito-Medium",
-                                        fontSize: 12,
-
-                                        color: textSecondaryColor,
-                                    }}
-                                >
-                                    Preferencias
-                                </Text>
-                            </Pressable>
-                        </View>
-                    )}
+            {esEscritorio && (
+              <>
+                <View className="ml-3 min-w-0 flex-1">
+                  <Text
+                    numberOfLines={1}
+                    className="font-nunito-bold text-sm text-text"
+                  >
+                    {nombreCompleto}
+                  </Text>
+
+                  <Text
+                    numberOfLines={1}
+                    className="mt-0.5 font-nunito-medium text-xs text-text-muted"
+                  >
+                    Superadministrador
+                  </Text>
                 </View>
+
+                <Ionicons
+                  name={
+                    menuPerfilAbierto
+                      ? "chevron-up"
+                      : "chevron-down"
+                  }
+                  size={16}
+                  className="text-text-muted"
+                />
+              </>
+            )}
+          </Pressable>
+
+          {/* DROPDOWN */}
+          {menuPerfilAbierto && (
+            <View
+              className="absolute right-0 rounded-xl border border-border bg-surface p-1.5"
+              style={{
+                top: esEscritorio ? 62 : 48,
+                width: esTelefono ? 175 : 210,
+              }}
+            >
+              <Pressable
+                onPress={abrirConfiguracion}
+                className="min-h-10 flex-row items-center rounded-lg px-3 active:bg-surface-secondary"
+              >
+                <Ionicons
+                  name="person-outline"
+                  size={18}
+                  className="text-text-secondary"
+                />
+
+                <Text className="ml-2 font-nunito-medium text-xs text-text-secondary">
+                  Mi perfil
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={abrirConfiguracion}
+                className="min-h-10 flex-row items-center rounded-lg px-3 active:bg-surface-secondary"
+              >
+                <Ionicons
+                  name="settings-outline"
+                  size={18}
+                  className="text-text-secondary"
+                />
+
+                <Text className="ml-2 font-nunito-medium text-xs text-text-secondary">
+                  Preferencias
+                </Text>
+              </Pressable>
             </View>
+          )}
         </View>
-    );
+      </View>
+    </View>
+  );
 }

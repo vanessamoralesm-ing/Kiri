@@ -178,7 +178,7 @@ function Pestanas({
       {/* ==================================================
           RUTAS SECUNDARIAS
       ================================================== */}
-
+      
       <Tabs.Screen
         name="cuestionarios"
         options={{
@@ -345,10 +345,7 @@ export default function LayoutPestanas() {
         },
       ]}
     >
-      <StatusBar
-        style={themeMode === "dark" ? "light" : "dark"}
-        backgroundColor={backgroundColor}
-      />
+      <StatusBar style={themeMode === "dark" ? "light" : "dark"} />
 
       {/* ==================================================
           HEADER

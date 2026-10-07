@@ -1,9 +1,20 @@
 import { supabase } from "@/lib/supabase";
-import type { SignUpInput, SignUpResult, UsuarioPerfil } from "@/types/auth";
+import type {
+  SignUpInput,
+  SignUpResult,
+  UsuarioPerfil,
+} from "@/types/auth";
+
 import type { Session, User } from "@supabase/supabase-js";
 import * as Linking from "expo-linking";
-import type { ReactNode } from "react";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { Platform } from "react-native";
 
 // ==========================================================
@@ -17,9 +28,11 @@ interface AuthContextType {
   role: string | null;
   isSuperAdmin: boolean;
   loading: boolean;
+
   signUp: (input: SignUpInput) => Promise<SignUpResult>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 // ==========================================================
@@ -33,31 +46,19 @@ const AuthContext = createContext<AuthContextType | null>(null);
 // ==========================================================
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  // ======================================================
-  // AUTENTICACIÓN
-  // ======================================================
-
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UsuarioPerfil | null>(null);
 
-  // ======================================================
-  // CARGA
-  // ======================================================
-
   const [authLoading, setAuthLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(false);
 
-  // ======================================================
+  // ========================================================
   // 1. INICIALIZAR SESIÓN
-  // ======================================================
+  // ========================================================
 
   useEffect(() => {
     let mounted = true;
-
-    // ==================================================
-    // SESIÓN INICIAL
-    // ==================================================
 
     const initializeSession = async () => {
       try {
@@ -66,9 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           error,
         } = await supabase.auth.getSession();
 
-        if (!mounted) {
-          return;
-        }
+        if (!mounted) return;
 
         if (error) {
           console.error("Error obteniendo sesión:", error.message);
@@ -93,40 +92,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    initializeSession();
+    void initializeSession();
 
-    // ==================================================
-    // DEEP LINKS EN MÓVIL
-    // ==================================================
+    // ======================================================
+    // DEEP LINKS MÓVIL
+    // ======================================================
 
     let subscriptionLinking: {
       remove: () => void;
     } | null = null;
 
     if (Platform.OS !== "web") {
-      subscriptionLinking = Linking.addEventListener("url", async () => {
-        try {
-          await supabase.auth.getSession();
-        } catch (error) {
-          console.error("Error procesando deep link:", error);
-        }
-      });
+      subscriptionLinking = Linking.addEventListener(
+        "url",
+        async () => {
+          try {
+            await supabase.auth.getSession();
+          } catch (error) {
+            console.error("Error procesando deep link:", error);
+          }
+        },
+      );
     }
 
-    // ==================================================
+    // ======================================================
     // CAMBIOS DE AUTENTICACIÓN
-    // ==================================================
+    // ======================================================
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, newSession) => {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       setSession(newSession);
       setUser(newSession?.user ?? null);
-
 
       if (!newSession?.user) {
         setProfile(null);
@@ -140,10 +139,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
 
-    // ==================================================
-    // CLEANUP
-    // ==================================================
-
     return () => {
       mounted = false;
       subscription.unsubscribe();
@@ -151,9 +146,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  // ======================================================
+  // ========================================================
   // 2. CARGAR PERFIL
-  // ======================================================
+  // ========================================================
 
   useEffect(() => {
     if (!user?.id) {
@@ -165,37 +160,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     let cancelled = false;
 
     const loadProfile = async () => {
-      /*
-       * El propio efecto del usuario controla
-       * profileLoading.
-       *
-       * Así un TOKEN_REFRESHED no puede dejar
-       * loading bloqueado.
-       */
-
       setProfileLoading(true);
 
       try {
         let data: UsuarioPerfil | null = null;
         let error: Error | null = null;
 
-        // ==========================================
-        // REINTENTOS
-        // ==========================================
-
+        // Reintentos porque el perfil puede crearse unos
+        // instantes después de auth.users.
         for (let intento = 0; intento < 3 && !data; intento++) {
           const resultado = await supabase
             .from("usuario")
-            .select(
-              `
-                *,
-                rol (
-                  id_rol,
-                  nombre,
-                  descripcion
-                )
-              `,
-            )
+            .select(`
+              *,
+              rol (
+                id_rol,
+                nombre,
+                descripcion
+              )
+            `)
             .eq("id_usuario", user.id)
             .maybeSingle();
 
@@ -203,35 +186,54 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           error = resultado.error;
 
           if (!data && intento < 2) {
-            await new Promise((resolve) => setTimeout(resolve, 500));
+            await new Promise((resolve) =>
+              setTimeout(resolve, 500),
+            );
           }
         }
 
-        if (cancelled) {
-          return;
-        }
-
-        // ==========================================
-        // ERROR
-        // ==========================================
+        if (cancelled) return;
 
         if (error || !data) {
           console.error(
             "Error cargando public.usuario:",
             error?.message ?? "Perfil no encontrado.",
           );
+
           setProfile(null);
           return;
         }
 
-        // ==========================================
-        // PERFIL
-        // ==========================================
+        // ==================================================
+        // CUENTA INACTIVA
+        // ==================================================
+
+        if (data.estado === "inactivo") {
+          if (__DEV__) {
+            console.warn(
+              "[AUTH] Sesión cerrada: cuenta inactiva.",
+            );
+          }
+
+          await supabase.auth.signOut();
+
+          if (!cancelled) {
+            setProfile(null);
+            setSession(null);
+            setUser(null);
+          }
+
+          return;
+        }
 
         setProfile(data);
       } catch (error) {
         if (!cancelled) {
-          console.error("Error inesperado cargando perfil:", error);
+          console.error(
+            "Error inesperado cargando perfil:",
+            error,
+          );
+
           setProfile(null);
         }
       } finally {
@@ -241,18 +243,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    loadProfile();
+    void loadProfile();
 
     return () => {
       cancelled = true;
     };
   }, [user?.id]);
 
-  // ======================================================
+  // ========================================================
   // 3. REGISTRO
-  // ======================================================
+  // ========================================================
 
-  const signUp = async (input: SignUpInput): Promise<SignUpResult> => {
+  const signUp = async (
+    input: SignUpInput,
+  ): Promise<SignUpResult> => {
     if (!input.nombres.trim()) {
       throw new Error("Los nombres son obligatorios.");
     }
@@ -270,7 +274,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (!input.fechaNacimiento.trim()) {
-      throw new Error("La fecha de nacimiento es obligatoria.");
+      throw new Error(
+        "La fecha de nacimiento es obligatoria.",
+      );
     }
 
     if (!input.genero) {
@@ -282,21 +288,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (input.password.length < 6) {
-      throw new Error("La contraseña debe tener al menos 6 caracteres.");
+      throw new Error(
+        "La contraseña debe tener al menos 6 caracteres.",
+      );
     }
-
-    // ==================================================
-    // URL DE REDIRECCIÓN
-    // ==================================================
 
     const redirectUrl =
       Platform.OS === "web" && typeof window !== "undefined"
         ? `${window.location.origin}/login`
         : Linking.createURL("/(auth)/login");
-
-    // ==================================================
-    // CREAR USUARIO
-    // ==================================================
 
     const { data, error } = await supabase.auth.signUp({
       email: input.email.trim().toLowerCase(),
@@ -306,7 +306,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         data: {
           nombres: input.nombres.trim(),
           apellidos: input.apellidos.trim(),
-          nombre_preferido: input.nombrePreferido?.trim() || null,
+          nombre_preferido:
+            input.nombrePreferido?.trim() || null,
           telefono: input.telefono.trim(),
           fecha_nacimiento: input.fechaNacimiento.trim(),
           genero: input.genero,
@@ -315,9 +316,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       },
     });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
     if (!data.user) {
       throw new Error("No se pudo crear la cuenta.");
@@ -328,11 +327,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   };
 
-  // ======================================================
+  // ========================================================
   // 4. LOGIN
-  // ======================================================
+  // ========================================================
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (
+    email: string,
+    password: string,
+  ) => {
     if (!email.trim()) {
       throw new Error("El correo es obligatorio.");
     }
@@ -341,46 +343,95 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw new Error("La contraseña es obligatoria.");
     }
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
-      password,
-    });
+    const { data, error } =
+      await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
 
-    if (error) {
-      throw error;
+    if (error) throw error;
+
+    if (!data.user) {
+      throw new Error("No se pudo iniciar sesión.");
+    }
+
+    // ======================================================
+    // VERIFICAR ESTADO DE LA CUENTA
+    // ======================================================
+
+    const {
+      data: perfil,
+      error: perfilError,
+    } = await supabase
+      .from("usuario")
+      .select("estado")
+      .eq("id_usuario", data.user.id)
+      .maybeSingle();
+
+    if (perfilError) {
+      await supabase.auth.signOut();
+
+      throw new Error(
+        "No fue posible verificar el estado de la cuenta.",
+      );
+    }
+
+    if (!perfil) {
+      await supabase.auth.signOut();
+
+      throw new Error(
+        "No se encontró el perfil asociado a esta cuenta.",
+      );
+    }
+
+    if (perfil.estado === "inactivo") {
+      await supabase.auth.signOut();
+
+      throw new Error(
+        "Tu cuenta se encuentra inactiva. Contacta al administrador.",
+      );
     }
   };
 
-  // ======================================================
+  // ========================================================
   // 5. LOGOUT
-  // ======================================================
+  // ========================================================
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
     setProfile(null);
+    setSession(null);
+    setUser(null);
   };
 
-  // ======================================================
-  // LOADING GENERAL
-  // ======================================================
+  const refreshProfile = useCallback(async () => {
+    if (!user?.id) return;
+    const { data, error } = await supabase
+      .from("usuario")
+      .select("*, rol (id_rol, nombre, descripcion)")
+      .eq("id_usuario", user.id)
+      .single();
+    if (error) throw error;
+    const { data: actual } = await supabase.auth.getSession();
+    if (actual.session?.user.id !== user.id) return;
+    if (data.estado !== "activo") {
+      await supabase.auth.signOut();
+      return;
+    }
+    setProfile(data as UsuarioPerfil);
+  }, [user]);
+
+  // ========================================================
+  // ESTADO GENERAL
+  // ========================================================
 
   const loading = authLoading || profileLoading;
 
-  // ======================================================
-  // ROL
-  // ======================================================
-
   const role = profile?.rol?.nombre ?? null;
   const isSuperAdmin = role === "superadministrador";
-
-  // ======================================================
-  // CONTEXT
-  // ======================================================
 
   return (
     <AuthContext.Provider
@@ -394,6 +445,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         signUp,
         signIn,
         signOut,
+        refreshProfile,
       }}
     >
       {children}
@@ -409,7 +461,9 @@ export const useAuth = () => {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error("useAuth debe utilizarse dentro de AuthProvider");
+    throw new Error(
+      "useAuth debe utilizarse dentro de AuthProvider",
+    );
   }
 
   return context;
