@@ -6,8 +6,6 @@ import {
   StyleProp,
 } from "react-native";
 
-import { useThemeMode } from "@/contexts/ThemeModeContext";
-
 // ==========================================================
 // PROPS
 // ==========================================================

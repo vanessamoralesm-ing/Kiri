@@ -6,6 +6,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { useFonts } from "expo-font";
 import { Stack, usePathname, useRouter } from "expo-router";
+import { ThemeProvider } from "expo-router/react-navigation";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
