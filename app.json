@@ -7,7 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "appkiri",
     "userInterfaceStyle": "automatic",
-
     "ios": {
       "supportsTablet": true
     },
@@ -36,7 +35,8 @@
       ],
       "expo-font",
       "expo-secure-store",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true,

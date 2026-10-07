@@ -27,9 +27,10 @@ export default function LectorRecurso() {
   const insets = useSafeAreaInsets();
 
   // Datos recibidos desde la ruta.
-  const { id, categoriaId } = useLocalSearchParams<{
+  const { id, categoriaId, origen } = useLocalSearchParams<{
     id?: string;
     categoriaId?: string;
+    origen?: string;
   }>();
 
   // Responsive del proyecto.
@@ -81,7 +82,7 @@ export default function LectorRecurso() {
     };
   }, [id]);
 
-  // Regresa al detalle del mismo libro.
+  // Regresa al detalle del mismo libro conservando su origen.
   function volverAlDetalle() {
     if (!id) {
       router.replace("/(tabs)/educacion" as any);
@@ -90,7 +91,7 @@ export default function LectorRecurso() {
 
     router.replace({
       pathname: "/(tabs)/educacion/recursos/[id]",
-      params: { id, categoriaId },
+      params: { id, categoriaId, origen },
     } as any);
   }
 
@@ -112,7 +113,7 @@ export default function LectorRecurso() {
       ? `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(urlPdf)}`
       : urlPdf;
 
-  // Oculta controles innecesarios del visor móvil.
+  // Personaliza únicamente la presentación del visor externo en móvil.
   const ocultarControlesVisor = `
     (function() {
       function limpiarVisor() {
@@ -153,7 +154,7 @@ export default function LectorRecurso() {
           document.body.style.margin = '0';
           document.body.style.padding = '0';
         } catch (error) {
-          // El PDF puede seguir funcionando.
+          // El PDF puede seguir funcionando aunque el visor cambie.
         }
       }
 
@@ -178,55 +179,55 @@ export default function LectorRecurso() {
   }
 
   // ========================================================
-// BOTÓN MÓVIL Y TABLET
-// ========================================================
+  // BOTÓN MÓVIL Y TABLET
+  // ========================================================
 
-// Botón flotante abajo a la derecha.
-function renderizarControlMovil() {
-  if (Platform.OS === "web" || errorDocumento) return null;
+  // Botón flotante abajo a la derecha.
+  function renderizarControlMovil() {
+    if (Platform.OS === "web" || errorDocumento) return null;
 
-  return (
-    <View
-      style={{
-        position: "absolute",
-        right: esTablet ? 20 : 14,
-        bottom: Math.max(insets.bottom + 8, 12),
-        width: esTablet ? 56 : 54,
-        height: esTablet ? 56 : 54,
-        borderRadius: 17,
-        backgroundColor: "#FFFFFF",
-        borderWidth: 1,
-        borderColor: "#E2E8F0",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 9999,
-        elevation: 30,
-        shadowColor: "#000000",
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.2,
-        shadowRadius: 7,
-      }}
-    >
-      <Pressable
-        onPress={cambiarPantallaCompleta}
-        style={({ pressed }) => ({
-          width: "100%",
-          height: "100%",
+    return (
+      <View
+        style={{
+          position: "absolute",
+          right: esTablet ? 20 : 14,
+          bottom: Math.max(insets.bottom + 8, 12),
+          width: esTablet ? 56 : 54,
+          height: esTablet ? 56 : 54,
           borderRadius: 17,
+          backgroundColor: "#FFFFFF",
+          borderWidth: 1,
+          borderColor: "#E2E8F0",
           alignItems: "center",
           justifyContent: "center",
-          opacity: pressed ? 0.7 : 1,
-        })}
+          zIndex: 9999,
+          elevation: 30,
+          shadowColor: "#000000",
+          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: 0.2,
+          shadowRadius: 7,
+        }}
       >
-        <Ionicons
-          name={pantallaCompleta ? "contract-outline" : "expand-outline"}
-          size={28}
-          color="#7C5CFC"
-        />
-      </Pressable>
-    </View>
-  );
-}
+        <Pressable
+          onPress={cambiarPantallaCompleta}
+          style={({ pressed }) => ({
+            width: "100%",
+            height: "100%",
+            borderRadius: 17,
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: pressed ? 0.7 : 1,
+          })}
+        >
+          <Ionicons
+            name={pantallaCompleta ? "contract-outline" : "expand-outline"}
+            size={28}
+            color="#7C5CFC"
+          />
+        </Pressable>
+      </View>
+    );
+  }
 
   // ========================================================
   // VISOR DEL PDF
@@ -566,10 +567,7 @@ function renderizarControlMovil() {
             <Text
               className="font-nunito-bold"
               numberOfLines={1}
-              style={{
-                fontSize: esEscritorio ? 18 : 16,
-                color: textColor,
-              }}
+              style={{ fontSize: esEscritorio ? 18 : 16, color: textColor }}
             >
               {recurso.titulo}
             </Text>

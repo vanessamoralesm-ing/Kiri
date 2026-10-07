@@ -784,7 +784,6 @@ export default function EducacionScreen() {
 
             </View>
 
-
             {/* TEXTO */}
 
             <View
