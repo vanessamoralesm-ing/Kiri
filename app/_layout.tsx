@@ -2,7 +2,7 @@ import "../global.css";
 import "../lib/nativewind-interop";
 import "react-native-reanimated";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { useFonts } from "expo-font";
 import { Stack, usePathname, useRouter } from "expo-router";
@@ -28,14 +28,23 @@ function RootNavigation() {
   const { loading, session, profile } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+
+  const [splashListo, setSplashListo] = useState(false);
   const verificacionInicialRef = useRef(false);
+
+  const inicioListo = splashListo && !loading;
+
+  useEffect(() => {
+    const timer = setTimeout(() => setSplashListo(true), 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     verificacionInicialRef.current = false;
   }, [session?.user.id]);
 
   useEffect(() => {
-    if (loading || verificacionInicialRef.current) return;
+    if (!inicioListo || verificacionInicialRef.current) return;
 
     if (!session) {
       verificacionInicialRef.current = true;
@@ -107,10 +116,10 @@ function RootNavigation() {
     return () => {
       cancelado = true;
     };
-  }, [loading, session, profile, pathname, router]);
+  }, [inicioListo, session, profile, pathname, router]);
 
   useEffect(() => {
-    if (loading || !session || !profile) return;
+    if (!inicioListo || !session || !profile) return;
 
     const estaEnSuperAdmin =
       pathname === "/superadmin" ||
@@ -122,7 +131,7 @@ function RootNavigation() {
     ) {
       router.replace("/(tabs)/home");
     }
-  }, [loading, session, profile, pathname, router]);
+  }, [inicioListo, session, profile, pathname, router]);
 
   return (
     <>
@@ -135,7 +144,7 @@ function RootNavigation() {
         <Stack.Screen name="(superadmin)/superadmin" />
       </Stack>
 
-      {loading && <AnimatedLogo />}
+      {!inicioListo && <AnimatedLogo />}
     </>
   );
 }
