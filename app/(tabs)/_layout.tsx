@@ -345,10 +345,7 @@ export default function LayoutPestanas() {
         },
       ]}
     >
-      <StatusBar
-        style={themeMode === "dark" ? "light" : "dark"}
-        backgroundColor={backgroundColor}
-      />
+      <StatusBar style={themeMode === "dark" ? "light" : "dark"} />
 
       {/* ==================================================
           HEADER

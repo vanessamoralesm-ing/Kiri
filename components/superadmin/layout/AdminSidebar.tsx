@@ -1,427 +1,154 @@
 import { Ionicons } from "@expo/vector-icons";
 import { usePathname, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
-
-import {
-    ActivityIndicator,
-    Pressable,
-    Text,
-    View,
-} from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 import Logo from "@/components/ui/Logo_izq";
-import { useThemeColor } from "@/hooks/use-theme-color";
+import { Colors } from "@/constants/theme";
+import { useThemeMode } from "@/contexts/ThemeModeContext";
 import { useAuth } from "@/services/authProvider";
-
-// ==========================================================
-// TIPOS
-// ==========================================================
+import { cn } from "@/utils/cn";
 
 interface MenuItem {
-    label: string;
-    route: string;
-    icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  route: string;
+  icon: keyof typeof Ionicons.glyphMap;
 }
 
-// ==========================================================
-// MENÚ
-// ==========================================================
-
 const MENU_ITEMS: MenuItem[] = [
-    {
-        label: "Dashboard",
-        route: "/superadmin",
-        icon: "grid-outline",
-    },
-    {
-        label: "Solicitudes",
-        route: "/superadmin/solicitudes",
-        icon: "mail-outline",
-    },
-    {
-        label: "Instituciones",
-        route: "/superadmin/instituciones",
-        icon: "business-outline",
-    },
-    {
-        label: "Catálogo oficial",
-        route: "/superadmin/catalogo-oficial",
-        icon: "library-outline",
-    },
-    {
-        label: "Gestión de usuarios",
-        route: "/superadmin/usuarios",
-        icon: "people-outline",
-    },
-    {
-        label: "Gestión de contenido",
-        route: "/superadmin/contenido",
-        icon: "documents-outline",
-    },
-    {
-        label: "Cuestionarios",
-        route: "/superadmin/cuestionarios",
-        icon: "clipboard-outline",
-    },
-    {
-        label: "Reportes globales",
-        route: "/superadmin/reportes",
-        icon: "analytics-outline",
-    },
-    {
-        label: "Configuración",
-        route: "/superadmin/configuracion",
-        icon: "settings-outline",
-    },
+  { label: "Dashboard", route: "/superadmin", icon: "grid-outline" },
+  { label: "Solicitudes", route: "/superadmin/solicitudes", icon: "mail-outline" },
+  { label: "Instituciones", route: "/superadmin/instituciones", icon: "business-outline" },
+  { label: "Catálogo oficial", route: "/superadmin/catalogo-oficial", icon: "library-outline" },
+  { label: "Gestión de usuarios", route: "/superadmin/usuarios", icon: "people-outline" },
+  { label: "Gestión de contenido", route: "/superadmin/contenido", icon: "documents-outline" },
+  { label: "Cuestionarios", route: "/superadmin/cuestionarios", icon: "clipboard-outline" },
+  { label: "Reportes globales", route: "/superadmin/reportes", icon: "analytics-outline" },
+  { label: "Configuración", route: "/superadmin/configuracion", icon: "settings-outline" },
 ];
 
-// ==========================================================
-// COMPONENTE
-// ==========================================================
-
 export default function AdminSidebar() {
-    const router = useRouter();
-    const pathname = usePathname();
+  const router = useRouter();
+  const pathname = usePathname();
+  const { signOut } = useAuth();
+  const { isDarkMode } = useThemeMode();
 
-    const { signOut } = useAuth();
+  const [cerrandoSesion, setCerrandoSesion] = useState(false);
 
-    const [cerrandoSesion, setCerrandoSesion] =
-        useState(false);
+  const colores = isDarkMode ? Colors.dark : Colors.light;
 
-    // ======================================================
-    // TEMA
-    // ======================================================
+  const rutaActual = useMemo(
+    () => (pathname === "/superadmin/" ? "/superadmin" : pathname),
+    [pathname],
+  );
 
-    const surfaceColor =
-        useThemeColor({}, "surface");
+  const estaActiva = (route: string) =>
+    route === "/superadmin"
+      ? rutaActual === route
+      : rutaActual === route || rutaActual.startsWith(`${route}/`);
 
-    const surfaceSecondaryColor =
-        useThemeColor({}, "surfaceSecondary");
+  const navegar = (route: string) => {
+    if (!estaActiva(route)) router.push(route as never);
+  };
 
-    const borderColor =
-        useThemeColor({}, "border");
+  const cerrarSesion = async () => {
+    if (cerrandoSesion) return;
 
-    const textSecondaryColor =
-        useThemeColor({}, "textSecondary");
-
-    const textMutedColor =
-        useThemeColor({}, "textMuted");
-
-    const primaryColor =
-        useThemeColor({}, "primary");
-
-    const primarySoftColor =
-        useThemeColor({}, "primarySoft");
-
-    const textOnPrimaryColor =
-        useThemeColor({}, "textOnPrimary");
-
-    const dangerColor =
-        useThemeColor({}, "danger");
-
-    // ======================================================
-    // RUTA ACTIVA
-    // ======================================================
-
-    const rutaActual = useMemo(() => {
-        if (
-            pathname === "/superadmin" ||
-            pathname === "/superadmin/"
-        ) {
-            return "/superadmin";
-        }
-
-        return pathname;
-    }, [pathname]);
-
-    function estaActiva(route: string) {
-        if (route === "/superadmin") {
-            return rutaActual === "/superadmin";
-        }
-
-        return (
-            rutaActual === route ||
-            rutaActual.startsWith(`${route}/`)
-        );
+    try {
+      setCerrandoSesion(true);
+      await signOut();
+    } catch (error) {
+      console.error("Error cerrando sesión:", error);
+    } finally {
+      setCerrandoSesion(false);
     }
+  };
 
-    // ======================================================
-    // NAVEGACIÓN
-    // ======================================================
+  return (
+    <View className="h-full w-[270px] min-w-[270px] border-r border-border bg-surface px-3.5 pb-4 pt-5">
+      {/* MARCA */}
+      <View className="mb-5 min-h-16 flex-row items-center px-2.5">
+        <Logo ancho={105} alto={46} />
 
-    function navegar(route: string) {
-        if (rutaActual === route) {
-            return;
-        }
+        <View className="ml-2.5">
+          <View className="self-start rounded-full bg-primary-soft px-2 py-1">
+            <Text className="font-nunito-bold text-[8px] text-primary">
+              ADMIN
+            </Text>
+          </View>
 
-        router.push(route as never);
-    }
-
-    // ======================================================
-    // CERRAR SESIÓN
-    // ======================================================
-
-    async function manejarCerrarSesion() {
-        if (cerrandoSesion) {
-            return;
-        }
-
-        try {
-            setCerrandoSesion(true);
-
-            await signOut();
-        } catch (error) {
-            console.error(
-                "Error cerrando sesión:",
-                error
-            );
-        } finally {
-            setCerrandoSesion(false);
-        }
-    }
-
-    // ======================================================
-    // UI
-    // ======================================================
-
-    return (
-        <View
-            style={{
-                width: 270,
-                minWidth: 270,
-                height: "100%",
-                paddingHorizontal: 14,
-                paddingTop: 20,
-                paddingBottom: 18,
-                borderRightWidth: 1,
-                borderRightColor: borderColor,
-                backgroundColor: surfaceColor,
-            }}
-        >
-            {/* ==================================================
-                MARCA
-            ================================================== */}
-
-            <View
-                style={{
-                    minHeight: 64,
-                    marginBottom: 22,
-                    paddingHorizontal: 10,
-                    flexDirection: "row",
-                    alignItems: "center",
-                }}
-            >
-                <Logo
-                    ancho={105}
-                    alto={46}
-                />
-
-                <View
-                    style={{
-                        marginLeft: 10,
-                    }}
-                >
-                    <View
-                        style={{
-                            paddingHorizontal: 7,
-                            paddingVertical: 3,
-                            borderRadius: 999,
-                            backgroundColor: primarySoftColor,
-                            alignSelf: "flex-start",
-                        }}
-                    >
-                        <Text
-                            style={{
-                                fontFamily: "Nunito-Bold",
-                                fontSize: 8,
-                                color: primaryColor,
-                            }}
-                        >
-                            ADMIN
-                        </Text>
-                    </View>
-
-                    <Text
-                        style={{
-                            marginTop: 4,
-                            fontFamily: "Nunito-Bold",
-                            fontSize: 9,
-                            letterSpacing: 0.8,
-                            color: textMutedColor,
-                        }}
-                    >
-                        SUPERADMIN
-                    </Text>
-                </View>
-            </View>
-
-            {/* ==================================================
-                MENÚ
-            ================================================== */}
-
-            <View
-                style={{
-                    gap: 4,
-                }}
-            >
-                {MENU_ITEMS.map((item) => {
-                    const activa =
-                        estaActiva(item.route);
-
-                    return (
-                        <Pressable
-                            key={item.route}
-                            onPress={() =>
-                                navegar(item.route)
-                            }
-                            style={({ pressed }) => ({
-                                minHeight: 46,
-                                paddingHorizontal: 14,
-                                borderRadius: 12,
-                                flexDirection: "row",
-                                alignItems: "center",
-                                backgroundColor: activa
-                                    ? primaryColor
-                                    : pressed
-                                        ? surfaceSecondaryColor
-                                        : "transparent",
-                            })}
-                        >
-                            <Ionicons
-                                name={item.icon}
-                                size={19}
-                                color={
-                                    activa
-                                        ? textOnPrimaryColor
-                                        : textSecondaryColor
-                                }
-                            />
-
-                            <Text
-                                style={{
-                                    flex: 1,
-                                    marginLeft: 12,
-                                    fontFamily: activa
-                                        ? "Nunito-Bold"
-                                        : "Nunito-Medium",
-                                    fontSize: 14,
-                                    color: activa
-                                        ? textOnPrimaryColor
-                                        : textSecondaryColor,
-                                }}
-                            >
-                                {item.label}
-                            </Text>
-
-                            {activa && (
-                                <Ionicons
-                                    name="chevron-forward"
-                                    size={15}
-                                    color={textOnPrimaryColor}
-                                />
-                            )}
-                        </Pressable>
-                    );
-                })}
-            </View>
-
-            {/* ==================================================
-                ESPACIADOR
-            ================================================== */}
-
-            <View
-                style={{
-                    flex: 1,
-                }}
-            />
-
-            {/* ==================================================
-                AYUDA
-            ================================================== */}
-
-            <Pressable
-                onPress={() => {
-                    console.log(
-                        "Abrir documentación"
-                    );
-                }}
-                style={({ pressed }) => ({
-                    minHeight: 44,
-                    paddingHorizontal: 14,
-                    borderRadius: 12,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    backgroundColor: pressed
-                        ? surfaceSecondaryColor
-                        : "transparent",
-                })}
-            >
-                <Ionicons
-                    name="help-circle-outline"
-                    size={19}
-                    color={textMutedColor}
-                />
-
-                <Text
-                    style={{
-                        marginLeft: 12,
-                        fontFamily: "Nunito-Medium",
-                        fontSize: 13,
-                        color: textSecondaryColor,
-                    }}
-                >
-                    Ayuda y Docs
-                </Text>
-            </Pressable>
-
-            {/* ==================================================
-                CERRAR SESIÓN
-            ================================================== */}
-
-            <Pressable
-                disabled={cerrandoSesion}
-                onPress={manejarCerrarSesion}
-                style={({ pressed }) => ({
-                    minHeight: 46,
-                    marginTop: 4,
-                    paddingHorizontal: 14,
-                    borderRadius: 12,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    opacity: cerrandoSesion
-                        ? 0.6
-                        : 1,
-                    backgroundColor: pressed
-                        ? "rgba(220, 38, 38, 0.08)"
-                        : "transparent",
-                })}
-            >
-                {cerrandoSesion ? (
-                    <ActivityIndicator
-                        size="small"
-                        color={dangerColor}
-                    />
-                ) : (
-                    <Ionicons
-                        name="log-out-outline"
-                        size={19}
-                        color={dangerColor}
-                    />
-                )}
-
-                <Text
-                    style={{
-                        marginLeft: 12,
-                        fontFamily: "Nunito-SemiBold",
-                        fontSize: 13,
-                        color: dangerColor,
-                    }}
-                >
-                    {cerrandoSesion
-                        ? "Cerrando sesión..."
-                        : "Cerrar sesión"}
-                </Text>
-            </Pressable>
+          <Text className="mt-1 font-nunito-bold text-[9px] tracking-wide text-text-muted">
+            SUPERADMIN
+          </Text>
         </View>
-    );
+      </View>
+
+      {/* MENÚ */}
+      <View className="gap-1">
+        {MENU_ITEMS.map((item) => {
+          const activa = estaActiva(item.route);
+
+          return (
+            <Pressable
+              key={item.route}
+              onPress={() => navegar(item.route)}
+              className={cn(
+                "min-h-12 flex-row items-center rounded-xl px-3.5 active:bg-surface-secondary",
+                activa && "bg-primary",
+              )}
+            >
+              <Ionicons
+                name={item.icon}
+                size={19}
+                className={activa ? "text-text-on-primary" : "text-text-secondary"}
+              />
+
+              <Text
+                className={cn(
+                  "ml-3 flex-1 font-nunito-medium text-sm text-text-secondary",
+                  activa && "font-nunito-bold text-text-on-primary",
+                )}
+              >
+                {item.label}
+              </Text>
+
+              {activa && (
+                <Ionicons
+                  name="chevron-forward"
+                  size={15}
+                  className="text-text-on-primary"
+                />
+              )}
+            </Pressable>
+          );
+        })}
+      </View>
+
+      <View className="flex-1" />
+
+      {/* CERRAR SESIÓN */}
+      <Pressable
+        disabled={cerrandoSesion}
+        onPress={cerrarSesion}
+        className={cn(
+          "mt-1 min-h-12 flex-row items-center rounded-xl px-3.5 active:bg-surface-secondary",
+          cerrandoSesion && "opacity-60",
+        )}
+      >
+        {cerrandoSesion ? (
+          <ActivityIndicator size="small" color={colores.danger} />
+        ) : (
+          <Ionicons
+            name="log-out-outline"
+            size={19}
+            className="text-danger"
+          />
+        )}
+
+        <Text className="ml-3 font-nunito-semibold text-sm text-danger">
+          {cerrandoSesion ? "Cerrando sesión..." : "Cerrar sesión"}
+        </Text>
+      </Pressable>
+    </View>
+  );
 }

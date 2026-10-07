@@ -1,213 +1,49 @@
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
+import { StyleProp, TextInput, View, ViewStyle } from "react-native";
 
-import {
-    StyleSheet,
-    TextInput,
-    View,
-    ViewStyle,
-} from "react-native";
+import { Colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { cn } from "@/utils/cn";
 
-import {
-    Ionicons,
-} from "@expo/vector-icons";
-
-import {
-    useThemeColor,
-} from "@/hooks/use-theme-color";
-
-
-// ==========================================================
-// PROPS
-// ==========================================================
-
-interface SearchBarProps {
-    value: string;
-
-    onChangeText:
-    (text: string) => void;
-
-    placeholder?:
-    string;
-
-    style?:
-    ViewStyle;
+interface Props {
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder?: string;
+  className?: string;
+  style?: StyleProp<ViewStyle>;
 }
-
-
-// ==========================================================
-// COMPONENTE
-// ==========================================================
 
 export default function SearchBar({
-    value,
-    onChangeText,
-    placeholder = "Buscar...",
-    style,
-}: SearchBarProps) {
+  value,
+  onChangeText,
+  placeholder = "Buscar...",
+  className,
+  style,
+}: Props) {
+  const esOscuro = useColorScheme() === "dark";
+  const colores = esOscuro ? Colors.dark : Colors.light;
 
-    // ========================================================
-    // COLORES DEL TEMA
-    // ========================================================
+  return (
+    <View
+      style={style}
+      className={cn(
+        "h-14 flex-row items-center rounded-xl border border-input-border bg-input px-3",
+        className,
+      )}
+    >
+      <Ionicons name="search-outline" size={22} className="text-icon" />
 
-    const inputBackgroundColor =
-        useThemeColor(
-            {},
-            "inputBackground"
-        );
-
-    const inputBorderColor =
-        useThemeColor(
-            {},
-            "inputBorder"
-        );
-
-    const textColor =
-        useThemeColor(
-            {},
-            "text"
-        );
-
-    const placeholderColor =
-        useThemeColor(
-            {},
-            "placeholder"
-        );
-
-    const iconColor =
-        useThemeColor(
-            {},
-            "icon"
-        );
-
-
-    // ========================================================
-    // UI
-    // ========================================================
-
-    return (
-        <View
-            style={[
-                styles.contenedor,
-
-                {
-                    backgroundColor:
-                        inputBackgroundColor,
-
-                    borderColor:
-                        inputBorderColor,
-                },
-
-                style,
-            ]}
-        >
-
-            <Ionicons
-                name="search-outline"
-                size={28}
-                color={
-                    iconColor
-                }
-            />
-
-
-            <TextInput
-                style={[
-                    styles.input,
-
-                    {
-                        color:
-                            textColor,
-                    },
-                ]}
-
-                value={
-                    value
-                }
-
-                onChangeText={
-                    onChangeText
-                }
-
-                placeholder={
-                    placeholder
-                }
-
-                placeholderTextColor={
-                    placeholderColor
-                }
-
-                returnKeyType="search"
-
-                clearButtonMode="while-editing"
-
-                selectionColor="#4F8EF7"
-            />
-
-        </View>
-    );
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={colores.placeholder}
+        selectionColor={colores.primary}
+        returnKeyType="search"
+        clearButtonMode="while-editing"
+        className="ml-3 flex-1 font-nunito-medium text-sm text-text"
+      />
+    </View>
+  );
 }
-
-
-// ==========================================================
-// ESTILOS
-// ==========================================================
-
-const styles =
-    StyleSheet.create({
-
-        contenedor: {
-            height:
-                58,
-
-            borderRadius:
-                10,
-
-            flexDirection:
-                "row",
-
-            alignItems:
-                "center",
-
-            paddingHorizontal:
-                12,
-
-            borderWidth:
-                1,
-
-            shadowColor:
-                "#000000",
-
-            shadowOffset: {
-                width:
-                    0,
-
-                height:
-                    3,
-            },
-
-            shadowOpacity:
-                0.12,
-
-            shadowRadius:
-                4,
-
-            elevation:
-                4,
-        },
-
-
-        input: {
-            flex:
-                1,
-
-            marginLeft:
-                10,
-
-            fontSize:
-                14,
-
-            fontFamily:
-                "Nunito-Medium",
-        },
-
-    });

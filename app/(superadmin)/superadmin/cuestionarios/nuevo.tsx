@@ -1,354 +1,116 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
+import { Text, View } from "react-native";
 
-import {
-    ActivityIndicator,
-    Alert,
-    Pressable,
-    ScrollView,
-    Text,
-    useWindowDimensions,
-    View,
-} from "react-native";
-
+import AdminFormScreen from "@/components/admin/AdminFormScreen";
 import EditorInformacionTest from "@/components/superadmin/cuestionarios/EditorInformacionTest";
-
+import { useModal } from "@/contexts/ModalContext";
 import {
-    crearTestAdmin,
-    normalizarCodigoTest,
-    type CrearTestAdmin,
+  crearTestAdmin,
+  normalizarCodigoTest,
 } from "@/services/superadmin/cuestionarioAdmin.service";
+import type { InfoTestAdmin } from "@/types/superadmin/cuestionarios";
 
-import { useThemeColor } from "@/hooks/use-theme-color";
-
-type InformacionTest = Omit<CrearTestAdmin, "estado">;
-
-const VALORES_INICIALES: InformacionTest = {
-    codigo: "",
-    nombre: "",
-    descripcion: null,
-    instrucciones: null,
-    poblacion_objetivo: null,
-    tipo_aplicacion: "autoadministrado",
-    tiene_subescalas: false,
-    version: null,
+const INICIAL: InfoTestAdmin = {
+  codigo: "",
+  nombre: "",
+  descripcion: null,
+  instrucciones: null,
+  poblacion_objetivo: null,
+  tipo_aplicacion: "autoadministrado",
+  tiene_subescalas: false,
+  version: null,
 };
 
-function textoOpcional(valor: string | null) {
-    return valor?.trim() || null;
-}
+const opcional = (v: string | null) => v?.trim() || null;
 
 export default function NuevoCuestionarioScreen() {
-    const router = useRouter();
+  const router = useRouter();
+  const { avisar } = useModal();
+  const [form, setForm] = useState(INICIAL);
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const operando = useRef(false);
 
-    const { width } = useWindowDimensions();
+  const guardar = async () => {
+    if (operando.current) return;
 
-    const esTelefono = width < 768;
+    const codigo = normalizarCodigoTest(form.codigo);
+    const nombre = form.nombre.trim();
+    setError(null);
 
-    const [formulario, setFormulario] =
-        useState<InformacionTest>(VALORES_INICIALES);
-
-    const [guardando, setGuardando] = useState(false);
-
-    const [errorFormulario, setErrorFormulario] = useState<string | null>(null);
-
-    const backgroundColor = useThemeColor({}, "background");
-
-    const surfaceColor = useThemeColor({}, "surface");
-    const textColor = useThemeColor({}, "text");
-    const secondaryColor = useThemeColor({}, "textSecondary");
-    const primaryColor = useThemeColor({}, "primary");
-    const borderColor = useThemeColor({}, "border");
-    const dangerColor = useThemeColor({}, "danger");
-    const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
-
-    async function guardarTest() {
-        if (guardando) return;
-
-        setErrorFormulario(null);
-
-        const codigo = normalizarCodigoTest(formulario.codigo);
-
-        const nombre = formulario.nombre.trim();
-
-        if (!codigo) {
-            setErrorFormulario("Debes ingresar el código del cuestionario.");
-            return;
-        }
-
-        if (!nombre) {
-            setErrorFormulario("Debes ingresar el nombre del cuestionario.");
-            return;
-        }
-
-        try {
-            setGuardando(true);
-
-            const nuevoTest = await crearTestAdmin({
-                codigo,
-                nombre,
-                descripcion: textoOpcional(formulario.descripcion),
-                instrucciones: textoOpcional(formulario.instrucciones),
-                poblacion_objetivo: textoOpcional(formulario.poblacion_objetivo),
-                tipo_aplicacion:
-                    formulario.tipo_aplicacion || "autoadministrado",
-                tiene_subescalas: formulario.tiene_subescalas,
-                version: textoOpcional(formulario.version),
-                estado: false,
-            });
-
-            router.replace(`/superadmin/cuestionarios/${nuevoTest.id_test}` as never);
-        } catch (error) {
-            const mensaje =
-                error instanceof Error
-                    ? error.message
-                    : "No se pudo registrar el cuestionario.";
-
-            setErrorFormulario(mensaje);
-
-            Alert.alert("Error al registrar", mensaje);
-        } finally {
-            setGuardando(false);
-        }
+    if (!codigo || !nombre) {
+      setError(
+        !codigo
+          ? "Debes ingresar el código del cuestionario."
+          : "Debes ingresar el nombre del cuestionario.",
+      );
+      return;
     }
 
-    return (
-        <ScrollView
-            style={{
-                flex: 1,
-                backgroundColor,
-            }}
-            contentContainerStyle={{
-                width: "100%",
-                maxWidth: 1050,
-                alignSelf: "center",
-                paddingHorizontal: esTelefono ? 16 : 32,
-                paddingTop: esTelefono ? 24 : 36,
-                paddingBottom: 120,
-                gap: 24,
-            }}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-        >
-            {/* ENCABEZADO */}
+    operando.current = true;
 
-            <View style={{ gap: 18 }}>
-                <Pressable
-                    onPress={() => router.back()}
-                    disabled={guardando}
-                    style={({ pressed }) => ({
-                        alignSelf: "flex-start",
-                        opacity: pressed ? 0.7 : 1,
-                    })}
-                >
-                    <View
-                        style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            gap: 9,
-                        }}
-                    >
-                        <Ionicons name="arrow-back" size={20} color={primaryColor} />
+    try {
+      setGuardando(true);
+      const test = await crearTestAdmin({
+        ...form,
+        codigo,
+        nombre,
+        descripcion: opcional(form.descripcion),
+        instrucciones: opcional(form.instrucciones),
+        poblacion_objetivo: opcional(form.poblacion_objetivo),
+        tipo_aplicacion: form.tipo_aplicacion || "autoadministrado",
+        version: opcional(form.version),
+        estado: false,
+      });
 
-                        <Text
-                            style={{
-                                fontFamily: "Nunito-SemiBold",
-                                fontSize: 14,
-                                color: primaryColor,
-                            }}
-                        >
-                            Volver a cuestionarios
-                        </Text>
-                    </View>
-                </Pressable>
+      router.replace(`/superadmin/cuestionarios/${test.id_test}` as never);
+    } catch (e) {
+      const mensaje =
+        e instanceof Error
+          ? e.message
+          : "No se pudo registrar el cuestionario.";
 
-                <View style={{ gap: 8 }}>
-                    <Text
-                        style={{
-                            fontFamily: "Nunito-Bold",
-                            fontSize: esTelefono ? 26 : 34,
-                            color: textColor,
-                        }}
-                    >
-                        Registrar nuevo test
-                    </Text>
+      setError(mensaje);
+      await avisar("Error al registrar", mensaje, true);
+    } finally {
+      operando.current = false;
+      setGuardando(false);
+    }
+  };
 
-                    <Text
-                        style={{
-                            fontFamily: "Nunito-Medium",
-                            fontSize: 14,
-                            lineHeight: 22,
-                            color: secondaryColor,
-                        }}
-                    >
-                        Completa los datos generales. Posteriormente podrás configurar las
-                        subescalas, preguntas y baremos.
-                    </Text>
-                </View>
-            </View>
+  return (
+    <AdminFormScreen
+      title="Registrar nuevo test"
+      subtitle="Completa los datos generales. Posteriormente podrás configurar las subescalas, preguntas y baremos."
+      cargando={false}
+      guardando={guardando}
+      error={error}
+      submitLabel="Guardar y continuar"
+      onGuardar={guardar}
+      onVolver={() => router.replace("/superadmin/cuestionarios" as never)}
+      contentClassName="gap-5"
+    >
+      <View className="flex-row items-center gap-3 rounded-2xl border border-border bg-surface p-4">
+        <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary">
+          <Text className="font-nunito-bold text-text-on-primary">1</Text>
+        </View>
 
-            {/* INDICADOR DE ETAPA */}
+        <View className="flex-1 gap-1">
+          <Text className="font-nunito-bold text-sm text-text">
+            Información general
+          </Text>
+          <Text className="font-nunito-medium text-xs text-text-secondary">
+            Primer paso: crear el registro del test.
+          </Text>
+        </View>
+      </View>
 
-            <View
-                style={{
-                    padding: 15,
-                    borderRadius: 14,
-                    borderWidth: 1,
-                    borderColor,
-                    backgroundColor: surfaceColor,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 12,
-                }}
-            >
-                <View
-                    style={{
-                        width: 38,
-                        height: 38,
-                        borderRadius: 12,
-                        backgroundColor: primaryColor,
-                        alignItems: "center",
-                        justifyContent: "center",
-                    }}
-                >
-                    <Text
-                        style={{
-                            fontFamily: "Nunito-Bold",
-                            color: textOnPrimaryColor,
-                        }}
-                    >
-                        1
-                    </Text>
-                </View>
-
-                <View style={{ flex: 1, gap: 3 }}>
-                    <Text
-                        style={{
-                            fontFamily: "Nunito-Bold",
-                            fontSize: 14,
-                            color: textColor,
-                        }}
-                    >
-                        Información general
-                    </Text>
-
-                    <Text
-                        style={{
-                            fontFamily: "Nunito-Medium",
-                            fontSize: 12,
-                            color: secondaryColor,
-                        }}
-                    >
-                        Primer paso: crear el registro del test.
-                    </Text>
-                </View>
-            </View>
-
-            {/* FORMULARIO */}
-
-            <EditorInformacionTest
-                value={formulario}
-                onChange={setFormulario}
-                disabled={guardando}
-            />
-
-            {/* ERROR */}
-
-            {errorFormulario && (
-                <View
-                    style={{
-                        borderRadius: 12,
-                        borderWidth: 1,
-                        borderColor: dangerColor,
-                        padding: 15,
-                    }}
-                >
-                    <Text
-                        style={{
-                            fontFamily: "Nunito-Medium",
-                            fontSize: 13,
-                            lineHeight: 20,
-                            color: dangerColor,
-                        }}
-                    >
-                        {errorFormulario}
-                    </Text>
-                </View>
-            )}
-
-            {/* ACCIONES */}
-
-            <View
-                style={{
-                    flexDirection: esTelefono ? "column" : "row",
-                    alignItems: "stretch",
-                    justifyContent: "flex-end",
-                    gap: 12,
-                }}
-            >
-                <Pressable
-                    onPress={() => router.back()}
-                    disabled={guardando}
-                    style={({ pressed }) => ({
-                        width: esTelefono ? "100%" : 140,
-                        minHeight: 52,
-                        borderWidth: 1,
-                        borderColor,
-                        borderRadius: 13,
-                        backgroundColor: surfaceColor,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        opacity: pressed ? 0.7 : 1,
-                    })}
-                >
-                    <Text
-                        style={{
-                            fontFamily: "Nunito-SemiBold",
-                            fontSize: 14,
-                            color: textColor,
-                        }}
-                    >
-                        Cancelar
-                    </Text>
-                </Pressable>
-
-                <Pressable
-                    onPress={guardarTest}
-                    disabled={guardando}
-                    style={({ pressed }) => ({
-                        width: esTelefono ? "100%" : 220,
-                        minHeight: 52,
-                        borderRadius: 13,
-                        backgroundColor: primaryColor,
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 10,
-                        opacity: guardando ? 0.65 : pressed ? 0.8 : 1,
-                    })}
-                >
-                    {guardando ? (
-                        <ActivityIndicator size="small" color={textOnPrimaryColor} />
-                    ) : (
-                        <Ionicons
-                            name="save-outline"
-                            size={20}
-                            color={textOnPrimaryColor}
-                        />
-                    )}
-
-                    <Text
-                        style={{
-                            fontFamily: "Nunito-Bold",
-                            fontSize: 14,
-                            color: textOnPrimaryColor,
-                        }}
-                    >
-                        {guardando ? "Guardando..." : "Guardar y continuar"}
-                    </Text>
-                </Pressable>
-            </View>
-        </ScrollView>
-    );
+      <EditorInformacionTest
+        value={form}
+        onChange={setForm}
+        disabled={guardando}
+      />
+    </AdminFormScreen>
+  );
 }

@@ -1,624 +1,153 @@
-
 import React from "react";
+import { Text, View } from "react-native";
+import AdminCard from "@/components/admin/AdminCard";
+import { AdminFilterOptions } from "@/components/admin/AdminFilters";
+import Input from "@/components/ui/Input";
+import Switch from "@/components/ui/Switch";
+import type { CrearTestAdmin } from "@/services/superadmin/cuestionarioAdmin.service";
 
-import {
-    Pressable,
-    Switch,
-    Text,
-    TextInput,
-    useWindowDimensions,
-    View,
-} from "react-native";
+type Informacion = Omit<CrearTestAdmin, "estado">;
 
-import { useThemeColor } from "@/hooks/use-theme-color";
+type Props = {
+  value: Informacion;
+  onChange: (value: Informacion) => void;
+  disabled?: boolean;
+};
 
-import type {
-    CrearTestAdmin,
-} from "@/services/superadmin/cuestionarioAdmin.service";
-
-// ==========================================================
-// TIPOS
-// ==========================================================
-
-type Informacion = Omit<
-    CrearTestAdmin,
-    "estado"
->;
-
-interface Props {
-    value: Informacion;
-
-    onChange: (
-        value: Informacion,
-    ) => void;
-
-    disabled?: boolean;
-}
-
-const APLICACIONES: {
-    valor: Informacion["tipo_aplicacion"];
-    titulo: string;
-    descripcion: string;
-}[] = [
-        {
-            valor: "autoadministrado",
-            titulo: "Autoadministrado",
-            descripcion:
-                "La persona contesta el cuestionario.",
-        },
-        {
-            valor: "profesional",
-            titulo: "Profesional",
-            descripcion:
-                "Aplicado por un profesional autorizado.",
-        },
-    ];
-
-// ==========================================================
-// CAMPO REUTILIZABLE
-// ==========================================================
-
-interface CampoProps {
-    value: string;
-
-    onChangeText: (
-        value: string,
-    ) => void;
-
-    titulo: string;
-    sugerencia: string;
-
-    multiline?: boolean;
-    disabled: boolean;
-
-    placeholderColor: string;
-    inputBackground: string;
-    inputBorder: string;
-    textColor: string;
-}
-
-function Campo({
-    value,
-    onChangeText,
-    titulo,
-    sugerencia,
-    multiline = false,
-    disabled,
-    placeholderColor,
-    inputBackground,
-    inputBorder,
-    textColor,
-}: CampoProps) {
-    return (
-        <View
-            style={{
-                width: "100%",
-                gap: 7,
-            }}
-        >
-            <Text
-                style={{
-                    color: textColor,
-                    fontFamily: "Nunito-SemiBold",
-                    fontSize: 13,
-                }}
-            >
-                {titulo}
-            </Text>
-
-            <TextInput
-                value={value}
-                onChangeText={onChangeText}
-                placeholder={sugerencia}
-                placeholderTextColor={
-                    placeholderColor
-                }
-                editable={!disabled}
-                multiline={multiline}
-                textAlignVertical={
-                    multiline
-                        ? "top"
-                        : "center"
-                }
-                style={{
-                    width: "100%",
-                    minHeight:
-                        multiline
-                            ? 96
-                            : 50,
-                    paddingHorizontal: 14,
-                    paddingVertical:
-                        multiline
-                            ? 12
-                            : 8,
-                    borderRadius: 12,
-                    borderWidth: 1,
-                    borderColor:
-                        inputBorder,
-                    backgroundColor:
-                        inputBackground,
-                    color: textColor,
-                    fontFamily:
-                        "Nunito-Medium",
-                    fontSize: 14,
-                }}
-            />
-        </View>
-    );
-}
-
-// ==========================================================
-// EDITOR
-// ==========================================================
+const APLICACIONES = [
+  {
+    value: "autoadministrado",
+    label: "Autoadministrado",
+    descripcion: "La persona contesta el cuestionario.",
+  },
+  {
+    value: "profesional",
+    label: "Profesional",
+    descripcion: "Aplicado por un profesional autorizado.",
+  },
+] as const;
 
 export default function EditorInformacionTest({
-    value,
-    onChange,
-    disabled = false,
+  value,
+  onChange,
+  disabled = false,
 }: Props) {
-    const {
-        width,
-    } = useWindowDimensions();
+  const cambiar = <K extends keyof Informacion>(
+    campo: K,
+    valor: Informacion[K],
+  ) => onChange({ ...value, [campo]: valor });
 
-    const telefono =
-        width < 768;
+  const campoProps = (
+    campo:
+      | "codigo"
+      | "nombre"
+      | "descripcion"
+      | "instrucciones"
+      | "poblacion_objetivo"
+      | "version",
+  ) => ({
+    value: value[campo] ?? "",
+    onChangeText: (v: string) => cambiar(campo, v),
+    editable: !disabled,
+    containerClassName: "mb-0",
+  });
 
-    const surface =
-        useThemeColor(
-            {},
-            "surface",
-        );
+  return (
+    <AdminCard className="w-full gap-5 md:p-6">
+      <View className="gap-2">
+        <Text className="font-nunito-bold text-xl text-text">
+          Información general
+        </Text>
+        <Text className="font-nunito-medium text-xs leading-5 text-text-secondary">
+          Identifica el instrumento y configura su aplicación.
+        </Text>
+      </View>
 
-    const secondary =
-        useThemeColor(
-            {},
-            "surfaceSecondary",
-        );
-
-    const text =
-        useThemeColor(
-            {},
-            "text",
-        );
-
-    const textSecondary =
-        useThemeColor(
-            {},
-            "textSecondary",
-        );
-
-    const primary =
-        useThemeColor(
-            {},
-            "primary",
-        );
-
-    const primarySoft =
-        useThemeColor(
-            {},
-            "primarySoft",
-        );
-
-    const border =
-        useThemeColor(
-            {},
-            "border",
-        );
-
-    const inputBackground =
-        useThemeColor(
-            {},
-            "inputBackground",
-        );
-
-    const inputBorder =
-        useThemeColor(
-            {},
-            "inputBorder",
-        );
-
-    const placeholder =
-        useThemeColor(
-            {},
-            "placeholder",
-        );
-
-    // ========================================================
-    // ACTUALIZACIÓN
-    // ========================================================
-
-    function cambiar<
-        K extends keyof Informacion
-    >(
-        campo: K,
-        valor: Informacion[K],
-    ) {
-        onChange({
-            ...value,
-            [campo]: valor,
-        });
-    }
-
-    function campoProps(
-        campo:
-            | "codigo"
-            | "nombre"
-            | "descripcion"
-            | "instrucciones"
-            | "poblacion_objetivo"
-            | "version",
-    ) {
-        return {
-            value:
-                value[campo] ?? "",
-
-            onChangeText: (
-                nuevo: string,
-            ) => cambiar(
-                campo,
-                nuevo,
-            ),
-
-            disabled,
-            placeholderColor:
-                placeholder,
-            inputBackground,
-            inputBorder,
-            textColor: text,
-        };
-    }
-
-    // ========================================================
-    // UI
-    // ========================================================
-
-    return (
-        <View
-            style={{
-                width: "100%",
-                borderWidth: 1,
-                borderColor: border,
-                backgroundColor: surface,
-                borderRadius: 18,
-                padding: telefono
-                    ? 16
-                    : 24,
-                gap: 19,
-            }}
-        >
-            {/* ENCABEZADO */}
-
-            <View
-                style={{
-                    gap: 6,
-                }}
-            >
-                <Text
-                    style={{
-                        fontFamily: "Nunito-Bold",
-                        fontSize: 20,
-                        color: text,
-                    }}
-                >
-                    Información general
-                </Text>
-
-                <Text
-                    style={{
-                        color:
-                            textSecondary,
-                        fontSize: 12,
-                        lineHeight: 19,
-                    }}
-                >
-                    Identifica el instrumento y
-                    configura su aplicación.
-                </Text>
-            </View>
-
-            {/* CÓDIGO Y NOMBRE */}
-
-            <View
-                style={{
-                    flexDirection:
-                        telefono
-                            ? "column"
-                            : "row",
-                    gap: 14,
-                }}
-            >
-                <View
-                    style={{
-                        flex: 1,
-                        minWidth: 0,
-                    }}
-                >
-                    <Campo
-                        {...campoProps(
-                            "codigo",
-                        )}
-                        titulo="Código *"
-                        sugerencia="Ej.: PHQ-9"
-                    />
-                </View>
-
-                <View
-                    style={{
-                        flex: 2,
-                        minWidth: 0,
-                    }}
-                >
-                    <Campo
-                        {...campoProps(
-                            "nombre",
-                        )}
-                        titulo="Nombre *"
-                        sugerencia="Nombre del cuestionario"
-                    />
-                </View>
-            </View>
-
-            {/* DESCRIPCIÓN */}
-
-            <Campo
-                {...campoProps(
-                    "descripcion",
-                )}
-                titulo="Descripción"
-                sugerencia="Propósito del instrumento"
-                multiline
-            />
-
-            {/* INSTRUCCIONES */}
-
-            <Campo
-                {...campoProps(
-                    "instrucciones",
-                )}
-                titulo="Instrucciones"
-                sugerencia="Indicaciones para el usuario"
-                multiline
-            />
-
-            {/* POBLACIÓN */}
-
-            <Campo
-                {...campoProps(
-                    "poblacion_objetivo",
-                )}
-                titulo="Población objetivo"
-                sugerencia="Ej.: Personas adultas"
-            />
-
-            {/* TIPO DE APLICACIÓN */}
-
-            <View
-                style={{
-                    gap: 9,
-                }}
-            >
-                <Text
-                    style={{
-                        fontFamily:
-                            "Nunito-SemiBold",
-                        fontSize: 13,
-                        color: text,
-                    }}
-                >
-                    Tipo de aplicación *
-                </Text>
-
-                <View
-                    style={{
-                        flexDirection:
-                            telefono
-                                ? "column"
-                                : "row",
-                        gap: 10,
-                    }}
-                >
-                    {APLICACIONES.map(
-                        (item) => {
-                            const elegido =
-                                value.tipo_aplicacion ===
-                                item.valor;
-
-                            return (
-                                <Pressable
-                                    key={
-                                        item.valor
-                                    }
-                                    disabled={
-                                        disabled
-                                    }
-                                    onPress={() =>
-                                        cambiar(
-                                            "tipo_aplicacion",
-                                            item.valor,
-                                        )
-                                    }
-                                    style={({
-                                        pressed,
-                                    }) => ({
-                                        flex: 1,
-                                        minWidth: 0,
-
-                                        borderWidth:
-                                            elegido
-                                                ? 2
-                                                : 1,
-
-                                        borderColor:
-                                            elegido
-                                                ? primary
-                                                : border,
-
-                                        borderRadius:
-                                            12,
-
-                                        backgroundColor:
-                                            elegido
-                                                ? primarySoft
-                                                : secondary,
-
-                                        padding: 13,
-
-                                        opacity:
-                                            disabled
-                                                ? 0.6
-                                                : pressed
-                                                    ? 0.8
-                                                    : 1,
-                                    })}
-                                >
-                                    <View
-                                        style={{
-                                            gap: 4,
-                                        }}
-                                    >
-                                        <Text
-                                            style={{
-                                                color:
-                                                    elegido
-                                                        ? primary
-                                                        : text,
-
-                                                fontFamily:
-                                                    "Nunito-Bold",
-
-                                                fontSize:
-                                                    13,
-                                            }}
-                                        >
-                                            {elegido
-                                                ? "◉"
-                                                : "○"}{" "}
-                                            {item.titulo}
-                                        </Text>
-
-                                        <Text
-                                            style={{
-                                                color:
-                                                    textSecondary,
-
-                                                fontSize:
-                                                    11,
-
-                                                lineHeight:
-                                                    16,
-                                            }}
-                                        >
-                                            {
-                                                item.descripcion
-                                            }
-                                        </Text>
-                                    </View>
-                                </Pressable>
-                            );
-                        },
-                    )}
-                </View>
-            </View>
-
-            {/* VERSIÓN */}
-
-            <Campo
-                {...campoProps(
-                    "version",
-                )}
-                titulo="Versión"
-                sugerencia="Ej.: 1.0"
-            />
-
-            {/* SUBESCALAS */}
-
-            <View
-                style={{
-                    flexDirection:
-                        "row",
-
-                    gap: 12,
-
-                    alignItems:
-                        "center",
-
-                    borderWidth:
-                        1,
-
-                    borderColor:
-                        border,
-
-                    padding:
-                        13,
-
-                    borderRadius:
-                        12,
-                }}
-            >
-                <View
-                    style={{
-                        flex: 1,
-                        minWidth: 0,
-                        gap: 4,
-                    }}
-                >
-                    <Text
-                        style={{
-                            fontFamily:
-                                "Nunito-Bold",
-
-                            color: text,
-
-                            fontSize:
-                                13,
-                        }}
-                    >
-                        Utiliza subescalas
-                    </Text>
-
-                    <Text
-                        style={{
-                            color:
-                                textSecondary,
-
-                            fontSize:
-                                11,
-
-                            lineHeight:
-                                17,
-                        }}
-                    >
-                        Habilita las dimensiones
-                        que conforman el
-                        instrumento.
-                    </Text>
-                </View>
-
-                <Switch
-                    value={
-                        value.tiene_subescalas
-                    }
-                    onValueChange={(
-                        nuevo,
-                    ) =>
-                        cambiar(
-                            "tiene_subescalas",
-                            nuevo,
-                        )
-                    }
-                    disabled={
-                        disabled
-                    }
-                    trackColor={{
-                        false:
-                            inputBorder,
-
-                        true:
-                            primary,
-                    }}
-                    thumbColor="#FFFFFF"
-                />
-            </View>
+      <View className="gap-3 md:flex-row">
+        <View className="min-w-0 md:flex-1">
+          <Input
+            {...campoProps("codigo")}
+            label="Código *"
+            placeholder="Ej.: PHQ-9"
+          />
         </View>
-    );
+
+        <View className="min-w-0 md:flex-1">
+          <Input
+            {...campoProps("nombre")}
+            label="Nombre *"
+            placeholder="Nombre del cuestionario"
+          />
+        </View>
+      </View>
+
+      <Input
+        {...campoProps("descripcion")}
+        label="Descripción"
+        placeholder="Propósito del instrumento"
+        multiline
+        textAlignVertical="top"
+        inputClassName="h-auto min-h-24"
+      />
+
+      <Input
+        {...campoProps("instrucciones")}
+        label="Instrucciones"
+        placeholder="Indicaciones para el usuario"
+        multiline
+        textAlignVertical="top"
+        inputClassName="h-auto min-h-24"
+      />
+
+      <Input
+        {...campoProps("poblacion_objetivo")}
+        label="Población objetivo"
+        placeholder="Ej.: Personas adultas"
+      />
+
+      <View className="gap-2">
+        <AdminFilterOptions
+          label="Tipo de aplicación *"
+          value={value.tipo_aplicacion}
+          options={APLICACIONES}
+          disabled={disabled}
+          onChange={(v) =>
+            cambiar("tipo_aplicacion", v as Informacion["tipo_aplicacion"])
+          }
+        />
+
+        {APLICACIONES.map((item) => (
+          <Text
+            key={item.value}
+            className="font-nunito-medium text-xs text-text-secondary"
+          >
+            {item.label}: {item.descripcion}
+          </Text>
+        ))}
+      </View>
+
+      <Input
+        {...campoProps("version")}
+        label="Versión"
+        placeholder="Ej.: 1.0"
+      />
+
+      <View className="flex-row items-center gap-3 rounded-xl border border-border p-4">
+        <View className="min-w-0 flex-1 gap-1">
+          <Text className="font-nunito-bold text-sm text-text">
+            Utiliza subescalas
+          </Text>
+          <Text className="font-nunito-medium text-xs leading-5 text-text-secondary">
+            Habilita las dimensiones que conforman el instrumento.
+          </Text>
+        </View>
+
+        <Switch
+          value={value.tiene_subescalas}
+          onValueChange={(v) => cambiar("tiene_subescalas", v)}
+          disabled={disabled}
+        />
+      </View>
+    </AdminCard>
+  );
 }

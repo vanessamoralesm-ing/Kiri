@@ -1,65 +1,68 @@
-import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Pressable, Text, View } from "react-native";
-
+import { Text, View } from "react-native";
+import AdminActions from "@/components/admin/AdminActions";
+import AdminCard from "@/components/admin/AdminCard";
+import AdminIdentity from "@/components/admin/AdminIdentity";
 import type { UsuarioAdmin } from "@/types/usuarios/usuario";
-import UsuarioStatusBadge from "./UsuarioStatusBadge";
-
-interface Props {
-  usuario: UsuarioAdmin;
-  onPress?: (usuario: UsuarioAdmin) => void;
+import UsuarioRoleBadge from "./UsuarioRoleBadge";
+import AdminStatusBadge from "@/components/admin/AdminStatusBadge";
+export interface UsuarioPresentationProps {
+  onEditar?: (usuario: UsuarioAdmin) => void;
+  onCambiarEstado?: (usuario: UsuarioAdmin) => void;
+  onEliminar?: (usuario: UsuarioAdmin) => void;
+  usuarioProcesando?: string | null;
   mostrarInstitucion?: boolean;
   mostrarEstado?: boolean;
 }
-
+export function UsuarioIdentidad({ usuario }: { usuario: UsuarioAdmin }) {
+  return (
+    <AdminIdentity
+      nombre={`${usuario.nombres} ${usuario.apellidos}`}
+      detalle={usuario.correo}
+      iniciales={(
+        usuario.nombres.charAt(0) + usuario.apellidos.charAt(0)
+      ).toUpperCase()}
+    />
+  );
+}
+export function UsuarioAcciones({
+  usuario,
+  usuarioProcesando,
+  onEditar,
+  onCambiarEstado,
+  onEliminar,
+}: UsuarioPresentationProps & { usuario: UsuarioAdmin }) {
+  const procesando = usuarioProcesando === usuario.id_usuario;
+  return (
+    <AdminActions
+      entidad="usuario"
+      estado={usuario.estado}
+      disabled={procesando}
+      procesando={procesando}
+      onEditar={onEditar && (() => onEditar(usuario))}
+      onCambiarEstado={onCambiarEstado && (() => onCambiarEstado(usuario))}
+      onEliminar={onEliminar && (() => onEliminar(usuario))}
+    />
+  );
+}
 export default function UsuarioCard({
   usuario,
-  onPress,
   mostrarInstitucion = true,
   mostrarEstado = true,
-}: Props) {
-  const iniciales =
-    usuario.nombres.charAt(0).toUpperCase() +
-    usuario.apellidos.charAt(0).toUpperCase();
-
+  ...props
+}: UsuarioPresentationProps & { usuario: UsuarioAdmin }) {
   return (
-    <Pressable
-      onPress={() => onPress?.(usuario)}
-      className="rounded-2xl border border-border bg-surface p-4 active:bg-surface-secondary"
-    >
-      <View className="flex-row items-center">
-        <View className="h-11 w-11 items-center justify-center rounded-2xl bg-primary-soft">
-          <Text className="font-nunito-bold text-base text-primary">{iniciales}</Text>
-        </View>
-
-        <View className="ml-3 flex-1">
-          <Text numberOfLines={1} className="font-nunito-semibold text-sm text-text">
-            {usuario.nombres} {usuario.apellidos}
-          </Text>
-
-          <Text numberOfLines={1} className="mt-0.5 font-nunito-medium text-xs text-text-muted">
-            {usuario.correo}
-          </Text>
-
-          <View className="mt-2 flex-row flex-wrap items-center gap-2">
-            <View className="rounded-full bg-surface-secondary px-3 py-1">
-              <Text className="font-nunito-semibold text-xs text-text-secondary">
-                {usuario.rol?.nombre ?? "Sin rol"}
-              </Text>
-            </View>
-
-            {mostrarEstado && <UsuarioStatusBadge estado={usuario.estado} />}
-          </View>
-
-          {mostrarInstitucion && (
-            <Text numberOfLines={1} className="mt-2 font-nunito-medium text-xs text-text-secondary">
-              {usuario.institucion?.nombre ?? "Sin institución"}
-            </Text>
-          )}
-        </View>
-
-        {onPress && <Ionicons name="chevron-forward" size={18} className="text-text-muted" />}
+    <AdminCard actions={<UsuarioAcciones usuario={usuario} {...props} />}>
+      <UsuarioIdentidad usuario={usuario} />
+      <View className="flex-row flex-wrap items-center gap-2">
+        <UsuarioRoleBadge rol={usuario.rol?.nombre} />
+        {mostrarEstado && <AdminStatusBadge estado={usuario.estado} />}
       </View>
-    </Pressable>
+      {mostrarInstitucion && (
+        <Text className="font-nunito-medium text-sm text-text-secondary">
+          {usuario.institucion?.nombre ?? "Sin institución"}
+        </Text>
+      )}
+    </AdminCard>
   );
 }
