@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 
 import {
   ActivityIndicator,
@@ -118,38 +118,30 @@ export default function DiarioScreen() {
    * ==================================================
    */
 
-  const nombreUsuario = useMemo(() => {
-    const nombrePreferidoPerfil =
-      typeof profile?.nombre_preferido === "string"
-        ? profile.nombre_preferido.trim()
-        : "";
+  const nombrePreferidoPerfil =
+    typeof profile?.nombre_preferido === "string"
+      ? profile.nombre_preferido.trim()
+      : "";
 
-    const nombresPerfil =
-      typeof profile?.nombres === "string" ? profile.nombres.trim() : "";
+  const nombresPerfil =
+    typeof profile?.nombres === "string" ? profile.nombres.trim() : "";
 
-    const nombrePreferidoAuth =
-      typeof user?.user_metadata?.nombre_preferido === "string"
-        ? user.user_metadata.nombre_preferido.trim()
-        : "";
+  const nombrePreferidoAuth =
+    typeof user?.user_metadata?.nombre_preferido === "string"
+      ? user.user_metadata.nombre_preferido.trim()
+      : "";
 
-    const nombresAuth =
-      typeof user?.user_metadata?.nombres === "string"
-        ? user.user_metadata.nombres.trim()
-        : "";
+  const nombresAuth =
+    typeof user?.user_metadata?.nombres === "string"
+      ? user.user_metadata.nombres.trim()
+      : "";
 
-    return (
-      nombrePreferidoPerfil ||
-      nombresPerfil ||
-      nombrePreferidoAuth ||
-      nombresAuth ||
-      "Usuario"
-    );
-  }, [
-    profile?.nombre_preferido,
-    profile?.nombres,
-    user?.user_metadata?.nombre_preferido,
-    user?.user_metadata?.nombres,
-  ]);
+  const nombreUsuario =
+    nombrePreferidoPerfil ||
+    nombresPerfil ||
+    nombrePreferidoAuth ||
+    nombresAuth ||
+    "Usuario";
 
   /*
    * ==================================================

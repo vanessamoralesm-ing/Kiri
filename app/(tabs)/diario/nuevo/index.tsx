@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Animated, { FadeInDown } from "react-native-reanimated";
 
-import TarjetaPlantillaAutorregistro from "@/components/diario/TarjetaPlantillaAutorregistro";
+import { TarjetaAcceso } from "@/components/ui/TarjetaAccesso";
 
 import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
 
@@ -27,7 +27,7 @@ export default function NuevoRegistro() {
 
   const insets = useSafeAreaInsets();
 
-  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
+  const { esTablet, esEscritorio } = useResponsiveLayout();
 
   const { origen } = useLocalSearchParams<{
     origen?: string;
@@ -48,18 +48,6 @@ export default function NuevoRegistro() {
   const textColor = useThemeColor({}, "text");
 
   const textSecondaryColor = useThemeColor({}, "textSecondary");
-
-  const primaryColor = useThemeColor({}, "primary");
-
-  const primarySoftColor = useThemeColor({}, "primarySoft");
-
-  const secondaryColor = useThemeColor({}, "secondary");
-
-  const secondarySoftColor = useThemeColor({}, "secondarySoft");
-
-  const accentColor = useThemeColor({}, "accent");
-
-  const accentSoftColor = useThemeColor({}, "accentSoft");
 
   // ========================================================
   // RESPONSIVE
@@ -266,37 +254,12 @@ export default function NuevoRegistro() {
                 width: numeroColumnas === 1 ? "100%" : undefined,
               }}
             >
-              <TarjetaPlantillaAutorregistro
+              <TarjetaAcceso
                 titulo="Diario emocional"
                 descripcion="Reconoce lo que sientes, qué lo provocó y cómo reaccionaste."
                 icono="heart-outline"
-                color={primaryColor}
-                fondoIcono={primarySoftColor}
+                color="primary"
                 onPress={() => seleccionarPlantilla("emocional")}
-              />
-            </Animated.View>
-
-            {/* ==============================================
-                PENSAMIENTOS
-            ============================================== */}
-
-            <Animated.View
-              entering={FadeInDown.delay(180).duration(400)}
-              style={{
-                flex: numeroColumnas > 1 ? 1 : undefined,
-
-                minWidth: 0,
-
-                width: numeroColumnas === 1 ? "100%" : undefined,
-              }}
-            >
-              <TarjetaPlantillaAutorregistro
-                titulo="Observando mis pensamientos"
-                descripcion="Observa una situación, tus pensamientos, sentimientos y reacciones."
-                icono="bulb-outline"
-                color={accentColor}
-                fondoIcono={accentSoftColor}
-                onPress={() => seleccionarPlantilla("pensamientos")}
               />
             </Animated.View>
 
@@ -314,12 +277,11 @@ export default function NuevoRegistro() {
                 width: numeroColumnas === 1 ? "100%" : undefined,
               }}
             >
-              <TarjetaPlantillaAutorregistro
+              <TarjetaAcceso
                 titulo="Autorregistro ABCDE"
                 descripcion="Reflexiona sobre una situación, tus creencias y nuevas formas de responder."
                 icono="leaf-outline"
-                color={secondaryColor}
-                fondoIcono={secondarySoftColor}
+                color="accent"
                 onPress={() => seleccionarPlantilla("abc")}
               />
             </Animated.View>

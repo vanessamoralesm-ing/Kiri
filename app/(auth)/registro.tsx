@@ -10,9 +10,13 @@ import {
   Text,
   View,
 } from "react-native";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import { ActivityIndicator, Image, Platform, Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
 import Button from "@/components/ui/Button";
+import BotonVolver from "@/components/ui/BotonVolver";
 import GoogleButton from "@/components/ui/GoogleButton";
 import UsuarioForm, {
   type UsuarioFormValues,
@@ -39,7 +43,6 @@ const VALORES_INICIALES: UsuarioFormValues = {
 export default function RegisterScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-
   const { signUp } = useAuth();
   const { isDarkMode } = useThemeMode();
 
@@ -123,10 +126,8 @@ export default function RegisterScreen() {
       setError(firstError);
       return;
     }
-
     try {
       setSubmitting(true);
-
       const result = await signUp({
         email:
           values.email

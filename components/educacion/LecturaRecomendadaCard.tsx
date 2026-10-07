@@ -5,6 +5,7 @@ import {
 import React from "react";
 
 import {
+  Image,
   Pressable,
   Text,
   View,
@@ -27,11 +28,21 @@ import {
 
 type LecturaRecomendadaCardProps = {
   titulo: string;
+
   index: number;
+
   ancho?: number;
+
+  // URL de la portada obtenida desde Supabase.
+  // Es opcional para conservar compatibilidad con los
+  // lugares donde todavía no exista una portada real.
+  imagenPortada?: string | null;
+
   onPress?: () => void;
+
   onFavoritoPress?: () => void;
 };
+
 
 // ==========================================================
 // COMPONENTE
@@ -39,9 +50,15 @@ type LecturaRecomendadaCardProps = {
 
 export default function LecturaRecomendadaCard({
   titulo,
+
   index,
+
   ancho = 150,
+
+  imagenPortada,
+
   onPress,
+
   onFavoritoPress,
 }: LecturaRecomendadaCardProps) {
 
@@ -51,6 +68,7 @@ export default function LecturaRecomendadaCard({
 
   const escala =
     useSharedValue(1);
+
 
   const estiloAnimado =
     useAnimatedStyle(() => ({
@@ -73,11 +91,13 @@ export default function LecturaRecomendadaCard({
       "surface"
     );
 
+
   const textColor =
     useThemeColor(
       {},
       "text"
     );
+
 
   const primaryColor =
     useThemeColor(
@@ -85,11 +105,13 @@ export default function LecturaRecomendadaCard({
       "primary"
     );
 
+
   const primarySoftColor =
     useThemeColor(
       {},
       "primarySoft"
     );
+
 
   const accentColor =
     useThemeColor(
@@ -97,11 +119,13 @@ export default function LecturaRecomendadaCard({
       "accent"
     );
 
+
   const accentSoftColor =
     useThemeColor(
       {},
       "accentSoft"
     );
+
 
   const borderColor =
     useThemeColor(
@@ -115,6 +139,7 @@ export default function LecturaRecomendadaCard({
   // ========================================================
 
   // Alterna morado y celeste.
+  // Se conserva como respaldo cuando el recurso no tenga una portada desde Supabase.
   const fondoPortada =
     index % 2 === 0
       ? accentSoftColor
@@ -130,35 +155,52 @@ export default function LecturaRecomendadaCard({
   const esCardGrande =
     ancho >= 190;
 
+
   const alturaPortada =
     esCardGrande
       ? 220
       : 175;
+
 
   const tamanoCirculoLibro =
     esCardGrande
       ? 70
       : 58;
 
+
   const tamanoIconoLibro =
     esCardGrande
       ? 36
       : 30;
+
 
   const tamanoTitulo =
     esCardGrande
       ? 16
       : 14;
 
+
   const lineaTitulo =
     esCardGrande
       ? 21
       : 18;
 
+
   const alturaInformacion =
     esCardGrande
       ? 104
       : 88;
+
+
+  // ========================================================
+  // PORTADA DISPONIBLE
+  // ========================================================
+
+  // Solo mostramos la imagen cuando Supabase entrega
+  // una URL válida no vacía.
+  const tieneImagenPortada =
+    typeof imagenPortada === "string" &&
+    imagenPortada.trim().length > 0;
 
 
   // ========================================================
@@ -196,7 +238,6 @@ export default function LecturaRecomendadaCard({
               : 1,
         })}
       >
-
         {/* =================================================
             CARD
             ================================================= */}
@@ -227,7 +268,6 @@ export default function LecturaRecomendadaCard({
               2,
           }}
         >
-
           {/* =================================================
               PORTADA
               ================================================= */}
@@ -240,8 +280,37 @@ export default function LecturaRecomendadaCard({
 
               backgroundColor:
                 fondoPortada,
+
+              overflow:
+                "hidden",
             }}
           >
+            {/* =================================================
+                IMAGEN DE PORTADA DESDE SUPABASE
+                ================================================= */}
+
+            {tieneImagenPortada && (
+              <Image
+                source={{
+                  uri: imagenPortada!.trim(),
+                }}
+                resizeMode="cover"
+                style={{
+                  position:
+                    "absolute",
+
+                  top: 0,
+
+                  left: 0,
+
+                  width:
+                    "100%",
+
+                  height:
+                    "100%",
+                }}
+              />
+            )}
 
             {/* =================================================
                 FAVORITO
@@ -306,66 +375,72 @@ export default function LecturaRecomendadaCard({
               </View>
             </Pressable>
 
-
             {/* =================================================
-                ICONO DEL LIBRO
+                PORTADA DE RESPALDO
                 ================================================= */}
 
-            <View
-              className="items-center justify-center rounded-full"
-              style={{
-                marginTop:
-                  esCardGrande
-                    ? 42
-                    : 34,
+            {!tieneImagenPortada && (
+              <>
+                {/* =================================================
+                    ICONO DEL LIBRO
+                    ================================================= */}
 
-                width:
-                  tamanoCirculoLibro,
+                <View
+                  className="items-center justify-center rounded-full"
+                  style={{
+                    marginTop:
+                      esCardGrande
+                        ? 42
+                        : 34,
 
-                height:
-                  tamanoCirculoLibro,
+                    width:
+                      tamanoCirculoLibro,
 
-                backgroundColor:
-                  "#FFFFFF",
-              }}
-            >
-              <Ionicons
-                name="book-outline"
-                size={
-                  tamanoIconoLibro
-                }
-                color={
-                  primaryColor
-                }
-              />
-            </View>
+                    height:
+                      tamanoCirculoLibro,
 
+                    backgroundColor:
+                      "#FFFFFF",
+                  }}
+                >
+                  <Ionicons
+                    name="book-outline"
+                    size={
+                      tamanoIconoLibro
+                    }
+                    color={
+                      primaryColor
+                    }
+                  />
+                </View>
 
-            {/* =================================================
-                TÍTULO DE PORTADA
-                ================================================= */}
+                {/* =================================================
+                    TÍTULO DE PORTADA
+                    ================================================= */}
 
-            <Text
-              numberOfLines={3}
-              className="px-3 text-center font-nunito-bold"
-              style={{
-                marginTop:
-                  esCardGrande
-                    ? 18
-                    : 12,
+                <Text
+                  numberOfLines={3}
+                  className="px-3 text-center font-nunito-bold"
+                  style={{
+                    marginTop:
+                      esCardGrande
+                        ? 18
+                        : 12,
 
-                fontSize:
-                  tamanoTitulo,
+                    fontSize:
+                      tamanoTitulo,
 
-                lineHeight:
-                  lineaTitulo,
+                    lineHeight:
+                      lineaTitulo,
 
-                color:
-                  textColor,
-              }}
-            >
-              {titulo}
-            </Text>
+                    color:
+                      textColor,
+                  }}
+                >
+                  {titulo}
+                </Text>
+              </>
+            )}
 
           </View>
 

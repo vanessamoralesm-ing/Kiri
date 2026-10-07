@@ -178,7 +178,7 @@ function Pestanas({
       {/* ==================================================
           RUTAS SECUNDARIAS
       ================================================== */}
-
+      
       <Tabs.Screen
         name="cuestionarios"
         options={{
