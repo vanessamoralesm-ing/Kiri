@@ -6,11 +6,6 @@ import {
   StyleProp,
 } from "react-native";
 
-import {
-  useTheme,
-} from "expo-router/react-navigation";
-
-
 // ==========================================================
 // PROPS
 // ==========================================================

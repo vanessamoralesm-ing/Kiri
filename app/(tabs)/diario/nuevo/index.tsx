@@ -1,16 +1,15 @@
 import React from "react";
 
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 
 import { useLocalSearchParams, useRouter } from "expo-router";
-
-import { Ionicons } from "@expo/vector-icons";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { TarjetaAcceso } from "@/components/ui/TarjetaAccesso";
+import BotonVolver from "@/components/ui/BotonVolver";
 
 import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
 
@@ -38,12 +37,6 @@ export default function NuevoRegistro() {
   // ========================================================
 
   const backgroundColor = useThemeColor({}, "background");
-
-  const surfaceColor = useThemeColor({}, "surface");
-
-  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
-
-  const borderColor = useThemeColor({}, "border");
 
   const textColor = useThemeColor({}, "text");
 
@@ -137,45 +130,17 @@ export default function NuevoRegistro() {
               BOTÓN REGRESAR
           ================================================== */}
 
-          <Pressable
-            onPress={regresar}
-            hitSlop={8}
-            style={({ pressed }) => ({
+          <View
+            style={{
               width: 48,
 
               height: 48,
 
               marginBottom: esEscritorio ? 26 : 22,
-
-              borderRadius: 16,
-
-              borderWidth: 1,
-
-              borderColor,
-
-              alignItems: "center",
-
-              justifyContent: "center",
-
-              backgroundColor: pressed ? surfaceSecondaryColor : surfaceColor,
-
-              elevation: 1,
-
-              shadowColor: "#000000",
-
-              shadowOffset: {
-                width: 0,
-
-                height: 2,
-              },
-
-              shadowOpacity: 0.05,
-
-              shadowRadius: 5,
-            })}
+            }}
           >
-            <Ionicons name="arrow-back" size={22} color={textColor} />
-          </Pressable>
+            <BotonVolver onPress={regresar} />
+          </View>
 
           {/* ==================================================
               ENCABEZADO
