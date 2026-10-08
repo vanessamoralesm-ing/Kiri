@@ -9,6 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
 import Button from "@/components/ui/Button";
+import BotonVolver from "@/components/ui/BotonVolver";
 import GoogleButton from "@/components/ui/GoogleButton";
 import Input from "@/components/ui/Input";
 
@@ -199,6 +200,11 @@ export default function LoginScreen() {
             </View>
 
             <View style={styles.decorativeCircleBottom} />
+
+            {/* REGRESAR: posicion absoluta para no desplazar el contenido. */}
+            <View style={{ position: "absolute", top: 16, left: 16, zIndex: 1 }}>
+              <BotonVolver onPress={() => router.back()} />
+            </View>
           </View>
 
           {/* ==================================================
