@@ -2,23 +2,23 @@ import "../global.css";
 import "../lib/nativewind-interop";
 import "react-native-reanimated";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 
 import { useFonts } from "expo-font";
 import { Stack, usePathname, useRouter } from "expo-router";
 import { ThemeProvider } from "expo-router/react-navigation";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import "react-native-reanimated";
 
 import ThemeScope from "@/components/theme-scope";
 import AnimatedLogo from "@/components/ui/AnimatedLogo";
 import { ButtonSizeContext } from "@/components/ui/Button";
-
 import { KiriDarkTheme, KiriLightTheme } from "@/constants/theme";
-import { ThemeModeProvider, useThemeMode } from "@/contexts/ThemeModeContext";
 import { ModalProvider } from "@/contexts/ModalContext";
-
+import {
+  ThemeModeProvider,
+  useThemeMode,
+} from "@/contexts/ThemeModeContext";
 import { AuthProvider, useAuth } from "@/services/authProvider";
 import { obtenerEstadoInicialEntrevista } from "@/services/entrevista/entrevistaService";
 
@@ -28,26 +28,14 @@ function RootNavigation() {
   const { loading, session, profile } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-
-  const [splashTerminado, setSplashTerminado] = useState(false);
-  const [inicioListo, setInicioListo] = useState(false);
   const verificacionInicialRef = useRef(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setSplashTerminado(true), 3000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (!inicioListo && splashTerminado && !loading) setInicioListo(true);
-  }, [splashTerminado, loading, inicioListo]);
 
   useEffect(() => {
     verificacionInicialRef.current = false;
   }, [session?.user.id]);
 
   useEffect(() => {
-    if (!inicioListo || verificacionInicialRef.current) return;
+    if (loading || verificacionInicialRef.current) return;
 
     if (!session) {
       verificacionInicialRef.current = true;
@@ -64,14 +52,20 @@ function RootNavigation() {
       const rol = profile.rol?.nombre ?? null;
 
       if (rol === "superadministrador") {
-        const estaEnSuperAdmin = pathname === "/superadmin" || pathname.startsWith("/superadmin/");
+        const estaEnSuperAdmin =
+          pathname === "/superadmin" ||
+          pathname.startsWith("/superadmin/");
 
-        if (!estaEnSuperAdmin) router.replace("/superadmin" as never);
+        if (!estaEnSuperAdmin) {
+          router.replace("/superadmin" as never);
+        }
+
         return;
       }
 
       try {
         const estado = await obtenerEstadoInicialEntrevista();
+
         if (cancelado) return;
 
         if (estado.situacion === "completada") {
@@ -84,15 +78,24 @@ function RootNavigation() {
             pathname.startsWith("/foro") ||
             pathname.startsWith("/cuestionarios");
 
-          if (!estaEnTabs) router.replace("/(tabs)/home");
+          if (!estaEnTabs) {
+            router.replace("/(tabs)/home");
+          }
+
           return;
         }
 
-        if (estado.situacion === "sin_entrevista" || estado.situacion === "en_progreso") {
+        if (
+          estado.situacion === "sin_entrevista" ||
+          estado.situacion === "en_progreso"
+        ) {
           const estaEnEntrevista =
-            pathname.startsWith("/bienvenida") || pathname.startsWith("/entrevista");
+            pathname.startsWith("/bienvenida") ||
+            pathname.startsWith("/entrevista");
 
-          if (!estaEnEntrevista) router.replace("/(entrevista)/bienvenida");
+          if (!estaEnEntrevista) {
+            router.replace("/(entrevista)/bienvenida");
+          }
         }
       } catch {
         // La verificación inicial no debe romper la navegación.
@@ -104,17 +107,22 @@ function RootNavigation() {
     return () => {
       cancelado = true;
     };
-  }, [inicioListo, session, profile, pathname, router]);
+  }, [loading, session, profile, pathname, router]);
 
   useEffect(() => {
-    if (!inicioListo || !session || !profile) return;
+    if (loading || !session || !profile) return;
 
-    const estaEnSuperAdmin = pathname === "/superadmin" || pathname.startsWith("/superadmin/");
+    const estaEnSuperAdmin =
+      pathname === "/superadmin" ||
+      pathname.startsWith("/superadmin/");
 
-    if (estaEnSuperAdmin && profile.rol?.nombre !== "superadministrador") {
+    if (
+      estaEnSuperAdmin &&
+      profile.rol?.nombre !== "superadministrador"
+    ) {
       router.replace("/(tabs)/home");
     }
-  }, [inicioListo, session, profile, pathname, router]);
+  }, [loading, session, profile, pathname, router]);
 
   return (
     <>
@@ -127,7 +135,7 @@ function RootNavigation() {
         <Stack.Screen name="(superadmin)/superadmin" />
       </Stack>
 
-      {!inicioListo && <AnimatedLogo />}
+      {loading && <AnimatedLogo />}
     </>
   );
 }
@@ -135,8 +143,14 @@ function RootNavigation() {
 function AppConTema() {
   const { isDarkMode } = useThemeMode();
   const pathname = usePathname();
-  const esPanel = pathname === "/superadmin" || pathname.startsWith("/superadmin/");
-  const navigationTheme = isDarkMode ? KiriDarkTheme : KiriLightTheme;
+
+  const esPanel =
+    pathname === "/superadmin" ||
+    pathname.startsWith("/superadmin/");
+
+  const navigationTheme = isDarkMode
+    ? KiriDarkTheme
+    : KiriLightTheme;
 
   return (
     <ThemeProvider value={navigationTheme}>
@@ -159,7 +173,9 @@ function RootAppContent() {
   const { isThemeReady } = useThemeMode();
 
   useEffect(() => {
-    if (isThemeReady) void SplashScreen.hideAsync();
+    if (isThemeReady) {
+      void SplashScreen.hideAsync();
+    }
   }, [isThemeReady]);
 
   return <AppConTema />;

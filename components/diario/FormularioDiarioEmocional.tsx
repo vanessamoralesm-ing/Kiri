@@ -5,7 +5,6 @@ import {
   KeyboardAvoidingView,
   LayoutChangeEvent,
   Platform,
-  Pressable,
   ScrollView,
   Text,
   View,
@@ -24,6 +23,7 @@ import { OpcionEmocion } from "@/components/diario/OpcionEmocion";
 import { CampoPreguntaDiario } from "@/components/diario/CampoPreguntaDiario";
 
 import Button from "@/components/ui/Button";
+import BotonVolver from "@/components/ui/BotonVolver";
 
 import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
 
@@ -113,8 +113,6 @@ export function FormularioDiarioEmocional({
   const backgroundColor = useThemeColor({}, "background");
 
   const surfaceColor = useThemeColor({}, "surface");
-
-  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
 
   const borderColor = useThemeColor({}, "border");
 
@@ -346,29 +344,17 @@ export function FormularioDiarioEmocional({
               alignItems: "center",
             }}
           >
-            <Pressable
-              onPress={regresar}
-              hitSlop={8}
-              style={({ pressed }) => ({
+            <View
+              style={{
                 width: 46,
                 height: 46,
                 flexShrink: 0,
-                borderRadius: 15,
-                borderWidth: 1,
-                borderColor,
                 alignItems: "center",
                 justifyContent: "center",
-                backgroundColor: pressed
-                  ? surfaceSecondaryColor
-                  : surfaceColor,
-              })}
+              }}
             >
-              <Ionicons
-                name="arrow-back"
-                size={21}
-                color={textColor}
-              />
-            </Pressable>
+              <BotonVolver onPress={regresar} />
+            </View>
 
             <View
               style={{
