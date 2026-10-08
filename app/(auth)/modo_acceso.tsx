@@ -1,5 +1,5 @@
 import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
-import { NativeWindTheme } from "@/constants/nativewind-theme";
+import { Colors } from "@/constants/theme";
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -30,9 +30,8 @@ export default function AccessTypeScreen() {
   const anchoCard = esEscritorio ? (anchoUtil - gapCards * 2) / 3 : esTablet ? (anchoUtil - gapCards) / 2 : anchoUtil;
 
   return (
-    <ScrollView className="flex-1 bg-background" style={NativeWindTheme.light} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-      {/* NativeWind: bg-background usa --background de theme.ts. NativeWindTheme.light conserva el modo claro original sin agregar contenedores. */}
-      {/* ThemeScope sigue el tema activo: aquí no se usa para evitar cambiar la apariencia. cn combina variantes; las clases aquí son fijas. */}
+    <ScrollView className="flex-1" style={{ backgroundColor: Colors.light.background }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
+      {/* NativeWind: flex-1 = flex: 1 (ocupa espacio disponible). El fondo se mantiene fijo en modo claro desde theme.ts. */}
       {/* NativeWind: w-full = 100% de ancho; flex-1 = ocupa espacio; self-center = centrado; items-center/justify-center = centra contenido; py-[30px] = padding vertical fijo de 30 px. */}
       {/* maxWidth y paddingHorizontal en style son valores responsive: cambian segun teléfono, tablet o escritorio. */}
       <View className="w-full flex-1 self-center items-center justify-center py-[30px]" style={{ maxWidth: maxWidthContenido, paddingHorizontal }}>
@@ -44,11 +43,11 @@ export default function AccessTypeScreen() {
         {/* Logo: su alto, margen y ancho responsive siguen en style para conservar exactamente sus dimensiones. */}
         <Image source={require("../../assets/images/logo_secundario.png")} style={{ height: 100, marginBottom: -11, width: tamanoLogo }} resizeMode="contain" />
         {/* Titulo: mb-2 = 8 px de separacion; text-center = centrado; font-nunito-bold/font-bold = fuente y peso fijos. */}
-        {/* text-[#2C3E50] conserva exactamente el color original: no existe ese valor en la paleta. Nunito usa las fuentes de Tailwind; fontSize sigue en style. */}
-        <Text className="mb-2 text-center font-nunito-bold font-bold text-[#2C3E50]" style={{ fontSize: tamanoTitulo }}>¿Cómo accederás?</Text>
+        {/* El fontSize y color se conservan en style; fontSize cambia segun el dispositivo. */}
+        <Text className="mb-2 text-center font-nunito-bold font-bold" style={{ fontSize: tamanoTitulo, color: "#2C3E50" }}>¿Cómo accederás?</Text>
         {/* Subtitulo: mb-6 = 24 px de separacion; text-center = centrado; font-nunito-medium/font-normal = fuente y peso fijos. */}
-        {/* text-text-secondary usa --text-secondary de NativeWindTheme.light, con el mismo color de Colors.light.textSecondary. */}
-        <Text className="mb-6 text-center font-nunito-medium font-normal text-text-secondary" style={{ fontSize: tamanoSubtitulo }}>Selecciona una opción para comenzar.</Text>
+        {/* El fontSize es responsive; el color viene de Colors.light en theme.ts. */}
+        <Text className="mb-6 text-center font-nunito-medium font-normal" style={{ fontSize: tamanoSubtitulo, color: Colors.light.textSecondary }}>Selecciona una opción para comenzar.</Text>
 
         {/* Opciones */}
         {/* NativeWind: w-full = 100% de ancho; flex-wrap = permite ajustar tarjetas; items-stretch = estira en el eje cruzado; justify-center = centra. */}
