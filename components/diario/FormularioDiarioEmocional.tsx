@@ -23,7 +23,7 @@ import { OpcionEmocion } from "@/components/diario/OpcionEmocion";
 import { CampoPreguntaDiario } from "@/components/diario/CampoPreguntaDiario";
 
 import Button from "@/components/ui/Button";
-import BotonVolver from "@/components/ui/BotonVolver";
+import BotonVolver from "@/components/ui/BotonVolver";//Agregado por el usuario para el boton de volver
 
 import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
 
