@@ -1,9 +1,11 @@
 import { supabase } from "@/lib/supabase";
 import {
   DetalleRegistroDiario,
-  EntradaDiarioResumen,
-  GuardarDiarioEmocionalParams,
+  DetalleRegistroABC,
   EmocionAutorregistro,
+  EntradaDiarioResumen,
+  GuardarAutorregistroABCParams,
+  GuardarDiarioEmocionalParams,
 } from "@/types/diario";
 
 // Obtener emociones activas desde Supabase
@@ -193,6 +195,127 @@ export async function guardarDiarioEmocionalService(
   }
 }
 
+// Guardar Autorregistro ABC
+
+export async function guardarAutorregistroABCService(
+  params: GuardarAutorregistroABCParams
+): Promise<string> {
+  const { idUsuario, contenido } = params;
+
+  if (!idUsuario) {
+    throw new Error("No se encontró el usuario.");
+  }
+
+  if (!contenido.trim()) {
+    throw new Error("Escribe algo antes de guardar el registro.");
+  }
+
+  // 1. Obtener la plantilla ABC activa
+  const { data: plantilla, error: errPlantilla } = await supabase
+    .from("plantilla_autorregistro")
+    .select("id_plantilla")
+    .eq("nombre", "Autorregistro ABC")
+    .eq("tipo", "abc")
+    .eq("estado", "activa")
+    .single();
+
+  if (errPlantilla || !plantilla) {
+    throw new Error(
+      `No se encontró la plantilla Autorregistro ABC: ${
+        errPlantilla?.message ?? "plantilla no encontrada"
+      }`
+    );
+  }
+
+  // 2. Obtener la única sección de escritura libre
+  const { data: seccion, error: errSeccion } = await supabase
+    .from("seccion_autorregistro")
+    .select("id_seccion")
+    .eq("id_plantilla", plantilla.id_plantilla)
+    .eq("orden", 1)
+    .single();
+
+  if (errSeccion || !seccion) {
+    throw new Error(
+      `No se encontró la sección del Autorregistro ABC: ${
+        errSeccion?.message ?? "sección no encontrada"
+      }`
+    );
+  }
+
+  let idRegistro: string | null = null;
+
+  try {
+    // 3. Crear el registro inicialmente en progreso
+    const { data: registro, error: errRegistro } = await supabase
+      .from("registro_autorregistro")
+      .insert({
+        id_usuario: idUsuario,
+        id_plantilla: plantilla.id_plantilla,
+        estado: "en_progreso",
+      })
+      .select("id_registro")
+      .single();
+
+    if (errRegistro || !registro) {
+      throw new Error(
+        `Error al crear el registro: ${
+          errRegistro?.message ?? "registro no creado"
+        }`
+      );
+    }
+
+    idRegistro = registro.id_registro;
+
+    if (!idRegistro) {
+      throw new Error("No se pudo obtener el ID del registro creado.");
+    }
+
+    // 4. Guardar el contenido libre
+    const { error: errRespuesta } = await supabase
+      .from("respuesta_autorregistro")
+      .insert({
+        id_registro: idRegistro,
+        id_seccion: seccion.id_seccion,
+        respuesta_texto: contenido.trim(),
+      });
+
+    if (errRespuesta) {
+      throw new Error(
+        `Error al guardar el contenido: ${errRespuesta.message}`
+      );
+    }
+
+    // 5. Marcar el registro como completado
+    const { error: errCompletar } = await supabase
+      .from("registro_autorregistro")
+      .update({
+        estado: "completado",
+        fecha_fin: new Date().toISOString(),
+      })
+      .eq("id_registro", idRegistro);
+
+    if (errCompletar) {
+      throw new Error(
+        `Error al completar el registro: ${errCompletar.message}`
+      );
+    }
+
+    return idRegistro;
+  } catch (error) {
+    // Si algo falla, eliminamos el registro creado.
+    // ON DELETE CASCADE limpia sus relaciones.
+    if (idRegistro) {
+      await supabase
+        .from("registro_autorregistro")
+        .delete()
+        .eq("id_registro", idRegistro);
+    }
+
+    throw error;
+  }
+}
+
 // Obtener historial
 export async function obtenerHistorialDiario(
   limit: number = 20
@@ -210,7 +333,8 @@ export async function obtenerHistorialDiario(
       id_registro,
       fecha_inicio,
       plantilla_autorregistro (
-        nombre
+        nombre,
+        tipo
       ),
       registro_emocion_autorregistro (
         emocion_autorregistro (
@@ -253,6 +377,8 @@ export async function obtenerHistorialDiario(
       fecha_inicio: item.fecha_inicio,
       plantilla_nombre:
         item.plantilla_autorregistro?.nombre ?? "Diario Emocional",
+      plantilla_tipo:
+        item.plantilla_autorregistro?.tipo ?? "emocional",
       emociones,
       respuesta_corta: respuestaMotivo,
     };
@@ -337,6 +463,143 @@ export async function obtenerDetalleRegistro(
     reaccion,
     ideaUtil,
   };
+}
+
+// Obtener detalle del Autorregistro ABC
+
+export async function obtenerDetalleRegistroABC(
+  idRegistro: string
+): Promise<DetalleRegistroABC | null> {
+  const { data, error } = await supabase
+    .from("registro_autorregistro")
+    .select(`
+      id_registro,
+      fecha_inicio,
+      plantilla_autorregistro (
+        nombre,
+        tipo
+      ),
+      respuesta_autorregistro (
+        respuesta_texto,
+        seccion_autorregistro (
+          orden
+        )
+      )
+    `)
+    .eq("id_registro", idRegistro)
+    .single();
+
+  if (error || !data) {
+    console.error(
+      "Error al obtener detalle del Autorregistro ABC:",
+      error
+    );
+
+    return null;
+  }
+
+  const plantilla = (data as any).plantilla_autorregistro;
+
+  if (plantilla?.tipo !== "abc") {
+    return null;
+  }
+
+  const respuestas =
+    (data as any).respuesta_autorregistro ?? [];
+
+  const contenido =
+    respuestas.find(
+      (respuesta: any) =>
+        respuesta.seccion_autorregistro?.orden === 1
+    )?.respuesta_texto ?? "";
+
+  return {
+    id_registro: data.id_registro,
+    fecha_inicio: data.fecha_inicio,
+    plantilla_nombre:
+      plantilla?.nombre ?? "Autorregistro ABC",
+    contenido,
+  };
+}
+
+// Actualizar Autorregistro ABC
+
+export async function actualizarAutorregistroABCService(params: {
+  idRegistro: string;
+  contenido: string;
+}): Promise<boolean> {
+  const { idRegistro, contenido } = params;
+
+  if (!idRegistro) {
+    throw new Error("No se encontró el registro.");
+  }
+
+  if (!contenido.trim()) {
+    throw new Error(
+      "Escribe algo antes de guardar los cambios."
+    );
+  }
+
+  // 1. Verificar el registro y obtener su plantilla
+  const { data: registro, error: errRegistro } = await supabase
+    .from("registro_autorregistro")
+    .select(`
+      id_plantilla,
+      plantilla_autorregistro (
+        tipo
+      )
+    `)
+    .eq("id_registro", idRegistro)
+    .single();
+
+  if (errRegistro || !registro) {
+    throw new Error("Registro no encontrado.");
+  }
+
+  const plantilla =
+    (registro as any).plantilla_autorregistro;
+
+  if (plantilla?.tipo !== "abc") {
+    throw new Error(
+      "El registro seleccionado no corresponde a un Autorregistro ABC."
+    );
+  }
+
+  // 2. Obtener la sección de escritura libre del ABC
+  const { data: seccion, error: errSeccion } = await supabase
+    .from("seccion_autorregistro")
+    .select("id_seccion")
+    .eq("id_plantilla", registro.id_plantilla)
+    .eq("orden", 1)
+    .single();
+
+  if (errSeccion || !seccion) {
+    throw new Error(
+      "No se encontró la sección del Autorregistro ABC."
+    );
+  }
+
+  // 3. Actualizar la respuesta
+  const { error: errRespuesta } = await supabase
+    .from("respuesta_autorregistro")
+    .upsert(
+      {
+        id_registro: idRegistro,
+        id_seccion: seccion.id_seccion,
+        respuesta_texto: contenido.trim(),
+      },
+      {
+        onConflict: "id_registro,id_seccion",
+      }
+    );
+
+  if (errRespuesta) {
+    throw new Error(
+      `Error al actualizar el contenido: ${errRespuesta.message}`
+    );
+  }
+
+  return true;
 }
 
 // Actualizar Diario Emocional

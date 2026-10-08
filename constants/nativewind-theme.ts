@@ -1,7 +1,8 @@
 import { vars } from "nativewind";
+
 import { Colors } from "@/constants/theme";
 
-const createNativeWindTheme = (colors: typeof Colors.light) =>
+const crearTema = (colors: typeof Colors.light) =>
   vars({
     "--primary": colors.primary,
     "--secondary": colors.secondary,
@@ -11,7 +12,6 @@ const createNativeWindTheme = (colors: typeof Colors.light) =>
     "--surface": colors.surface,
     "--surface-secondary": colors.surfaceSecondary,
     "--card": colors.card,
-    "--card-border": colors.cardBorder,
 
     "--text": colors.text,
     "--text-secondary": colors.textSecondary,
@@ -42,6 +42,6 @@ const createNativeWindTheme = (colors: typeof Colors.light) =>
   });
 
 export const NativeWindTheme = {
-  light: createNativeWindTheme(Colors.light),
-  dark: createNativeWindTheme(Colors.dark),
+  light: crearTema(Colors.light),
+  dark: crearTema(Colors.dark),
 };

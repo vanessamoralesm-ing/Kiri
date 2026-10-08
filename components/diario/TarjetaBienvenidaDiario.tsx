@@ -34,12 +34,12 @@ export default function TarjetaBienvenidaDiario({
   const esTablet = width >= 768 && width < 1100;
 
   const tamanoAvatar = esTelefonoPequeno
-    ? 96
+    ? 104
     : esTelefono
-      ? 112
+      ? 150
       : esTablet
-        ? 150
-        : 170;
+        ? 170
+        : 190;
 
   // ========================================================
   // UI

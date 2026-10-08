@@ -22,6 +22,8 @@ import { OpcionEmocion } from "@/components/diario/OpcionEmocion";
 
 import { CampoPreguntaDiario } from "@/components/diario/CampoPreguntaDiario";
 
+import { FormularioAutorregistroABC } from "@/components/diario/FormularioAutorregistroABC";
+
 import Button from "@/components/ui/Button";
 
 import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
@@ -33,6 +35,7 @@ import { useThemeColor } from "@/hooks/use-theme-color";
 import {
   actualizarDiarioEmocionalService,
   obtenerDetalleRegistro,
+  obtenerDetalleRegistroABC,
   obtenerEmocionesAutorregistro,
 } from "@/services/diario/autorregistro.service";
 
@@ -75,6 +78,10 @@ export default function EditarRegistroScreen() {
   // ========================================================
 
   const [cargando, setCargando] = useState(true);
+
+  const [tipoRegistro, setTipoRegistro] = useState<
+    "emocional" | "abc" | null
+  >(null);
 
   const [guardando, setGuardando] = useState(false);
 
@@ -165,6 +172,25 @@ export default function EditarRegistroScreen() {
       try {
         setCargando(true);
 
+        /*
+        * Primero comprobamos si el registro corresponde
+        * a un Autorregistro ABC.
+        *
+        * El propio servicio valida que la plantilla
+        * tenga tipo "abc".
+        */
+        const detalleABC = await obtenerDetalleRegistroABC(id);
+
+        if (detalleABC) {
+          setTipoRegistro("abc");
+
+          return;
+        }
+
+        /*
+        * Si no es ABC, conservamos exactamente el flujo
+        * que ya existía para Diario Emocional.
+        */
         const [detalle, emocionesBD] = await Promise.all([
           obtenerDetalleRegistro(id),
 
@@ -172,10 +198,15 @@ export default function EditarRegistroScreen() {
         ]);
 
         if (!detalle) {
-          Alert.alert("Error", "No se pudo encontrar el registro solicitado.");
+          Alert.alert(
+            "Error",
+            "No se pudo encontrar el registro solicitado.",
+          );
 
           return;
         }
+
+        setTipoRegistro("emocional");
 
         setEmociones(emocionesBD);
 
@@ -187,7 +218,10 @@ export default function EditarRegistroScreen() {
 
         setIdeaUtil(detalle.ideaUtil);
       } catch (error: any) {
-        Alert.alert("Error", error.message || "No se pudo cargar el registro.");
+        Alert.alert(
+          "Error",
+          error.message || "No se pudo cargar el registro.",
+        );
       } finally {
         setCargando(false);
       }
@@ -287,6 +321,19 @@ export default function EditarRegistroScreen() {
           Cargando registro...
         </Text>
       </View>
+    );
+  }
+
+  // ========================================================
+  // AUTORREGISTRO ABC
+  // ========================================================
+
+  if (tipoRegistro === "abc" && id) {
+    return (
+      <FormularioAutorregistroABC
+        modo="editar"
+        idRegistro={id}
+      />
     );
   }
 

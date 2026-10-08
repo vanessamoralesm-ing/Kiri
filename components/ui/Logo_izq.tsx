@@ -1,15 +1,10 @@
 import React from "react";
-
+import { useThemeMode } from "@/contexts/ThemeModeContext";
 import {
   Image,
   ImageStyle,
   StyleProp,
 } from "react-native";
-
-import {
-  useTheme,
-} from "expo-router/react-navigation";
-
 
 // ==========================================================
 // PROPS

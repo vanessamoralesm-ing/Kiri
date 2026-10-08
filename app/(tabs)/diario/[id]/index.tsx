@@ -11,9 +11,10 @@ import Animated, { FadeInUp } from "react-native-reanimated";
 import {
   eliminarRegistroDiario,
   obtenerDetalleRegistro,
+  obtenerDetalleRegistroABC,
 } from "@/services/diario/autorregistro.service";
 
-import { DetalleRegistroDiario } from "@/types/diario";
+import { DetalleRegistroDiario, DetalleRegistroABC } from "@/types/diario";
 
 import { DetalleHeader } from "@/components/diario/DetalleHeader";
 
@@ -50,8 +51,15 @@ export default function VerEntradaDiarioScreen() {
 
   const [cargando, setCargando] = useState(true);
 
-  const [registro, setRegistro] = useState<DetalleRegistroDiario | null>(null);
+  const [tipoRegistro, setTipoRegistro] = useState<
+    "emocional" | "abc" | null
+  >(null);
 
+  const [registroEmocional, setRegistroEmocional] =
+    useState<DetalleRegistroDiario | null>(null);
+
+  const [registroABC, setRegistroABC] =
+    useState<DetalleRegistroABC | null>(null);
   // ========================================================
   // TEMA
   // ========================================================
@@ -112,13 +120,42 @@ export default function VerEntradaDiarioScreen() {
         try {
           setCargando(true);
 
-          const data = await obtenerDetalleRegistro(id);
+          setTipoRegistro(null);
+          setRegistroABC(null);
+          setRegistroEmocional(null);
 
-          setRegistro(data);
+          // Primero comprobamos si es Autorregistro ABC.
+          const detalleABC = await obtenerDetalleRegistroABC(id);
+
+          if (detalleABC) {
+            setRegistroABC(detalleABC);
+            setTipoRegistro("abc");
+
+            return;
+          }
+
+          // Si no es ABC, conservamos el flujo existente
+          // del Diario Emocional.
+          const detalleEmocional =
+            await obtenerDetalleRegistro(id);
+
+          if (detalleEmocional) {
+            setRegistroEmocional(detalleEmocional);
+            setTipoRegistro("emocional");
+
+            return;
+          }
+
+          setTipoRegistro(null);
         } catch (error) {
-          console.error("Error al cargar el detalle:", error);
+          console.error(
+            "Error al cargar el detalle:",
+            error,
+          );
 
-          setRegistro(null);
+          setTipoRegistro(null);
+          setRegistroABC(null);
+          setRegistroEmocional(null);
         } finally {
           setCargando(false);
         }
@@ -223,7 +260,12 @@ export default function VerEntradaDiarioScreen() {
   // REGISTRO NO ENCONTRADO
   // ========================================================
 
-  if (!registro) {
+  if (
+    !tipoRegistro ||
+    (tipoRegistro === "abc" && !registroABC) ||
+    (tipoRegistro === "emocional" && !registroEmocional)
+  ) {
+
     return (
       <View
         style={{
@@ -363,6 +405,216 @@ export default function VerEntradaDiarioScreen() {
   }
 
   // ========================================================
+  // AUTORREGISTRO ABC - SOLO LECTURA
+  // ========================================================
+
+  if (tipoRegistro === "abc" && registroABC) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor,
+        }}
+      >
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingTop,
+            paddingBottom,
+          }}
+        >
+          <View
+            style={{
+              width: "100%",
+              maxWidth: esEscritorio
+                ? 820
+                : esTablet
+                  ? MAX_WIDTHS.formulario
+                  : undefined,
+              alignSelf: "center",
+              paddingHorizontal,
+            }}
+          >
+            {/* ==============================================
+                HEADER
+            ============================================== */}
+
+            <DetalleHeader
+              onBack={() => router.back()}
+              onEdit={() =>
+                router.push(
+                  `/diario/${id}/editar` as never,
+                )
+              }
+              onDelete={confirmarEliminacion}
+            />
+
+            {/* ==============================================
+                FECHA
+            ============================================== */}
+
+            <View
+              style={{
+                alignSelf: "flex-start",
+                marginTop: 20,
+                marginBottom: 16,
+                paddingHorizontal: 14,
+                paddingVertical: 9,
+                borderRadius: 14,
+                backgroundColor: surfaceSecondaryColor,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: "Nunito-SemiBold",
+                  fontSize: 14,
+                  color: textSecondaryColor,
+                }}
+              >
+                {formatearFecha(registroABC.fecha_inicio)}
+              </Text>
+            </View>
+
+            {/* ==============================================
+                TARJETA ABC
+            ============================================== */}
+
+            <View
+              style={{
+                width: "100%",
+                overflow: "hidden",
+                borderRadius: esTelefono ? 22 : 26,
+                borderWidth: 1,
+                borderColor,
+                backgroundColor: surfaceColor,
+
+                elevation: 2,
+
+                shadowColor: "#000000",
+                shadowOffset: {
+                  width: 0,
+                  height: 4,
+                },
+                shadowOpacity: 0.06,
+                shadowRadius: 12,
+              }}
+            >
+              {/* ==========================================
+                  ENCABEZADO DE LA TARJETA
+              ========================================== */}
+
+              <View
+                style={{
+                  paddingHorizontal: esTelefono ? 18 : 24,
+                  paddingTop: esTelefono ? 18 : 20,
+                  paddingBottom: esTelefono ? 14 : 16,
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
+                <View
+                  style={{
+                    width: 42,
+                    height: 42,
+                    flexShrink: 0,
+                    borderRadius: 13,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: surfaceSecondaryColor,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 21,
+                    }}
+                  >
+                    📖
+                  </Text>
+                </View>
+
+                <View
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    marginLeft: 12,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: "Nunito-Bold",
+                      fontSize: esTelefono ? 18 : 20,
+                      color: primaryColor,
+                    }}
+                  >
+                    Autorregistro ABC
+                  </Text>
+
+                  {!esTelefono && (
+                    <Text
+                      style={{
+                        marginTop: 2,
+                        fontFamily: "Nunito-Medium",
+                        fontSize: 13,
+                        lineHeight: 18,
+                        color: textMutedColor,
+                      }}
+                    >
+                      Tu reflexión personal
+                    </Text>
+                  )}
+                </View>
+              </View>
+
+              {/* ==========================================
+                  DIVISOR
+              ========================================== */}
+
+              <View
+                style={{
+                  height: 1,
+                  marginHorizontal: esTelefono ? 18 : 24,
+                  backgroundColor: borderColor,
+                }}
+              />
+
+              {/* ==========================================
+                  CONTENIDO GUARDADO
+              ========================================== */}
+
+              <View
+                style={{
+                  paddingHorizontal: esTelefono ? 18 : 24,
+                  paddingTop: esTelefono ? 18 : 22,
+                  paddingBottom: esTelefono ? 22 : 26,
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: "Nunito-Medium",
+                    fontSize: esTelefono ? 17 : 18,
+                    lineHeight: esTelefono ? 27 : 29,
+                    color: textColor,
+                  }}
+                >
+                  {registroABC.contenido ||
+                    "Sin contenido registrado."}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // ========================================================
+  // DIARIO EMOCIONAL
+  // ========================================================
+
+  if (!registroEmocional) {
+    return null;
+  }
+  // ========================================================
   // UI
   // ========================================================
 
@@ -416,8 +668,8 @@ export default function VerEntradaDiarioScreen() {
             />
 
             <ResumenRegistroCard
-              fecha={formatearFecha(registro.fecha_inicio)}
-              emocion={registro.emocionNombre}
+              fecha={formatearFecha(registroEmocional.fecha_inicio)}
+              emocion={registroEmocional.emocionNombre}
             />
           </Animated.View>
 
@@ -457,7 +709,7 @@ export default function VerEntradaDiarioScreen() {
             >
               <RespuestaDetalleCard
                 titulo="¿Qué me hizo sentir así?"
-                respuesta={registro.motivo}
+                respuesta={registroEmocional.motivo}
                 delay={100}
               />
             </View>
@@ -477,7 +729,7 @@ export default function VerEntradaDiarioScreen() {
             >
               <RespuestaDetalleCard
                 titulo="¿Cómo reaccioné?"
-                respuesta={registro.reaccion}
+                respuesta={registroEmocional.reaccion}
                 delay={160}
               />
             </View>
@@ -493,7 +745,7 @@ export default function VerEntradaDiarioScreen() {
             >
               <RespuestaDetalleCard
                 titulo="Una idea útil"
-                respuesta={registro.ideaUtil}
+                respuesta={registroEmocional.ideaUtil}
                 delay={220}
               />
             </View>
