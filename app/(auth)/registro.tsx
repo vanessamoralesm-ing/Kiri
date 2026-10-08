@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Image,
   Platform,
   Pressable,
   ScrollView,
@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import BotonVolver from "@/components/ui/BotonVolver";
 import Button from "@/components/ui/Button";
 import GoogleButton from "@/components/ui/GoogleButton";
 import UsuarioForm, {
@@ -152,6 +153,10 @@ export default function RegisterScreen() {
     >
       <View className="w-full items-center px-4 md:px-6 lg:px-8">
         <View className="w-full max-w-4xl bg-background md:rounded-3xl md:border md:border-border md:bg-surface md:p-7 lg:p-8">
+          <View className="mb-2 items-start">
+            <BotonVolver onPress={() => router.back()} />
+          </View>
+
           <View className="items-center">
             <Image
               source={
@@ -159,8 +164,8 @@ export default function RegisterScreen() {
                   ? require("../../assets/images/splash-icon-ps.png")
                   : require("../../assets/images/splash-icon.png")
               }
-              resizeMode="contain"
-              className="h-24 w-24 lg:h-28 lg:w-28"
+              contentFit="contain"
+              className="h-24 w-24 md:h-28 md:w-28"
             />
           </View>
 
@@ -229,6 +234,7 @@ export default function RegisterScreen() {
                 size={21}
                 className="text-danger"
               />
+
               <Text className="min-w-0 flex-1 font-nunito-medium text-sm leading-5 text-danger">
                 {error}
               </Text>
@@ -243,14 +249,19 @@ export default function RegisterScreen() {
           />
 
           {submitting && (
-            <ActivityIndicator className="mt-3" color={colores.primary} />
+            <ActivityIndicator
+              className="mt-3"
+              color={colores.primary}
+            />
           )}
 
           <View className="my-5 flex-row items-center">
             <View className="h-px flex-1 bg-divider" />
+
             <Text className="mx-4 font-nunito-medium text-sm text-text-muted">
               o regístrate con
             </Text>
+
             <View className="h-px flex-1 bg-divider" />
           </View>
 

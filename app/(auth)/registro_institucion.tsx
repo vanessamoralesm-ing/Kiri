@@ -1,1443 +1,384 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useRef, useState } from "react";
-
 import {
-  ActivityIndicator,
-  Alert,
+  KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
-
-// COMPONENTES
+import AdminCard from "@/components/admin/AdminCard";
+import { AdminFilterOptions } from "@/components/admin/AdminFilters";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Logo from "@/components/ui/Logo_izq";
-
-// RESPONSIVE
-import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
-
-import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
-
-// TEMA
-import { useThemeColor } from "@/hooks/use-theme-color";
-
-// SERVICE
+import { useModal } from "@/contexts/ModalContext";
 import { crearSolicitudInstitucional } from "@/services/instituciones/solicitudInstitucionService";
-
-// TYPES
+import { TIPOS_INSTITUCION } from "@/types/instituciones/institucion";
 import type { TipoInstitucion } from "@/types/superadmin/solicitudes";
+import { cn } from "@/utils/cn";
+import { validateEmail } from "@/utils/validations";
 
-// ==========================================================
-// TIPOS DE INSTITUCIÓN
-// ==========================================================
-
-type OpcionInstitucion = {
-  valor: TipoInstitucion;
-  etiqueta: string;
-  icono: keyof typeof Ionicons.glyphMap;
-};
-
-const TIPOS_INSTITUCION: OpcionInstitucion[] = [
-  {
-    valor: "educacion_superior",
-    etiqueta: "Educación superior",
-    icono: "school-outline",
-  },
-  {
-    valor: "escolar",
-    etiqueta: "Escolar",
-    icono: "book-outline",
-  },
-  {
-    valor: "salud",
-    etiqueta: "Salud",
-    icono: "medkit-outline",
-  },
-];
-
-// ==========================================================
-// COMPONENTE
-// ==========================================================
+const CAMPOS = [
+  [
+    ["nombre_institucion", "Nombre de la Institución", "Ej. Colegio José Madriz"],
+    ["codigo_institucional", "Código Institucional", "Ej. MINED-0321"],
+    ["departamento", "Departamento", "Ej. León"],
+    ["municipio", "Municipio", "Ej. León"],
+    [
+      "direccion",
+      "Dirección de la Institución",
+      "Ej. Barrio El Sagrario, frente al parque...",
+    ],
+  ],
+  [
+    ["nombre_solicitante", "Nombre del Solicitante", "Ej. Félix Pedro"],
+    ["apellido_solicitante", "Apellido del Solicitante", "Ej. López Pérez"],
+    ["cedula_solicitante", "Número de Cédula", "001-123456-0001P"],
+    ["cargo_solicitante", "Cargo", "Ej. Director"],
+    ["correo", "Correo Institucional", "admin@institucion.edu.ni"],
+    ["telefono", "Teléfono de Contacto", "8888-1234"],
+    ["descripcion", "Motivo de la Solicitud", "¿Por qué desean utilizar Kiri?"],
+  ],
+] as const;
 
 export default function RegistroInstitucionPantalla() {
   const router = useRouter();
-
-  const insets = useSafeAreaInsets();
-
+  const { avisar } = useModal();
   const scrollRef = useRef<ScrollView>(null);
+  const ocupado = useRef(false);
 
-  const { esTelefono, esTablet, esEscritorio } = useResponsiveLayout();
-
-  // ========================================================
-  // TEMA
-  // ========================================================
-
-  const backgroundColor = useThemeColor({}, "background");
-
-  const surfaceColor = useThemeColor({}, "surface");
-
-  const surfaceSecondaryColor = useThemeColor({}, "surfaceSecondary");
-
-  const borderColor = useThemeColor({}, "border");
-
-  const textColor = useThemeColor({}, "text");
-
-  const textSecondaryColor = useThemeColor({}, "textSecondary");
-
-  const textMutedColor = useThemeColor({}, "textMuted");
-
-  const primaryColor = useThemeColor({}, "primary");
-
-  const primarySoftColor = useThemeColor({}, "primarySoft");
-
-  const secondaryColor = useThemeColor({}, "secondary");
-
-  const secondarySoftColor = useThemeColor({}, "secondarySoft");
-
-  const iconColor = useThemeColor({}, "icon");
-
-  const textOnPrimaryColor = useThemeColor({}, "textOnPrimary");
-
-  // ========================================================
-  // ESTADOS GENERALES
-  // ========================================================
-
-  const [pasoActual, setPasoActual] = useState(1);
-
+  const [paso, setPaso] = useState<1 | 2>(1);
   const [enviando, setEnviando] = useState(false);
+  const [datos, setDatos] = useState({
+    nombre_institucion: "",
+    codigo_institucional: "",
+    tipo_institucion: "" as TipoInstitucion | "",
+    departamento: "",
+    municipio: "",
+    direccion: "",
+    nombre_solicitante: "",
+    apellido_solicitante: "",
+    cedula_solicitante: "",
+    cargo_solicitante: "",
+    correo: "",
+    telefono: "",
+    descripcion: "",
+  });
 
-  // ========================================================
-  // PASO 1 - INSTITUCIÓN
-  // ========================================================
+  const campos = CAMPOS[paso - 1];
 
-  const [nombreInstitucion, setNombreInstitucion] = useState("");
+  const cambiarCampo = (campo: keyof typeof datos, valor: string) =>
+    setDatos((actual) => ({ ...actual, [campo]: valor }));
 
-  const [codigoInstitucional, setCodigoInstitucional] = useState("");
+  const cambiarPaso = (nuevo: 1 | 2) => {
+    setPaso(nuevo);
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  };
 
-  const [tipoInstitucion, setTipoInstitucion] =
-    useState<TipoInstitucion | null>(null);
+  const salir = () =>
+    router.canGoBack()
+      ? router.back()
+      : router.replace("/(auth)/welcome");
 
-  const [departamento, setDepartamento] = useState("");
+  const regresar = () => {
+    if (ocupado.current) return;
+    paso === 2 ? cambiarPaso(1) : salir();
+  };
 
-  const [municipio, setMunicipio] = useState("");
-
-  const [direccion, setDireccion] = useState("");
-
-  // ========================================================
-  // PASO 2 - REPRESENTANTE
-  // ========================================================
-
-  const [nombreSolicitante, setNombreSolicitante] = useState("");
-
-  const [apellidoSolicitante, setApellidoSolicitante] = useState("");
-
-  const [cedula, setCedula] = useState("");
-
-  const [cargo, setCargo] = useState("");
-
-  const [correo, setCorreo] = useState("");
-
-  const [telefono, setTelefono] = useState("");
-
-  const [motivo, setMotivo] = useState("");
-
-  // ========================================================
-  // RESPONSIVE
-  // ========================================================
-
-  const paddingHorizontal = esEscritorio
-    ? PADDING_RESPONSIVE.escritorio
-    : esTablet
-      ? PADDING_RESPONSIVE.tablet
-      : PADDING_RESPONSIVE.telefono;
-
-  const maxWidthPantalla = esEscritorio
-    ? MAX_WIDTHS.dashboard
-    : esTablet
-      ? MAX_WIDTHS.contenido
-      : undefined;
-
-  const maxWidthFormulario = esEscritorio
-    ? 900
-    : esTablet
-      ? MAX_WIDTHS.formulario
-      : undefined;
-
-  const paddingTarjeta = esEscritorio ? 30 : esTablet ? 26 : 20;
-
-  const paddingBottom = esEscritorio ? 54 : Math.max(insets.bottom + 32, 44);
-
-  const formularioEnColumnas = !esTelefono;
-
-  // ========================================================
-  // NAVEGACIÓN ENTRE PASOS
-  // ========================================================
-
-  function irAlInicioDelFormulario() {
-    scrollRef.current?.scrollTo({
-      y: 0,
-      animated: true,
-    });
-  }
-
-  function cambiarPaso(paso: number) {
-    setPasoActual(paso);
-
-    irAlInicioDelFormulario();
-  }
-
-  function regresar() {
-    if (enviando) {
-      return;
-    }
-
-    if (pasoActual === 2) {
-      cambiarPaso(1);
-      return;
-    }
-
-    router.back();
-  }
-
-  // ========================================================
-  // VALIDACIONES
-  // ========================================================
-
-  function correoValido(valor: string) {
-    const correoLimpio = valor.trim();
-
-    return correoLimpio.includes("@") && correoLimpio.includes(".");
-  }
-
-  function irAlPaso2() {
-    if (
-      !nombreInstitucion.trim() ||
-      !codigoInstitucional.trim() ||
-      !tipoInstitucion ||
-      !departamento.trim() ||
-      !municipio.trim() ||
-      !direccion.trim()
-    ) {
-      Alert.alert(
-        "Campos incompletos",
-        "Por favor completa todos los datos obligatorios de la institución.",
-      );
-
-      return;
-    }
-
-    cambiarPaso(2);
-  }
-
-  // ========================================================
-  // ENVIAR SOLICITUD
-  // ========================================================
-
-  async function enviarSolicitud() {
-    if (enviando) {
-      return;
-    }
+  const continuar = async () => {
+    if (ocupado.current) return;
 
     if (
-      !nombreSolicitante.trim() ||
-      !apellidoSolicitante.trim() ||
-      !cedula.trim() ||
-      !cargo.trim() ||
-      !correo.trim() ||
-      !telefono.trim() ||
-      !motivo.trim()
+      !datos.tipo_institucion ||
+      campos.some(([campo]) => !datos[campo].trim())
     ) {
-      Alert.alert(
+      await avisar(
         "Campos incompletos",
-        "Por favor completa todos los datos obligatorios del solicitante.",
+        "Por favor completa todos los datos obligatorios.",
+        true,
       );
-
       return;
     }
 
-    if (!correoValido(correo)) {
-      Alert.alert("Correo inválido", "Ingresa un correo institucional válido.");
-
+    if (paso === 1) {
+      cambiarPaso(2);
       return;
     }
 
-    if (!tipoInstitucion) {
-      Alert.alert("Tipo de institución", "Selecciona un tipo de institución.");
+    const errorCorreo = validateEmail(datos.correo);
 
+    if (errorCorreo) {
+      await avisar("Correo inválido", errorCorreo, true);
       return;
     }
+
+    ocupado.current = true;
+    setEnviando(true);
 
     try {
-      setEnviando(true);
-
-      await crearSolicitudInstitucional({
-        nombre_institucion: nombreInstitucion.trim(),
-
-        codigo_institucional: codigoInstitucional.trim(),
-
-        tipo_institucion: tipoInstitucion,
-
-        direccion: direccion.trim(),
-
-        municipio: municipio.trim(),
-
-        departamento: departamento.trim(),
-
-        nombre_solicitante: nombreSolicitante.trim(),
-
-        apellido_solicitante: apellidoSolicitante.trim(),
-
-        cedula_solicitante: cedula.trim(),
-
-        cargo_solicitante: cargo.trim(),
-
-        correo: correo.trim(),
-
-        telefono: telefono.trim(),
-
-        descripcion: motivo.trim(),
+      const resultado = await crearSolicitudInstitucional({
+        ...datos,
+        tipo_institucion: datos.tipo_institucion,
       });
 
-      Alert.alert(
+      await avisar(
         "Solicitud registrada",
-        "Tu solicitud ha sido enviada correctamente. El equipo de Kiri revisará la información y te notificará por correo cuando exista una resolución.",
-        [
-          {
-            text: "Entendido",
-            onPress: () => router.back(),
-          },
-        ],
+        resultado.warning ??
+          "Tu solicitud ha sido enviada correctamente. El equipo de Kiri revisará la información y te notificará por correo cuando exista una resolución.",
       );
-    } catch (error) {
-      console.error("Error enviando solicitud institucional:", error);
 
-      Alert.alert(
+      salir();
+    } catch (error) {
+      await avisar(
         "No se pudo enviar la solicitud",
         error instanceof Error
           ? error.message
           : "Ocurrió un error inesperado. Inténtalo nuevamente.",
+        true,
       );
     } finally {
+      ocupado.current = false;
       setEnviando(false);
     }
-  }
-
-  // ========================================================
-  // SELECTOR DE TIPO DE INSTITUCIÓN
-  // ========================================================
-
-  function renderTipoInstitucion(opcion: OpcionInstitucion) {
-    const seleccionado = tipoInstitucion === opcion.valor;
-
-    return (
-      <Pressable
-        key={opcion.valor}
-        onPress={() => setTipoInstitucion(opcion.valor)}
-        accessibilityRole="radio"
-        accessibilityState={{
-          selected: seleccionado,
-        }}
-        accessibilityLabel={opcion.etiqueta}
-        style={({ pressed }) => ({
-          width: esTelefono ? "100%" : undefined,
-
-          flex: esTelefono ? undefined : 1,
-
-          minWidth: 0,
-
-          borderRadius: 15,
-
-          overflow: "hidden",
-
-          opacity: pressed ? 0.8 : 1,
-        })}
-      >
-        <View
-          style={{
-            width: "100%",
-
-            minHeight: esTelefono ? 62 : 78,
-
-            paddingHorizontal: 14,
-            paddingVertical: 12,
-
-            borderRadius: 15,
-
-            borderWidth: seleccionado ? 2 : 1,
-
-            borderColor: seleccionado ? primaryColor : borderColor,
-
-            backgroundColor: seleccionado
-              ? primarySoftColor
-              : surfaceSecondaryColor,
-
-            flexDirection: "row",
-
-            alignItems: "center",
-
-            justifyContent: esTelefono ? "flex-start" : "center",
-
-            gap: 12,
-          }}
-        >
-          {/* ICONO */}
-
-          <View
-            style={{
-              width: 38,
-              height: 38,
-
-              borderRadius: 11,
-
-              flexShrink: 0,
-
-              alignItems: "center",
-              justifyContent: "center",
-
-              backgroundColor: seleccionado ? primarySoftColor : surfaceColor,
-            }}
-          >
-            <Ionicons
-              name={opcion.icono}
-              size={22}
-              color={seleccionado ? primaryColor : iconColor}
-            />
-          </View>
-
-          {/* TEXTO */}
-
-          <View
-            style={{
-              flex: 1,
-
-              minWidth: 0,
-
-              justifyContent: "center",
-            }}
-          >
-            <Text
-              numberOfLines={2}
-              style={{
-                fontFamily: seleccionado ? "Nunito-Bold" : "Nunito-SemiBold",
-
-                fontSize: esTelefono ? 14 : 13,
-
-                lineHeight: 19,
-
-                color: seleccionado ? primaryColor : textColor,
-              }}
-            >
-              {opcion.etiqueta}
-            </Text>
-          </View>
-
-          {/* INDICADOR DE SELECCIÓN */}
-
-          <View
-            style={{
-              width: 22,
-              height: 22,
-
-              flexShrink: 0,
-
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Ionicons
-              name={seleccionado ? "radio-button-on" : "radio-button-off"}
-              size={21}
-              color={seleccionado ? primaryColor : textMutedColor}
-            />
-          </View>
-        </View>
-      </Pressable>
-    );
-  }
-
-  // ========================================================
-  // UI
-  // ========================================================
+  };
 
   return (
-    <SafeAreaView
-      edges={["top"]}
-      style={{
-        flex: 1,
-        backgroundColor,
-      }}
-    >
-      <ScrollView
-        ref={scrollRef}
-        style={{
-          flex: 1,
-          backgroundColor,
-        }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{
-          flexGrow: 1,
-
-          paddingTop: esEscritorio ? 30 : 12,
-
-          paddingBottom,
-
-          backgroundColor,
-        }}
+    <SafeAreaView edges={["top"]} className="flex-1 bg-background">
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View
-          style={{
-            width: "100%",
-
-            maxWidth: maxWidthPantalla,
-
-            alignSelf: "center",
-
-            paddingHorizontal,
-          }}
+        <ScrollView
+          ref={scrollRef}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          showsVerticalScrollIndicator={false}
+          contentContainerClassName="grow px-4 py-6 md:px-8 lg:py-10"
         >
-          <View
-            style={{
-              width: "100%",
-
-              maxWidth: maxWidthFormulario,
-
-              alignSelf: "center",
-            }}
-          >
-            {/* ============================================
-                CABECERA
-            ============================================ */}
-
-            <View
-              style={{
-                width: "100%",
-
-                minHeight: 56,
-
-                flexDirection: "row",
-
-                alignItems: "center",
-
-                justifyContent: "space-between",
-              }}
-            >
-              {/* REGRESAR */}
-
+          {/* Responsive:
+              móvil usa todo el ancho;
+              desde pantallas grandes se limita con max-w-4xl. */}
+          <View className="w-full max-w-4xl self-center gap-5">
+            <View className="flex-row items-center justify-between">
               <Pressable
-                onPress={regresar}
+                accessibilityRole="button"
+                accessibilityLabel="Volver"
                 disabled={enviando}
-                hitSlop={8}
-                style={({ pressed }) => ({
-                  width: 46,
-                  height: 46,
-
-                  borderRadius: 15,
-
-                  borderWidth: 1,
-                  borderColor,
-
-                  alignItems: "center",
-                  justifyContent: "center",
-
-                  backgroundColor: pressed
-                    ? surfaceSecondaryColor
-                    : surfaceColor,
-
-                  opacity: enviando ? 0.5 : 1,
-                })}
+                onPress={regresar}
+                className="h-11 w-11 items-center justify-center rounded-xl border border-border bg-surface active:opacity-70"
               >
-                <Ionicons name="arrow-back" size={23} color={iconColor} />
+                <Ionicons
+                  name="arrow-back"
+                  size={22}
+                  className="text-icon"
+                />
               </Pressable>
 
-              {/* LOGO */}
-
-              <View
-                style={{
-                  flexShrink: 0,
-
-                  maxWidth: esTelefono ? "65%" : undefined,
-
-                  alignItems: "flex-end",
-
-                  justifyContent: "center",
-                }}
-              >
+              <View className="h-16 w-32 items-end justify-center">
                 <Logo />
               </View>
             </View>
 
-            {/* ============================================
-                ENCABEZADO
-            ============================================ */}
-
-            <View
-              style={{
-                marginTop: esEscritorio ? 20 : 16,
-
-                alignItems: "center",
-              }}
-            >
-              <View
-                style={{
-                  width: esEscritorio ? 58 : 52,
-
-                  height: esEscritorio ? 58 : 52,
-
-                  borderRadius: esEscritorio ? 18 : 16,
-
-                  alignItems: "center",
-
-                  justifyContent: "center",
-
-                  backgroundColor: primarySoftColor,
-                }}
-              >
+            <View className="items-center gap-3">
+              <View className="h-14 w-14 items-center justify-center rounded-2xl bg-primary-soft">
                 <Ionicons
                   name="business-outline"
-                  size={esEscritorio ? 28 : 25}
-                  color={primaryColor}
+                  size={28}
+                  className="text-primary"
                 />
               </View>
 
-              <Text
-                style={{
-                  marginTop: 14,
-
-                  fontFamily: "Nunito-Bold",
-
-                  fontSize: esEscritorio ? 32 : esTablet ? 29 : 26,
-
-                  lineHeight: esEscritorio ? 40 : 34,
-
-                  textAlign: "center",
-
-                  color: primaryColor,
-                }}
-              >
+              {/* Responsive:
+                  text-2xl en móvil;
+                  text-3xl desde md. */}
+              <Text className="text-center font-nunito-bold text-2xl text-text md:text-3xl">
                 Solicitud de Institución
               </Text>
 
-              <Text
-                style={{
-                  marginTop: 7,
-
-                  maxWidth: 650,
-
-                  fontFamily: "Nunito-Medium",
-
-                  fontSize: esEscritorio ? 16 : 14,
-
-                  lineHeight: esEscritorio ? 23 : 21,
-
-                  textAlign: "center",
-
-                  color: textSecondaryColor,
-                }}
-              >
+              <Text className="max-w-2xl text-center font-nunito-medium text-base text-text-secondary">
                 Únete al ecosistema de Kiri y transforma el bienestar emocional
                 de tu comunidad.
               </Text>
-            </View>
 
-            {/* ============================================
-                INDICADOR DE PASOS
-            ============================================ */}
-
-            <View
-              style={{
-                width: "100%",
-
-                marginTop: esEscritorio ? 28 : 22,
-
-                flexDirection: "row",
-
-                alignItems: "center",
-
-                justifyContent: "center",
-              }}
-            >
-              <View
-                style={{
-                  width: "100%",
-
-                  maxWidth: 420,
-
-                  flexDirection: "row",
-
-                  alignItems: "center",
-                }}
-              >
-                {/* PASO 1 */}
-
-                <View
-                  style={{
-                    width: 34,
-                    height: 34,
-
-                    borderRadius: 17,
-
-                    alignItems: "center",
-
-                    justifyContent: "center",
-
-                    backgroundColor: primaryColor,
-                  }}
-                >
-                  {pasoActual === 2 ? (
+              <View className="flex-row items-center">
+                <View className="h-10 w-10 items-center justify-center rounded-full bg-primary">
+                  {paso === 2 ? (
                     <Ionicons
                       name="checkmark"
-                      size={19}
-                      color={textOnPrimaryColor}
+                      size={20}
+                      className="text-text-on-primary"
                     />
                   ) : (
-                    <Text
-                      style={{
-                        fontFamily: "Nunito-Bold",
-
-                        fontSize: 13,
-
-                        color: textOnPrimaryColor,
-                      }}
-                    >
+                    <Text className="font-nunito-bold text-text-on-primary">
                       1
                     </Text>
                   )}
                 </View>
 
-                {/* LÍNEA */}
-
                 <View
-                  style={{
-                    flex: 1,
-
-                    height: 4,
-
-                    marginHorizontal: 8,
-
-                    borderRadius: 999,
-
-                    backgroundColor:
-                      pasoActual === 2 ? primaryColor : borderColor,
-                  }}
+                  className={cn(
+                    "h-1 w-16",
+                    paso === 2 ? "bg-primary" : "bg-border",
+                  )}
                 />
 
-                {/* PASO 2 */}
-
                 <View
-                  style={{
-                    width: 34,
-                    height: 34,
-
-                    borderRadius: 17,
-
-                    alignItems: "center",
-
-                    justifyContent: "center",
-
-                    borderWidth: pasoActual === 1 ? 1 : 0,
-
-                    borderColor,
-
-                    backgroundColor:
-                      pasoActual === 2 ? primaryColor : surfaceSecondaryColor,
-                  }}
+                  className={cn(
+                    "h-10 w-10 items-center justify-center rounded-full",
+                    paso === 2 ? "bg-primary" : "bg-surface-secondary",
+                  )}
                 >
                   <Text
-                    style={{
-                      fontFamily: "Nunito-Bold",
-
-                      fontSize: 13,
-
-                      color:
-                        pasoActual === 2 ? textOnPrimaryColor : textMutedColor,
-                    }}
+                    className={cn(
+                      "font-nunito-bold",
+                      paso === 2
+                        ? "text-text-on-primary"
+                        : "text-text-muted",
+                    )}
                   >
                     2
                   </Text>
                 </View>
               </View>
+
+              <Text className="text-center font-nunito-semibold text-sm text-text-secondary">
+                {paso === 1
+                  ? "Paso 1 de 2 · Información general de la institución"
+                  : "Paso 2 de 2 · Datos del representante y contacto"}
+              </Text>
             </View>
 
-            <Text
-              style={{
-                marginTop: 10,
+            <AdminCard className="gap-5 md:p-6">
+              <View className="gap-2">
+                <Text className="font-nunito-bold text-xl text-text">
+                  {paso === 1
+                    ? "Información de la institución"
+                    : "Datos del representante"}
+                </Text>
 
-                fontFamily: "Nunito-SemiBold",
+                <Text className="font-nunito-medium text-sm text-text-secondary">
+                  {paso === 1
+                    ? "Ingresa los datos generales de la organización que desea utilizar Kiri."
+                    : "Proporciona los datos de la persona responsable de la solicitud institucional."}
+                </Text>
+              </View>
 
-                fontSize: 13,
+              {/* Responsive:
+                  una columna en móvil;
+                  desde md, dos columnas;
+                  dirección y descripción ocupan toda la fila. */}
+              <View className="-mx-2 flex-row flex-wrap">
+                {campos.map(([campo, label, placeholder]) => {
+                  const multiline =
+                    campo === "direccion" || campo === "descripcion";
 
-                lineHeight: 19,
+                  return (
+                    <React.Fragment key={campo}>
+                      <View
+                        className={cn(
+                          "w-full px-2",
+                          !multiline && "md:w-1/2",
+                        )}
+                      >
+                        <Input
+                          label={`${label} *`}
+                          placeholder={placeholder}
+                          value={datos[campo]}
+                          onChangeText={(valor) =>
+                            cambiarCampo(campo, valor)
+                          }
+                          editable={!enviando}
+                          multiline={multiline}
+                          numberOfLines={multiline ? 4 : 1}
+                          textAlignVertical={
+                            multiline ? "top" : "center"
+                          }
+                          inputClassName={multiline ? "h-24" : undefined}
+                          keyboardType={
+                            campo === "correo"
+                              ? "email-address"
+                              : campo === "telefono"
+                                ? "phone-pad"
+                                : "default"
+                          }
+                          autoCapitalize={
+                            campo === "correo" ? "none" : "sentences"
+                          }
+                        />
+                      </View>
 
-                textAlign: "center",
+                      {campo === "codigo_institucional" && (
+                        <View className="mb-5 w-full px-2">
+                          <AdminFilterOptions
+                            label="Tipo de Institución *"
+                            value={datos.tipo_institucion}
+                            options={TIPOS_INSTITUCION}
+                            disabled={enviando}
+                            onChange={(valor) =>
+                              cambiarCampo(
+                                "tipo_institucion",
+                                valor as TipoInstitucion,
+                              )
+                            }
+                          />
+                        </View>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </View>
 
-                color: textMutedColor,
-              }}
-            >
-              {pasoActual === 1
-                ? "Paso 1 de 2 · Información general de la institución"
-                : "Paso 2 de 2 · Datos del representante y contacto"}
-            </Text>
-
-            {/* ============================================
-                TARJETA DEL FORMULARIO
-            ============================================ */}
-
-            <View
-              style={{
-                width: "100%",
-
-                marginTop: 22,
-
-                padding: paddingTarjeta,
-
-                borderWidth: 1,
-
-                borderRadius: 24,
-
-                borderColor,
-
-                backgroundColor: surfaceColor,
-
-                ...(Platform.OS === "web"
-                  ? ({
-                    boxShadow: "0px 4px 16px rgba(0,0,0,0.04)",
-                  } as any)
-                  : {}),
-
-                ...(Platform.OS === "ios"
-                  ? {
-                    shadowColor: "#000",
-
-                    shadowOffset: {
-                      width: 0,
-                      height: 3,
-                    },
-
-                    shadowOpacity: 0.05,
-
-                    shadowRadius: 8,
-                  }
-                  : {}),
-
-                ...(Platform.OS === "android"
-                  ? {
-                    elevation: 2,
-                  }
-                  : {}),
-              }}
-            >
-              {/* ========================================
-                  PASO 1
-              ======================================== */}
-
-              {pasoActual === 1 && (
-                <>
-                  {/* ENCABEZADO DE SECCIÓN */}
-
-                  <View
-                    style={{
-                      marginBottom: 20,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontFamily: "Nunito-Bold",
-
-                        fontSize: esEscritorio ? 21 : 18,
-
-                        lineHeight: esEscritorio ? 28 : 25,
-
-                        color: textColor,
-                      }}
-                    >
-                      Información de la institución
-                    </Text>
-
-                    <Text
-                      style={{
-                        marginTop: 5,
-
-                        fontFamily: "Nunito-Medium",
-
-                        fontSize: 13,
-
-                        lineHeight: 19,
-
-                        color: textMutedColor,
-                      }}
-                    >
-                      Ingresa los datos generales de la organización que desea
-                      utilizar Kiri.
-                    </Text>
-                  </View>
-
-                  {/* ====================================
-                      NOMBRE Y CÓDIGO
-                  ==================================== */}
-
-                  <View
-                    style={{
-                      width: "100%",
-
-                      flexDirection: formularioEnColumnas ? "row" : "column",
-
-                      gap: formularioEnColumnas ? 16 : 0,
-                    }}
-                  >
-                    <View
-                      style={{
-                        flex: formularioEnColumnas ? 1 : undefined,
-
-                        minWidth: 0,
-                      }}
-                    >
-                      <Input
-                        label="Nombre de la Institución *"
-                        placeholder="Ej. Colegio José Madriz"
-                        value={nombreInstitucion}
-                        onChangeText={setNombreInstitucion}
-                      />
-                    </View>
-
-                    <View
-                      style={{
-                        flex: formularioEnColumnas ? 1 : undefined,
-
-                        minWidth: 0,
-                      }}
-                    >
-                      <Input
-                        label="Código Institucional *"
-                        placeholder="Ej. MINED-0321"
-                        value={codigoInstitucional}
-                        onChangeText={setCodigoInstitucional}
-                      />
-                    </View>
-                  </View>
-
-                  {/* ====================================
-                      TIPO DE INSTITUCIÓN
-                  ==================================== */}
-
-                  <View
-                    style={{
-                      width: "100%",
-
-                      marginTop: 6,
-
-                      marginBottom: 22,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        marginBottom: 12,
-
-                        fontFamily: "Nunito-SemiBold",
-
-                        fontSize: 14,
-
-                        lineHeight: 20,
-
-                        color: textColor,
-                      }}
-                    >
-                      Tipo de Institución *
-                    </Text>
-
-                    <View
-                      accessibilityRole="radiogroup"
-                      style={{
-                        width: "100%",
-
-                        flexDirection: esTelefono ? "column" : "row",
-
-                        alignItems: "stretch",
-
-                        gap: 12,
-                      }}
-                    >
-                      {TIPOS_INSTITUCION.map(renderTipoInstitucion)}
-                    </View>
-                  </View>
-
-                  {/* ====================================
-                      DEPARTAMENTO Y MUNICIPIO
-                  ==================================== */}
-
-                  <View
-                    style={{
-                      width: "100%",
-
-                      flexDirection: formularioEnColumnas ? "row" : "column",
-
-                      gap: formularioEnColumnas ? 16 : 0,
-                    }}
-                  >
-                    <View
-                      style={{
-                        flex: formularioEnColumnas ? 1 : undefined,
-
-                        minWidth: 0,
-                      }}
-                    >
-                      <Input
-                        label="Departamento *"
-                        placeholder="Ej. León"
-                        value={departamento}
-                        onChangeText={setDepartamento}
-                      />
-                    </View>
-
-                    <View
-                      style={{
-                        flex: formularioEnColumnas ? 1 : undefined,
-
-                        minWidth: 0,
-                      }}
-                    >
-                      <Input
-                        label="Municipio *"
-                        placeholder="Ej. León"
-                        value={municipio}
-                        onChangeText={setMunicipio}
-                      />
-                    </View>
-                  </View>
-
-                  {/* ====================================
-                      DIRECCIÓN
-                  ==================================== */}
-
-                  <Input
-                    label="Dirección de la Institución *"
-                    placeholder="Ej. Barrio El Sagrario, frente al parque..."
-                    value={direccion}
-                    onChangeText={setDireccion}
-                    multiline
-                    numberOfLines={3}
-                    style={{
-                      minHeight: 100,
-
-                      textAlignVertical: "top",
-
-                      paddingTop: 14,
-                    }}
+              {paso === 2 && (
+                <View className="flex-row items-start gap-3 rounded-xl bg-secondary-soft p-4">
+                  <Ionicons
+                    name="information-circle-outline"
+                    size={22}
+                    className="text-secondary"
                   />
 
-                  {/* ====================================
-                      SIGUIENTE
-                  ==================================== */}
-
-                  <View
-                    style={{
-                      width: "100%",
-
-                      marginTop: 12,
-                    }}
-                  >
-                    <Button
-                      title="Siguiente"
-                      variant="primary"
-                      onPress={irAlPaso2}
-                    />
-                  </View>
-                </>
+                  <Text className="flex-1 font-nunito-medium text-sm text-text-secondary">
+                    La información será revisada por el equipo de Kiri antes de
+                    habilitar el acceso institucional.
+                  </Text>
+                </View>
               )}
 
-              {/* ========================================
-                  PASO 2
-              ======================================== */}
-
-              {pasoActual === 2 && (
-                <>
-                  {/* ENCABEZADO */}
-
-                  <View
-                    style={{
-                      marginBottom: 20,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontFamily: "Nunito-Bold",
-
-                        fontSize: esEscritorio ? 21 : 18,
-
-                        lineHeight: esEscritorio ? 28 : 25,
-
-                        color: textColor,
-                      }}
-                    >
-                      Datos del representante
-                    </Text>
-
-                    <Text
-                      style={{
-                        marginTop: 5,
-
-                        fontFamily: "Nunito-Medium",
-
-                        fontSize: 13,
-
-                        lineHeight: 19,
-
-                        color: textMutedColor,
-                      }}
-                    >
-                      Proporciona los datos de la persona responsable de la
-                      solicitud institucional.
-                    </Text>
-                  </View>
-
-                  {/* ====================================
-                      NOMBRE Y APELLIDO
-                  ==================================== */}
-
-                  <View
-                    style={{
-                      width: "100%",
-
-                      flexDirection: formularioEnColumnas ? "row" : "column",
-
-                      gap: formularioEnColumnas ? 16 : 0,
-                    }}
-                  >
-                    <View
-                      style={{
-                        flex: formularioEnColumnas ? 1 : undefined,
-
-                        minWidth: 0,
-                      }}
-                    >
-                      <Input
-                        label="Nombre del Solicitante *"
-                        placeholder="Ej. Félix Pedro"
-                        value={nombreSolicitante}
-                        onChangeText={setNombreSolicitante}
-                      />
-                    </View>
-
-                    <View
-                      style={{
-                        flex: formularioEnColumnas ? 1 : undefined,
-
-                        minWidth: 0,
-                      }}
-                    >
-                      <Input
-                        label="Apellido del Solicitante *"
-                        placeholder="Ej. López Pérez"
-                        value={apellidoSolicitante}
-                        onChangeText={setApellidoSolicitante}
-                      />
-                    </View>
-                  </View>
-
-                  {/* ====================================
-                      CÉDULA Y CARGO
-                  ==================================== */}
-
-                  <View
-                    style={{
-                      width: "100%",
-
-                      flexDirection: formularioEnColumnas ? "row" : "column",
-
-                      gap: formularioEnColumnas ? 16 : 0,
-                    }}
-                  >
-                    <View
-                      style={{
-                        flex: formularioEnColumnas ? 1 : undefined,
-
-                        minWidth: 0,
-                      }}
-                    >
-                      <Input
-                        label="Número de Cédula *"
-                        placeholder="001-123456-0001P"
-                        value={cedula}
-                        onChangeText={setCedula}
-                      />
-                    </View>
-
-                    <View
-                      style={{
-                        flex: formularioEnColumnas ? 1 : undefined,
-
-                        minWidth: 0,
-                      }}
-                    >
-                      <Input
-                        label="Cargo *"
-                        placeholder="Ej. Director"
-                        value={cargo}
-                        onChangeText={setCargo}
-                      />
-                    </View>
-                  </View>
-
-                  {/* ====================================
-                      CORREO Y TELÉFONO
-                  ==================================== */}
-
-                  <View
-                    style={{
-                      width: "100%",
-
-                      flexDirection: formularioEnColumnas ? "row" : "column",
-
-                      gap: formularioEnColumnas ? 16 : 0,
-                    }}
-                  >
-                    <View
-                      style={{
-                        flex: formularioEnColumnas ? 1 : undefined,
-
-                        minWidth: 0,
-                      }}
-                    >
-                      <Input
-                        label="Correo Institucional *"
-                        placeholder="admin@institucion.edu.ni"
-                        value={correo}
-                        onChangeText={setCorreo}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                      />
-                    </View>
-
-                    <View
-                      style={{
-                        flex: formularioEnColumnas ? 1 : undefined,
-
-                        minWidth: 0,
-                      }}
-                    >
-                      <Input
-                        label="Teléfono de Contacto *"
-                        placeholder="8888-1234"
-                        value={telefono}
-                        onChangeText={setTelefono}
-                        keyboardType="phone-pad"
-                      />
-                    </View>
-                  </View>
-
-                  {/* ====================================
-                      MOTIVO
-                  ==================================== */}
-
-                  <Input
-                    label="Motivo de la Solicitud *"
-                    placeholder="¿Por qué desean utilizar Kiri?"
-                    value={motivo}
-                    onChangeText={setMotivo}
-                    multiline
-                    numberOfLines={4}
-                    style={{
-                      minHeight: 110,
-
-                      textAlignVertical: "top",
-
-                      paddingTop: 12,
-                    }}
-                  />
-
-                  {/* ====================================
-                      AVISO
-                  ==================================== */}
-
-                  <View
-                    style={{
-                      width: "100%",
-
-                      marginTop: 8,
-                      marginBottom: 18,
-
-                      padding: 14,
-
-                      borderRadius: 15,
-
-                      flexDirection: "row",
-
-                      alignItems: "flex-start",
-
-                      gap: 10,
-
-                      backgroundColor: secondarySoftColor,
-                    }}
-                  >
-                    <Ionicons
-                      name="information-circle-outline"
-                      size={21}
-                      color={secondaryColor}
-                    />
-
-                    <Text
-                      style={{
-                        flex: 1,
-
-                        minWidth: 0,
-
-                        fontFamily: "Nunito-Medium",
-
-                        fontSize: 12,
-
-                        lineHeight: 18,
-
-                        color: textSecondaryColor,
-                      }}
-                    >
-                      La información será revisada por el equipo de Kiri antes
-                      de habilitar el acceso institucional.
-                    </Text>
-                  </View>
-
-                  {/* ====================================
-                      BOTONES
-                  ==================================== */}
-
-                  <View
-                    style={{
-                      width: "100%",
-
-                      flexDirection: esTelefono ? "column" : "row",
-
-                      alignItems: "stretch",
-
-                      gap: 12,
-                    }}
-                  >
-                    {/* ANTERIOR */}
-
-                    <Pressable
+              {/* Responsive:
+                  botones apilados en móvil;
+                  desde md se muestran en fila y alineados a la derecha. */}
+              <View className="gap-2 md:flex-row md:justify-end">
+                {paso === 2 && (
+                  <View className="md:w-36">
+                    <Button
+                      title="Anterior"
+                      variant="secondary"
                       disabled={enviando}
                       onPress={() => cambiarPaso(1)}
-                      style={({ pressed }) => ({
-                        width: esTelefono ? "100%" : undefined,
-
-                        flex: esTelefono ? undefined : 1,
-
-                        minHeight: 54,
-
-                        borderRadius: 16,
-
-                        overflow: "hidden",
-
-                        opacity: enviando ? 0.5 : pressed ? 0.8 : 1,
-                      })}
-                    >
-                      <View
-                        style={{
-                          width: "100%",
-
-                          minHeight: 54,
-
-                          borderWidth: 1,
-
-                          borderRadius: 16,
-
-                          borderColor,
-
-                          alignItems: "center",
-
-                          justifyContent: "center",
-
-                          backgroundColor: surfaceSecondaryColor,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            fontFamily: "Nunito-Bold",
-
-                            fontSize: 15,
-
-                            color: textSecondaryColor,
-                          }}
-                        >
-                          Anterior
-                        </Text>
-                      </View>
-                    </Pressable>
-
-                    {/* ENVIAR */}
-
-                    <View
-                      style={{
-                        width: esTelefono ? "100%" : undefined,
-
-                        flex: esTelefono ? undefined : 2,
-
-                        minWidth: 0,
-
-                        opacity: enviando ? 0.7 : 1,
-                      }}
-                    >
-                      <Button
-                        title={enviando ? "Enviando..." : "Enviar solicitud"}
-                        variant="primary"
-                        onPress={enviarSolicitud}
-                        style={{
-                          opacity: enviando ? 0.7 : 1,
-                        }}
-                      />
-                    </View>
+                    />
                   </View>
+                )}
 
-                  {enviando && (
-                    <View
-                      style={{
-                        marginTop: 12,
+                <View className="md:w-52">
+                  <Button
+                    title={paso === 1 ? "Siguiente" : "Enviar solicitud"}
+                    loading={enviando}
+                    onPress={continuar}
+                  />
+                </View>
+              </View>
+            </AdminCard>
 
-                        alignItems: "center",
-                      }}
-                    >
-                      <ActivityIndicator size="small" color={primaryColor} />
-                    </View>
-                  )}
-                </>
-              )}
-            </View>
-
-            {/* ============================================
-                MENSAJE INFERIOR
-            ============================================ */}
-
-            <Text
-              style={{
-                marginTop: 18,
-
-                maxWidth: 620,
-
-                alignSelf: "center",
-
-                fontFamily: "Nunito-Medium",
-
-                fontSize: 12,
-
-                lineHeight: 18,
-
-                textAlign: "center",
-
-                color: textMutedColor,
-              }}
-            >
+            <Text className="text-center font-nunito-medium text-xs text-text-muted">
               Los campos marcados con * son obligatorios.
             </Text>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
