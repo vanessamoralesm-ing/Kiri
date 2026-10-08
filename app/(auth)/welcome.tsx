@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+
 import React from "react";
 
 import {
@@ -32,12 +33,32 @@ export default function WelcomeScreen() {
   // NAVEGACIÓN
   // ========================================================
 
+  /**
+   * IMPORTANTE:
+   *
+   * Aunque este archivo está dentro de:
+   *
+   * app/(auth)/welcome.tsx
+   *
+   * el grupo "(auth)" no forma parte de la URL pública.
+   *
+   * Por eso navegamos utilizando:
+   *
+   * /modo_acceso
+   * /login
+   *
+   * en lugar de:
+   *
+   * /(auth)/modo_acceso
+   * /(auth)/login
+   */
+
   function irModoAcceso() {
-    router.push("/(auth)/modo_acceso");
+    router.push("/modo_acceso");
   }
 
   function irLogin() {
-    router.push("/(auth)/login");
+    router.push("/login");
   }
 
   // ========================================================
@@ -180,6 +201,7 @@ export default function WelcomeScreen() {
     <ImageBackground
       source={require("../../assets/images/fondo_kiri.png.jpeg")}
       style={styles.imagenFondo}
+      imageStyle={styles.imagenFondoInterna}
       resizeMode="cover"
     >
       {/* ==================================================
@@ -193,9 +215,7 @@ export default function WelcomeScreen() {
       ================================================== */}
 
       <ScrollView
-        style={{
-          flex: 1,
-        }}
+        style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[
@@ -204,7 +224,7 @@ export default function WelcomeScreen() {
             paddingHorizontal,
             paddingTop,
             paddingBottom,
-
+            minHeight: height,
             justifyContent: esTelefono ? "flex-start" : "center",
           },
         ]}
@@ -218,7 +238,6 @@ export default function WelcomeScreen() {
             styles.wrapper,
             {
               maxWidth: maxWidthContenido,
-
               width: esTelefono ? "100%" : esTablet ? "94%" : "92%",
             },
           ]}
@@ -253,29 +272,29 @@ export default function WelcomeScreen() {
 
                 ...(Platform.OS === "web" && !esTelefono
                   ? ({
-                      boxShadow: "0px 10px 30px rgba(0,0,0,0.08)",
-                    } as any)
+                    boxShadow: "0px 10px 30px rgba(0,0,0,0.08)",
+                  } as any)
                   : {}),
 
                 ...(Platform.OS === "ios" && !esTelefono
                   ? {
-                      shadowColor: "#000000",
+                    shadowColor: "#000000",
 
-                      shadowOffset: {
-                        width: 0,
-                        height: 10,
-                      },
+                    shadowOffset: {
+                      width: 0,
+                      height: 10,
+                    },
 
-                      shadowOpacity: 0.08,
+                    shadowOpacity: 0.08,
 
-                      shadowRadius: 20,
-                    }
+                    shadowRadius: 20,
+                  }
                   : {}),
 
                 ...(Platform.OS === "android" && !esTelefono
                   ? {
-                      elevation: 6,
-                    }
+                    elevation: 6,
+                  }
                   : {}),
               },
             ]}
@@ -531,23 +550,23 @@ export default function WelcomeScreen() {
 
                     ...(Platform.OS === "ios"
                       ? {
-                          shadowColor: "#4F8EF7",
+                        shadowColor: "#4F8EF7",
 
-                          shadowOffset: {
-                            width: 0,
-                            height: 3,
-                          },
+                        shadowOffset: {
+                          width: 0,
+                          height: 3,
+                        },
 
-                          shadowOpacity: 0.18,
+                        shadowOpacity: 0.18,
 
-                          shadowRadius: 6,
-                        }
+                        shadowRadius: 6,
+                      }
                       : {}),
 
                     ...(Platform.OS === "android"
                       ? {
-                          elevation: 3,
-                        }
+                        elevation: 3,
+                      }
                       : {}),
                   }}
                 >
@@ -663,6 +682,12 @@ const styles = StyleSheet.create({
 
     width: "100%",
 
+    minHeight: "100%",
+  },
+
+  imagenFondoInterna: {
+    width: "100%",
+
     height: "100%",
   },
 
@@ -675,6 +700,10 @@ const styles = StyleSheet.create({
   // ======================================================
   // SCROLL
   // ======================================================
+
+  scrollView: {
+    flex: 1,
+  },
 
   scrollContainer: {
     flexGrow: 1,
@@ -698,6 +727,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
 
     justifyContent: "center",
+
+    /**
+     * Evita que React Native Web comprima la tarjeta
+     * durante el cálculo del layout del ScrollView.
+     */
+    flexShrink: 0,
   },
 
   // ======================================================

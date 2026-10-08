@@ -28,9 +28,10 @@
       [
         "expo-splash-screen",
         {
+          "image": "./assets/images/splash-icon-ps.png",
           "imageWidth": 250,
           "resizeMode": "contain",
-          "backgroundColor": "#4685F6"
+          "backgroundColor": "#4F8EF7"
         }
       ],
       "expo-font",
@@ -41,6 +42,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "f7b2c19b-fd12-4650-9c77-dff2c3156ee7"
+      }
     }
   }
 }

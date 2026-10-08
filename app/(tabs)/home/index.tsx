@@ -535,12 +535,6 @@ export default function HomeScreen() {
                   ))}
                 </View>
 
-                {/* ==============================================
-                    LLAMA
-
-                    AHORA FORMA PARTE DE LA MISMA FILA
-                ============================================== */}
-
                 <View
                   style={{
                     width: esTelefono ? 28 : 32,

@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+
 import { Image, StyleSheet, View } from "react-native";
 
 import Animated, {
@@ -33,7 +34,7 @@ export default function AnimatedLogo() {
   }));
 
   return (
-    <View style={styles.container} pointerEvents="auto">
+    <View style={styles.container}>
       <Animated.View style={[styles.logoContainer, animatedLogoStyle]}>
         <Image
           source={require("../../assets/images/splash-icon-ps.png")}
@@ -47,15 +48,21 @@ export default function AnimatedLogo() {
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFill,
-
-    backgroundColor: "#4F8EF7",
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
 
     justifyContent: "center",
     alignItems: "center",
 
+    backgroundColor: "#4F8EF7",
+
     zIndex: 9999,
     elevation: 9999,
+
+    pointerEvents: "auto",
   },
 
   logoContainer: {

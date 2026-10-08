@@ -1,6 +1,6 @@
+import "react-native-reanimated";
 import "../global.css";
 import "../lib/nativewind-interop";
-import "react-native-reanimated";
 
 import React, { useEffect, useRef } from "react";
 
