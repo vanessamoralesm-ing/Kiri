@@ -12,6 +12,7 @@ interface CampoPreguntaDiarioProps {
   onChangeText: (texto: string) => void;
 
   placeholder: string;
+  minHeight?: number;
 }
 
 export function CampoPreguntaDiario({
@@ -19,6 +20,7 @@ export function CampoPreguntaDiario({
   valor,
   onChangeText,
   placeholder,
+  minHeight = 110,
 }: CampoPreguntaDiarioProps) {
   // ======================================================
   // TEMA
@@ -65,7 +67,7 @@ export function CampoPreguntaDiario({
         textAlignVertical="top"
         style={[
           {
-            minHeight: 110,
+            minHeight: minHeight,
 
             paddingHorizontal: 16,
 

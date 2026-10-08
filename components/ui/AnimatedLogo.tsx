@@ -1,7 +1,5 @@
 import React, { useEffect } from "react";
-
-import { Image, StyleSheet, View } from "react-native";
-
+import { Image, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -10,71 +8,38 @@ import Animated, {
 } from "react-native-reanimated";
 
 export default function AnimatedLogo() {
-  const logoOpacity = useSharedValue(0);
-  const logoScale = useSharedValue(0.85);
+  const opacity = useSharedValue(0);
+  const scale = useSharedValue(0.85);
 
   useEffect(() => {
-    logoOpacity.value = withTiming(1, {
-      duration: 800,
-    });
+    opacity.value = withTiming(1, { duration: 500 });
 
-    logoScale.value = withSpring(1, {
+    scale.value = withSpring(1, {
       damping: 12,
       stiffness: 90,
     });
-  }, [logoOpacity, logoScale]);
+  }, [opacity, scale]);
 
-  const animatedLogoStyle = useAnimatedStyle(() => ({
-    opacity: logoOpacity.value,
-    transform: [
-      {
-        scale: logoScale.value,
-      },
-    ],
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ scale: scale.value }],
   }));
 
   return (
-    <View style={styles.container}>
-      <Animated.View style={[styles.logoContainer, animatedLogoStyle]}>
+    <View
+      pointerEvents="auto"
+      className="absolute inset-0 z-50 items-center justify-center bg-primary px-6"
+    >
+      <Animated.View
+        className="w-full max-w-sm items-center justify-center"
+        style={animatedStyle}
+      >
         <Image
           source={require("../../assets/images/splash-icon-ps.png")}
-          style={styles.logo}
           resizeMode="contain"
+          className="h-36 w-full sm:h-44 md:h-52 lg:h-60"
         />
       </Animated.View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-
-    justifyContent: "center",
-    alignItems: "center",
-
-    backgroundColor: "#4F8EF7",
-
-    zIndex: 9999,
-    elevation: 9999,
-
-    pointerEvents: "auto",
-  },
-
-  logoContainer: {
-    width: "80%",
-    maxWidth: 380,
-
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  logo: {
-    width: "100%",
-    height: 240,
-  },
-});
