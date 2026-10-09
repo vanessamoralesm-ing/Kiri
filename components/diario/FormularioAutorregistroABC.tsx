@@ -5,13 +5,14 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   Text,
   TextInput,
   View,
 } from "react-native";
 
 import Button from "@/components/ui/Button";
+import ActionModal, { type ModalOptions } from "@/components/ui/ActionModal";
+import BotonVolver from "@/components/ui/BotonVolver";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -61,6 +62,21 @@ export function FormularioAutorregistroABC({
   idRegistro,
 }: FormularioAutorregistroABCProps) {
   const router = useRouter();
+
+  const [aviso, setAviso] = useState<
+    (ModalOptions & { onAceptar?: () => void }) | null
+  >(null);
+
+  const modal = aviso ? (
+    <ActionModal
+      {...aviso}
+      visible
+      onClose={() => {
+        setAviso(null);
+        aviso.onAceptar?.();
+      }}
+    />
+  ) : null;
 
   const insets = useSafeAreaInsets();
 
@@ -180,11 +196,6 @@ export function FormularioAutorregistroABC({
   const backgroundColor = useThemeColor({}, "background");
 
   const surfaceColor = useThemeColor({}, "surface");
-
-  const surfaceSecondaryColor = useThemeColor(
-    {},
-    "surfaceSecondary",
-  );
 
   const borderColor = useThemeColor({}, "border");
 
@@ -314,16 +325,12 @@ export function FormularioAutorregistroABC({
           contenido,
         });
 
-        Alert.alert(
-          "¡Actualizado!",
-          "Tu autorregistro ha sido actualizado correctamente.",
-          [
-            {
-              text: "OK",
-              onPress: regresar,
-            },
-          ],
-        );
+        setAviso({
+          titulo: "¡Actualizado!",
+          mensaje: "Tu autorregistro ha sido actualizado correctamente.",
+          textoAceptar: "OK",
+          onAceptar: regresar,
+        });
 
         return;
       }
@@ -333,23 +340,19 @@ export function FormularioAutorregistroABC({
         contenido,
       });
 
-      Alert.alert(
-        "¡Éxito!",
-        "Tu autorregistro ha sido guardado correctamente.",
-        [
-          {
-            text: "OK",
-            onPress: regresar,
-          },
-        ],
-      );
+      setAviso({
+        titulo: "¡Éxito!",
+        mensaje: "Tu autorregistro ha sido guardado correctamente.",
+        textoAceptar: "OK",
+        onAceptar: regresar,
+      });
     } catch (error: any) {
-      Alert.alert(
-        esModoEdicion
+      setAviso({
+        titulo: esModoEdicion
           ? "Error al actualizar"
           : "Error al guardar",
-        error.message || "Ocurrió un error inesperado.",
-      );
+        mensaje: error.message || "Ocurrió un error inesperado.",
+      });
     } finally {
       setGuardando(false);
     }
@@ -429,34 +432,19 @@ export function FormularioAutorregistroABC({
               escribiendo && esTelefono ? 12 : 22,
           }}
         >
-          <Pressable
-            onPress={regresar}
-            hitSlop={8}
-            style={({ pressed }) => ({
+          <View
+            style={{
               width: 46,
               height: 46,
 
               flexShrink: 0,
 
-              borderRadius: 15,
-
-              borderWidth: 1,
-              borderColor,
-
               alignItems: "center",
               justifyContent: "center",
-
-              backgroundColor: pressed
-                ? surfaceSecondaryColor
-                : surfaceColor,
-            })}
+            }}
           >
-            <Ionicons
-              name="arrow-back"
-              size={21}
-              color={textColor}
-            />
-          </Pressable>
+            <BotonVolver onPress={regresar} />
+          </View>
 
           <View
             style={{
@@ -819,6 +807,7 @@ export function FormularioAutorregistroABC({
           </View>
         </View>
       </View>
+      {modal}
     </KeyboardAvoidingView>
   );
 }
