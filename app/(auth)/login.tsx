@@ -48,20 +48,38 @@ export default function LoginScreen() {
 
     try {
       setSubmitting(true);
-      await signIn(email.trim(), password);
+
+      await signIn(
+        email.trim(),
+        password,
+      );
     } catch (err) {
-      console.error("Error iniciando sesión:", err);
+      console.error(
+        "Error iniciando sesión:",
+        err,
+      );
 
       const mensaje =
         err instanceof Error
           ? err.message
           : "No se pudo iniciar sesión. Intenta de nuevo.";
 
-      const normalizado = mensaje.toLowerCase();
+      const normalizado =
+        mensaje.toLowerCase();
 
-      if (normalizado.includes("invalid login credentials")) {
-        setError("Correo o contraseña incorrectos.");
-      } else if (normalizado.includes("email not confirmed")) {
+      if (
+        normalizado.includes(
+          "invalid login credentials",
+        )
+      ) {
+        setError(
+          "Correo o contraseña incorrectos.",
+        );
+      } else if (
+        normalizado.includes(
+          "email not confirmed",
+        )
+      ) {
         setError(
           "Debes confirmar tu correo electrónico antes de iniciar sesión.",
         );
@@ -76,7 +94,11 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-background"
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={
+        Platform.OS === "ios"
+          ? "padding"
+          : undefined
+      }
     >
       <ScrollView
         className="flex-1"
@@ -85,40 +107,63 @@ export default function LoginScreen() {
         keyboardDismissMode="on-drag"
         showsVerticalScrollIndicator={false}
       >
-        {/* Responsive: columna en móvil; desde md, paneles en fila. */}
-        <View className="min-h-screen w-full flex-1 flex-col gap-6 bg-background p-3 md:flex-row md:gap-8 md:p-8 lg:p-12">
-          {/* PANEL VISUAL */}
-          <View className="relative h-72 w-full items-center justify-center overflow-hidden rounded-3xl bg-surface md:h-auto md:flex-1">
+        {/* Responsive:
+            móvil y tablet mantienen layout vertical;
+            solo desde lg/web grande pasa a dos columnas. */}
+        <View className="min-h-screen w-full flex-1 gap-6 bg-background p-3 md:gap-8 md:p-6 lg:flex-row lg:p-10 xl:p-12">
+          {/* ==================================================
+              PANEL VISUAL
+          ================================================== */}
+
+          {/* Responsive:
+              móvil usa altura compacta;
+              tablet aumenta ligeramente;
+              desde lg ocupa la mitad de la pantalla. */}
+          <View className="relative h-64 w-full items-center justify-center overflow-hidden rounded-3xl bg-surface md:h-72 lg:h-auto lg:flex-1">
             <View className="absolute -left-16 -top-20 h-44 w-44 rounded-full bg-accent-soft" />
+
             <View className="absolute -bottom-20 -right-16 h-40 w-40 rounded-full bg-secondary-soft" />
+
             <View className="absolute right-12 top-1/3 h-4 w-4 rounded-full bg-accent" />
 
-            {/* Responsive: logo aumenta progresivamente. */}
+            {/* Responsive:
+                logo pequeño en móvil;
+                aumenta en tablet/escritorio. */}
             <Image
               source={require("../../assets/images/splash-icon.png")}
               contentFit="contain"
-              className="absolute left-6 top-4 h-28 w-28 md:h-36 md:w-36 lg:h-40 lg:w-40"
+              className="absolute left-5 top-4 h-24 w-24 md:left-6 md:h-28 md:w-28 lg:h-36 lg:w-36"
             />
 
-            {/* Responsive: mascota compacta en móvil y mayor desde md/lg. */}
-            <View className="aspect-square w-3/5 max-w-md items-center justify-center rounded-full bg-accent-soft">
+            {/* Responsive:
+                mascota equilibrada en móvil/tablet;
+                aumenta solo desde escritorio. */}
+            <View className="aspect-square w-1/2 max-w-md items-center justify-center rounded-full bg-accent-soft md:w-2/5 lg:w-3/5">
               <Image
                 source={require("../../assets/images/mascota.png")}
                 contentFit="contain"
-                className="h-40 w-40 md:h-64 md:w-64 lg:h-80 lg:w-80"
+                className="h-36 w-36 md:h-48 md:w-48 lg:h-64 lg:w-64 xl:h-80 xl:w-80"
               />
             </View>
           </View>
 
-          {/* PANEL FORMULARIO */}
-          <View className="w-full items-center justify-center px-4 py-6 md:flex-1 md:px-8 md:py-10">
+          {/* ==================================================
+              PANEL FORMULARIO
+          ================================================== */}
+
+          {/* Responsive:
+              centrado en móvil/tablet;
+              desde lg ocupa la segunda columna. */}
+          <View className="w-full items-center justify-center px-4 py-6 md:px-12 md:py-8 lg:flex-1 lg:px-8 lg:py-10">
             <View className="w-full max-w-lg">
-              {/* Responsive: título 3xl en móvil y 4xl desde md. */}
-              <Text className="mb-2 text-center font-nunito-bold text-3xl text-primary md:text-4xl">
+              {/* Responsive:
+                  título 3xl en móvil/tablet;
+                  aumenta desde lg. */}
+              <Text className="mb-2 text-center font-nunito-bold text-3xl text-primary lg:text-4xl">
                 Bienvenido de nuevo
               </Text>
 
-              <Text className="mb-8 text-center font-nunito-medium text-base text-text md:text-lg">
+              <Text className="mb-8 text-center font-nunito-medium text-base text-text lg:text-lg">
                 Tu santuario emocional te espera.
               </Text>
 
@@ -152,7 +197,9 @@ export default function LoginScreen() {
                   <Pressable
                     hitSlop={8}
                     onPress={() =>
-                      console.log("Recuperar contraseña")
+                      console.log(
+                        "Recuperar contraseña",
+                      )
                     }
                   >
                     <Text className="font-nunito-semibold text-sm text-primary">
@@ -164,11 +211,17 @@ export default function LoginScreen() {
                   <Pressable
                     hitSlop={8}
                     onPress={() =>
-                      setMostrarPassword((actual) => !actual)
+                      setMostrarPassword(
+                        (actual) => !actual,
+                      )
                     }
                   >
                     <Ionicons
-                      name={mostrarPassword ? "eye-off" : "eye"}
+                      name={
+                        mostrarPassword
+                          ? "eye-off"
+                          : "eye"
+                      }
                       size={22}
                       className="text-text-secondary"
                     />
@@ -220,6 +273,8 @@ export default function LoginScreen() {
                 }
               />
 
+              {/* Responsive:
+                  permanece centrado en todos los tamaños. */}
               <View className="mt-8 flex-row flex-wrap items-center justify-center">
                 <Text className="font-nunito-medium text-base text-text">
                   ¿Aún no tienes una cuenta?{" "}
@@ -228,7 +283,9 @@ export default function LoginScreen() {
                 <Pressable
                   hitSlop={8}
                   onPress={() =>
-                    router.push("/(auth)/modo_acceso")
+                    router.push(
+                      "/(auth)/modo_acceso",
+                    )
                   }
                 >
                   <Text className="font-nunito-semibold text-base text-primary">
