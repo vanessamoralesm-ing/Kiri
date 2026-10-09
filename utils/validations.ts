@@ -1,49 +1,59 @@
-import type { Genero, SignUpInput } from '@/types/auth';
-
-// =======================================================
-// CONFIGURACIÓN
-// =======================================================
-
+import type { Genero, SignUpInput } from "@/types/auth";
 export const EDAD_MINIMA = 6;
+export const EDAD_MAXIMA = 50;
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const NOMBRE_REGEX =
+  /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü' -]+$/;
+
+const GENEROS_PERMITIDOS: Genero[] = [
+  "femenino",
+  "masculino",
+  "otro",
+  "prefiero_no_decir",
+];
 
 // =======================================================
 // CORREO ELECTRÓNICO
 // =======================================================
 
-export const validateEmail = (email: string): string => {
+export const validateEmail = (
+  email: string,
+): string => {
   const correo = email.trim();
 
   if (!correo) {
-    return 'El correo electrónico es obligatorio.';
+    return "El correo electrónico es obligatorio.";
   }
 
   if (correo.length > 150) {
-    return 'El correo electrónico es demasiado largo.';
+    return "El correo electrónico es demasiado largo.";
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  if (!emailRegex.test(correo)) {
-    return 'Ingresa un correo electrónico válido.';
+  if (!EMAIL_REGEX.test(correo)) {
+    return "Ingresa un correo electrónico válido.";
   }
 
-  return '';
+  return "";
 };
 
 // =======================================================
 // CONTRASEÑA
 // =======================================================
 
-export const validatePassword = (password: string): string => {
+export const validatePassword = (
+  password: string,
+): string => {
   if (!password) {
-    return 'La contraseña es obligatoria.';
+    return "La contraseña es obligatoria.";
   }
 
   if (password.length < 6) {
-    return 'La contraseña debe tener al menos 6 caracteres.';
+    return "La contraseña debe tener al menos 6 caracteres.";
   }
 
-  return '';
+  return "";
 };
 
 // =======================================================
@@ -52,208 +62,216 @@ export const validatePassword = (password: string): string => {
 
 export const validateConfirmPassword = (
   password: string,
-  confirmPassword: string
+  confirmPassword: string,
 ): string => {
   if (!confirmPassword) {
-    return 'Debes confirmar tu contraseña.';
+    return "Debes confirmar tu contraseña.";
   }
 
   if (password !== confirmPassword) {
-    return 'Las contraseñas no coinciden.';
+    return "Las contraseñas no coinciden.";
   }
 
-  return '';
+  return "";
 };
 
 // =======================================================
 // NOMBRES
 // =======================================================
 
-export const validateNombres = (nombres: string): string => {
+export const validateNombres = (
+  nombres: string,
+): string => {
   const valor = nombres.trim();
 
   if (!valor) {
-    return 'Los nombres son obligatorios.';
+    return "Los nombres son obligatorios.";
   }
 
   if (valor.length < 2) {
-    return 'Ingresa un nombre válido.';
+    return "Ingresa un nombre válido.";
   }
 
   if (valor.length > 100) {
-    return 'Los nombres no pueden superar los 100 caracteres.';
+    return "Los nombres no pueden superar los 100 caracteres.";
   }
 
-  /*
-   * Permite: letras, tildes, ñ, espacios, apóstrofes y guiones
-   */
-  const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü' -]+$/;
-
-  if (!nombreRegex.test(valor)) {
-    return 'Los nombres solo pueden contener letras.';
+  // Permite letras, tildes, ñ, espacios,
+  // apóstrofes y guiones.
+  if (!NOMBRE_REGEX.test(valor)) {
+    return "Los nombres solo pueden contener letras.";
   }
 
-  return '';
+  return "";
 };
 
 // =======================================================
 // APELLIDOS
 // =======================================================
 
-export const validateApellidos = (apellidos: string): string => {
+export const validateApellidos = (
+  apellidos: string,
+): string => {
   const valor = apellidos.trim();
 
   if (!valor) {
-    return 'Los apellidos son obligatorios.';
+    return "Los apellidos son obligatorios.";
   }
 
   if (valor.length < 2) {
-    return 'Ingresa un apellido válido.';
+    return "Ingresa un apellido válido.";
   }
 
   if (valor.length > 100) {
-    return 'Los apellidos no pueden superar los 100 caracteres.';
+    return "Los apellidos no pueden superar los 100 caracteres.";
   }
 
-  const apellidoRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü' -]+$/;
-
-  if (!apellidoRegex.test(valor)) {
-    return 'Los apellidos solo pueden contener letras.';
+  if (!NOMBRE_REGEX.test(valor)) {
+    return "Los apellidos solo pueden contener letras.";
   }
 
-  return '';
+  return "";
 };
 
 // =======================================================
 // NOMBRE PREFERIDO
 // =======================================================
 
-export const validateNombrePreferido = (nombrePreferido?: string): string => {
-  // Es opcional
+export const validateNombrePreferido = (
+  nombrePreferido?: string,
+): string => {
   if (!nombrePreferido?.trim()) {
-    return '';
+    return "";
   }
 
   const valor = nombrePreferido.trim();
 
   if (valor.length > 100) {
-    return 'El nombre preferido no puede superar los 100 caracteres.';
+    return "El nombre preferido no puede superar los 100 caracteres.";
   }
 
-  const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü' -]+$/;
-
-  if (!nombreRegex.test(valor)) {
-    return 'El nombre preferido solo puede contener letras.';
+  if (!NOMBRE_REGEX.test(valor)) {
+    return "El nombre preferido solo puede contener letras.";
   }
 
-  return '';
+  return "";
 };
 
 // =======================================================
 // TELÉFONO
 // =======================================================
 
-export const validateTelefono = (telefono: string): string => {
+export const validateTelefono = (
+  telefono: string,
+): string => {
   const valor = telefono.trim();
 
   if (!valor) {
-    return 'El teléfono es obligatorio.';
+    return "El teléfono es obligatorio.";
   }
 
-  /*
-   * Exactamente 8 caracteres numéricos
-   */
-  const telefonoRegex = /^\d{8}$/;
-
-  if (!telefonoRegex.test(valor)) {
-    return 'El teléfono debe contener exactamente 8 dígitos.';
+  if (!/^\d{8}$/.test(valor)) {
+    return "El teléfono debe contener exactamente 8 dígitos.";
   }
 
-  return '';
+  return "";
 };
 
 // =======================================================
 // FECHA DE NACIMIENTO
 // =======================================================
+//
+// Solo pueden registrarse usuarios entre 6 y 50 años,
+// ambos límites incluidos.
+//
 
-export const validateFechaNacimiento = (fechaNacimiento: string): string => {
+export const validateFechaNacimiento = (
+  fechaNacimiento: string,
+): string => {
   const valor = fechaNacimiento.trim();
 
-  // Campo obligatorio
   if (!valor) {
-    return 'La fecha de nacimiento es obligatoria.';
+    return "La fecha de nacimiento es obligatoria.";
   }
 
-  // Formato YYYY-MM-DD
-  const fechaRegex = /^\d{4}-\d{2}-\d{2}$/;
-
-  if (!fechaRegex.test(valor)) {
-    return 'La fecha de nacimiento no tiene un formato válido.';
+  // Formato esperado: YYYY-MM-DD
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+    return "La fecha de nacimiento no tiene un formato válido.";
   }
 
-  // Obtener año, mes y día
-  const [year, month, day] = valor.split('-').map(Number);
-  const fecha = new Date(year, month - 1, day);
+  const [year, month, day] =
+    valor.split("-").map(Number);
 
-  // Comprobar que sea una fecha real
+  const fecha = new Date(
+    year,
+    month - 1,
+    day,
+  );
+
+  // Verifica que la fecha exista realmente.
   const fechaReal =
     fecha.getFullYear() === year &&
     fecha.getMonth() === month - 1 &&
     fecha.getDate() === day;
 
   if (!fechaReal) {
-    return 'La fecha de nacimiento no es válida.';
+    return "La fecha de nacimiento no es válida.";
   }
 
-  // No permitir fechas futuras
   const hoy = new Date();
+
   hoy.setHours(0, 0, 0, 0);
   fecha.setHours(0, 0, 0, 0);
 
   if (fecha > hoy) {
-    return 'La fecha de nacimiento no puede ser futura.';
+    return "La fecha de nacimiento no puede ser futura.";
   }
 
-  // Calcular edad
-  let edad = hoy.getFullYear() - fecha.getFullYear();
-  const diferenciaMes = hoy.getMonth() - fecha.getMonth();
+  // Calcular edad exacta considerando
+  // si ya cumplió años este año.
+  let edad =
+    hoy.getFullYear() -
+    fecha.getFullYear();
+
+  const diferenciaMes =
+    hoy.getMonth() -
+    fecha.getMonth();
 
   if (
     diferenciaMes < 0 ||
-    (diferenciaMes === 0 && hoy.getDate() < fecha.getDate())
+    (diferenciaMes === 0 &&
+      hoy.getDate() < fecha.getDate())
   ) {
     edad--;
   }
 
-  // Edad mínima
   if (edad < EDAD_MINIMA) {
     return `Debes tener al menos ${EDAD_MINIMA} años para usar Kiri.`;
   }
 
-  return '';
+  if (edad > EDAD_MAXIMA) {
+    return `La edad máxima permitida para registrarse es de ${EDAD_MAXIMA} años.`;
+  }
+
+  return "";
 };
 
 // =======================================================
 // GÉNERO
 // =======================================================
 
-export const validateGenero = (genero: Genero | ''): string => {
+export const validateGenero = (
+  genero: Genero | "",
+): string => {
   if (!genero) {
-    return 'Selecciona una opción de género.';
+    return "Selecciona una opción de género.";
   }
 
-  const generosPermitidos: Genero[] = [
-    'femenino',
-    'masculino',
-    'otro',
-    'prefiero_no_decir',
-  ];
-
-  if (!generosPermitidos.includes(genero)) {
-    return 'La opción de género seleccionada no es válida.';
+  if (!GENEROS_PERMITIDOS.includes(genero)) {
+    return "La opción de género seleccionada no es válida.";
   }
 
-  return '';
+  return "";
 };
 
 // =======================================================
@@ -267,19 +285,19 @@ export interface LoginErrors {
 
 export const validateLogin = (
   email: string,
-  password: string
+  password: string,
 ): LoginErrors => {
   const errors: LoginErrors = {};
 
-  // Correo
   const emailError = validateEmail(email);
+
   if (emailError) {
     errors.email = emailError;
   }
 
-  // Contraseña
   if (!password) {
-    errors.password = 'La contraseña es obligatoria.';
+    errors.password =
+      "La contraseña es obligatoria.";
   }
 
   return errors;
@@ -289,7 +307,8 @@ export const validateLogin = (
 // REGISTRO
 // =======================================================
 
-export interface RegisterValidationInput extends SignUpInput {
+export interface RegisterValidationInput
+  extends SignUpInput {
   confirmPassword: string;
   aceptaTerminos: boolean;
 }
@@ -312,71 +331,86 @@ export interface RegisterErrors {
 // =======================================================
 
 export const validateRegister = (
-  input: RegisterValidationInput
+  input: RegisterValidationInput,
 ): RegisterErrors => {
   const errors: RegisterErrors = {};
 
-  // Nombres
-  const nombresError = validateNombres(input.nombres);
+  const nombresError =
+    validateNombres(input.nombres);
+
   if (nombresError) {
     errors.nombres = nombresError;
   }
 
-  // Apellidos
-  const apellidosError = validateApellidos(input.apellidos);
+  const apellidosError =
+    validateApellidos(input.apellidos);
+
   if (apellidosError) {
     errors.apellidos = apellidosError;
   }
 
-  // Nombre preferido
-  const nombrePreferidoError = validateNombrePreferido(input.nombrePreferido);
+  const nombrePreferidoError =
+    validateNombrePreferido(
+      input.nombrePreferido,
+    );
+
   if (nombrePreferidoError) {
-    errors.nombrePreferido = nombrePreferidoError;
+    errors.nombrePreferido =
+      nombrePreferidoError;
   }
 
-  // Correo
-  const emailError = validateEmail(input.email);
+  const emailError =
+    validateEmail(input.email);
+
   if (emailError) {
     errors.email = emailError;
   }
 
-  // Teléfono
-  const telefonoError = validateTelefono(input.telefono);
+  const telefonoError =
+    validateTelefono(input.telefono);
+
   if (telefonoError) {
     errors.telefono = telefonoError;
   }
 
-  // Fecha de nacimiento
-  const fechaError = validateFechaNacimiento(input.fechaNacimiento);
+  const fechaError =
+    validateFechaNacimiento(
+      input.fechaNacimiento,
+    );
+
   if (fechaError) {
-    errors.fechaNacimiento = fechaError;
+    errors.fechaNacimiento =
+      fechaError;
   }
 
-  // Género
-  const generoError = validateGenero(input.genero);
+  const generoError =
+    validateGenero(input.genero);
+
   if (generoError) {
     errors.genero = generoError;
   }
 
-  // Contraseña
-  const passwordError = validatePassword(input.password);
+  const passwordError =
+    validatePassword(input.password);
+
   if (passwordError) {
     errors.password = passwordError;
   }
 
-  // Confirmar contraseña
-  const confirmError = validateConfirmPassword(
-    input.password,
-    input.confirmPassword
-  );
+  const confirmError =
+    validateConfirmPassword(
+      input.password,
+      input.confirmPassword,
+    );
+
   if (confirmError) {
-    errors.confirmPassword = confirmError;
+    errors.confirmPassword =
+      confirmError;
   }
 
-  // Términos y condiciones
   if (!input.aceptaTerminos) {
     errors.terminos =
-      'Debes aceptar los Términos y Condiciones y la Política de Privacidad.';
+      "Debes aceptar los Términos y Condiciones y la Política de Privacidad.";
   }
 
   return errors;
