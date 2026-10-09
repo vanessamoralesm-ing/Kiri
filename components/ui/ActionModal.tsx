@@ -9,6 +9,7 @@ export interface ModalOptions {
   titulo: string;
   mensaje: string;
   textoConfirmar?: string;
+  textoAceptar?: string;
   peligro?: boolean;
   icono?: keyof typeof Ionicons.glyphMap;
 }
@@ -24,6 +25,7 @@ export default function ActionModal({
   titulo,
   mensaje,
   textoConfirmar = "Confirmar",
+  textoAceptar = "Aceptar",
   peligro,
   icono = "help-circle-outline",
   onClose,
@@ -92,7 +94,7 @@ export default function ActionModal({
               )}
               <View className="flex-1">
                 <Button
-                  title={cargando ? "Procesando..." : onConfirm ? textoConfirmar : "Aceptar"}
+                  title={cargando ? "Procesando..." : onConfirm ? textoConfirmar : textoAceptar}
                   onPress={onConfirm ?? cerrar}
                   disabled={cargando}
                   className={cn(buttonClassName, peligro && onConfirm ? "bg-danger" : "")}

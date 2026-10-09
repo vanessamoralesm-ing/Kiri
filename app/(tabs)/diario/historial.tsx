@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Pressable,
   ScrollView,
@@ -31,6 +30,8 @@ import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
 import { useThemeColor } from "@/hooks/use-theme-color";
 
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout";
+import BotonVolver from "@/components/ui/BotonVolver";
+import ActionModal, { type ModalOptions } from "@/components/ui/ActionModal";
 
 const FILTROS = [
   {
@@ -45,6 +46,28 @@ const FILTROS = [
 
 export default function HistorialDiarioScreen() {
   const router = useRouter();
+
+  const [aviso, setAviso] = useState<
+    (ModalOptions & {
+      onConfirm?: () => void | Promise<void>;
+    }) | null
+  >(null);
+
+  const modal = aviso ? (
+    <ActionModal
+      {...aviso}
+      visible
+      onClose={() => setAviso(null)}
+      onConfirm={
+        aviso.onConfirm
+          ? () => {
+              setAviso(null);
+              void aviso.onConfirm?.();
+            }
+          : undefined
+      }
+    />
+  ) : null;
 
   const insets = useSafeAreaInsets();
 
@@ -145,32 +168,26 @@ export default function HistorialDiarioScreen() {
    */
 
   const confirmarEliminar = (id: string) => {
-    Alert.alert(
-      "Eliminar registro",
-      "¿Deseas eliminar este registro de tu diario?",
-      [
-        {
-          text: "Cancelar",
-          style: "cancel",
-        },
-        {
-          text: "Eliminar",
-          style: "destructive",
+    setAviso({
+      titulo: "Eliminar registro",
+      mensaje: "¿Deseas eliminar este registro de tu diario?",
+      textoConfirmar: "Eliminar",
+      peligro: true,
+      onConfirm: async () => {
+        const exito = await eliminarRegistroDiario(id);
 
-          onPress: async () => {
-            const exito = await eliminarRegistroDiario(id);
+        if (exito) {
+          await cargarHistorial();
 
-            if (exito) {
-              await cargarHistorial();
+          return;
+        }
 
-              return;
-            }
-
-            Alert.alert("Error", "No se pudo eliminar el registro.");
-          },
-        },
-      ],
-    );
+        setAviso({
+          titulo: "Error",
+          mensaje: "No se pudo eliminar el registro.",
+        });
+      },
+    });
   };
 
   /*
@@ -275,25 +292,19 @@ export default function HistorialDiarioScreen() {
             paddingBottom: esEscritorio ? 18 : 10,
           }}
         >
-          <Pressable
-            onPress={() => router.back()}
-            hitSlop={8}
-            style={({ pressed }) => ({
+          <View
+            style={{
               width: 44,
 
               height: 44,
 
-              borderRadius: 14,
-
               alignItems: "center",
 
               justifyContent: "center",
-
-              backgroundColor: pressed ? surfaceSecondaryColor : "transparent",
-            })}
+            }}
           >
-            <Ionicons name="arrow-back" size={22} color={textColor} />
-          </Pressable>
+            <BotonVolver onPress={() => router.back()} />
+          </View>
 
           <View
             style={{
@@ -870,6 +881,7 @@ export default function HistorialDiarioScreen() {
           )}
         />
       )}
+      {modal}
     </SafeAreaView>
   );
 }

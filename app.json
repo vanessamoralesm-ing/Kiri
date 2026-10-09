@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "app_kiri",
-    "slug": "app_kiri",
+    "name": "Kiri",
+    "slug": "Kiri",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -31,7 +31,7 @@
           "image": "./assets/images/splash-icon-ps.png",
           "imageWidth": 250,
           "resizeMode": "contain",
-          "backgroundColor": "#4685F6"
+          "backgroundColor": "#4F8EF7"
         }
       ],
       "expo-font",
@@ -42,6 +42,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "6879d453-e21e-4a92-a225-bd1889b8aafe"
+      }
+    },
+    "owner": "kiristeam"
   }
 }

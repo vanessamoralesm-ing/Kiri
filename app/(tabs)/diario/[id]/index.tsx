@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 
-import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 
@@ -23,6 +23,7 @@ import { ResumenRegistroCard } from "@/components/diario/ResumenRegistroCard";
 import { RespuestaDetalleCard } from "@/components/diario/RespuestaDetalleCard";
 
 import { DetalleSkeleton } from "@/components/diario/DetalleSkeleton";
+import ActionModal, { type ModalOptions } from "@/components/ui/ActionModal";
 
 import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
 
@@ -36,6 +37,32 @@ import { useThemeColor } from "@/hooks/use-theme-color";
 
 export default function VerEntradaDiarioScreen() {
   const router = useRouter();
+
+  const [aviso, setAviso] = useState<
+    (ModalOptions & {
+      onAceptar?: () => void;
+      onConfirm?: () => void | Promise<void>;
+    }) | null
+  >(null);
+
+  const modal = aviso ? (
+    <ActionModal
+      {...aviso}
+      visible
+      onClose={() => {
+        setAviso(null);
+        aviso.onAceptar?.();
+      }}
+      onConfirm={
+        aviso.onConfirm
+          ? () => {
+              setAviso(null);
+              void aviso.onConfirm?.();
+            }
+          : undefined
+      }
+    />
+  ) : null;
 
   const insets = useSafeAreaInsets();
 
@@ -170,48 +197,35 @@ export default function VerEntradaDiarioScreen() {
   // ========================================================
 
   const confirmarEliminacion = () => {
-    Alert.alert(
-      "Eliminar registro",
-      "¿Estás seguro de que deseas eliminar esta entrada? Esta acción no se puede deshacer.",
-      [
-        {
-          text: "Cancelar",
+    setAviso({
+      titulo: "Eliminar registro",
+      mensaje: "¿Estás seguro de que deseas eliminar esta entrada? Esta acción no se puede deshacer.",
+      textoConfirmar: "Eliminar",
+      peligro: true,
+      onConfirm: async () => {
+        if (!id) {
+          return;
+        }
 
-          style: "cancel",
-        },
-        {
-          text: "Eliminar",
+        const ok = await eliminarRegistroDiario(id);
 
-          style: "destructive",
+        if (ok) {
+          setAviso({
+            titulo: "Registro eliminado",
+            mensaje: "La entrada fue eliminada correctamente.",
+            textoAceptar: "OK",
+            onAceptar: () => router.back(),
+          });
 
-          onPress: async () => {
-            if (!id) {
-              return;
-            }
+          return;
+        }
 
-            const ok = await eliminarRegistroDiario(id);
-
-            if (ok) {
-              Alert.alert(
-                "Registro eliminado",
-                "La entrada fue eliminada correctamente.",
-                [
-                  {
-                    text: "OK",
-
-                    onPress: () => router.back(),
-                  },
-                ],
-              );
-
-              return;
-            }
-
-            Alert.alert("Error", "No se pudo eliminar el registro.");
-          },
-        },
-      ],
-    );
+        setAviso({
+          titulo: "Error",
+          mensaje: "No se pudo eliminar el registro.",
+        });
+      },
+    });
   };
 
   // ========================================================
@@ -603,6 +617,7 @@ export default function VerEntradaDiarioScreen() {
             </View>
           </View>
         </ScrollView>
+        {modal}
       </View>
     );
   }
@@ -785,6 +800,7 @@ export default function VerEntradaDiarioScreen() {
           )}
         </View>
       </ScrollView>
+      {modal}
     </View>
   );
 }
