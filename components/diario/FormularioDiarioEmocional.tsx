@@ -23,6 +23,7 @@ import { OpcionEmocion } from "@/components/diario/OpcionEmocion";
 import { CampoPreguntaDiario } from "@/components/diario/CampoPreguntaDiario";
 
 import Button from "@/components/ui/Button";
+import ActionModal, { type ModalOptions } from "@/components/ui/ActionModal";
 import BotonVolver from "@/components/ui/BotonVolver";//Agregado por el usuario para el boton de volver
 
 import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
@@ -73,6 +74,21 @@ export function FormularioDiarioEmocional({
   origen,
 }: FormularioDiarioEmocionalProps) {
   const router = useRouter();
+
+  const [aviso, setAviso] = useState<
+    (ModalOptions & { onAceptar?: () => void }) | null
+  >(null);
+
+  const modal = aviso ? (
+    <ActionModal
+      {...aviso}
+      visible
+      onClose={() => {
+        setAviso(null);
+        aviso.onAceptar?.();
+      }}
+    />
+  ) : null;
 
   const insets = useSafeAreaInsets();
 
@@ -257,21 +273,17 @@ export function FormularioDiarioEmocional({
         ideaUtil,
       });
 
-      Alert.alert(
-        "¡Éxito!",
-        "Tu diario ha sido guardado correctamente.",
-        [
-          {
-            text: "OK",
-            onPress: regresar,
-          },
-        ],
-      );
+      setAviso({
+        titulo: "¡Éxito!",
+        mensaje: "Tu diario ha sido guardado correctamente.",
+        textoAceptar: "OK",
+        onAceptar: regresar,
+      });
     } catch (error: any) {
-      Alert.alert(
-        "Error al guardar",
-        error.message || "Ocurrió un error inesperado.",
-      );
+      setAviso({
+        titulo: "Error al guardar",
+        mensaje: error.message || "Ocurrió un error inesperado.",
+      });
     } finally {
       setGuardando(false);
     }
@@ -698,6 +710,7 @@ export function FormularioDiarioEmocional({
           </Animated.View>
         </View>
       </ScrollView>
+      {modal}
     </KeyboardAvoidingView>
   );
 }

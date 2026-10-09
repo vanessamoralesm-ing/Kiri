@@ -25,6 +25,7 @@ import { CampoPreguntaDiario } from "@/components/diario/CampoPreguntaDiario";
 import { FormularioAutorregistroABC } from "@/components/diario/FormularioAutorregistroABC";
 
 import Button from "@/components/ui/Button";
+import ActionModal, { type ModalOptions } from "@/components/ui/ActionModal";
 
 import { MAX_WIDTHS, PADDING_RESPONSIVE } from "@/constants/responsive";
 
@@ -64,6 +65,21 @@ const EMOJIS_EMOCIONES: Record<string, string> = {
 
 export default function EditarRegistroScreen() {
   const router = useRouter();
+
+  const [aviso, setAviso] = useState<
+    (ModalOptions & { onAceptar?: () => void }) | null
+  >(null);
+
+  const modal = aviso ? (
+    <ActionModal
+      {...aviso}
+      visible
+      onClose={() => {
+        setAviso(null);
+        aviso.onAceptar?.();
+      }}
+    />
+  ) : null;
 
   const insets = useSafeAreaInsets();
 
@@ -262,15 +278,17 @@ export default function EditarRegistroScreen() {
         ideaUtil,
       });
 
-      Alert.alert("¡Actualizado!", "El registro ha sido modificado.", [
-        {
-          text: "OK",
-
-          onPress: () => router.back(),
-        },
-      ]);
+      setAviso({
+        titulo: "¡Actualizado!",
+        mensaje: "El registro ha sido modificado.",
+        textoAceptar: "OK",
+        onAceptar: () => router.back(),
+      });
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Ocurrió un error al actualizar.");
+      setAviso({
+        titulo: "Error",
+        mensaje: error.message || "Ocurrió un error al actualizar.",
+      });
     } finally {
       setGuardando(false);
     }
@@ -660,6 +678,7 @@ export default function EditarRegistroScreen() {
           </View>
         </View>
       </ScrollView>
+      {modal}
     </KeyboardAvoidingView>
   );
 }
