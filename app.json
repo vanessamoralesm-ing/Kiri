@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "app_kiri",
-    "slug": "app_kiri",
+    "name": "Kiri",
+    "slug": "Kiri",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -46,8 +46,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "f7b2c19b-fd12-4650-9c77-dff2c3156ee7"
+        "projectId": "6879d453-e21e-4a92-a225-bd1889b8aafe"
       }
-    }
+    },
+    "owner": "kiristeam"
   }
 }
