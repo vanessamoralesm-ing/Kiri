@@ -73,6 +73,9 @@ export default function OpcionRespuesta({
 
   return (
     <Pressable
+      accessibilityRole="radio"
+      accessibilityLabel={texto}
+      accessibilityState={{ checked: seleccionada }}
       onPress={onPress}
       android_ripple={{
         color: "rgba(79, 142, 247, 0.10)",

@@ -75,6 +75,9 @@ export default function OpcionRespuesta({
 
     return (
         <Pressable
+            accessibilityRole="radio"
+            accessibilityLabel={texto}
+            accessibilityState={{ checked: seleccionada }}
             onPress={
                 onPress
             }

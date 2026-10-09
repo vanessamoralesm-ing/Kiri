@@ -10,6 +10,7 @@ interface Props {
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
+  accessibilityLabel?: string;
   className?: string;
   style?: StyleProp<ViewStyle>;
 }
@@ -18,6 +19,7 @@ export default function SearchBar({
   value,
   onChangeText,
   placeholder = "Buscar...",
+  accessibilityLabel,
   className,
   style,
 }: Props) {
@@ -35,6 +37,8 @@ export default function SearchBar({
       <Ionicons name="search-outline" size={22} className="text-icon" />
 
       <TextInput
+        accessibilityLabel={accessibilityLabel ?? placeholder}
+        accessibilityRole="search"
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}

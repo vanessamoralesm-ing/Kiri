@@ -62,6 +62,7 @@ export default function Input({
         }
       >
         <TextInput
+          accessibilityLabel={label}
           {...props}
           className={cn(
             "h-14 min-w-0 flex-1 px-4 py-2 font-nunito-medium text-base text-text",

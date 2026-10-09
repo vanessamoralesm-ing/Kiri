@@ -59,6 +59,7 @@ export function CampoPreguntaDiario({
       </Text>
 
       <TextInput
+        accessibilityLabel={titulo}
         value={valor}
         onChangeText={onChangeText}
         placeholder={placeholder}

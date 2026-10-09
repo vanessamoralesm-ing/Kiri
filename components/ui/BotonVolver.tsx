@@ -59,6 +59,8 @@ export default function BotonVolver({
   return (
     <Animated.View style={estiloAnimado}>
       <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Volver"
         onPress={onPress}
         onPressIn={() => {
           escala.value =

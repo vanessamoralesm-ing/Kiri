@@ -451,7 +451,7 @@ export function BarraNavegacionCurva({
                     }
                   : {}
               }
-              accessibilityLabel={options.tabBarAccessibilityLabel}
+              accessibilityLabel={options.tabBarAccessibilityLabel ?? tituloTab}
               onPress={onPress}
               style={[
                 styles.tabButton,

@@ -209,6 +209,8 @@ export default function LoginScreen() {
                 }
                 rightIcon={
                   <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={mostrarPassword ? "Ocultar contrase?a" : "Mostrar contrase?a"}
                     hitSlop={8}
                     onPress={() =>
                       setMostrarPassword(

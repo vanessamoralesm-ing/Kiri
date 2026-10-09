@@ -83,6 +83,9 @@ export function OpcionEmocion({
 
   return (
     <AnimatedPressable
+      accessibilityRole="radio"
+      accessibilityLabel={nombre}
+      accessibilityState={{ checked: seleccionada }}
       onPress={presionar}
       style={[
         estiloAnimado,

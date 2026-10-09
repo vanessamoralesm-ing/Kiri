@@ -18,6 +18,8 @@ export default function GoogleButton({
 }: GoogleButtonProps) {
   return (
     <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel={text === "Google" ? "Continuar con Google" : text}
       activeOpacity={0.8}    // Suaviza la opacidad al presionar
       onPress={onPress}      // Ejecuta la funcion enviada por props
       style={styles.googleButton}

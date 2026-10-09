@@ -17,6 +17,8 @@ export const ButtonSizeContext = createContext<ButtonSize>("md");
 
 interface ButtonProps {
   title: string;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
   onPress: () => void;
   variant?: "primary" | "secondary";
   size?: ButtonSize;
@@ -32,6 +34,8 @@ interface ButtonProps {
 
 export default function Button({
   title,
+  accessibilityLabel,
+  accessibilityHint,
   onPress,
   variant = "primary",
   size,
@@ -56,6 +60,8 @@ export default function Button({
       onPress={onPress}
       disabled={bloqueado}
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? title}
+      accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: bloqueado, busy: loading }}
       aria-busy={loading}
       style={style}

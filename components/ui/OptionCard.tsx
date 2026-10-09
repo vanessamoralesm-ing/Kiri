@@ -43,6 +43,8 @@ export default function OptionCard({
 
       {/* Boton de continuar */}
       <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel={`Continuar con ${title}`}
         activeOpacity={0.8}
         onPress={onPress}
         style={styles.continueButton}

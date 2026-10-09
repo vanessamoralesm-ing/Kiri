@@ -13,15 +13,22 @@ La plataforma integra herramientas de autorregistro emocional, psicoeducación, 
 Kiri busca convertirse en una herramienta preventiva, educativa y de acompañamiento que ayude a:
 
 - Fortalecer el autoconocimiento emocional.
+
 - Promover hábitos saludables.
+
 - Facilitar el acceso a recursos de psicoeducación.
+
 - Identificar patrones emocionales y conductuales.
+
 - Brindar herramientas de autocuidado.
+
 - Facilitar la detección temprana de posibles señales de alerta.
+
 - Reducir el estigma asociado a la búsqueda de apoyo psicológico.
+
 - Favorecer el acceso oportuno a profesionales de la salud mental cuando sea necesario.
 
-> **Importante:** Kiri no sustituye la evaluación, diagnóstico, tratamiento ni criterio clínico de un profesional de la salud mental.
+\> **Importante:** Kiri no sustituye la evaluación, diagnóstico, tratamiento ni criterio clínico de un profesional de la salud mental.
 
 ---
 
@@ -32,18 +39,29 @@ Las interfaces actualmente desarrolladas corresponden al **Producto Mínimo Viab
 El MVP se enfoca principalmente en validar:
 
 - El proceso de registro y autenticación.
+
 - La evaluación de la entrevista inicial.
+
 - La personalización de recomendaciones con el Plan de Bienestar Emocional.
+
 - El Módulo de Autorregistro.
+
 - El acceso a recursos de psicoeducación.
+
 - Las técnicas complementarias.
+
 - Los test y cuestionarios orientativos.
+
 - El Foro Comunitario.
+
 - La gestión básica del perfil del usuario.
+
 - El funcionamiento del modo claro y oscuro.
+
 - Las primeras funcionalidades correspondientes al rol de Superadministrador.
 
 Las interfaces institucionales y administrativas forman parte de la visión integral de Kiri y serán incorporadas progresivamente en versiones posteriores.
+
 ---
 
 # Funcionalidades principales
@@ -63,11 +81,17 @@ Esta información sirve como base para personalizar la experiencia del usuario d
 Con base en el estado emocional del usuario, Kiri puede recomendar:
 
 - Cuestionarios orientativos.
+
 - Técnicas complementarias.
+
 - Ejercicios de relajación.
+
 - Material psicoeducativo.
+
 - Lecturas.
+
 - Actividades de bienestar.
+
 - Retos diarios.
 
 El Plan de Bienestar Emocional busca orientar al usuario hacia recursos que puedan contribuir con su proceso de autocuidado y autoconocimiento.
@@ -87,8 +111,11 @@ Actualmente Kiri incorpora tres métodos de autorregistro:
 Permite registrar:
 
 - Emoción experimentada.
+
 - Situación o motivo relacionado.
+
 - Reacción ante la situación.
+
 - Una idea útil obtenida de la experiencia.
 
 ## Observando mis pensamientos
@@ -96,8 +123,11 @@ Permite registrar:
 Permite registrar y reflexionar sobre:
 
 - Situaciones.
+
 - Pensamientos.
+
 - Sentimientos.
+
 - Reacciones.
 
 ## Autorregistro ABCDE
@@ -107,12 +137,16 @@ Permite reflexionar de manera estructurada sobre una situación, las creencias a
 El Módulo de Autorregistro también permite:
 
 - Acceder al historial de autorregistros.
+
 - Visualizar el detalle de un registro.
+
 - Editar registros existentes.
+
 - Eliminar registros.
+
 - Identificar emociones asociadas.
 
-> Los autorregistros tienen una finalidad de autoconocimiento y seguimiento personal y no constituyen una evaluación diagnóstica.
+\> Los autorregistros tienen una finalidad de autoconocimiento y seguimiento personal y no constituyen una evaluación diagnóstica.
 
 ---
 
@@ -123,11 +157,17 @@ Kiri incorpora diferentes test ó cuestionarios psicológicos de carácter **ori
 Estos instrumentos permiten explorar aspectos relacionados con:
 
 - Bienestar emocional.
+
 - Rasgos de personalidad.
+
 - Distorsiones cognitivas.
+
 - Autoestima.
+
 - Ansiedad.
+
 - Interacción social.
+
 - Otros indicadores relacionados con la salud emocional.
 
 Los resultados pueden representarse mediante porcentajes, niveles y gráficos interpretativos.
@@ -136,15 +176,21 @@ Los resultados pueden representarse mediante porcentajes, niveles y gráficos in
 
 Actualmente se encuentran implementados en la plataforma:
 
-1. Test de Asertividad de Rathus.
-2. Test de Autoestima para Adultos.
-3. Test de Autoestima para Niños.
-4. Escala de Depresión de Calgary.
-5. Escala de Evitación y Angustia Social.
-6. Escala de Ideación Suicida de Beck.
-7. Escala de Intensidad de Fatiga.
+1\. Test de Asertividad de Rathus.
 
-> Los resultados no constituyen un diagnóstico clínico.
+2\. Test de Autoestima para Adultos.
+
+3\. Test de Autoestima para Niños.
+
+4\. Escala de Depresión de Calgary.
+
+5\. Escala de Evitación y Angustia Social.
+
+6\. Escala de Ideación Suicida de Beck.
+
+7\. Escala de Intensidad de Fatiga.
+
+\> Los resultados no constituyen un diagnóstico clínico.
 
 ---
 
@@ -163,7 +209,9 @@ Su objetivo es ayudar al usuario a centrar su atención en el entorno inmediato.
 Duración aproximada:
 
 ```text
+
 5 minutos
+
 ```
 
 ## Relajación Muscular Progresiva de Jacobson
@@ -175,7 +223,9 @@ Su objetivo es contribuir a la disminución de la tensión física y favorecer u
 Duración aproximada:
 
 ```text
+
 20 minutos
+
 ```
 
 Las técnicas podrán recomendarse de acuerdo con las necesidades y condiciones del usuario.
@@ -187,12 +237,19 @@ Las técnicas podrán recomendarse de acuerdo con las necesidades y condiciones 
 La sección de Psicoeducación proporciona recursos relacionados con:
 
 - Ansiedad.
+
 - Estrés.
+
 - Autoestima.
+
 - Inteligencia emocional.
+
 - Procrastinación.
+
 - Hábitos saludables.
+
 - Distorsiones cognitivas.
+
 - Bienestar emocional.
 
 También incluye:
@@ -212,7 +269,9 @@ Contenido diseñado para combatir la desinformación relacionada con la salud me
 El Foro Comunitario permite a los usuarios compartir:
 
 - Experiencias.
+
 - Recomendaciones.
+
 - Estrategias de afrontamiento.
 
 El módulo contempla la interacción mediante publicaciones, comentarios y reacciones.
@@ -226,9 +285,13 @@ Las publicaciones están sujetas a moderación con el objetivo de mantener un en
 Desde el perfil, el usuario puede:
 
 - Administrar sus datos personales.
+
 - Modificar información de la cuenta.
+
 - Configurar preferencias de la aplicación.
+
 - Configurar el modo claro y oscuro.
+
 - Cerrar sesión.
 
 ---
@@ -240,19 +303,26 @@ Kiri incorpora soporte para **modo claro y modo oscuro**.
 El sistema visual utiliza una configuración centralizada de colores para adaptar elementos como:
 
 - Fondos.
+
 - Superficies.
+
 - Textos.
+
 - Bordes.
+
 - Campos de entrada.
+
 - Iconos.
+
 - Botones.
+
 - Colores principales y secundarios.
+
 - Elementos de interacción.
 
 Esto permite mantener consistencia visual en los diferentes módulos de la aplicación.
 
 ---
-
 
 # Roles del sistema
 
@@ -260,16 +330,24 @@ Kiri utiliza un modelo de control de acceso basado en roles (**RBAC - Role-Based
 
 Los roles contemplados son:
 
-| Rol                             | Alcance                                                                                   |
+| Rol                             | Alcance                                                                                   |
+
 | ------------------------------- | ----------------------------------------------------------------------------------------- |
-| **Usuario Independiente**        | Utiliza Kiri de forma personal, sin pertenecer a una institución, accediendo a las herramientas de autocuidado, evaluaciones orientativas, seguimiento personal y contenido psicoeducativo.. |
-| **Superadministrador**          | Administra toda la plataforma, instituciones, usuarios, contenido y configuración global. |
-| **Administrador Institucional** | Administra únicamente la institución a la que pertenece.                                  |
-| **Psicólogo Institucional**     | Realiza seguimiento emocional de estudiantes autorizados y gestiona alertas.              |
-| **Docente**                     | Accede a información general de sus grupos y funcionalidades preventivas autorizadas.     |
-| **Estudiante**                  | Utiliza las herramientas de bienestar emocional y consulta su progreso personal.          |
+
+| **Usuario Independiente**        | Utiliza Kiri de forma personal, sin pertenecer a una institución, accediendo a las herramientas de autocuidado, evaluaciones orientativas, seguimiento personal y contenido psicoeducativo.. |
+
+| **Superadministrador**          | Administra toda la plataforma, instituciones, usuarios, contenido y configuración global. |
+
+| **Administrador Institucional** | Administra únicamente la institución a la que pertenece.                                  |
+
+| **Psicólogo Institucional**     | Realiza seguimiento emocional de estudiantes autorizados y gestiona alertas.              |
+
+| **Docente**                     | Accede a información general de sus grupos y funcionalidades preventivas autorizadas.     |
+
+| **Estudiante**                  | Utiliza las herramientas de bienestar emocional y consulta su progreso personal.          |
 
 ---
+
 ## Estado actual de implementación de roles
 
 Actualmente, Kiri contempla los seis roles descritos anteriormente. Sin embargo, las funcionalidades completas de todos los roles todavía se encuentran en desarrollo.
@@ -279,6 +357,7 @@ A nivel de base de datos, backend y flujo de autenticación, actualmente se encu
 ### Usuario Independiente
 
 El Usuario Independiente puede registrarse directamente en la aplicación sin necesidad de pertenecer a una institución. Este usuario puede utilizar las funcionalidades personales de Kiri orientadas al bienestar emocional, el autocuidado y el seguimiento individual.
+
 En la base de datos, este tipo de usuario se identifica porque no posee una institución asociada:
 
 id_institucion = null
@@ -288,22 +367,30 @@ id_institucion = null
 ### Superadministrador
 
 El rol de Superadministrador ya se encuentra implementado en la base de datos, backend y panel administrativo.
+
 Actualmente dispone de las siguientes funcionalidades:
 
 - Visualizar las solicitudes de incorporación de instituciones.
+
 - Consultar el detalle de cada solicitud.
+
 - Aprobar solicitudes institucionales.
+
 - Rechazar solicitudes institucionales.
+
 - Crear automáticamente una institución cuando una solicitud es aprobada.
+
 - Crear la cuenta correspondiente al Administrador Institucional.
+
 - Asociar al nuevo Administrador Institucional con la institución aprobada.
+
 - Actualizar el estado de la solicitud institucional.
 
 ### Cuenta de prueba del Superadministrador
+
 Para acceder al panel del Superadministrador se encuentra disponible la siguiente cuenta de prueba:
 
-Correo: auxiliadora.morales22@est.unanleon.edu.ni
-Contraseña: 123456
+Las credenciales de prueba se entregan por un canal privado y no se publican en el repositorio.
 
 Esta cuenta permite comprobar las funcionalidades que actualmente están disponibles para este rol.
 
@@ -312,35 +399,57 @@ Esta cuenta permite comprobar las funcionalidades que actualmente están disponi
 ### Administrador Institucional
 
 El rol de Administrador Institucional también se encuentra implementado a nivel de base de datos y backend.
+
 Su cuenta no se crea mediante un registro tradicional. El proceso inicia cuando una institución envía una solicitud de incorporación a Kiri y el Superadministrador la aprueba.
 
 El flujo implementado actualmente es el siguiente:
 
-        Institución envía solicitud
-                ↓
-        Solicitud queda pendiente
-                ↓
-        Superadministrador revisa la solicitud
-                ↓
-        Superadministrador aprueba
-                ↓
-        Se crea la institución
-                ↓
-        Se crea el Administrador Institucional
-                ↓
-        Se genera una contraseña temporal
-                ↓
-        Las credenciales son enviadas por correo electrónico
-                ↓
-        Administrador Institucional inicia sesión
-                ↓
-        Debe cambiar la contraseña temporal
-                ↓
-        Accede al panel correspondiente a su institución
+        Institución envía solicitud
+
+                ↓
+
+        Solicitud queda pendiente
+
+                ↓
+
+        Superadministrador revisa la solicitud
+
+                ↓
+
+        Superadministrador aprueba
+
+                ↓
+
+        Se crea la institución
+
+                ↓
+
+        Se crea el Administrador Institucional
+
+                ↓
+
+        Se genera una contraseña temporal
+
+                ↓
+
+        Las credenciales son enviadas por correo electrónico
+
+                ↓
+
+        Administrador Institucional inicia sesión
+
+                ↓
+
+        Debe cambiar la contraseña temporal
+
+                ↓
+
+        Accede al panel correspondiente a su institución
 
 Cuando una solicitud es aprobada, el sistema genera automáticamente la cuenta del responsable de la institución y envía a su correo electrónico:
 
 - El correo utilizado para iniciar sesión.
+
 - Una contraseña temporal.
 
 La cuenta se crea inicialmente con el siguiente indicador:
@@ -362,7 +471,9 @@ Después de este proceso, el Administrador Institucional puede acceder normalmen
 Los siguientes roles ya forman parte del modelo de acceso de Kiri y en la base de datos, pero sus funcionalidades específicas todavía están pendientes de implementación o integración completa:
 
 - Psicólogo Institucional.
+
 - Docente.
+
 - Estudiante.
 
 Estos roles serán incorporados progresivamente junto con sus respectivos permisos, interfaces y restricciones de acceso.
@@ -376,15 +487,19 @@ El objetivo del modelo de roles es garantizar que cada usuario pueda acceder ún
 Los usuarios pueden utilizar Kiri de forma:
 
 - Independiente.
+
 - Vinculada a una institución educativa.
 
 En versiones posteriores se implementará que el estudiante que pertenece a una institución podrá ingresar o escanear un código institucional para vincular su cuenta con:
 
 - Institución.
+
 - Grado.
+
 - Grupo o sección.
 
 ---
+
 # Diseño multiplataforma y responsividad
 
 Es importante destacar que las interfaces desarrolladas actualmente para Kiri están orientadas principalmente a la versión móvil de la aplicación. En esta etapa del proyecto todavía no se ha implementado una adaptación responsiva completa pensada específicamente para navegadores web.
@@ -392,21 +507,32 @@ Es importante destacar que las interfaces desarrolladas actualmente para Kiri es
 La excepción corresponde al dashboard administrativo, cuya interfaz sí fue diseñada considerando su uso desde una computadora y una visualización adecuada en entorno web.
 
 En versiones posteriores se contempla realizar la adaptación responsiva de las demás interfaces para que puedan utilizarse correctamente en distintos tamaños de pantalla.
+
 Cuando la aplicación se ejecuta en web mediante React Native Web, estos componentes son adaptados automáticamente a elementos compatibles con el navegador. Esto permite reutilizar gran parte de la lógica, los componentes y los estilos existentes.
 
 La arquitectura puede representarse de forma simplificada así:
 
-                    Código React Native
-                           │
-              ┌────────────┴────────────┐
-              │                         │
-              ▼                         ▼
-        Android / iOS                  Web
-              │                         │
-      Componentes nativos       React Native Web
-                                        │
-                                        ▼
-                                  Navegador web
+                    Código React Native
+
+                           │
+
+              ┌────────────┴────────────┐
+
+              │                         │
+
+              ▼                         ▼
+
+        Android / iOS                  Web
+
+              │                         │
+
+      Componentes nativos       React Native Web
+
+                                        │
+
+                                        ▼
+
+                                  Navegador web
 
 Sin embargo, que React Native permita ejecutar la aplicación en web no significa que todas las interfaces sean automáticamente responsivas.
 
@@ -417,11 +543,17 @@ Para lograr una experiencia adecuada en pantallas más grandes será necesario a
 El proyecto de Kiri utiliza:
 
 - **React Native**
+
 - **Expo**
+
 - **TypeScript**
+
 - **Expo Router**
+
 - **React Navigation**
+
 - **Supabase**
+
 - **PostgreSQL**
 
 Supabase es utilizado como servicio backend para funciones como autenticación, acceso a datos y almacenamiento.
@@ -437,12 +569,19 @@ Supabase funciona bajo un modelo Backend as a Service (BaaS), proporcionando ser
 Entre los principales servicios utilizados se encuentran:
 
 - Base de datos PostgreSQL.
+
 - Autenticación y gestión de usuarios.
+
 - Gestión de sesiones.
+
 - APIs automáticas.
+
 - Row Level Security (RLS) para el control de acceso a los datos.
+
 - Edge Functions para ejecutar lógica del lado del servidor.
-- Almacenamiento de archivos. 
+
+- Almacenamiento de archivos.&#x20;
+
 - Gestión de roles y permisos.
 
 # Privacidad y seguridad
@@ -452,10 +591,15 @@ Kiri contempla medidas orientadas a proteger la información personal y emociona
 Entre los principios principales se encuentran:
 
 - Confidencialidad.
+
 - Acceso basado en roles.
+
 - Privacidad de los registros emocionales.
+
 - Acceso restringido a información sensible.
+
 - Vinculación institucional controlada.
+
 - Separación de permisos entre administradores, psicólogos, docentes y estudiantes.
 
 ---
@@ -467,113 +611,221 @@ Kiri utiliza una arquitectura modular que separa la navegación, los componentes
 La estructura actual del proyecto se organiza de manera general de la siguiente forma:
 
 ```text
+
 Kiri/
+
 ├── .claude/
+
 ├── .expo/
+
 ├── .vscode/
+
 ├── android/
+
 │
+
 ├── app/
-│   ├── (auth)/
-│   ├── (entrevista)/
-│   ├── (superadmin)/
-│   ├── (tabs)/
-│   │   ├── cuestionarios/
-│   │   ├── diario/
-│   │   │   ├── [id]/
-│   │   │   ├── nuevo/
-│   │   │   ├── _layout.tsx
-│   │   │   ├── historial.tsx
-│   │   │   └── index.tsx
-│   │   ├── educacion/
-│   │   ├── entrevistas/
-│   │   ├── foro/
-│   │   ├── home/
-│   │   ├── perfil/
-│   │   ├── tecnicas/
-│   │   └── _layout.tsx
-│   ├── (tecnica)/
-│   └── _layout.tsx
+
+│   ├── (auth)/
+
+│   ├── (entrevista)/
+
+│   ├── (superadmin)/
+
+│   ├── (tabs)/
+
+│   │   ├── cuestionarios/
+
+│   │   ├── diario/
+
+│   │   │   ├── [id]/
+
+│   │   │   ├── nuevo/
+
+│   │   │   ├── \_layout.tsx
+
+│   │   │   ├── historial.tsx
+
+│   │   │   └── index.tsx
+
+│   │   ├── educacion/
+
+│   │   ├── entrevistas/
+
+│   │   ├── foro/
+
+│   │   ├── home/
+
+│   │   ├── perfil/
+
+│   │   ├── tecnicas/
+
+│   │   └── \_layout.tsx
+
+│   ├── (tecnica)/
+
+│   └── \_layout.tsx
+
 │
+
 ├── assets/
-│   ├── gifs/
-│   ├── fonts/
-│   ├── images/
-│   ├── images_educacion/
-│   └── images_kids/
+
+│   ├── gifs/
+
+│   ├── fonts/
+
+│   ├── images/
+
+│   ├── images_educacion/
+
+│   └── images_kids/
+
 │
+
 ├── components/
-│   ├── cuestionarios/
-│   ├── diario/
-│   ├── educacion/
-│   ├── entrevista/
-│   ├── foro/
-│   ├── institution/
-│   ├── layout/
-│   ├── solicitudes/
-│   ├── superadmin/
-│   │   └── layout/
-│   ├── tecnicas/
-│   └── ui/
+
+│   ├── cuestionarios/
+
+│   ├── diario/
+
+│   ├── educacion/
+
+│   ├── entrevista/
+
+│   ├── foro/
+
+│   ├── institution/
+
+│   ├── layout/
+
+│   ├── solicitudes/
+
+│   ├── superadmin/
+
+│   │   └── layout/
+
+│   ├── tecnicas/
+
+│   └── ui/
+
 │
+
 ├── constants/
-│   ├── superadmin/
-│   ├── preguntas_kids.ts
-│   ├── tecnicas.ts
-│   └── theme.ts
+
+│   ├── superadmin/
+
+│   ├── preguntas_kids.ts
+
+│   ├── tecnicas.ts
+
+│   └── theme.ts
+
 │
+
 ├── contexts/
+
 │
+
 ├── hooks/
-│   ├── superadmin/
-│   ├── use-color-scheme.ts
-│   ├── use-color-scheme.web.ts
-│   ├── use-theme-color.ts
-│   ├── useEntrevistaFormulario.ts
-│   └── useResumenBienestar.ts
+
+│   ├── superadmin/
+
+│   ├── use-color-scheme.ts
+
+│   ├── use-color-scheme.web.ts
+
+│   ├── use-theme-color.ts
+
+│   ├── useEntrevistaFormulario.ts
+
+│   └── useResumenBienestar.ts
+
 │
+
 ├── lib/
+
 ├── scripts/
+
 │
+
 ├── services/
-│   ├── cuestionarios/
-│   ├── diario/
-│   ├── entrevista/
-│   ├── foro/
-│   ├── instituciones/
-│   ├── perfil/
-│   ├── superadmin/
-│   │   ├── aprobarSolicitudService.ts
-│   │   ├── dashboardService.ts
-│   │   └── solicitudServices.ts
-│   ├── tecnicas/
-│   └── authProvider.tsx
+
+│   ├── cuestionarios/
+
+│   ├── diario/
+
+│   ├── entrevista/
+
+│   ├── foro/
+
+│   ├── instituciones/
+
+│   ├── perfil/
+
+│   ├── superadmin/
+
+│   │   ├── aprobarSolicitudService.ts
+
+│   │   ├── dashboardService.ts
+
+│   │   └── solicitudServices.ts
+
+│   ├── tecnicas/
+
+│   └── authProvider.tsx
+
 │
+
 ├── styles/
+
 │
+
 ├── types/
-│   ├── superadmin/
-│   ├── auth.ts
-│   ├── cuestionarios.ts
-│   ├── diario.ts
-│   ├── entrevistas.ts
-│   ├── foro.ts
-│   └── tecnicas.ts
+
+│   ├── superadmin/
+
+│   ├── auth.ts
+
+│   ├── cuestionarios.ts
+
+│   ├── diario.ts
+
+│   ├── entrevistas.ts
+
+│   ├── foro.ts
+
+│   └── tecnicas.ts
+
 │
+
 ├── utils/
+
 │
+
 ├── .env.local
+
 ├── .gitignore
+
 ├── app.json
+
 ├── babel.config.js
+
 ├── eslint.config.js
+
 ├── expo-env.d.ts
+
 ├── global.css
+
 ├── metro.config.js
+
 ├── nativewind-env.d.ts
+
 ├── package-lock.json
+
 ├── package.json
+
 └── README.md
+
 ```
 
 ## Carpeta `app`
@@ -601,29 +853,43 @@ Contiene las principales funcionalidades disponibles desde la navegación inferi
 Entre ellas:
 
 - Home.
+
 - Cuestionarios.
+
 - Módulo de Autorregistro.
+
 - Psicoeducación.
+
 - Foro Comunitario.
+
 - Técnicas.
+
 - Perfil.
 
 ### `(tecnica)`
 
 Contiene pantallas relacionadas con la ejecución o visualización detallada de las técnicas complementarias.
 
-### `_layout.tsx`
+### `\_layout.tsx`
 
 El layout raíz se encarga de integrar funcionalidades globales como:
 
 - Navegación.
+
 - Proveedores de contexto.
+
 - Autenticación.
+
 - Gestión de sesiones.
+
 - Control de roles.
+
 - Tema claro y oscuro.
+
 - Splash Screen.
+
 - Carga de fuentes.
+
 - Redirecciones iniciales.
 
 ---
@@ -635,18 +901,31 @@ Contiene componentes reutilizables utilizados en las diferentes interfaces.
 Los componentes se organizan según el módulo al que pertenecen:
 
 ```text
+
 components/
+
 ├── cuestionarios/
+
 ├── diario/
+
 ├── educacion/
+
 ├── entrevista/
+
 ├── foro/
+
 ├── institution/
+
 ├── layout/
+
 ├── solicitudes/
+
 ├── superadmin/
+
 ├── tecnicas/
+
 └── ui/
+
 ```
 
 ### `components/diario`
@@ -658,12 +937,19 @@ Aunque internamente la carpeta conserva el nombre `diario`, funcionalmente repre
 Incluye componentes para:
 
 - Selección de emociones.
+
 - Campos de preguntas.
+
 - Tarjetas de registros.
+
 - Tarjetas de métodos de autorregistro.
+
 - Resumen de registros.
+
 - Visualización del detalle.
+
 - Estados de carga.
+
 - Encabezados del módulo.
 
 ### `components/ui`
@@ -673,9 +959,13 @@ Contiene componentes generales reutilizables en diferentes módulos de la aplica
 Entre ellos pueden encontrarse:
 
 - Botones.
+
 - Logos.
+
 - Elementos de navegación.
+
 - Inputs.
+
 - Componentes visuales compartidos.
 
 ### `components/superadmin`
@@ -691,16 +981,27 @@ La carpeta `services` contiene la lógica encargada de acceder a los datos y com
 Su objetivo es separar la lógica de negocio de las interfaces visuales.
 
 ```text
+
 services/
+
 ├── cuestionarios/
+
 ├── diario/
+
 ├── entrevista/
+
 ├── foro/
+
 ├── instituciones/
+
 ├── perfil/
+
 ├── superadmin/
+
 ├── tecnicas/
+
 └── authProvider.tsx
+
 ```
 
 ### `services/cuestionarios`
@@ -712,10 +1013,15 @@ Gestiona la lógica relacionada con los test y cuestionarios.
 Gestiona las operaciones correspondientes al Módulo de Autorregistro, como:
 
 - Crear registros.
+
 - Consultar registros.
+
 - Obtener detalles.
+
 - Actualizar registros.
+
 - Eliminar registros.
+
 - Consultar emociones.
 
 ### `services/entrevista`
@@ -741,7 +1047,9 @@ Contiene servicios utilizados por las funcionalidades administrativas.
 Entre los servicios actuales se encuentran:
 
 - Gestión de solicitudes.
+
 - Aprobación de solicitudes.
+
 - Información del dashboard administrativo.
 
 ### `services/tecnicas`
@@ -755,11 +1063,17 @@ Administra el estado global de autenticación de Kiri.
 Entre sus responsabilidades se encuentran:
 
 - Obtener la sesión activa.
+
 - Identificar al usuario autenticado.
+
 - Obtener el perfil.
+
 - Obtener el rol.
+
 - Registrar usuarios.
+
 - Iniciar sesión.
+
 - Cerrar sesión.
 
 ---
@@ -771,8 +1085,11 @@ Contiene valores y configuraciones compartidas por la aplicación.
 Incluye archivos relacionados con:
 
 - Configuración de técnicas.
+
 - Preguntas.
+
 - Configuración del Superadministrador.
+
 - Sistema de temas.
 
 El archivo `theme.ts` centraliza los colores utilizados por los modos claro y oscuro.
@@ -794,11 +1111,17 @@ Contiene hooks personalizados reutilizables.
 Entre ellos:
 
 ```text
+
 use-color-scheme.ts
+
 use-color-scheme.web.ts
+
 use-theme-color.ts
+
 useEntrevistaFormulario.ts
+
 useResumenBienestar.ts
+
 ```
 
 `use-theme-color.ts` permite obtener colores de manera dinámica según el tema claro u oscuro activo.
@@ -810,27 +1133,45 @@ useResumenBienestar.ts
 Contiene interfaces y tipos de TypeScript utilizados por la aplicación.
 
 ```text
+
 types/
+
 ├── superadmin/
+
 ├── auth.ts
+
 ├── cuestionarios.ts
+
 ├── diario.ts
+
 ├── entrevistas.ts
+
 ├── foro.ts
+
 └── tecnicas.ts
+
 ```
 
 Estos tipos permiten mantener estructuras consistentes entre:
 
 - Componentes.
+
 - Servicios.
+
 - Formularios.
+
 - Datos provenientes de Supabase.
+
 - Autorregistros.
+
 - Entrevistas.
+
 - Cuestionarios.
+
 - Foro Comunitario.
+
 - Técnicas.
+
 - Funcionalidades administrativas.
 
 ---
@@ -840,22 +1181,35 @@ Estos tipos permiten mantener estructuras consistentes entre:
 Contiene los recursos gráficos y multimedia utilizados por la plataforma.
 
 ```text
+
 assets/
+
 ├── gifs/
+
 ├── fonts/
+
 ├── images/
+
 ├── images_educacion/
+
 └── images_kids/
+
 ```
 
 Incluye:
 
 - Logos.
+
 - Ilustraciones.
+
 - Avatares.
+
 - Recursos educativos.
+
 - Imágenes.
+
 - GIF.
+
 - Fuentes tipográficas.
 
 ---
@@ -885,41 +1239,77 @@ Este archivo se carga desde la configuración principal para permitir el funcion
 De forma simplificada, el flujo principal puede representarse de la siguiente manera:
 
 ```text
+
 Usuario
-   │
-   ▼
+
+   │
+
+   ▼
+
 Registro / Inicio de sesión
-   │
-   ▼
+
+   │
+
+   ▼
+
 Autenticación
-   │
-   ▼
+
+   │
+
+   ▼
+
 Perfil y rol del usuario
-   │
-   ├──────────── Superadministrador
-   │                    │
-   │                    ▼
-   │          Módulo administrativo
-   │
-   └──────────── Usuario final
-                        │
-                        ▼
-                Entrevista inicial
-                        │
-                        ▼
-             Estado emocional inicial
-                        │
-                        ▼
-          Plan de Bienestar Emocional
-                        │
-          ┌─────────────┼───────────────┐
-          │             │               │
-          ▼             ▼               ▼
-    Autorregistro   Cuestionarios   Psicoeducación
-          │
-          ├──────── Técnicas
-          ├──────── Foro Comunitario
-          └──────── Perfil
+
+   │
+
+   ├──────────── Superadministrador
+
+   │                    │
+
+   │                    ▼
+
+   │          Módulo administrativo
+
+   │
+
+   └──────────── Usuario final
+
+                        │
+
+                        ▼
+
+                Entrevista inicial
+
+                        │
+
+                        ▼
+
+             Estado emocional inicial
+
+                        │
+
+                        ▼
+
+          Plan de Bienestar Emocional
+
+                        │
+
+          ┌─────────────┼───────────────┐
+
+          │             │               │
+
+          ▼             ▼               ▼
+
+    Autorregistro   Cuestionarios   Psicoeducación
+
+          │
+
+          ├──────── Técnicas
+
+          ├──────── Foro Comunitario
+
+          └──────── Perfil
+
 ```
 
 ---
@@ -927,11 +1317,17 @@ Perfil y rol del usuario
 # Paleta de colores
 
 ```text
-Primary:    #4F8EF7
-Secondary:  #7BBF9A
-Accent:     #B8A8F8
+
+Primary:    #4F8EF7
+
+Secondary:  #7BBF9A
+
+Accent:     #B8A8F8
+
 Mist White: #F8FAFC
-Dark Gray:  #2D3748
+
+Dark Gray:  #2D3748
+
 ```
 
 La aplicación utiliza variantes adicionales de estos colores para mantener compatibilidad con los modos claro y oscuro.
@@ -943,19 +1339,25 @@ La aplicación utiliza variantes adicionales de estos colores para mantener comp
 ## 1. Clonar el repositorio
 
 ```bash
+
 git clone https://github.com/vanessamoralesm-ing/Kiri.git
+
 ```
 
 ## 2. Entrar al proyecto
 
 ```bash
+
 cd Kiri
+
 ```
 
 ## 3. Instalar dependencias
 
 ```bash
+
 npm install
+
 ```
 
 ---
@@ -965,14 +1367,19 @@ npm install
 Crear el archivo:
 
 ```text
+
 .env.local
+
 ```
 
 Agregar:
 
 ```env
+
 EXPO_PUBLIC_SUPABASE_URL=SUPABASE_URL
+
 EXPO_PUBLIC_SUPABASE_KEY=SUPABASE_KEY
+
 ```
 
 Las credenciales correspondientes deben ser proporcionadas por el equipo encargado del proyecto.
@@ -982,30 +1389,41 @@ Las credenciales correspondientes deben ser proporcionadas por el equipo encarga
 # Verificar Expo SDK
 
 ```bash
+
 npm list expo
+
 ```
 
 Este proyecto corresponde a:
 
 ```text
+
 Expo SDK 54
+
 ```
+
 # Instalación de Expo Go
+
 Para probarlas desde su versión móvil, desde un celular se deberá usar expo go, se recomienda instalarlo desde su página oficial de la web,seleccionando la versiób 54 del SDK.
 
-página web: [text](https://expo.dev/go)
+página web: [text]\(https://expo.dev/go)
+
 ---
 
 # Revisar dependencias
 
 ```bash
+
 npx expo-doctor@latest
+
 ```
 
 También:
 
 ```bash
+
 npx expo install --check
+
 ```
 
 ---
@@ -1015,21 +1433,26 @@ npx expo install --check
 ## Iniciar Expo
 
 ```bash
+
 npx expo start -c
+
 ```
 
 ## Android
 
 ```bash
+
 Para probarlo desde el de celular de deberá usar expo go, que se descargó anteriormente y se hará el escaneo del código QR o bien escribir la dirección IP que se nos proporciona al momento de la ejecución.
+
 ```
 
 ## Web
 
 ```bash
-Para probarlo desde la web solo se debe escribir la letra "w" en la terminal para que se nos abrá en el navegador web.
-```
 
+Para probarlo desde la web solo se debe escribir la letra "w" en la terminal para que se nos abrá en el navegador web.
+
+```
 
 # Estado del proyecto
 
@@ -1040,15 +1463,25 @@ El proyecto se encuentra en una etapa de construcción y validación de su **Pro
 La versión actual se encuentra enfocada principalmente en las funcionalidades dirigidas al usuario final, entre ellas:
 
 - Registro e inicio de sesión.
+
 - Entrevista inicial.
+
 - Identificación inicial del estado emocional.
+
 - Plan de Bienestar Emocional.
+
 - Módulo de Autorregistro.
+
 - Test y cuestionarios.
+
 - Técnicas complementarias.
+
 - Psicoeducación.
+
 - Foro Comunitario.
+
 - Perfil de usuario.
+
 - Modo claro y oscuro.
 
 También se ha iniciado el desarrollo del módulo correspondiente al **Superadministrador**, específicamente en funcionalidades relacionadas con solicitudes institucionales.
@@ -1066,14 +1499,23 @@ El desarrollo de Kiri se plantea de forma progresiva.
 Principales funcionalidades dirigidas al usuario final:
 
 - Registro y autenticación.
+
 - Entrevista inicial.
+
 - Plan de Bienestar Emocional.
+
 - Módulo de Autorregistro.
+
 - Test y cuestionarios orientativos.
+
 - Técnicas complementarias.
+
 - Psicoeducación.
+
 - Foro Comunitario.
+
 - Gestión del perfil.
+
 - Modo claro y oscuro.
 
 ## Fase 2 - Consolidación del Superadministrador
@@ -1081,11 +1523,17 @@ Principales funcionalidades dirigidas al usuario final:
 Ampliación del panel administrativo con funcionalidades como:
 
 - Gestión completa de solicitudes institucionales.
+
 - Gestión de instituciones.
+
 - Gestión de usuarios.
+
 - Gestión de contenido.
+
 - Administración de cuestionarios.
+
 - Reportes globales.
+
 - Configuración general de la plataforma.
 
 ## Fase 3 - Administración institucional
@@ -1093,9 +1541,13 @@ Ampliación del panel administrativo con funcionalidades como:
 Implementación de herramientas para el rol de **Administrador Institucional**, incluyendo:
 
 - Gestión de la institución.
+
 - Gestión de usuarios vinculados.
+
 - Gestión de grupos y secciones.
+
 - Administración de personal autorizado.
+
 - Vinculación institucional mediante códigos.
 
 ## Fase 4 - Herramientas para psicólogos
@@ -1111,15 +1563,25 @@ Incorporación de herramientas preventivas y de acompañamiento para docentes, r
 Ampliación progresiva de:
 
 - Métodos de autorregistro.
+
 - Técnicas complementarias.
+
 - Test y cuestionarios.
+
 - Recursos de psicoeducación.
+
 - Biblioterapia.
+
 - Mitos y Realidades.
+
 - Herramientas del Foro Comunitario.
+
 - Seguimiento del progreso.
+
 - Gamificación.
+
 - Personalización del Plan de Bienestar Emocional.
+
 - Asistente virtual.
 
 ---
@@ -1129,28 +1591,51 @@ Ampliación progresiva de:
 Entre las funcionalidades contempladas para futuras versiones de Kiri se encuentran:
 
 - Ampliación del panel de Superadministrador.
+
 - Panel del Administrador Institucional.
+
 - Panel del Psicólogo Institucional.
+
 - Funcionalidades específicas para docentes.
+
 - Gestión completa de instituciones.
+
 - Generación y administración de códigos de vinculación institucional.
+
 - Gestión de grados, grupos y secciones.
+
 - Ampliación de los mecanismos de seguimiento del progreso.
+
 - Nuevos métodos de autorregistro.
+
 - Nuevas técnicas complementarias.
+
 - Incorporación de nuevos cuestionarios.
+
 - Ampliación del contenido de psicoeducación.
+
 - Mayor desarrollo de Biblioterapia.
+
 - Mayor desarrollo de Mitos y Realidades.
+
 - Ampliación del sistema de gamificación.
+
 - Nuevos retos y actividades de bienestar.
+
 - Mayor personalización del Plan de Bienestar Emocional.
+
 - Evolución del Foro Comunitario.
+
 - Mejoras en los mecanismos de moderación.
+
 - Desarrollo progresivo del asistente virtual.
+
 - Reportes y visualizaciones de progreso.
+
 - Mejoras de accesibilidad.
+
 - Optimización para distintos tamaños de pantalla y dispositivos.
+
 - Mejoras continuas de privacidad y seguridad.
 
 Las funcionalidades futuras estarán sujetas al avance del proyecto, validación del MVP y necesidades identificadas durante las pruebas con usuarios.
@@ -1182,3 +1667,447 @@ Desarrollado por:
 Proyecto de uso privado.
 
 **Todos los derechos reservados.**
+
+---
+
+# Despliegue de Kiri en Microsoft Azure
+
+## 1. Descripción general
+
+El proyecto Kiri fue desplegado en **Microsoft Azure** utilizando una máquina virtual con sistema operativo Ubuntu, Docker y Nginx.
+
+La infraestructura permite publicar la aplicación web, distribuir su archivo instalable APK para dispositivos Android y disponer de un portal independiente para gestionar solicitudes de demostración.
+
+La solución utiliza **Supabase como backend de la aplicación Kiri**, mientras que el portal de solicitudes dispone de una base de datos PostgreSQL propia, ejecutada en la máquina virtual de Azure.
+
+## 2. Infraestructura utilizada
+
+| Componente | Tecnología | Función |
+|---|---|---|
+| Servicio en la nube | Microsoft Azure | Alojamiento de la infraestructura |
+| Máquina virtual | Ubuntu Linux | Servidor principal |
+| Contenedores | Docker | Ejecución de los servicios |
+| Orquestación | Docker Compose | Administración de contenedores |
+| Servidor web | Nginx | Publicación de interfaces web |
+| Aplicación web | Expo / React Native Web | Interfaz de Kiri |
+| Backend de Kiri | Supabase | Servicios de datos y autenticación |
+| API del portal | Node.js y Express | Gestión de solicitudes y accesos |
+| Base de datos del portal | PostgreSQL 16 | Almacenamiento de solicitudes y usuarios administrativos |
+| Aplicación Android | APK | Distribución instalable de Kiri |
+
+## 3. Configuración de la máquina virtual
+
+Se creó una máquina virtual en Microsoft Azure con el nombre:
+
+**`vm-kiri`**
+
+La máquina utiliza Ubuntu Linux y dispone de una dirección IP pública que permite acceder a los servicios publicados.
+
+**Dirección IP pública utilizada durante el despliegue:**
+
+`68.211.137.143`
+
+La administración remota se realiza mediante SSH con autenticación por clave privada.
+
+Ejemplo de conexión desde PowerShell:
+
+```powershell
+ssh -i "RUTA_LOCAL_DE_LA_CLAVE.pem" azureuser@68.211.137.143
+```
+
+La clave privada SSH no se incluye en el repositorio por razones de seguridad.
+
+## 4. Despliegue de la aplicación Kiri
+
+La aplicación web fue exportada utilizando Expo:
+
+```bash
+npx expo export --platform web
+```
+
+Este comando genera los archivos estáticos necesarios para publicar la aplicación web en la carpeta `dist`.
+
+Posteriormente, los archivos fueron transferidos a la máquina virtual mediante SCP.
+
+La aplicación se encuentra desplegada en el directorio:
+
+```text
+/opt/kiri/
+```
+
+Estructura utilizada:
+
+```text
+/opt/kiri/
+├── Dockerfile
+├── compose.yaml
+├── nginx.conf
+└── dist/
+    ├── index.html
+    ├── assets/
+    ├── _expo/
+    └── downloads/
+```
+
+El despliegue utiliza un contenedor Docker basado en Nginx, encargado de servir los archivos web.
+
+Para construir e iniciar el servicio:
+
+```bash
+cd /opt/kiri
+sudo docker compose up -d --build
+```
+
+Para comprobar su funcionamiento:
+
+```bash
+sudo docker compose ps
+```
+
+La aplicación se publica mediante el puerto HTTP 80 de la máquina virtual.
+
+**Dirección web de Kiri:**
+
+http://68.211.137.143/
+
+## 5. Distribución de la aplicación Android
+
+Se generó una versión instalable de Kiri para Android en formato APK.
+
+Durante la configuración inicial, el archivo APK se incorporó al sistema de distribución web de Nginx.
+
+Posteriormente, se desarrolló un portal independiente para administrar solicitudes de acceso y publicar versiones instalables.
+
+La distribución controlada mediante el portal permite que los usuarios soliciten una demostración antes de acceder a la descarga.
+
+El administrador puede cargar una versión APK, mantenerla como borrador y publicarla cuando corresponda.
+
+La descarga autorizada depende de dos condiciones:
+
+1. Que la solicitud del usuario haya sido aprobada.
+2. Que exista una versión APK publicada y disponible.
+
+El archivo instalable se almacena en un directorio privado de la máquina virtual, separado de los archivos públicos de la landing.
+
+## 6. Landing page independiente
+
+Además de Kiri, se implementó una landing page independiente en la misma máquina virtual de Azure.
+
+Su objetivo es presentar la aplicación y permitir que las personas interesadas soliciten acceso a una demostración.
+
+La landing incluye:
+
+- Presentación de la aplicación.
+- Información general sobre sus funcionalidades.
+- Botón para acceder al formulario de solicitud.
+- Formulario de registro.
+- Consulta del estado de una solicitud.
+- Acceso a la descarga del APK cuando existe autorización.
+
+El portal se encuentra alojado en:
+
+```text
+/opt/landing-solicitudes/
+```
+
+La interfaz se publica mediante un contenedor Nginx separado, utilizando el puerto 8080.
+
+**Dirección de la landing:**
+
+http://68.211.137.143:8080/
+
+La separación de los proyectos permite administrar y actualizar el portal sin modificar directamente el despliegue principal de Kiri.
+
+## 7. Formulario de solicitud de demostración
+
+El formulario permite registrar personas interesadas en acceder a una demostración de la aplicación.
+
+Los datos solicitados incluyen:
+
+| Campo | Descripción |
+|---|---|
+| Nombre | Nombre completo del solicitante |
+| Correo electrónico | Medio de identificación y contacto |
+| Institución | Organización a la que pertenece |
+| Motivo | Razón por la que solicita acceso |
+| Consentimiento | Autorización para gestionar los datos suministrados |
+| Estado | Pendiente, aprobada o rechazada |
+
+Cuando un usuario envía el formulario, los datos son procesados por una API desarrollada con Node.js y Express.
+
+La API valida la información y registra la solicitud en PostgreSQL.
+
+Cada solicitud se crea inicialmente con el estado `pendiente`.
+
+El sistema también genera un código privado que permite al solicitante consultar el estado de su solicitud.
+
+El almacenamiento de este código se realiza mediante un hash, evitando conservarlo directamente en texto plano dentro de la base de datos.
+
+## 8. Base de datos PostgreSQL
+
+Se configuró PostgreSQL 16 dentro de un contenedor Docker en la misma máquina virtual de Azure.
+
+Esta base de datos es independiente de Supabase y se utiliza exclusivamente para los procesos administrativos del portal de demostraciones.
+
+Contiene información relacionada con:
+
+- Solicitudes de acceso.
+- Administradores.
+- Versiones de la aplicación.
+- Sesiones administrativas.
+
+La base de datos utiliza un volumen persistente de Docker para conservar los registros aunque los contenedores sean reiniciados o reconstruidos.
+
+PostgreSQL se comunica con la API mediante una red interna de Docker.
+
+**El puerto 5432 no se publica directamente a Internet.**
+
+La configuración separa las credenciales de administración de la base de datos de las utilizadas por la API.
+
+## 9. Panel administrativo
+
+Se desarrolló un panel de administración privado para controlar las solicitudes y la distribución del APK.
+
+**Dirección del panel:**
+
+http://68.211.137.143:8080/admin.html
+
+El panel incluye autenticación mediante usuario y contraseña.
+
+Las contraseñas administrativas se almacenan en la base de datos mediante hashes seguros.
+
+Entre sus funcionalidades se encuentran:
+
+### Gestión de solicitudes
+
+- Consultar las solicitudes recibidas.
+- Filtrar solicitudes por estado.
+- Aprobar solicitudes.
+- Rechazar solicitudes.
+- Consultar los datos de cada solicitante.
+
+### Gestión de versiones Android
+
+- Cargar nuevos archivos APK.
+- Registrar el número de versión.
+- Agregar notas de la versión.
+- Mantener archivos en estado borrador.
+- Publicar una versión instalable.
+- Retirar una versión publicada.
+- Consultar el historial de versiones.
+
+Los archivos APK se almacenan en un directorio privado del servidor y no se exponen directamente mediante enlaces públicos estáticos.
+
+Para proteger la descarga, la API comprueba el correo, el código privado y el estado de aprobación antes de entregar el archivo.
+
+## 10. Arquitectura de contenedores
+
+La máquina virtual ejecuta dos despliegues independientes.
+
+### Aplicación Kiri
+
+```text
+Azure VM
+└── /opt/kiri/
+    └── kiri-web (Nginx)
+        └── Puerto 80
+```
+
+### Portal de solicitudes
+
+```text
+Azure VM
+└── /opt/landing-solicitudes/
+    ├── landing-web (Nginx)
+    │   └── Puerto 8080
+    │
+    ├── landing-api (Node.js / Express)
+    │   └── Puerto 3000 interno
+    │
+    ├── landing-db (PostgreSQL)
+    │   └── Puerto 5432 interno
+    │
+    └── private-apks/
+        └── Archivos instalables
+```
+
+Los servicios del portal se administran mediante su propio archivo `compose.yaml`.
+
+Para iniciarlos:
+
+```bash
+cd /opt/landing-solicitudes
+sudo docker compose up -d --build
+```
+
+Para verificar su estado:
+
+```bash
+sudo docker compose ps
+```
+
+Para consultar los registros:
+
+```bash
+sudo docker compose logs --tail=100
+```
+
+## 11. Configuración de red en Azure
+
+La infraestructura utiliza un grupo de seguridad de red (NSG) para controlar el tráfico entrante.
+
+Los puertos utilizados son:
+
+| Puerto | Protocolo | Función |
+|---|---|---|
+| 22 | TCP | Administración remota SSH |
+| 80 | TCP | Aplicación web Kiri |
+| 8080 | TCP | Landing y panel de solicitudes |
+| 443 | TCP | Reservado para la configuración HTTPS |
+
+Los servicios PostgreSQL y Node.js no necesitan puertos públicos adicionales porque se comunican mediante una red privada de Docker.
+
+El firewall de Ubuntu se revisó mediante:
+
+```bash
+sudo ufw status
+```
+
+Durante las pruebas iniciales, UFW se encontraba inactivo.
+
+## 12. Seguridad implementada
+
+La solución contempla los siguientes mecanismos:
+
+- Autenticación SSH mediante clave privada.
+- Separación de proyectos en directorios independientes.
+- Aislamiento de servicios mediante redes Docker.
+- Base de datos PostgreSQL sin puerto público.
+- Autenticación administrativa.
+- Contraseñas administrativas almacenadas mediante hash.
+- Sesiones administrativas.
+- Validación de formularios en el servidor.
+- Consultas SQL parametrizadas.
+- Limitación de solicitudes para reducir abusos automatizados.
+- Códigos privados para consultar solicitudes.
+- Verificación del estado de aprobación antes de la descarga.
+- Almacenamiento privado de archivos APK.
+- Cálculo SHA-256 de las versiones instalables.
+- Variables de entorno para evitar incluir credenciales en el código fuente.
+
+La configuración inicial utiliza HTTP para las pruebas del despliegue. Como mejora necesaria antes de su uso público con datos personales, se debe habilitar HTTPS mediante un dominio y un certificado TLS válido.
+
+## 13. Verificación del despliegue
+
+Para verificar los servicios del portal:
+
+```bash
+cd /opt/landing-solicitudes
+sudo docker compose ps
+```
+
+Para comprobar la conexión entre la API y PostgreSQL:
+
+```bash
+curl http://127.0.0.1:8080/api/health
+```
+
+La respuesta esperada es:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+Para comprobar la aplicación web de Kiri:
+
+```bash
+curl -I http://127.0.0.1/
+```
+
+Para comprobar la landing:
+
+```bash
+curl -I http://127.0.0.1:8080/
+```
+
+Estas pruebas permiten revisar el funcionamiento de los servicios desde la propia VM.
+
+El funcionamiento completo se valida mediante pruebas del formulario, aprobación de solicitudes, publicación de versiones APK y descarga autorizada.
+
+## 14. Actualización y mantenimiento
+
+### Actualizar la aplicación web Kiri
+
+Después de realizar cambios en el proyecto, se genera una nueva exportación web mediante Expo:
+
+```bash
+npx expo export --platform web
+```
+
+Los archivos actualizados se transfieren a `/opt/kiri/dist/` y se reconstruye el contenedor:
+
+```bash
+cd /opt/kiri
+sudo docker compose up -d --build
+```
+
+### Actualizar el portal de solicitudes
+
+Cuando se modifica la landing, la API o su configuración, se actualizan los archivos del directorio correspondiente y se reconstruyen los servicios:
+
+```bash
+cd /opt/landing-solicitudes
+sudo docker compose up -d --build
+```
+
+### Persistencia de los datos
+
+La base de datos utiliza almacenamiento persistente de Docker.
+
+Para conservar la información es importante no eliminar el volumen de PostgreSQL.
+
+Además, se deben realizar copias de seguridad periódicas de la base de datos y de los APK almacenados.
+
+## 15. Resultado del despliegue
+
+El despliegue permitió centralizar en una máquina virtual de Microsoft Azure la publicación de la aplicación Kiri y la gestión de solicitudes de demostración.
+
+Se dispone de una arquitectura basada en contenedores, con servicios independientes para la aplicación y el portal de administración.
+
+La solución integra:
+
+- Publicación web de Kiri.
+- Distribución de la aplicación Android.
+- Landing page informativa.
+- Formulario de solicitudes de demostración.
+- Almacenamiento de solicitudes en PostgreSQL.
+- Panel administrativo con autenticación.
+- Aprobación y rechazo de solicitudes.
+- Gestión de versiones APK.
+- Descargas controladas mediante autorización.
+
+Esta infraestructura constituye una base funcional para la demostración y evolución del proyecto. Para su utilización pública con información personal, se requiere completar la configuración HTTPS, revisar los controles de seguridad y disponer de una estrategia de copias de seguridad y recuperación.
+
+---
+
+## 16. Evidencias visuales del portal de solicitudes
+
+### Formulario de solicitud de demostración
+
+La siguiente captura muestra el formulario para ingresar el nombre completo, correo electrónico, institución u organización, motivo de interés y consentimiento para el tratamiento de datos. Las solicitudes se registran para revisión administrativa con estado inicial `pendiente`.
+
+![Formulario de solicitud de demostración](docs/images/formulario-solicitud-demo.png)
+
+*Figura 1. Formulario de solicitud de demostración del portal desplegado en Azure.*
+
+### Consulta de solicitud y descarga de APK
+
+La segunda captura muestra la interfaz para ingresar el correo electrónico y el código privado obtenido al enviar una solicitud. El portal consulta su estado y habilita la descarga del APK únicamente si la solicitud está aprobada y existe una versión publicada.
+
+![Consulta de solicitud y descarga del APK](docs/images/consulta-solicitud-apk.png)
+
+*Figura 2. Interfaz de consulta del estado y acceso a la descarga autorizada del APK.*
+
+> **Nota:** Las capturas muestran las interfaces. La verificación de que los datos se almacenan y las descargas se autorizan correctamente requiere pruebas funcionales de la API y la base de datos.

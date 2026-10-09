@@ -191,7 +191,8 @@ export default function RegisterScreen() {
                 setError(null);
               }}
               accessibilityRole="checkbox"
-              accessibilityState={{ checked: aceptoCondiciones }}
+              accessibilityLabel="Aceptar los t?rminos y condiciones y la pol?tica de privacidad"
+              accessibilityState={{ checked: aceptoCondiciones, disabled: submitting }}
               hitSlop={8}
               className={cn(
                 "mr-3 mt-0.5 h-6 w-6 shrink-0 items-center justify-center rounded-lg border-2 border-primary",
